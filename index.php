@@ -3384,55 +3384,49 @@
           <div id="active-filters" style="display: flex; gap: 5px; flex-wrap: wrap;"></div>
         </div>
 
-        <!-- ===== MODAL PENGATURAN KAMERA RTSP / IP ===== -->
-        <div class="modal fade" id="cameraConfigModal" tabindex="-1" role="dialog" aria-hidden="true" style="z-index: 9999;">
-          <div class="modal-dialog modal-dialog-centered" role="document">
-            <div class="modal-content" style="background: #0b132b; color: #fff; border: 1px solid rgba(255,255,255,0.2); border-radius: 12px;">
-              <div class="modal-header" style="border-bottom: 1px solid rgba(255,255,255,0.1);">
-                <h5 class="modal-title" id="camModalTitle" style="color: #4cd137; font-weight: 600;"><i class="fas fa-video"></i> Konfigurasi IP / RTSP Kamera</h5>
-                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close" onclick="$('#cameraConfigModal').modal('hide')">
-                  <span aria-hidden="true">&times;</span>
-                </button>
-              </div>
-              <div class="modal-body">
-                <form id="camConfigForm">
-                  <input type="hidden" id="cam-id">
-                  <div class="form-group mb-3">
-                    <label style="font-size: 13px; color: #aaa;">Nama Kamera / Lokasi:</label>
-                    <input type="text" id="cam-title" class="form-control" style="background: rgba(255,255,255,0.08); color: #fff; border: 1px solid rgba(255,255,255,0.2);" placeholder="Contoh: Simpang Dewa Ruci - Kuta Bali" required>
-                  </div>
-                  <div class="form-group mb-3">
-                    <label style="font-size: 13px; color: #aaa;">Wilayah / Kota:</label>
-                    <select id="cam-city" class="form-control" style="background: rgba(255,255,255,0.08); color: #fff; border: 1px solid rgba(255,255,255,0.2);">
-                      <option value="siantar" style="color:#111;">Pematangsiantar</option>
-                      <option value="jakarta" style="color:#111;">DKI Jakarta</option>
-                      <option value="medan" style="color:#111;">Kota Medan</option>
-                      <option value="bandung" style="color:#111;">Kota Bandung</option>
-                      <option value="bali" style="color:#111;">Bali / Denpasar</option>
-                    </select>
-                  </div>
-                  <div class="form-group mb-3">
-                    <label style="font-size: 13px; color: #aaa;">Stream Path / RTSP Stream ID / HLS URL:</label>
-                    <input type="text" id="cam-stream-path" class="form-control" style="background: rgba(255,255,255,0.08); color: #fff; border: 1px solid rgba(255,255,255,0.2);" placeholder="Contoh: cam_bali_1 atau rtsp://admin:pass@IP:554/stream1" required>
-                    <small class="form-text text-muted" style="font-size: 11px;">Isi dengan path di MediaMTX atau URL stream HLS / RTSP camera kamu.</small>
-                  </div>
-                  <div class="form-row">
-                    <div class="form-group col-6">
-                      <label style="font-size: 13px; color: #aaa;">Latitude GPS:</label>
-                      <input type="text" id="cam-lat" class="form-control" style="background: rgba(255,255,255,0.08); color: #fff; border: 1px solid rgba(255,255,255,0.2);" placeholder="-8.7188">
-                    </div>
-                    <div class="form-group col-6">
-                      <label style="font-size: 13px; color: #aaa;">Longitude GPS:</label>
-                      <input type="text" id="cam-lng" class="form-control" style="background: rgba(255,255,255,0.08); color: #fff; border: 1px solid rgba(255,255,255,0.2);" placeholder="115.1783">
-                    </div>
-                  </div>
-                </form>
-              </div>
-              <div class="modal-footer" style="border-top: 1px solid rgba(255,255,255,0.1);">
-                <button type="button" class="btn btn-secondary" onclick="$('#cameraConfigModal').modal('hide')">Batal</button>
-                <button type="button" class="btn btn-success" onclick="saveCameraConfig()"><i class="fas fa-save"></i> Simpan Konfigurasi</button>
-              </div>
+        <!-- ===== MODAL PENGATURAN KAMERA RTSP / IP (CUSTOM OVERLAY) ===== -->
+        <div id="cameraConfigModal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.85); z-index: 999999; align-items: center; justify-content: center; backdrop-filter: blur(6px); pointer-events: auto;">
+          <div style="background: #0f172a; color: #fff; width: 92%; max-width: 520px; border: 1px solid #334155; border-radius: 16px; padding: 24px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7); pointer-events: auto; position: relative;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #1e293b; padding-bottom: 14px;">
+              <h5 id="camModalTitle" style="color: #20bf6b; font-weight: 700; margin: 0; font-size: 18px;"><i class="fas fa-video"></i> Konfigurasi IP / RTSP Kamera</h5>
+              <button type="button" onclick="closeCameraConfigModal()" style="background: transparent; border: none; color: #94a3b8; font-size: 24px; cursor: pointer; line-height: 1;">&times;</button>
             </div>
+            <form id="camConfigForm" onsubmit="event.preventDefault(); saveCameraConfig();">
+              <input type="hidden" id="cam-id">
+              <div style="margin-bottom: 16px;">
+                <label style="font-size: 13px; color: #94a3b8; font-weight: 600; display: block; margin-bottom: 6px;">Nama Kamera / Lokasi:</label>
+                <input type="text" id="cam-title" style="width: 100%; background: #1e293b; color: #ffffff; border: 1px solid #475569; border-radius: 8px; padding: 10px 14px; font-size: 14px; outline: none; pointer-events: auto;" placeholder="Contoh: Simpang Dewa Ruci - Kuta Bali" required>
+              </div>
+              <div style="margin-bottom: 16px;">
+                <label style="font-size: 13px; color: #94a3b8; font-weight: 600; display: block; margin-bottom: 6px;">Wilayah / Kota:</label>
+                <select id="cam-city" style="width: 100%; background: #1e293b; color: #ffffff; border: 1px solid #475569; border-radius: 8px; padding: 10px 14px; font-size: 14px; outline: none; pointer-events: auto;">
+                  <option value="siantar" style="color:#111;">Pematangsiantar</option>
+                  <option value="jakarta" style="color:#111;">DKI Jakarta</option>
+                  <option value="medan" style="color:#111;">Kota Medan</option>
+                  <option value="bandung" style="color:#111;">Kota Bandung</option>
+                  <option value="bali" style="color:#111;">Bali / Denpasar</option>
+                </select>
+              </div>
+              <div style="margin-bottom: 16px;">
+                <label style="font-size: 13px; color: #94a3b8; font-weight: 600; display: block; margin-bottom: 6px;">Stream Path / RTSP Stream ID / HLS URL:</label>
+                <input type="text" id="cam-stream-path" style="width: 100%; background: #1e293b; color: #ffffff; border: 1px solid #475569; border-radius: 8px; padding: 10px 14px; font-size: 14px; outline: none; pointer-events: auto;" placeholder="Contoh: cam_bali_1 atau rtsp://admin:pass@IP:554/stream1" required>
+                <small style="font-size: 11px; color: #64748b; display: block; margin-top: 4px;">Isi dengan path di MediaMTX atau URL stream HLS / RTSP camera kamu.</small>
+              </div>
+              <div style="display: flex; gap: 12px; margin-bottom: 20px;">
+                <div style="flex: 1;">
+                  <label style="font-size: 13px; color: #94a3b8; font-weight: 600; display: block; margin-bottom: 6px;">Latitude GPS:</label>
+                  <input type="text" id="cam-lat" style="width: 100%; background: #1e293b; color: #ffffff; border: 1px solid #475569; border-radius: 8px; padding: 10px 14px; font-size: 14px; outline: none; pointer-events: auto;" placeholder="-8.7188">
+                </div>
+                <div style="flex: 1;">
+                  <label style="font-size: 13px; color: #94a3b8; font-weight: 600; display: block; margin-bottom: 6px;">Longitude GPS:</label>
+                  <input type="text" id="cam-lng" style="width: 100%; background: #1e293b; color: #ffffff; border: 1px solid #475569; border-radius: 8px; padding: 10px 14px; font-size: 14px; outline: none; pointer-events: auto;" placeholder="115.1783">
+                </div>
+              </div>
+              <div style="display: flex; justify-content: flex-end; gap: 10px; border-top: 1px solid #1e293b; padding-top: 16px;">
+                <button type="button" onclick="closeCameraConfigModal()" style="background: #334155; color: #fff; border: none; border-radius: 8px; padding: 8px 18px; font-size: 14px; cursor: pointer;">Batal</button>
+                <button type="submit" style="background: #20bf6b; color: #fff; border: none; border-radius: 8px; padding: 8px 20px; font-size: 14px; font-weight: 600; cursor: pointer;"><i class="fas fa-save"></i> Simpan Konfigurasi</button>
+              </div>
+            </form>
           </div>
         </div>
 
@@ -8358,6 +8352,9 @@
     }
 
     function openCameraConfigModal(id) {
+      const modal = document.getElementById('cameraConfigModal');
+      if (!modal) return;
+
       if (id) {
         const cam = mediamtxData.find(c => c.id === parseInt(id));
         if (cam) {
@@ -8378,12 +8375,13 @@
         document.getElementById('cam-lat').value = '';
         document.getElementById('cam-lng').value = '';
       }
-      if (typeof $ !== 'undefined') {
-        $('#cameraConfigModal').modal('show');
-      } else {
-        const m = document.getElementById('cameraConfigModal');
-        if (m) m.classList.add('show'), m.style.display = 'block';
-      }
+
+      modal.style.display = 'flex';
+    }
+
+    function closeCameraConfigModal() {
+      const modal = document.getElementById('cameraConfigModal');
+      if (modal) modal.style.display = 'none';
     }
 
     function saveCameraConfig() {
@@ -8422,13 +8420,7 @@
         });
       }
 
-      if (typeof $ !== 'undefined') {
-        $('#cameraConfigModal').modal('hide');
-      } else {
-        const m = document.getElementById('cameraConfigModal');
-        if (m) m.classList.remove('show'), m.style.display = 'none';
-      }
-
+      closeCameraConfigModal();
       alert('Konfigurasi Kamera Berhasil Disimpan!');
       generateCCTVHTML(currentGlobalCity);
     }
