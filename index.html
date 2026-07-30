@@ -3410,7 +3410,7 @@
               <div style="margin-bottom: 16px;">
                 <label style="font-size: 13px; color: #94a3b8; font-weight: 600; display: block; margin-bottom: 6px;">Stream Path / RTSP Stream ID / HLS URL:</label>
                 <input type="text" id="cam-stream-path" style="width: 100%; background: #1e293b; color: #ffffff; border: 1px solid #475569; border-radius: 8px; padding: 10px 14px; font-size: 14px; outline: none; pointer-events: auto;" placeholder="Contoh: cam_bali_1 atau rtsp://admin:pass@IP:554/stream1" required>
-                <small style="font-size: 11px; color: #64748b; display: block; margin-top: 4px;">Isi dengan path di MediaMTX atau URL stream HLS / RTSP camera kamu.</small>
+                <small style="font-size: 11px; color: #94a3b8; display: block; margin-top: 4px;">Gunakan Stream Path MediaMTX (contoh: <code>cam_bali_1</code>), HLS URL (<code>.m3u8</code>), atau IPCamLive. <em>Catatan: Browser tidak bisa putar <code>rtsp://</code> langsung tanpa MediaMTX/IPCamLive gateway.</em></small>
               </div>
               <div style="display: flex; gap: 12px; margin-bottom: 20px;">
                 <div style="flex: 1;">
@@ -7182,7 +7182,23 @@
           }
         }
 
-        const hlsUrl = `${STREAM_BASE}/${streamPath}/index.m3u8`;
+        let hlsUrl;
+        if (streamPath.startsWith('http://') || streamPath.startsWith('https://')) {
+          hlsUrl = streamPath;
+        } else if (streamPath.startsWith('rtsp://')) {
+          console.warn('[MediaMTX] Direct RTSP URL detected:', streamPath);
+          if (thumb) {
+            const loadingText = thumb.querySelector('.loading-text');
+            if (loadingText) {
+              loadingText.innerHTML = '<i class="fas fa-exclamation-triangle text-warning"></i> RTSP Direct URL perlu MediaMTX / IPCamLive!';
+              loadingText.style.opacity = '1';
+            }
+          }
+          alert('⚠️ Browser Web HTML5 tidak mendukung protokol "rtsp://" secara langsung.\n\nAgar RTSP dapat diputar di web:\n1. Masukkan RTSP di server MediaMTX / IPCamLive kamu.\n2. Atau gunakan URL HLS HTTP/HTTPS (.m3u8).\n3. Atau isi dengan Stream Path (contoh: cam_bali_1).');
+          return;
+        } else {
+          hlsUrl = `${STREAM_BASE}/${streamPath}/index.m3u8`;
+        }
         console.log('[MediaMTX] Loading HLS:', hlsUrl);
 
         if (typeof Hls !== 'undefined' && Hls.isSupported()) {
