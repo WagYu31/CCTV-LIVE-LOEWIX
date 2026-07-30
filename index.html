@@ -4172,20 +4172,22 @@
       },
     ];
 
-    // Terminal / Kamera Tambahan
+    // Terminal / Kamera Tambahan (Live Demo Stream)
     const terminalTanjungPinggirData = [{
         id: 201,
-        title: 'Kamera 7',
-        streamPath: 'cam7',
-        coordinates: [-6.1769, 106.8306],
+        title: 'Terminal Tanjung Pinggir 1',
+        streamPath: 'jalan_sutomo_polres_siantar',
+        thumbnail: ASSET_BASE + '/image/logo-loewix.png',
+        coordinates: [2.9604000000, 99.0739000000],
         platform: PLATFORM_TYPES.MEDIAMTX,
         section: 'terminal-tanjung-pinggir'
       },
       {
         id: 202,
-        title: 'Kamera 8',
-        streamPath: 'cam8',
-        coordinates: [-6.1771, 106.8308],
+        title: 'Terminal Tanjung Pinggir 2',
+        streamPath: 'simpang_bri',
+        thumbnail: ASSET_BASE + '/image/logo-loewix.png',
+        coordinates: [2.9604200000, 99.0739200000],
         platform: PLATFORM_TYPES.MEDIAMTX,
         section: 'terminal-tanjung-pinggir'
       },
