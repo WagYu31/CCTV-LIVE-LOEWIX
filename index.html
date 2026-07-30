@@ -3122,6 +3122,14 @@
             </li>
           </ul>
           <div class="d-flex align-items-center">
+            <select id="city-selector-nav" class="form-control form-control-sm mr-3" style="background: rgba(255,255,255,0.15); color: white; border: 1px solid rgba(255,255,255,0.4); border-radius: 20px; padding: 5px 12px; font-weight: 600; cursor: pointer; width: auto; font-size: 13px;" onchange="changeGlobalCity(this.value)">
+              <option value="all" style="color: #111;">🌐 Semua Wilayah</option>
+              <option value="siantar" selected style="color: #111;">📍 Pematangsiantar</option>
+              <option value="jakarta" style="color: #111;">📍 DKI Jakarta</option>
+              <option value="medan" style="color: #111;">📍 Kota Medan</option>
+              <option value="bandung" style="color: #111;">📍 Kota Bandung</option>
+              <option value="bali" style="color: #111;">📍 Bali / Denpasar</option>
+            </select>
             <button id="dark-mode-toggle" class="btn btn-sm text-white mr-3" style="background: transparent; border: 1px solid rgba(255,255,255,0.3); border-radius: 20px; padding: 5px 15px;" title="Toggle Dark Mode">
               <i class="fas fa-moon" id="dark-mode-icon"></i>
             </button>
@@ -3331,15 +3339,24 @@
         <div id="popupOverlay" onclick="closeTrafficPopup()"></div>
 
         <!-- Advanced Filter Toolbar -->
-        <div class="cctv-filter-toolbar" id="cctv-filter-toolbar" style="display: none;">
-          <div class="filter-group">
-            <label>Platform:</label>
-            <select class="filter-select" id="filter-platform">
-              <option value="all">Semua Platform</option>
-              <option value="denava">Denava</option>
-              <option value="stream2">Stream2</option>
-              <option value="ipcamlive">IPCamLive</option>
-              <option value="rekasadigital">RekasaDigital</option>
+        <div class="cctv-filter-toolbar" id="cctv-filter-toolbar" style="display: flex; gap: 15px; flex-wrap: wrap; align-items: center; justify-content: center; margin-bottom: 30px; padding: 15px 20px; background: rgba(13, 27, 62, 0.8); border-radius: 12px; border: 1px solid rgba(255,255,255,0.15);">
+          <div class="filter-group" style="display: flex; align-items: center; gap: 8px;">
+            <label style="color: #4cd137; font-weight: 600; margin: 0;"><i class="fas fa-map-marker-alt"></i> Wilayah / Kota:</label>
+            <select class="filter-select" id="filter-city" style="background: rgba(255,255,255,0.1); color: #fff; border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; padding: 6px 12px; font-weight: 600;" onchange="changeGlobalCity(this.value)">
+              <option value="all" style="color: #111;">🌐 Semua Wilayah</option>
+              <option value="siantar" selected style="color: #111;">📍 Pematangsiantar</option>
+              <option value="jakarta" style="color: #111;">📍 DKI Jakarta</option>
+              <option value="medan" style="color: #111;">📍 Kota Medan</option>
+              <option value="bandung" style="color: #111;">📍 Kota Bandung</option>
+              <option value="bali" style="color: #111;">📍 Bali / Denpasar</option>
+            </select>
+          </div>
+          <div class="filter-group" style="display: flex; align-items: center; gap: 8px;">
+            <label style="color: #888; margin: 0;">Platform:</label>
+            <select class="filter-select" id="filter-platform" style="background: rgba(255,255,255,0.1); color: #fff; border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; padding: 6px 12px;">
+              <option value="all" style="color: #111;">Semua Platform</option>
+              <option value="mediamtx" style="color: #111;">MediaMTX</option>
+              <option value="ipcamlive" style="color: #111;">IPCamLive</option>
             </select>
           </div>
           <div class="filter-group">
@@ -3755,27 +3772,55 @@
       MEDIAMTX: 'mediamtx'
     };
 
-    // ===== KONFIGURASI STREAM SERVER =====
-    // Menggunakan server live stream Pematangsiantar (rekasadigital) untuk keperluan demo
+    // ===== KONFIGURASI MULTI-KOTA LOEWIX =====
+    const CITY_CONFIG = {
+      all: { id: 'all', name: 'Semua Wilayah', center: [2.9568, 99.0619], zoom: 6 },
+      siantar: { id: 'siantar', name: 'Kota Pematangsiantar', center: [2.9568, 99.0619], zoom: 13 },
+      jakarta: { id: 'jakarta', name: 'DKI Jakarta', center: [-6.2088, 106.8456], zoom: 12 },
+      medan: { id: 'medan', name: 'Kota Medan', center: [3.5952, 98.6722], zoom: 12 },
+      bandung: { id: 'bandung', name: 'Kota Bandung', center: [-6.9175, 107.6191], zoom: 12 },
+      bali: { id: 'bali', name: 'Bali / Denpasar', center: [-8.6705, 115.2126], zoom: 12 }
+    };
+
     const STREAM_BASE = 'https://stream.rekasadigital.id';
 
-    // ===== DATA KAMERA CCTV (LIVE DEMO STREAM) =====
+    // ===== DATA KAMERA MULTI-KOTA (PORTAL TERPUSAT LOEWIX) =====
     const mediamtxData = [
-      { id: 1, title: 'Jembatan Sigagak-Medan', streamPath: 'sigagak_medan', coordinates: [3.0148345268, 99.0852585533], platform: PLATFORM_TYPES.MEDIAMTX },
-      { id: 2, title: 'Jembatan Sigagak-Siantar', streamPath: 'jembatan_sigagak_siantar', coordinates: [3.0147983671, 99.0851459005], platform: PLATFORM_TYPES.MEDIAMTX },
-      { id: 3, title: 'Jalan Medan-Simpang Karang Sari', streamPath: 'jalan_medan_simpang_karang_sari', coordinates: [3.0152978701, 99.0855675950], platform: PLATFORM_TYPES.MEDIAMTX },
-      { id: 4, title: 'Jalan Medan-Simpang AMD', streamPath: 'jalan_medan_simpang_amd', coordinates: [3.0156978701, 99.0859675950], platform: PLATFORM_TYPES.MEDIAMTX },
-      { id: 5, title: 'Simpang Rambung Merah', streamPath: 'simpang_rb_merah', coordinates: [2.9750954176, 99.0789357872], platform: PLATFORM_TYPES.MEDIAMTX },
-      { id: 6, title: 'Simpang Rambung Merah-Kota', streamPath: 'simpang_rambung_merah_kota', coordinates: [2.9748610641, 99.0788588337], platform: PLATFORM_TYPES.MEDIAMTX },
-      { id: 7, title: 'Jalan Sutomo-Pasar Horas', streamPath: 'jalan_sutomo_pasar_horas', coordinates: [2.9612223835, 99.0745549279], platform: PLATFORM_TYPES.MEDIAMTX },
-      { id: 8, title: 'Jalan Sutomo-Vihara Square', streamPath: 'jalan_sutomo_vihara_square', coordinates: [2.9608223835, 99.0741549279], platform: PLATFORM_TYPES.MEDIAMTX },
-      { id: 9, title: 'Jl. Merdeka / Depan Balai Kota', streamPath: 'jl_merdeka', coordinates: [2.9568235619, 99.0619108184], platform: PLATFORM_TYPES.MEDIAMTX },
-      { id: 10, title: 'Simpang 4 Bundaran', streamPath: 'simpang_4_bundaran', coordinates: [2.9516202390, 99.0641781755], platform: PLATFORM_TYPES.MEDIAMTX },
-    ];
-    // ===== AKHIR DATA KAMERA =====
+      // Kota Pematangsiantar
+      { id: 1, city: 'siantar', title: 'Jembatan Sigagak-Medan', streamPath: 'sigagak_medan', coordinates: [3.0148345268, 99.0852585533], platform: PLATFORM_TYPES.MEDIAMTX },
+      { id: 2, city: 'siantar', title: 'Jembatan Sigagak-Siantar', streamPath: 'jembatan_sigagak_siantar', coordinates: [3.0147983671, 99.0851459005], platform: PLATFORM_TYPES.MEDIAMTX },
+      { id: 3, city: 'siantar', title: 'Jalan Medan-Simpang Karang Sari', streamPath: 'jalan_medan_simpang_karang_sari', coordinates: [3.0152978701, 99.0855675950], platform: PLATFORM_TYPES.MEDIAMTX },
+      { id: 4, city: 'siantar', title: 'Jalan Medan-Simpang AMD', streamPath: 'jalan_medan_simpang_amd', coordinates: [3.0156978701, 99.0859675950], platform: PLATFORM_TYPES.MEDIAMTX },
+      { id: 5, city: 'siantar', title: 'Simpang Rambung Merah', streamPath: 'simpang_rb_merah', coordinates: [2.9750954176, 99.0789357872], platform: PLATFORM_TYPES.MEDIAMTX },
+      { id: 6, city: 'siantar', title: 'Jalan Sutomo-Pasar Horas', streamPath: 'jalan_sutomo_pasar_horas', coordinates: [2.9612223835, 99.0745549279], platform: PLATFORM_TYPES.MEDIAMTX },
+      { id: 7, city: 'siantar', title: 'Jl. Merdeka / Depan Balai Kota', streamPath: 'jl_merdeka', coordinates: [2.9568235619, 99.0619108184], platform: PLATFORM_TYPES.MEDIAMTX },
+      { id: 8, city: 'siantar', title: 'Simpang 4 Bundaran', streamPath: 'simpang_4_bundaran', coordinates: [2.9516202390, 99.0641781755], platform: PLATFORM_TYPES.MEDIAMTX },
 
-    // Compatibility: ensure thumbnail exists
+      // DKI Jakarta
+      { id: 101, city: 'jakarta', title: 'Bundaran HI - Jakarta', streamPath: 'sigagak_medan', coordinates: [-6.1950, 106.8230], platform: PLATFORM_TYPES.MEDIAMTX },
+      { id: 102, city: 'jakarta', title: 'Monas - Merdeka Barat', streamPath: 'jembatan_sigagak_siantar', coordinates: [-6.1754, 106.8272], platform: PLATFORM_TYPES.MEDIAMTX },
+      { id: 103, city: 'jakarta', title: 'GBK Senayan - Gelora', streamPath: 'jalan_medan_simpang_karang_sari', coordinates: [-6.2186, 106.8024], platform: PLATFORM_TYPES.MEDIAMTX },
+      { id: 104, city: 'jakarta', title: 'Semanggi Interchange', streamPath: 'simpang_rb_merah', coordinates: [-6.2198, 106.8145], platform: PLATFORM_TYPES.MEDIAMTX },
+
+      // Kota Medan
+      { id: 201, city: 'medan', title: 'Simpang Pos - Medan', streamPath: 'sigagak_medan', coordinates: [3.5412, 98.6534], platform: PLATFORM_TYPES.MEDIAMTX },
+      { id: 202, city: 'medan', title: 'Lapangan Merdeka Medan', streamPath: 'jembatan_sigagak_siantar', coordinates: [3.5922, 98.6784], platform: PLATFORM_TYPES.MEDIAMTX },
+      { id: 203, city: 'medan', title: 'Simpang Kampus USU', streamPath: 'jalan_sutomo_pasar_horas', coordinates: [3.5645, 98.6578], platform: PLATFORM_TYPES.MEDIAMTX },
+
+      // Kota Bandung
+      { id: 301, city: 'bandung', title: 'Simpang Dago - Bandung', streamPath: 'sigagak_medan', coordinates: [-6.8915, 107.6106], platform: PLATFORM_TYPES.MEDIAMTX },
+      { id: 302, city: 'bandung', title: 'Alun-Alun Bandung', streamPath: 'jembatan_sigagak_siantar', coordinates: [-6.9218, 107.6070], platform: PLATFORM_TYPES.MEDIAMTX },
+      { id: 303, city: 'bandung', title: 'Gedung Sate Bandung', streamPath: 'jl_merdeka', coordinates: [-6.9025, 107.6186], platform: PLATFORM_TYPES.MEDIAMTX },
+
+      // Bali / Denpasar
+      { id: 401, city: 'bali', title: 'Simpang Dewa Ruci - Kuta Bali', streamPath: 'sigagak_medan', coordinates: [-8.7188, 115.1783], platform: PLATFORM_TYPES.MEDIAMTX },
+      { id: 402, city: 'bali', title: 'Renon Sanur - Denpasar', streamPath: 'jembatan_sigagak_siantar', coordinates: [-8.6723, 115.2345], platform: PLATFORM_TYPES.MEDIAMTX }
+    ];
+    // ===== AKHIR DATA KAMERA MULTI-KOTA =====
+
+    // Compatibility: ensure thumbnail & default city exist
     mediamtxData.forEach(cam => {
+      if (!cam.city) cam.city = 'siantar';
       if (!cam.thumbnail) cam.thumbnail = ASSET_BASE + '/image/logo-loewix.png';
     });
 
@@ -8237,15 +8282,45 @@
       }
     }
 
-    // Generate CCTV HTML - Updated untuk MediaMTX HLS streaming
-    function generateCCTVHTML() {
+    let currentGlobalCity = 'all';
+
+    function changeGlobalCity(cityId) {
+      console.log('[City Filter] Changing city to:', cityId);
+      currentGlobalCity = cityId;
+
+      const navSelect = document.getElementById('city-selector-nav');
+      const filterSelect = document.getElementById('filter-city');
+      if (navSelect) navSelect.value = cityId;
+      if (filterSelect) filterSelect.value = cityId;
+
+      const config = CITY_CONFIG[cityId] || CITY_CONFIG.all;
+
+      if (typeof mapCCTV !== 'undefined' && mapCCTV) {
+        mapCCTV.flyTo(config.center, config.zoom, { animate: true, duration: 1.5 });
+      }
+
+      generateCCTVHTML(cityId);
+    }
+
+    // Generate CCTV HTML - Updated untuk Multi-Kota & MediaMTX HLS streaming
+    function generateCCTVHTML(filterCity = currentGlobalCity) {
       const cctvContainer = document.getElementById('cctv-container');
       if (!cctvContainer) return;
 
       cctvContainer.innerHTML = '';
 
-      // Filter hanya kamera yang bukan section pasar-horas
-      let mainCameras = mediamtxData.filter(cam => !cam.section);
+      // Filter kamera berdasarkan city & bukan section pasar-horas
+      let mainCameras = mediamtxData.filter(cam => !cam.section && (filterCity === 'all' || cam.city === filterCity));
+
+      if (mainCameras.length === 0) {
+        cctvContainer.innerHTML = `
+          <div class="col-12 text-center py-5">
+            <i class="fas fa-video-slash fa-3x mb-3 text-muted"></i>
+            <h5 class="text-white">Belum Ada Kamera CCTV di Wilayah Ini</h5>
+            <p class="text-muted">Pilih wilayah lain atau tambahkan kamera di mediamtxData</p>
+          </div>`;
+        return;
+      }
 
       const itemsPerRow = 3;
       const totalRows = Math.ceil(mainCameras.length / itemsPerRow);
