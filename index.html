@@ -3375,10 +3375,65 @@
               <option value="name-desc">Nama Z-A</option>
             </select>
           </div>
+          <button class="btn btn-sm" onclick="openCameraConfigModal(null)" style="background: #20bf6b; color: #fff; border: none; padding: 6px 15px; border-radius: 6px; font-weight: 600;">
+            <i class="fas fa-plus"></i> Tambah Kamera RTSP / IP
+          </button>
           <button class="btn btn-sm" onclick="clearFilters()" style="background: #dc3545; color: #fff; border: none; padding: 6px 15px; border-radius: 6px;">
             <i class="fas fa-times"></i> Reset
           </button>
           <div id="active-filters" style="display: flex; gap: 5px; flex-wrap: wrap;"></div>
+        </div>
+
+        <!-- ===== MODAL PENGATURAN KAMERA RTSP / IP ===== -->
+        <div class="modal fade" id="cameraConfigModal" tabindex="-1" role="dialog" aria-hidden="true" style="z-index: 9999;">
+          <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content" style="background: #0b132b; color: #fff; border: 1px solid rgba(255,255,255,0.2); border-radius: 12px;">
+              <div class="modal-header" style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+                <h5 class="modal-title" id="camModalTitle" style="color: #4cd137; font-weight: 600;"><i class="fas fa-video"></i> Konfigurasi IP / RTSP Kamera</h5>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close" onclick="$('#cameraConfigModal').modal('hide')">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <div class="modal-body">
+                <form id="camConfigForm">
+                  <input type="hidden" id="cam-id">
+                  <div class="form-group mb-3">
+                    <label style="font-size: 13px; color: #aaa;">Nama Kamera / Lokasi:</label>
+                    <input type="text" id="cam-title" class="form-control" style="background: rgba(255,255,255,0.08); color: #fff; border: 1px solid rgba(255,255,255,0.2);" placeholder="Contoh: Simpang Dewa Ruci - Kuta Bali" required>
+                  </div>
+                  <div class="form-group mb-3">
+                    <label style="font-size: 13px; color: #aaa;">Wilayah / Kota:</label>
+                    <select id="cam-city" class="form-control" style="background: rgba(255,255,255,0.08); color: #fff; border: 1px solid rgba(255,255,255,0.2);">
+                      <option value="siantar" style="color:#111;">Pematangsiantar</option>
+                      <option value="jakarta" style="color:#111;">DKI Jakarta</option>
+                      <option value="medan" style="color:#111;">Kota Medan</option>
+                      <option value="bandung" style="color:#111;">Kota Bandung</option>
+                      <option value="bali" style="color:#111;">Bali / Denpasar</option>
+                    </select>
+                  </div>
+                  <div class="form-group mb-3">
+                    <label style="font-size: 13px; color: #aaa;">Stream Path / RTSP Stream ID / HLS URL:</label>
+                    <input type="text" id="cam-stream-path" class="form-control" style="background: rgba(255,255,255,0.08); color: #fff; border: 1px solid rgba(255,255,255,0.2);" placeholder="Contoh: cam_bali_1 atau rtsp://admin:pass@IP:554/stream1" required>
+                    <small class="form-text text-muted" style="font-size: 11px;">Isi dengan path di MediaMTX atau URL stream HLS / RTSP camera kamu.</small>
+                  </div>
+                  <div class="form-row">
+                    <div class="form-group col-6">
+                      <label style="font-size: 13px; color: #aaa;">Latitude GPS:</label>
+                      <input type="text" id="cam-lat" class="form-control" style="background: rgba(255,255,255,0.08); color: #fff; border: 1px solid rgba(255,255,255,0.2);" placeholder="-8.7188">
+                    </div>
+                    <div class="form-group col-6">
+                      <label style="font-size: 13px; color: #aaa;">Longitude GPS:</label>
+                      <input type="text" id="cam-lng" class="form-control" style="background: rgba(255,255,255,0.08); color: #fff; border: 1px solid rgba(255,255,255,0.2);" placeholder="115.1783">
+                    </div>
+                  </div>
+                </form>
+              </div>
+              <div class="modal-footer" style="border-top: 1px solid rgba(255,255,255,0.1);">
+                <button type="button" class="btn btn-secondary" onclick="$('#cameraConfigModal').modal('hide')">Batal</button>
+                <button type="button" class="btn btn-success" onclick="saveCameraConfig()"><i class="fas fa-save"></i> Simpan Konfigurasi</button>
+              </div>
+            </div>
+          </div>
         </div>
 
         <!-- Dynamic CCTV Content Container -->
@@ -8302,6 +8357,82 @@
       generateCCTVHTML(cityId);
     }
 
+    function openCameraConfigModal(id) {
+      if (id) {
+        const cam = mediamtxData.find(c => c.id === parseInt(id));
+        if (cam) {
+          document.getElementById('camModalTitle').innerHTML = '<i class="fas fa-edit"></i> Edit IP / RTSP Kamera #' + id;
+          document.getElementById('cam-id').value = cam.id;
+          document.getElementById('cam-title').value = cam.title || '';
+          document.getElementById('cam-city').value = cam.city || 'siantar';
+          document.getElementById('cam-stream-path').value = cam.streamPath || cam.streamId || '';
+          document.getElementById('cam-lat').value = cam.coordinates ? cam.coordinates[0] : '';
+          document.getElementById('cam-lng').value = cam.coordinates ? cam.coordinates[1] : '';
+        }
+      } else {
+        document.getElementById('camModalTitle').innerHTML = '<i class="fas fa-plus"></i> Tambah Kamera RTSP / IP Baru';
+        document.getElementById('cam-id').value = '';
+        document.getElementById('cam-title').value = '';
+        document.getElementById('cam-city').value = currentGlobalCity === 'all' ? 'siantar' : currentGlobalCity;
+        document.getElementById('cam-stream-path').value = '';
+        document.getElementById('cam-lat').value = '';
+        document.getElementById('cam-lng').value = '';
+      }
+      if (typeof $ !== 'undefined') {
+        $('#cameraConfigModal').modal('show');
+      } else {
+        const m = document.getElementById('cameraConfigModal');
+        if (m) m.classList.add('show'), m.style.display = 'block';
+      }
+    }
+
+    function saveCameraConfig() {
+      const id = document.getElementById('cam-id').value;
+      const title = document.getElementById('cam-title').value.trim();
+      const city = document.getElementById('cam-city').value;
+      const streamPath = document.getElementById('cam-stream-path').value.trim();
+      const lat = parseFloat(document.getElementById('cam-lat').value) || CITY_CONFIG[city].center[0];
+      const lng = parseFloat(document.getElementById('cam-lng').value) || CITY_CONFIG[city].center[1];
+
+      if (!title || !streamPath) {
+        alert('Mohon isi nama kamera dan Stream Path / RTSP URL.');
+        return;
+      }
+
+      if (id) {
+        const cam = mediamtxData.find(c => c.id === parseInt(id));
+        if (cam) {
+          cam.title = title;
+          cam.city = city;
+          cam.streamPath = streamPath;
+          cam.streamId = streamPath;
+          cam.coordinates = [lat, lng];
+        }
+      } else {
+        const newId = Date.now();
+        mediamtxData.push({
+          id: newId,
+          city: city,
+          title: title,
+          streamPath: streamPath,
+          streamId: streamPath,
+          coordinates: [lat, lng],
+          platform: PLATFORM_TYPES.MEDIAMTX,
+          thumbnail: ASSET_BASE + '/image/logo-loewix.png'
+        });
+      }
+
+      if (typeof $ !== 'undefined') {
+        $('#cameraConfigModal').modal('hide');
+      } else {
+        const m = document.getElementById('cameraConfigModal');
+        if (m) m.classList.remove('show'), m.style.display = 'none';
+      }
+
+      alert('Konfigurasi Kamera Berhasil Disimpan!');
+      generateCCTVHTML(currentGlobalCity);
+    }
+
     // Generate CCTV HTML - Updated untuk Multi-Kota & MediaMTX HLS streaming
     function generateCCTVHTML(filterCity = currentGlobalCity) {
       const cctvContainer = document.getElementById('cctv-container');
@@ -8352,6 +8483,9 @@
                       </button>
                       <button class="share-button" onclick="event.stopPropagation(); shareCCTV(${camera.id}, '${camera.title.replace(/'/g, "\\'")}')" title="Bagikan CCTV">
                         <i class="fas fa-share-alt"></i>
+                      </button>
+                      <button class="settings-button" onclick="event.stopPropagation(); openCameraConfigModal(${camera.id})" title="Pengaturan IP / RTSP Kamera" style="position: absolute; top: 10px; right: 85px; z-index: 10; background: rgba(0,0,0,0.6); color: #fff; border: none; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s;">
+                        <i class="fas fa-cog"></i>
                       </button>
                       <button class="refresh-button" onclick="event.stopPropagation(); ${reloadFunction}">
                         <i class="fas fa-sync-alt"></i>
