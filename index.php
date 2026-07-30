@@ -3846,24 +3846,24 @@
       { id: 8, city: 'siantar', title: 'Simpang 4 Bundaran', streamPath: 'simpang_4_bundaran', coordinates: [2.9516202390, 99.0641781755], platform: PLATFORM_TYPES.MEDIAMTX },
 
       // DKI Jakarta
-      { id: 101, city: 'jakarta', title: 'Bundaran HI - Jakarta', streamPath: 'sigagak_medan', coordinates: [-6.1950, 106.8230], platform: PLATFORM_TYPES.MEDIAMTX },
-      { id: 102, city: 'jakarta', title: 'Monas - Merdeka Barat', streamPath: 'jembatan_sigagak_siantar', coordinates: [-6.1754, 106.8272], platform: PLATFORM_TYPES.MEDIAMTX },
-      { id: 103, city: 'jakarta', title: 'GBK Senayan - Gelora', streamPath: 'jalan_medan_simpang_karang_sari', coordinates: [-6.2186, 106.8024], platform: PLATFORM_TYPES.MEDIAMTX },
-      { id: 104, city: 'jakarta', title: 'Semanggi Interchange', streamPath: 'simpang_rb_merah', coordinates: [-6.2198, 106.8145], platform: PLATFORM_TYPES.MEDIAMTX },
+      { id: 101, city: 'jakarta', title: 'Bundaran HI - Jakarta', streamPath: 'cam_jakarta_1', streamId: 'cam_jakarta_1', coordinates: [-6.1950, 106.8230], platform: PLATFORM_TYPES.MEDIAMTX },
+      { id: 102, city: 'jakarta', title: 'Monas - Merdeka Barat', streamPath: 'cam_jakarta_2', streamId: 'cam_jakarta_2', coordinates: [-6.1754, 106.8272], platform: PLATFORM_TYPES.MEDIAMTX },
+      { id: 103, city: 'jakarta', title: 'GBK Senayan - Gelora', streamPath: 'cam_jakarta_3', streamId: 'cam_jakarta_3', coordinates: [-6.2186, 106.8024], platform: PLATFORM_TYPES.MEDIAMTX },
+      { id: 104, city: 'jakarta', title: 'Semanggi Interchange', streamPath: 'cam_jakarta_4', streamId: 'cam_jakarta_4', coordinates: [-6.2198, 106.8145], platform: PLATFORM_TYPES.MEDIAMTX },
 
       // Kota Medan
-      { id: 201, city: 'medan', title: 'Simpang Pos - Medan', streamPath: 'sigagak_medan', coordinates: [3.5412, 98.6534], platform: PLATFORM_TYPES.MEDIAMTX },
-      { id: 202, city: 'medan', title: 'Lapangan Merdeka Medan', streamPath: 'jembatan_sigagak_siantar', coordinates: [3.5922, 98.6784], platform: PLATFORM_TYPES.MEDIAMTX },
-      { id: 203, city: 'medan', title: 'Simpang Kampus USU', streamPath: 'jalan_sutomo_pasar_horas', coordinates: [3.5645, 98.6578], platform: PLATFORM_TYPES.MEDIAMTX },
+      { id: 201, city: 'medan', title: 'Simpang Pos - Medan', streamPath: 'cam_medan_1', streamId: 'cam_medan_1', coordinates: [3.5412, 98.6534], platform: PLATFORM_TYPES.MEDIAMTX },
+      { id: 202, city: 'medan', title: 'Lapangan Merdeka Medan', streamPath: 'cam_medan_2', streamId: 'cam_medan_2', coordinates: [3.5922, 98.6784], platform: PLATFORM_TYPES.MEDIAMTX },
+      { id: 203, city: 'medan', title: 'Simpang Kampus USU', streamPath: 'cam_medan_3', streamId: 'cam_medan_3', coordinates: [3.5645, 98.6578], platform: PLATFORM_TYPES.MEDIAMTX },
 
       // Kota Bandung
-      { id: 301, city: 'bandung', title: 'Simpang Dago - Bandung', streamPath: 'sigagak_medan', coordinates: [-6.8915, 107.6106], platform: PLATFORM_TYPES.MEDIAMTX },
-      { id: 302, city: 'bandung', title: 'Alun-Alun Bandung', streamPath: 'jembatan_sigagak_siantar', coordinates: [-6.9218, 107.6070], platform: PLATFORM_TYPES.MEDIAMTX },
-      { id: 303, city: 'bandung', title: 'Gedung Sate Bandung', streamPath: 'jl_merdeka', coordinates: [-6.9025, 107.6186], platform: PLATFORM_TYPES.MEDIAMTX },
+      { id: 301, city: 'bandung', title: 'Simpang Dago - Bandung', streamPath: 'cam_bandung_1', streamId: 'cam_bandung_1', coordinates: [-6.8915, 107.6106], platform: PLATFORM_TYPES.MEDIAMTX },
+      { id: 302, city: 'bandung', title: 'Alun-Alun Bandung', streamPath: 'cam_bandung_2', streamId: 'cam_bandung_2', coordinates: [-6.9218, 107.6070], platform: PLATFORM_TYPES.MEDIAMTX },
+      { id: 303, city: 'bandung', title: 'Gedung Sate Bandung', streamPath: 'cam_bandung_3', streamId: 'cam_bandung_3', coordinates: [-6.9025, 107.6186], platform: PLATFORM_TYPES.MEDIAMTX },
 
       // Bali / Denpasar
-      { id: 401, city: 'bali', title: 'Simpang Dewa Ruci - Kuta Bali', streamPath: 'sigagak_medan', coordinates: [-8.7188, 115.1783], platform: PLATFORM_TYPES.MEDIAMTX },
-      { id: 402, city: 'bali', title: 'Renon Sanur - Denpasar', streamPath: 'jembatan_sigagak_siantar', coordinates: [-8.6723, 115.2345], platform: PLATFORM_TYPES.MEDIAMTX }
+      { id: 401, city: 'bali', title: 'Simpang Dewa Ruci - Kuta Bali', streamPath: 'cam_bali_1', streamId: 'cam_bali_1', coordinates: [-8.7188, 115.1783], platform: PLATFORM_TYPES.MEDIAMTX },
+      { id: 402, city: 'bali', title: 'Renon Sanur - Denpasar', streamPath: 'cam_bali_2', streamId: 'cam_bali_2', coordinates: [-8.6723, 115.2345], platform: PLATFORM_TYPES.MEDIAMTX }
     ];
     // ===== AKHIR DATA KAMERA MULTI-KOTA =====
 
