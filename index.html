@@ -3831,7 +3831,7 @@
       bali: { id: 'bali', name: 'Bali / Denpasar', center: [-8.6705, 115.2126], zoom: 12 }
     };
 
-    const STREAM_BASE = 'https://stream.rekasadigital.id';
+    const STREAM_BASE = 'https://stream.loewixcctv.com';
 
     // ===== DATA KAMERA MULTI-KOTA (PORTAL TERPUSAT LOEWIX) =====
     const mediamtxData = [
