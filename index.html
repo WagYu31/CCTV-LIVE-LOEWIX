@@ -7206,6 +7206,12 @@
           const hls = new Hls({
             debug: false,
             enableWorker: true,
+            xhrSetup: function(xhr, url) {
+              try {
+                xhr.setRequestHeader('Bypass-Tunnel-Reminder', 'true');
+                xhr.setRequestHeader('ngrok-skip-browser-warning', 'true');
+              } catch (e) {}
+            },
 
             // ===== INSTANT PLAYBACK OPTIMIZATION =====
             lowLatencyMode: true,
