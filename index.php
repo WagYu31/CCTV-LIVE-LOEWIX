@@ -9500,6 +9500,7 @@
         // Platform filter
         if (platformFilter !== 'all') {
           const platformMap = {
+            'mediamtx': 'mediamtx',
             'denava': 'denava',
             'stream2': 'stream2',
             'ipcamlive': 'ipcamlive'
