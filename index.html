@@ -3836,7 +3836,7 @@
     // ===== DATA KAMERA MULTI-KOTA (PORTAL TERPUSAT LOEWIX) =====
     const mediamtxData = [
       // Kota Pematangsiantar
-      { id: 1, city: 'siantar', title: 'Jembatan Sigagak-Medan', streamPath: 'cctv_loewix_1', coordinates: [3.0148345268, 99.0852585533], platform: PLATFORM_TYPES.MEDIAMTX },
+      { id: 1, city: 'siantar', title: 'Jembatan Sigagak-Medan', streamPath: 'cctv_loewix_h264', coordinates: [3.0148345268, 99.0852585533], platform: PLATFORM_TYPES.MEDIAMTX },
       { id: 2, city: 'siantar', title: 'Jembatan Sigagak-Siantar', streamPath: 'jembatan_sigagak_siantar', coordinates: [3.0147983671, 99.0851459005], platform: PLATFORM_TYPES.MEDIAMTX },
       { id: 3, city: 'siantar', title: 'Jalan Medan-Simpang Karang Sari', streamPath: 'jalan_medan_simpang_karang_sari', coordinates: [3.0152978701, 99.0855675950], platform: PLATFORM_TYPES.MEDIAMTX },
       { id: 4, city: 'siantar', title: 'Jalan Medan-Simpang AMD', streamPath: 'jalan_medan_simpang_amd', coordinates: [3.0156978701, 99.0859675950], platform: PLATFORM_TYPES.MEDIAMTX },
