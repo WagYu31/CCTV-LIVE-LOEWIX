@@ -7199,6 +7199,9 @@
         } else {
           hlsUrl = `${STREAM_BASE}/${streamPath}/index.m3u8`;
         }
+        if (!hlsUrl.includes('cookieCheck=1')) {
+          hlsUrl += (hlsUrl.includes('?') ? '&' : '?') + 'cookieCheck=1';
+        }
         console.log('[MediaMTX] Loading HLS:', hlsUrl);
 
         if (typeof Hls !== 'undefined' && Hls.isSupported()) {
@@ -7967,7 +7970,7 @@
           }
         }
 
-        const hlsUrl = `${STREAM_BASE}/${streamPath}/index.m3u8`;
+        const hlsUrl = `${STREAM_BASE}/${streamPath}/index.m3u8?cookieCheck=1`;
         console.log('[MediaMTX Popup] Loading HLS:', hlsUrl);
 
         if (typeof Hls !== 'undefined' && Hls.isSupported()) {
@@ -8977,7 +8980,7 @@
           preloadTimeout = setTimeout(() => {
             if (activePreloads.size >= MAX_PRELOADS) return;
 
-            const hlsUrl = `${STREAM_BASE}/${streamPath}/index.m3u8`;
+            const hlsUrl = `${STREAM_BASE}/${streamPath}/index.m3u8?cookieCheck=1`;
 
             // Create prefetch link
             preloadLink = document.createElement('link');
