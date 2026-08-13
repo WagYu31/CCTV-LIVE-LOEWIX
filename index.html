@@ -3291,12 +3291,14 @@
                 </div>
               </div>
               <div class="col-lg-5 col-md-5 col-sm-12">
-                <div class="banner-right-con wow slideInRight">
-                  <figure class="mb-0">
+                <div class="banner-right-con wow slideInRight" style="position: relative; text-align: center;">
+                  <figure class="mb-0" style="position: relative; display: inline-block;">
                     <img
-                      src="assets/image/walikota.png"
-                      alt="Foto Walikota Pematangsiantar"
-                      loading="lazy" />
+                      src="assets/image/loewix_hero_cctv_camera.png"
+                      alt="Loewix Security Systems 3D CCTV Camera"
+                      class="img-fluid"
+                      style="max-width: 100%; height: auto; filter: drop-shadow(0 20px 30px rgba(0, 102, 255, 0.3)); transform: scale(1.05); transition: all 0.5s ease;"
+                      loading="eager" />
                   </figure>
                 </div>
               </div>
