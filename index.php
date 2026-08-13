@@ -8680,6 +8680,11 @@
           }
         }
       }
+
+      // Auto-play streams for newly generated CCTV cards
+      if (typeof autoPlayCCTVStreams === 'function') {
+        setTimeout(autoPlayCCTVStreams, 200);
+      }
     }
 
     // ===== PASAR HORAS: Fungsi Generate HTML dengan MediaMTX =====
@@ -9125,6 +9130,25 @@
     }
     // ===== END HOVER PRELOAD =====
 
+    // ===== AUTOPLAY ALL LIVE CCTV STREAMS =====
+    function autoPlayCCTVStreams() {
+      console.log('[AutoPlay] Automatically starting all active CCTV video streams...');
+      const thumbnails = document.querySelectorAll('.thumbnail-overlay[data-stream-path]');
+      thumbnails.forEach(function(thumb, index) {
+        if (!thumb || !thumb.id || thumb.id.indexOf('thumb-') !== 0) return;
+        const suffix = thumb.id.slice('thumb-'.length);
+        const playerId = 'player-' + suffix;
+        const player = document.getElementById(playerId);
+        
+        // Stagger playback initiation slightly (100ms) to ensure smooth browser hardware acceleration
+        setTimeout(function() {
+          if (typeof playMediaMTXCCTV === 'function' && thumb) {
+            playMediaMTXCCTV(thumb, playerId, thumb.id);
+          }
+        }, index * 120);
+      });
+    }
+
     // ===== MODIFIKASI: Update DOMContentLoaded =====
     document.addEventListener('DOMContentLoaded', function() {
       preloadStreamingResources();
@@ -9132,6 +9156,11 @@
       generateTerminalTanjungPinggirHTML(); // ===== TAMBAHAN: Panggil fungsi Terminal Tanjung Pinggir =====
       generatePasarHorasHTML(); // ===== TAMBAHAN: Panggil fungsi Pasar Horas =====
       detectBandwidth();
+
+      // Automatically play all live streams without clicking thumbnail
+      setTimeout(function() {
+        autoPlayCCTVStreams();
+      }, 300);
 
       // Pemutaran CCTV: event delegation (onclick inline sering tidak jalan dengan CSP nonce + strict browser)
       (function setupVideoThumbnailClickDelegation() {
