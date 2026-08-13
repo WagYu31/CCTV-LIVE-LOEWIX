@@ -513,26 +513,28 @@
 
   <!-- Custom Card Styles -->
   <style>
-    /* Card Styles */
+    /* Card Styles - Modern Professional Design (Image 2) */
     .traffic-card {
-      transition: all 0.3s ease;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-      border-radius: 10px;
+      transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+      border-radius: 16px;
       overflow: hidden;
-      margin-bottom: 20px;
+      margin-bottom: 24px;
       height: 100%;
       display: flex;
       flex-direction: column;
       position: relative;
+      background: #ffffff;
+      border: 1px solid rgba(0, 0, 0, 0.06);
     }
 
     .traffic-card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+      transform: translateY(-6px);
+      box-shadow: 0 20px 35px -5px rgba(0, 0, 0, 0.12), 0 10px 15px -5px rgba(0, 0, 0, 0.04);
     }
 
     .traffic-card-iframe {
-      border-radius: 10px 10px 0 0;
+      border-radius: 16px 16px 0 0;
       position: relative;
       width: 100%;
       padding-bottom: 56.25%;
@@ -540,6 +542,116 @@
       overflow: hidden;
       background: #000;
       flex-grow: 1;
+    }
+
+    /* Badges Overlay Top-Left */
+    .card-top-badges {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      z-index: 12;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      pointer-events: none;
+    }
+
+    .badge-live-yellow {
+      background: #ffd600;
+      color: #111827;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      padding: 5px 12px;
+      border-radius: 20px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 2px 8px rgba(255, 214, 0, 0.4);
+      text-transform: uppercase;
+    }
+
+    .badge-live-yellow .live-pulse-dot {
+      width: 7px;
+      height: 7px;
+      background-color: #dc2626;
+      border-radius: 50%;
+      display: inline-block;
+      animation: livePulse 1.5s infinite;
+    }
+
+    @keyframes livePulse {
+      0% { transform: scale(0.95); opacity: 1; }
+      50% { transform: scale(1.3); opacity: 0.6; }
+      100% { transform: scale(0.95); opacity: 1; }
+    }
+
+    .badge-dark-pill {
+      background: rgba(17, 24, 39, 0.8);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      color: #f3f4f6;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 5px 12px;
+      border-radius: 20px;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+    }
+
+    /* Card Footer Content */
+    .traffic-card-content {
+      padding: 16px 20px;
+      background: #ffffff;
+      border-top: 1px solid rgba(0, 0, 0, 0.04);
+    }
+
+    body.dark-mode .traffic-card-content {
+      background: #1e293b;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .card-footer-flex {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+    }
+
+    .card-location {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #1f2937;
+      font-weight: 600;
+      font-size: 14px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 75%;
+    }
+
+    body.dark-mode .card-location {
+      color: #f3f4f6;
+    }
+
+    .card-location i {
+      color: #6b7280;
+      font-size: 14px;
+    }
+
+    .card-cam-code {
+      font-size: 12px;
+      font-weight: 700;
+      color: #6b7280;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    body.dark-mode .card-cam-code {
+      color: #9ca3af;
     }
 
     .thumbnail-overlay {
@@ -8492,9 +8604,13 @@
             const favoriteIcon = isFavorite ? 'fas' : 'far';
 
             const cctvCardHTML = `
-                <div class="col-lg-4 col-md-4 col-12 mb-lg-0 mb-md-0 mb-4" data-camera-id="${camera.id}" data-platform="${camera.platform}" data-status="online">
+                <div class="col-lg-4 col-md-6 col-12 mb-4" data-camera-id="${camera.id}" data-platform="${camera.platform}" data-status="online">
                   <div class="traffic-card" id="card-${camera.id}">
                     <div class="traffic-card-iframe">
+                      <div class="card-top-badges">
+                        <span class="badge-live-yellow"><span class="live-pulse-dot"></span> LIVE</span>
+                        <span class="badge-dark-pill"><i class="fas fa-microchip" style="font-size:10px; color:#facc15;"></i> AI DETECT</span>
+                      </div>
                       <button class="favorite-button ${favoriteClass}" onclick="event.stopPropagation(); toggleFavorite(${camera.id}, '${camera.title.replace(/'/g, "\\'")}')" title="${isFavorite ? 'Hapus dari Favorit' : 'Tambah ke Favorit'}">
                         <i class="${favoriteIcon} fa-star"></i>
                       </button>
@@ -8546,9 +8662,14 @@
                       </video>
                     </div>
                     <div class="traffic-card-content">
-                      <div class="pricing-box-heading text-center">
-                        <h2>CCTV</h2>
-                        <p>${camera.title}</p>
+                      <div class="card-footer-flex">
+                        <div class="card-location">
+                          <i class="fas fa-map-marker-alt"></i>
+                          <span>${camera.title}</span>
+                        </div>
+                        <div class="card-cam-code">
+                          CAM-${String(camera.id).padStart(2, '0')}
+                        </div>
                       </div>
                     </div>
                   </div>
