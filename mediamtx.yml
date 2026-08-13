@@ -4,9 +4,9 @@ hlsAllowOrigins: ['*']
 
 paths:
   cctv_loewix_1:
-    source: rtsp://admin:@103.164.101.50:8203/user=admin&password=admin1234&channel=1&stream=1.sdp
+    source: rtsp://admin:@103.164.101.50:8203/user=admin&password=admin1234&channel=1&stream=0.sdp
     sourceProtocol: tcp
-    runOnInit: ffmpeg -rtsp_transport tcp -i rtsp://admin:@103.164.101.50:8203/user=admin&password=admin1234&channel=1&stream=1.sdp -c:v libx264 -preset ultrafast -tune zerolatency -an -f rtsp rtsp://127.0.0.1:8554/cctv_loewix_h264
+    runOnInit: /home/loewix/bin/ffmpeg -rtsp_transport tcp -i rtsp://admin:@103.164.101.50:8203/user=admin&password=admin1234&channel=1&stream=0.sdp -c:v libx264 -preset ultrafast -tune zerolatency -an -f rtsp rtsp://127.0.0.1:8554/cctv_loewix_h264
     runOnInitRestart: yes
 
   cctv_loewix_h264:
