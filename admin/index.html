@@ -568,6 +568,50 @@
             </form>
           </div>
 
+          <!-- Form Edit Kamera (Collapsible) -->
+          <div id="edit-camera-form-box" class="p-4 mb-4 rounded" style="background: rgba(13, 27, 62, 0.95); border: 1px solid rgba(245, 158, 11, 0.4); display: none; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+            <h6 class="font-weight-bold text-warning mb-3" style="font-size: 15px; letter-spacing: 0.5px;"><i class="fas fa-edit mr-1"></i> EDIT KONFIGURASI KAMERA CCTV</h6>
+            <form onsubmit="submitEditCameraForCustomer(event)">
+              <input type="hidden" id="edit-cam-id">
+              <div class="form-group mb-3">
+                <label style="font-size: 13px; color: #e2e8f0; font-weight: 600; display: block; margin-bottom: 4px;">Nama Kamera / Lokasi:</label>
+                <input type="text" id="edit-cam-title" class="form-control form-control-dark" required>
+              </div>
+
+              <div class="form-group mb-3">
+                <label style="font-size: 13px; color: #e2e8f0; font-weight: 600; display: block; margin-bottom: 4px;">Wilayah / Kota:</label>
+                <select id="edit-cam-city" class="form-control form-control-dark">
+                  <option value="siantar" style="color:#000;">Pematangsiantar</option>
+                  <option value="jakarta" style="color:#000;">DKI Jakarta</option>
+                  <option value="medan" style="color:#000;">Kota Medan</option>
+                  <option value="bandung" style="color:#000;">Kota Bandung</option>
+                  <option value="bali" style="color:#000;">Bali / Denpasar</option>
+                </select>
+              </div>
+
+              <div class="form-group mb-3">
+                <label style="font-size: 13px; color: #e2e8f0; font-weight: 600; display: block; margin-bottom: 4px;">Stream Path / RTSP Stream ID / HLS URL:</label>
+                <input type="text" id="edit-cam-path" class="form-control form-control-dark" required>
+              </div>
+
+              <div class="form-row mb-3">
+                <div class="form-group col-6 mb-0">
+                  <label style="font-size: 13px; color: #e2e8f0; font-weight: 600; display: block; margin-bottom: 4px;">Latitude GPS:</label>
+                  <input type="text" id="edit-cam-lat" class="form-control form-control-dark">
+                </div>
+                <div class="form-group col-6 mb-0">
+                  <label style="font-size: 13px; color: #e2e8f0; font-weight: 600; display: block; margin-bottom: 4px;">Longitude GPS:</label>
+                  <input type="text" id="edit-cam-lng" class="form-control form-control-dark">
+                </div>
+              </div>
+
+              <div class="d-flex justify-content-end gap-2 mt-3">
+                <button type="button" class="btn btn-secondary btn-sm mr-2" style="border-radius: 8px; padding: 8px 18px;" onclick="closeEditCameraForm()">Batal</button>
+                <button type="submit" class="btn btn-warning btn-sm font-weight-bold" style="border-radius: 8px; padding: 8px 22px; background: #f59e0b; border: none; color: #000;"><i class="fas fa-save mr-1"></i> Update Kamera</button>
+              </div>
+            </form>
+          </div>
+
           <!-- Table List Kamera -->
           <div class="table-responsive">
             <table class="table table-dark-custom">
@@ -575,14 +619,16 @@
                 <tr>
                   <th>ID</th>
                   <th>Nama / Lokasi Kamera</th>
+                  <th>Wilayah</th>
                   <th>Stream Path / HLS URL</th>
+                  <th>Koordinat GPS</th>
                   <th>Status Stream</th>
                   <th class="text-right">Aksi</th>
                 </tr>
               </thead>
               <tbody id="cctv-modal-table-body">
                 <tr>
-                  <td colspan="5" class="text-center py-4 text-muted">Belum ada kamera CCTV terpasang untuk customer ini. Klik 'Tambah Kamera Baru'.</td>
+                  <td colspan="7" class="text-center py-4 text-muted">Belum ada kamera CCTV terpasang untuk customer ini. Klik 'Tambah Kamera Baru'.</td>
                 </tr>
               </tbody>
             </table>
@@ -1072,26 +1118,91 @@
       document.getElementById('cctv-modal-quota-badge').innerHTML = `<i class="fas fa-layer-group mr-1"></i> KUOTA: ${cameras.length} / ${cust.cctv_quota} CCTV TERPAKAI`;
 
       if (!cameras || cameras.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="5" class="text-center py-4 text-muted">Belum ada kamera CCTV terpasang untuk customer ini. Klik 'Tambah Kamera Baru'.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-muted">Belum ada kamera CCTV terpasang untuk customer ini. Klik 'Tambah Kamera Baru'.</td></tr>`;
         return;
       }
 
       cameras.forEach(cam => {
+        const cityBadge = `<span class="badge badge-secondary" style="border-radius: 12px; padding: 4px 10px;">📍 ${(cam.city || 'siantar').toUpperCase()}</span>`;
+        const gpsCoords = (cam.lat && cam.lng) ? `<code>${cam.lat}, ${cam.lng}</code>` : `<span class="text-muted">-</span>`;
+        const streamUrl = cam.streamPath.includes('.m3u8') || cam.streamPath.includes('http')
+          ? cam.streamPath
+          : `http://stream.loewixcctv.com/${cam.streamPath}/index.m3u8`;
+
         const row = `
           <tr>
             <td class="font-weight-bold text-muted">#${cam.id}</td>
             <td class="font-weight-bold text-white"><i class="fas fa-video text-info mr-2"></i> ${cam.title}</td>
-            <td><code>http://stream.loewixcctv.com/${cam.streamPath}/index.m3u8</code></td>
+            <td>${cityBadge}</td>
+            <td><code>${streamUrl}</code></td>
+            <td>${gpsCoords}</td>
             <td><span class="badge badge-success" style="border-radius: 12px; padding: 4px 10px;">● ONLINE MediaMTX</span></td>
             <td class="text-right">
-              <button class="btn btn-outline-danger btn-sm" onclick="deleteCustomerCamera(${cam.id})" title="Hapus Channel Kamera Ini">
-                <i class="fas fa-trash"></i>
-              </button>
+              <div class="action-btn-group">
+                <button class="btn btn-outline-warning btn-sm mr-1" onclick="openEditCameraForm(${cam.id})" title="Edit Konfigurasi Kamera Ini">
+                  <i class="fas fa-edit"></i>
+                </button>
+                <button class="btn btn-outline-danger btn-sm" onclick="deleteCustomerCamera(${cam.id})" title="Hapus Channel Kamera Ini">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </div>
             </td>
           </tr>
         `;
         tbody.innerHTML += row;
       });
+    }
+
+    function openEditCameraForm(camId) {
+      const cameras = getCustomerCameras(currentManagingCustomerId);
+      const cam = cameras.find(c => c.id === camId);
+      if (!cam) return;
+
+      closeAddCameraForCustomerForm();
+      document.getElementById('edit-cam-id').value = cam.id;
+      document.getElementById('edit-cam-title').value = cam.title;
+      document.getElementById('edit-cam-city').value = cam.city || 'siantar';
+      document.getElementById('edit-cam-path').value = cam.streamPath;
+      document.getElementById('edit-cam-lat').value = cam.lat || '';
+      document.getElementById('edit-cam-lng').value = cam.lng || '';
+
+      document.getElementById('edit-camera-form-box').style.display = 'block';
+    }
+
+    function closeEditCameraForm() {
+      document.getElementById('edit-camera-form-box').style.display = 'none';
+    }
+
+    function submitEditCameraForCustomer(e) {
+      if (e) e.preventDefault();
+      const camId = parseInt(document.getElementById('edit-cam-id').value);
+      const title = document.getElementById('edit-cam-title').value.trim();
+      const city = document.getElementById('edit-cam-city').value;
+      const streamPath = document.getElementById('edit-cam-path').value.trim();
+      const lat = document.getElementById('edit-cam-lat').value.trim();
+      const lng = document.getElementById('edit-cam-lng').value.trim();
+
+      if (!title || !streamPath) {
+        alert('Mohon isi nama kamera dan stream path!');
+        return;
+      }
+
+      let cameras = getCustomerCameras(currentManagingCustomerId);
+      cameras.forEach(c => {
+        if (c.id === camId) {
+          c.title = title;
+          c.city = city;
+          c.streamPath = streamPath;
+          c.lat = lat;
+          c.lng = lng;
+        }
+      });
+      saveCustomerCameras(currentManagingCustomerId, cameras);
+
+      const cust = cachedCustomers.find(c => c.id === currentManagingCustomerId);
+      alert(`BERHASIL: Konfigurasi Kamera '${title}' berhasil diperbarui!`);
+      closeEditCameraForm();
+      renderCustomerCCTVTable(cust, cameras);
     }
 
     function openAddCameraForCustomerForm() {
@@ -1194,6 +1305,9 @@
     window.openAddCameraForCustomerForm = openAddCameraForCustomerForm;
     window.closeAddCameraForCustomerForm = closeAddCameraForCustomerForm;
     window.submitAddCameraForCustomer = submitAddCameraForCustomer;
+    window.openEditCameraForm = openEditCameraForm;
+    window.closeEditCameraForm = closeEditCameraForm;
+    window.submitEditCameraForCustomer = submitEditCameraForCustomer;
     window.deleteCustomerCamera = deleteCustomerCamera;
     window.logoutAdmin = logoutAdmin;
   </script>
