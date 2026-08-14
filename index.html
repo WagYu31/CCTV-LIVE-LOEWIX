@@ -11237,22 +11237,18 @@
         </div>
         <form id="formLogin" onsubmit="submitLogin(event)">
           <div class="modal-body p-4">
-            <div class="form-group mb-3">
-              <span style="font-size: 12px; color: #94a3b8; font-weight: 600; display: block; margin-bottom: 6px;">Email Login:</span>
-              <div class="input-group">
-                <div class="input-group-prepend">
-                  <span class="input-group-text"><i class="fas fa-envelope"></i></span>
-                </div>
-                <input type="email" id="login-email" class="form-control" placeholder="admin@loewixcctv.com" required>
+            <div class="form-group mb-3" style="position: relative;">
+              <label style="font-size: 12px; color: #94a3b8; font-weight: 600; display: block; margin-bottom: 6px;">Email Login:</label>
+              <div style="position: relative; width: 100%; display: block;">
+                <i class="fas fa-envelope" style="position: absolute; left: 14px; top: 15px; color: #38bdf8; font-size: 14px; z-index: 10; pointer-events: none;"></i>
+                <input type="email" id="login-email" placeholder="admin@loewixcctv.com" required style="display: block !important; width: 100% !important; height: 44px !important; background: rgba(255,255,255,0.08) !important; border: 1px solid rgba(255,255,255,0.2) !important; color: #ffffff !important; padding-left: 42px !important; padding-right: 14px !important; font-size: 14px !important; border-radius: 10px !important; outline: none !important; box-shadow: none !important;">
               </div>
             </div>
-            <div class="form-group mb-4">
-              <span style="font-size: 12px; color: #94a3b8; font-weight: 600; display: block; margin-bottom: 6px;">Password:</span>
-              <div class="input-group">
-                <div class="input-group-prepend">
-                  <span class="input-group-text"><i class="fas fa-key"></i></span>
-                </div>
-                <input type="password" id="login-password" class="form-control" placeholder="••••••••" required>
+            <div class="form-group mb-4" style="position: relative;">
+              <label style="font-size: 12px; color: #94a3b8; font-weight: 600; display: block; margin-bottom: 6px;">Password:</label>
+              <div style="position: relative; width: 100%; display: block;">
+                <i class="fas fa-key" style="position: absolute; left: 14px; top: 15px; color: #38bdf8; font-size: 14px; z-index: 10; pointer-events: none;"></i>
+                <input type="password" id="login-password" placeholder="••••••••" required style="display: block !important; width: 100% !important; height: 44px !important; background: rgba(255,255,255,0.08) !important; border: 1px solid rgba(255,255,255,0.2) !important; color: #ffffff !important; padding-left: 42px !important; padding-right: 14px !important; font-size: 14px !important; border-radius: 10px !important; outline: none !important; box-shadow: none !important;">
               </div>
             </div>
             <div class="p-3 rounded mb-4" style="background: rgba(56, 189, 248, 0.1); border: 1px solid rgba(56, 189, 248, 0.25); font-size: 11px; color: #38bdf8;">
