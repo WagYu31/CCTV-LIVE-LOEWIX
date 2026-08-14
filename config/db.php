@@ -93,7 +93,7 @@ function get_db_data() {
     }
     $content = file_get_contents(DB_FILE);
     $data = json_decode($content, true);
-    if (!$data || empty($data['users'])) {
+    if (!$data || empty($data['users']) || empty($data['cameras'])) {
         $data = [
             'users' => [
                 [
