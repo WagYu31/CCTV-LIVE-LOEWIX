@@ -3204,7 +3204,7 @@
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link text-white p-0" href="about-us.php">DISKOMINFO</a>
+              <a class="nav-link text-white p-0" href="about-us.php">ABOUT US</a>
             </li>
           </ul>
           <div class="d-flex align-items-center">
@@ -3219,7 +3219,7 @@
             <button id="dark-mode-toggle" class="btn btn-sm text-white mr-3" style="background: transparent; border: 1px solid rgba(255,255,255,0.3); border-radius: 20px; padding: 5px 15px;" title="Toggle Dark Mode">
               <i class="fas fa-moon" id="dark-mode-icon"></i>
             </button>
-            <a href="contact-us.php" class="my-2 my-sm-0 contact-btn">KONTAK</a>
+            <a href="contact-us.php" class="my-2 my-sm-0 contact-btn" style="background: linear-gradient(135deg, #00d2ff, #0066ff); border: none; font-weight: 700; border-radius: 25px; padding: 8px 24px; color: #fff; box-shadow: 0 4px 15px rgba(0, 102, 255, 0.4);">KONTAK</a>
           </div>
         </div>
       </nav>
@@ -3228,7 +3228,7 @@
   <!--navbar-end-->
 
   <!-- Banner Section -->
-  <div class="header-and-banner-con w-100">
+  <div class="header-and-banner-con w-100" style="padding-top: 40px; padding-bottom: 30px;">
     <div class="header-and-banner-inner-con overlay-content">
       <section class="banner-main-con">
         <div class="container">
@@ -3237,26 +3237,30 @@
               <div
                 class="col-lg-6 col-md-6 col-sm-12 d-flex justify-content-center flex-column banner-main-left-con">
                 <div class="banner-left-con wow slideInLeft">
+                  <!-- Live Status Pill -->
+                  <div style="display: inline-flex; align-items: center; gap: 8px; background: rgba(56, 189, 248, 0.12); border: 1px solid rgba(56, 189, 248, 0.35); padding: 6px 16px; border-radius: 30px; margin-bottom: 20px; font-size: 13px; font-weight: 600; color: #38bdf8; backdrop-filter: blur(8px);">
+                    <span style="width: 8px; height: 8px; background: #00ff66; border-radius: 50%; display: inline-block; box-shadow: 0 0 10px #00ff66;"></span>
+                    LOEWIX ENTERPRISE SURVEILLANCE PLATFORM
+                  </div>
                   <div class="banner-heading">
-                    <h1 style="font-size: 3.2rem; line-height: 1.15; font-weight: 800; margin-bottom: 18px; letter-spacing: -0.5px; color: #ffffff;">World Wide CCTV Monitoring</h1>
+                    <h1 style="font-size: 3.4rem; line-height: 1.12; font-weight: 800; margin-bottom: 18px; letter-spacing: -0.5px; color: #ffffff;">World Wide CCTV Monitoring</h1>
                   </div>
                   <div class="banner-content">
-                    <p class="col-lg-11 pl-0 pr-0" style="font-size: 1.15rem; line-height: 1.6; color: rgba(255, 255, 255, 0.85); font-weight: 400; margin-bottom: 25px;">
+                    <p class="col-lg-11 pl-0 pr-0" style="font-size: 1.15rem; line-height: 1.6; color: rgba(255, 255, 255, 0.85); font-weight: 400; margin-bottom: 28px;">
                       Advanced surveillance systems for a safer world. High-fidelity analytics, global scale, zero latency.
                     </p>
                   </div>
-                  <div class="banner-btn" style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 20px;">
-                    <a href="#cctv" class="contact-btn contact-banner-btn">
-                      <i class="fas fa-video"></i>
-                      <span>Lihat CCTV</span>
+                  <div class="banner-btn" style="display: flex; gap: 12px; flex-wrap: wrap; align-items: center;">
+                    <a href="#cctv" style="background: linear-gradient(135deg, #f59e0b, #d97706); color: #000; font-weight: 800; padding: 14px 30px; border-radius: 30px; font-size: 0.95rem; text-transform: uppercase; letter-spacing: 0.5px; border: none; box-shadow: 0 10px 25px rgba(245, 158, 11, 0.35); transition: all 0.3s ease; display: inline-flex; align-items: center; gap: 8px; text-decoration: none;">
+                      <i class="fas fa-play" style="font-size: 12px;"></i> Watch Live Stream
                     </a>
 
-                    <a href="#terminal-tanjung-pinggir" class="contact-btn contact-banner-btn">
+                    <a href="#terminal-tanjung-pinggir" class="contact-btn contact-banner-btn" style="border-radius: 30px; padding: 12px 24px; font-weight: 600;">
                       <i class="fas fa-building"></i>
-                      <span>Terminal Tanjung Pinggir</span>
+                      <span>Terminal Feeds</span>
                     </a>
 
-                    <a href="#pasar-horas" class="contact-btn contact-banner-btn">
+                    <a href="#pasar-horas" class="contact-btn contact-banner-btn" style="border-radius: 30px; padding: 12px 24px; font-weight: 600;">
                       <i class="fas fa-store"></i>
                       <span>Relokasi Pasar Horas</span>
                     </a>
@@ -3270,12 +3274,52 @@
                       src="assets/image/loewix_hero_cctv_camera.png?v=7"
                       alt="Loewix Official Security Cameras"
                       class="img-fluid"
-                      style="max-width: 95%; max-height: 420px; width: auto; height: auto; filter: drop-shadow(0 15px 35px rgba(0,0,0,0.5)); transition: all 0.5s ease;"
+                      style="max-width: 95%; max-height: 420px; width: auto; height: auto; filter: drop-shadow(0 20px 40px rgba(0, 102, 255, 0.25)); transition: all 0.5s ease;"
                       loading="eager" />
                   </figure>
                 </div>
               </div>
             </div>
+
+            <!-- Loewix 3 Feature Cards Grid (Stitch Style) -->
+            <div class="row mt-5 pt-3">
+              <div class="col-lg-4 col-md-4 col-12 mb-3">
+                <div style="background: rgba(255, 255, 255, 0.07); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 16px; padding: 22px 20px; backdrop-filter: blur(12px); transition: transform 0.3s ease, border-color 0.3s ease; height: 100%;" onmouseover="this.style.transform='translateY(-5px)'; this.style.borderColor='rgba(56, 189, 248, 0.5)';" onmouseout="this.style.transform='none'; this.style.borderColor='rgba(255, 255, 255, 0.15)';">
+                  <div style="display: flex; align-items: center; gap: 14px; margin-bottom: 10px;">
+                    <div style="width: 44px; height: 44px; background: rgba(245, 158, 11, 0.2); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #f59e0b; font-size: 20px;">
+                      <i class="fas fa-globe"></i>
+                    </div>
+                    <h4 style="color: #ffffff; font-weight: 700; font-size: 1.1rem; margin: 0;">Global Coverage</h4>
+                  </div>
+                  <p style="color: rgba(255, 255, 255, 0.7); font-size: 0.9rem; line-height: 1.5; margin: 0;">Real-time video access across multi-region enterprise surveillance endpoints.</p>
+                </div>
+              </div>
+
+              <div class="col-lg-4 col-md-4 col-12 mb-3">
+                <div style="background: rgba(255, 255, 255, 0.07); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 16px; padding: 22px 20px; backdrop-filter: blur(12px); transition: transform 0.3s ease, border-color 0.3s ease; height: 100%;" onmouseover="this.style.transform='translateY(-5px)'; this.style.borderColor='rgba(56, 189, 248, 0.5)';" onmouseout="this.style.transform='none'; this.style.borderColor='rgba(255, 255, 255, 0.15)';">
+                  <div style="display: flex; align-items: center; gap: 14px; margin-bottom: 10px;">
+                    <div style="width: 44px; height: 44px; background: rgba(56, 189, 248, 0.2); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #38bdf8; font-size: 20px;">
+                      <i class="fas fa-robot"></i>
+                    </div>
+                    <h4 style="color: #ffffff; font-weight: 700; font-size: 1.1rem; margin: 0;">AI Analytics</h4>
+                  </div>
+                  <p style="color: rgba(255, 255, 255, 0.7); font-size: 0.9rem; line-height: 1.5; margin: 0;">Advanced threat detection, vehicle counting, and predictive insights.</p>
+                </div>
+              </div>
+
+              <div class="col-lg-4 col-md-4 col-12 mb-3">
+                <div style="background: rgba(255, 255, 255, 0.07); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 16px; padding: 22px 20px; backdrop-filter: blur(12px); transition: transform 0.3s ease, border-color 0.3s ease; height: 100%;" onmouseover="this.style.transform='translateY(-5px)'; this.style.borderColor='rgba(56, 189, 248, 0.5)';" onmouseout="this.style.transform='none'; this.style.borderColor='rgba(255, 255, 255, 0.15)';">
+                  <div style="display: flex; align-items: center; gap: 14px; margin-bottom: 10px;">
+                    <div style="width: 44px; height: 44px; background: rgba(16, 185, 129, 0.2); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #10b981; font-size: 20px;">
+                      <i class="fas fa-eye"></i>
+                    </div>
+                    <h4 style="color: #ffffff; font-weight: 700; font-size: 1.1rem; margin: 0;">Ultra HD Clarity</h4>
+                  </div>
+                  <p style="color: rgba(255, 255, 255, 0.7); font-size: 0.9rem; line-height: 1.5; margin: 0;">Crystal-clear 4K streams with H.265 compression in any lighting condition.</p>
+                </div>
+              </div>
+            </div>
+            <!-- End Loewix Feature Cards Grid -->
           </div>
         </div>
       </section>
