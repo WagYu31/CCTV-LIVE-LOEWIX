@@ -11188,19 +11188,19 @@
         <form id="formLogin" onsubmit="submitLogin(event)">
           <div class="modal-body py-4">
             <div class="form-group mb-3">
-              <label style="font-size: 12px; color: #94a3b8; font-weight: 600;">Email Login:</label>
-              <input type="email" id="login-email" class="form-control" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.2); color: #fff;" placeholder="admin@loewixcctv.com" required>
+              <label style="font-size: 12px; color: #94a3b8; font-weight: 600; display: block; margin-bottom: 6px;">Email Login:</label>
+              <input type="email" id="login-email" class="form-control" style="display: block !important; width: 100% !important; height: 42px !important; background: rgba(255,255,255,0.1) !important; border: 1px solid rgba(255,255,255,0.25) !important; color: #ffffff !important; padding: 10px 14px !important; font-size: 14px !important; border-radius: 8px !important; appearance: auto !important; -webkit-appearance: auto !important;" placeholder="admin@loewixcctv.com" required>
             </div>
             <div class="form-group mb-3">
-              <label style="font-size: 12px; color: #94a3b8; font-weight: 600;">Password:</label>
-              <input type="password" id="login-password" class="form-control" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.2); color: #fff;" placeholder="••••••••" required>
+              <label style="font-size: 12px; color: #94a3b8; font-weight: 600; display: block; margin-bottom: 6px;">Password:</label>
+              <input type="password" id="login-password" class="form-control" style="display: block !important; width: 100% !important; height: 42px !important; background: rgba(255,255,255,0.1) !important; border: 1px solid rgba(255,255,255,0.25) !important; color: #ffffff !important; padding: 10px 14px !important; font-size: 14px !important; border-radius: 8px !important; appearance: auto !important; -webkit-appearance: auto !important;" placeholder="••••••••" required>
             </div>
             <div class="p-2 rounded mb-3" style="background: rgba(56, 189, 248, 0.1); border: 1px solid rgba(56, 189, 248, 0.25); font-size: 11px; color: #38bdf8;">
               <i class="fas fa-info-circle mr-1"></i> Demo Login:
               <div>• Super Admin: <code>admin@loewixcctv.com</code> / <code>admin123</code></div>
               <div>• Customer: <code>customer@jayasentosa.com</code> / <code>customer123</code></div>
             </div>
-            <button type="submit" class="btn btn-block" style="background: linear-gradient(135deg, #00d2ff, #0066ff); color: #fff; font-weight: 700; border-radius: 20px;">
+            <button type="submit" class="btn btn-block" style="background: linear-gradient(135deg, #00d2ff, #0066ff); color: #fff; font-weight: 700; border-radius: 20px; height: 42px;">
               <i class="fas fa-sign-in-alt mr-1"></i> LOGIN SEKARANG
             </button>
           </div>
