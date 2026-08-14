@@ -10,127 +10,262 @@
   <style>
     :root {
       --bg-dark: #070b19;
-      --panel-bg: rgba(13, 25, 52, 0.85);
+      --panel-bg: rgba(13, 27, 62, 0.75);
       --border-color: rgba(255, 255, 255, 0.12);
       --primary-cyan: #00d2ff;
       --accent-gold: #f59e0b;
       --text-main: #ffffff;
       --text-muted: #94a3b8;
     }
+    
     body {
       background-color: var(--bg-dark);
-      background-image: radial-gradient(circle at 50% 0%, #0d2352 0%, #070b19 75%);
+      background-image: radial-gradient(circle at 50% 0%, #0d2352 0%, #070b19 80%);
       font-family: 'Outfit', sans-serif;
       color: var(--text-main);
       min-height: 100vh;
       padding-bottom: 50px;
     }
+
+    /* Floating Glass Header */
     .admin-navbar {
-      background: var(--panel-bg);
-      backdrop-filter: blur(16px);
+      background: rgba(13, 27, 62, 0.85);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
       border-bottom: 1px solid var(--border-color);
       padding: 14px 0;
       margin-bottom: 30px;
+      position: sticky;
+      top: 0;
+      z-index: 1030;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
     }
+
+    /* Metric Cards Taste-Skill */
     .admin-card {
       background: var(--panel-bg);
       border: 1px solid var(--border-color);
-      border-radius: 16px;
+      border-radius: 20px;
       padding: 24px;
-      backdrop-filter: blur(16px);
-      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.35);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
       margin-bottom: 24px;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
     }
+
+    .admin-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, #00d2ff, #0066ff);
+      opacity: 0.8;
+    }
+
+    .admin-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(0, 210, 255, 0.3);
+      box-shadow: 0 20px 40px rgba(0, 210, 255, 0.15);
+    }
+
     .metric-value {
-      font-size: 2.2rem;
+      font-size: 2.5rem;
       font-weight: 800;
       color: var(--primary-cyan);
       line-height: 1;
-      margin-top: 8px;
+      margin-top: 10px;
+      letter-spacing: -1px;
     }
+
+    /* Search & Filter Toolbar */
+    .filter-toolbar {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 14px;
+      padding: 14px;
+      margin-bottom: 24px;
+    }
+
+    .search-input {
+      background: rgba(255, 255, 255, 0.08) !important;
+      border: 1px solid rgba(255, 255, 255, 0.15) !important;
+      color: #fff !important;
+      border-radius: 25px !important;
+      padding-left: 40px !important;
+      height: 42px !important;
+      font-size: 14px !important;
+    }
+
+    .search-input:focus {
+      background: rgba(255, 255, 255, 0.12) !important;
+      border-color: var(--primary-cyan) !important;
+      box-shadow: 0 0 12px rgba(0, 210, 255, 0.3) !important;
+    }
+
+    /* Table Taste-Skill */
     .table-dark-custom {
       color: #fff;
       margin-bottom: 0;
     }
+
     .table-dark-custom th {
       border-top: none;
       border-bottom: 2px solid rgba(255,255,255,0.15);
       color: var(--primary-cyan);
       font-weight: 700;
       text-transform: uppercase;
-      font-size: 12px;
-      letter-spacing: 0.5px;
+      font-size: 11px;
+      letter-spacing: 0.8px;
+      padding: 14px 12px;
     }
+
     .table-dark-custom td {
       border-top: 1px solid rgba(255,255,255,0.08);
       vertical-align: middle;
       font-size: 14px;
+      padding: 16px 12px;
     }
+
+    /* Badges ISO Standard */
     .badge-status-active {
       background: rgba(16, 185, 129, 0.18);
       color: #10b981;
       border: 1px solid rgba(16, 185, 129, 0.35);
-      padding: 4px 12px;
+      padding: 5px 14px;
       border-radius: 20px;
       font-size: 11px;
       font-weight: 700;
+      letter-spacing: 0.5px;
     }
+
     .badge-status-suspended {
       background: rgba(239, 68, 68, 0.18);
       color: #ef4444;
       border: 1px solid rgba(239, 68, 68, 0.35);
-      padding: 4px 12px;
+      padding: 5px 14px;
       border-radius: 20px;
       font-size: 11px;
       font-weight: 700;
+      letter-spacing: 0.5px;
     }
+
+    /* Action Buttons Toolbar */
+    .action-btn-group {
+      display: inline-flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .act-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid transparent;
+      font-size: 13px;
+      transition: all 0.2s ease;
+      cursor: pointer;
+      color: #fff;
+    }
+
+    .act-btn:hover {
+      transform: translateY(-2px);
+    }
+
+    .act-btn-edit { background: rgba(56, 189, 248, 0.15); border-color: rgba(56, 189, 248, 0.3); color: #38bdf8; }
+    .act-btn-edit:hover { background: #00d2ff; color: #000; }
+
+    .act-btn-quota { background: rgba(245, 158, 11, 0.15); border-color: rgba(245, 158, 11, 0.3); color: #f59e0b; }
+    .act-btn-quota:hover { background: #f59e0b; color: #000; }
+
+    .act-btn-pass { background: rgba(168, 85, 247, 0.15); border-color: rgba(168, 85, 247, 0.3); color: #c084fc; }
+    .act-btn-pass:hover { background: #c084fc; color: #000; }
+
+    .act-btn-status { background: rgba(255, 255, 255, 0.1); border-color: rgba(255, 255, 255, 0.2); color: #fff; }
+    .act-btn-status:hover { background: rgba(255, 255, 255, 0.25); }
+
+    .act-btn-delete { background: rgba(239, 68, 68, 0.15); border-color: rgba(239, 68, 68, 0.3); color: #ef4444; }
+    .act-btn-delete:hover { background: #ef4444; color: #fff; }
+
     .btn-gold {
       background: linear-gradient(135deg, #f59e0b, #d97706);
       color: #000;
       font-weight: 800;
       border: none;
       border-radius: 25px;
-      padding: 8px 22px;
+      padding: 10px 24px;
       transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
     }
+
     .btn-gold:hover {
       transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(245, 158, 11, 0.4);
+      box-shadow: 0 8px 25px rgba(245, 158, 11, 0.5);
       color: #000;
     }
+
     .progress-bar-custom {
       height: 8px;
       border-radius: 4px;
       background: rgba(255,255,255,0.1);
       overflow: hidden;
     }
+
     .progress-fill {
       height: 100%;
       background: linear-gradient(90deg, #00d2ff, #0066ff);
       border-radius: 4px;
     }
+
     .modal-content-dark {
       background: #0d1934;
       border: 1px solid var(--border-color);
       color: #fff;
-      border-radius: 16px;
+      border-radius: 20px;
+      box-shadow: 0 25px 50px -12px rgba(0,0,0,0.6);
     }
-    .modal-header-dark {
-      border-bottom: 1px solid rgba(255,255,255,0.1);
-    }
-    .modal-footer-dark {
-      border-top: 1px solid rgba(255,255,255,0.1);
-    }
+
+    .modal-header-dark { border-bottom: 1px solid rgba(255,255,255,0.1); padding: 18px 24px; }
+    .modal-footer-dark { border-top: 1px solid rgba(255,255,255,0.1); padding: 16px 24px; }
+
     .form-control-dark {
       background: rgba(255,255,255,0.08);
       border: 1px solid rgba(255,255,255,0.2);
       color: #fff !important;
-      border-radius: 8px;
+      border-radius: 10px;
+      height: 44px;
     }
+
     .form-control-dark:focus {
       background: rgba(255,255,255,0.12);
       border-color: var(--primary-cyan);
-      box-shadow: 0 0 10px rgba(0,210,255,0.3);
+      box-shadow: 0 0 12px rgba(0,210,255,0.3);
+    }
+
+    /* Modal Form Pseudo Checkbox Fix Override */
+    .modal label::before, .modal label::after, .form-group label::before, .form-group label::after {
+      display: none !important;
+      content: none !important;
+      border: none !important;
+    }
+
+    /* ISO Responsive Breakpoints */
+    @media (max-width: 991px) {
+      .metric-value { font-size: 2rem; }
+      .admin-navbar { padding: 10px 0; }
+    }
+
+    @media (max-width: 575px) {
+      .table-dark-custom th, .table-dark-custom td { padding: 10px 8px; font-size: 12px; }
+      .action-btn-group { gap: 4px; }
+      .act-btn { width: 32px; height: 32px; font-size: 11px; }
     }
   </style>
 </head>
@@ -164,25 +299,25 @@
     <div class="row">
       <div class="col-lg-3 col-md-6 col-12">
         <div class="admin-card">
-          <div class="text-muted font-weight-bold"><i class="fas fa-building text-info mr-2"></i> TOTAL CUSTOMER</div>
-          <div class="metric-value" id="metric-total-customers">1</div>
+          <div class="text-muted font-weight-bold" style="font-size: 13px;"><i class="fas fa-building text-info mr-2"></i> TOTAL CUSTOMER</div>
+          <div class="metric-value" id="metric-total-customers">0</div>
         </div>
       </div>
       <div class="col-lg-3 col-md-6 col-12">
         <div class="admin-card">
-          <div class="text-muted font-weight-bold"><i class="fas fa-video text-warning mr-2"></i> TOTAL CHANNEL CCTV</div>
+          <div class="text-muted font-weight-bold" style="font-size: 13px;"><i class="fas fa-video text-warning mr-2"></i> TOTAL CHANNEL CCTV</div>
           <div class="metric-value" id="metric-total-cameras">0</div>
         </div>
       </div>
       <div class="col-lg-3 col-md-6 col-12">
         <div class="admin-card">
-          <div class="text-muted font-weight-bold"><i class="fas fa-layer-group text-success mr-2"></i> ALOKASI KUOTA</div>
-          <div class="metric-value" id="metric-total-quota">10</div>
+          <div class="text-muted font-weight-bold" style="font-size: 13px;"><i class="fas fa-layer-group text-success mr-2"></i> ALOKASI KUOTA</div>
+          <div class="metric-value" id="metric-total-quota">0</div>
         </div>
       </div>
       <div class="col-lg-3 col-md-6 col-12">
         <div class="admin-card">
-          <div class="text-muted font-weight-bold"><i class="fas fa-server text-primary mr-2"></i> SERVER MEDIAMTX</div>
+          <div class="text-muted font-weight-bold" style="font-size: 13px;"><i class="fas fa-server text-primary mr-2"></i> SERVER MEDIAMTX</div>
           <div class="metric-value" style="color: #10b981; font-size: 1.6rem; margin-top: 14px;">
             <i class="fas fa-check-circle mr-1"></i> ONLINE 99.9%
           </div>
@@ -195,11 +330,39 @@
       <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
         <div>
           <h4 class="font-weight-bold mb-1"><i class="fas fa-users-cog text-info mr-2"></i> Kelola Customer & Alokasi Kuota CCTV</h4>
-          <p class="text-muted mb-0" style="font-size: 14px;">Atur hak akses streaming dan alokasi batas kamera live untuk tiap pelanggan Loewix.</p>
+          <p class="text-muted mb-0" style="font-size: 14px;">Atur hak akses streaming, data profil, dan alokasi kuota live kamera pelanggan Loewix.</p>
         </div>
-        <button class="btn btn-gold" onclick="openAddCustomerModal()">
-          <i class="fas fa-user-plus mr-1"></i> Tambah Customer Baru
-        </button>
+        <div class="d-flex align-items-center gap-2">
+          <button class="btn btn-outline-info btn-sm mr-2" style="border-radius: 20px;" onclick="exportCustomerCSV()">
+            <i class="fas fa-download mr-1"></i> Export CSV
+          </button>
+          <button class="btn btn-gold" onclick="openAddCustomerModal()">
+            <i class="fas fa-user-plus mr-1"></i> Tambah Customer Baru
+          </button>
+        </div>
+      </div>
+
+      <!-- Search & Filter Controls -->
+      <div class="filter-toolbar d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div style="position: relative; flex: 1; min-width: 250px;">
+          <i class="fas fa-search" style="position: absolute; left: 14px; top: 14px; color: #94a3b8; font-size: 14px;"></i>
+          <input type="text" id="search-customer-input" class="form-control search-input" placeholder="🔍 Cari Nama Customer, Email, atau Telepon..." onkeyup="filterCustomerTable()">
+        </div>
+        <div class="d-flex align-items-center gap-2">
+          <select id="filter-city-select" class="form-control form-control-sm" style="background: rgba(255,255,255,0.08); color: #fff; border: 1px solid rgba(255,255,255,0.2); border-radius: 20px; padding: 5px 12px;" onchange="filterCustomerTable()">
+            <option value="all" style="color:#000;">🌐 Semua Wilayah</option>
+            <option value="siantar" style="color:#000;">📍 Pematangsiantar</option>
+            <option value="jakarta" style="color:#000;">📍 DKI Jakarta</option>
+            <option value="medan" style="color:#000;">📍 Kota Medan</option>
+            <option value="bandung" style="color:#000;">📍 Kota Bandung</option>
+            <option value="bali" style="color:#000;">📍 Bali / Denpasar</option>
+          </select>
+          <select id="filter-status-select" class="form-control form-control-sm" style="background: rgba(255,255,255,0.08); color: #fff; border: 1px solid rgba(255,255,255,0.2); border-radius: 20px; padding: 5px 12px;" onchange="filterCustomerTable()">
+            <option value="all" style="color:#000;">⚡ Semua Status</option>
+            <option value="active" style="color:#000;">✅ Status Aktif</option>
+            <option value="suspended" style="color:#000;">⛔ Status Suspended</option>
+          </select>
+        </div>
       </div>
 
       <!-- Customers Table -->
@@ -236,35 +399,35 @@
       <div class="modal-content modal-content-dark">
         <div class="modal-header modal-header-dark">
           <h5 class="modal-title font-weight-bold"><i class="fas fa-user-plus text-info mr-2"></i> Tambah Customer Baru</h5>
-          <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+          <button type="button" class="close text-white" onclick="closeAddCustomerModal()" aria-label="Close">
             <span aria-hidden="true">&times;</span>
           </button>
         </div>
         <form id="formAddCustomer" onsubmit="submitAddCustomer(event)">
           <div class="modal-body">
-            <div class="form-group">
-              <label class="font-weight-bold text-muted" style="font-size: 13px;">Nama Customer / Perusahaan:</label>
+            <div class="form-group mb-3">
+              <label class="font-weight-bold text-muted" style="font-size: 13px; display: block; margin-bottom: 6px;">Nama Customer / Perusahaan:</label>
               <input type="text" id="cust-name" class="form-control form-control-dark" placeholder="Contoh: PT. Jaya Sentosa Enterprise" required>
             </div>
-            <div class="form-group">
-              <label class="font-weight-bold text-muted" style="font-size: 13px;">Email Login:</label>
+            <div class="form-group mb-3">
+              <label class="font-weight-bold text-muted" style="font-size: 13px; display: block; margin-bottom: 6px;">Email Login:</label>
               <input type="email" id="cust-email" class="form-control form-control-dark" placeholder="customer@jayasentosa.com" required>
             </div>
-            <div class="form-group">
-              <label class="font-weight-bold text-muted" style="font-size: 13px;">Password Initial:</label>
+            <div class="form-group mb-3">
+              <label class="font-weight-bold text-muted" style="font-size: 13px; display: block; margin-bottom: 6px;">Password Initial:</label>
               <div style="position: relative; width: 100%;">
                 <input type="password" id="cust-password" class="form-control form-control-dark" placeholder="Minimal 6 Karakter" required style="padding-right: 40px;">
-                <i class="fas fa-eye" id="toggle-add-cust-password-icon" onclick="toggleAddCustPasswordVisibility()" title="Tampilkan / Sembunyikan Password" style="position: absolute; right: 14px; top: 12px; color: #94a3b8; font-size: 14px; cursor: pointer; z-index: 10;"></i>
+                <i class="fas fa-eye" id="toggle-add-cust-password-icon" onclick="toggleAddCustPasswordVisibility()" title="Tampilkan / Sembunyikan Password" style="position: absolute; right: 14px; top: 15px; color: #94a3b8; font-size: 14px; cursor: pointer; z-index: 10;"></i>
               </div>
             </div>
-            <div class="form-row">
+            <div class="form-row mb-3">
               <div class="form-group col-6">
-                <label class="font-weight-bold text-muted" style="font-size: 13px;">Alokasi Kuota CCTV:</label>
+                <label class="font-weight-bold text-muted" style="font-size: 13px; display: block; margin-bottom: 6px;">Alokasi Kuota CCTV:</label>
                 <input type="number" id="cust-quota" class="form-control form-control-dark" value="10" min="1" max="500" required>
                 <small class="text-info font-weight-bold">Batas Jumlah Kamera Live</small>
               </div>
               <div class="form-group col-6">
-                <label class="font-weight-bold text-muted" style="font-size: 13px;">Wilayah Utama:</label>
+                <label class="font-weight-bold text-muted" style="font-size: 13px; display: block; margin-bottom: 6px;">Wilayah Utama:</label>
                 <select id="cust-city" class="form-control form-control-dark">
                   <option value="siantar" style="color:#000;">Pematangsiantar</option>
                   <option value="jakarta" style="color:#000;">DKI Jakarta</option>
@@ -274,13 +437,13 @@
                 </select>
               </div>
             </div>
-            <div class="form-group">
-              <label class="font-weight-bold text-muted" style="font-size: 13px;">No. WhatsApp / HP:</label>
+            <div class="form-group mb-2">
+              <label class="font-weight-bold text-muted" style="font-size: 13px; display: block; margin-bottom: 6px;">No. WhatsApp / HP:</label>
               <input type="text" id="cust-phone" class="form-control form-control-dark" placeholder="+62 812-3456-7890">
             </div>
           </div>
           <div class="modal-footer modal-footer-dark">
-            <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Batal</button>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="closeAddCustomerModal()">Batal</button>
             <button type="submit" class="btn btn-gold btn-sm"><i class="fas fa-save mr-1"></i> Simpan Customer</button>
           </div>
         </form>
@@ -301,17 +464,17 @@
         <form id="formEditCustomer" onsubmit="submitEditCustomer(event)">
           <input type="hidden" id="edit-profile-id">
           <div class="modal-body">
-            <div class="form-group">
-              <label class="font-weight-bold text-muted" style="font-size: 13px;">Nama Customer / Perusahaan:</label>
+            <div class="form-group mb-3">
+              <label class="font-weight-bold text-muted" style="font-size: 13px; display: block; margin-bottom: 6px;">Nama Customer / Perusahaan:</label>
               <input type="text" id="edit-profile-name" class="form-control form-control-dark" required>
             </div>
-            <div class="form-group">
-              <label class="font-weight-bold text-muted" style="font-size: 13px;">Email Login:</label>
+            <div class="form-group mb-3">
+              <label class="font-weight-bold text-muted" style="font-size: 13px; display: block; margin-bottom: 6px;">Email Login:</label>
               <input type="email" id="edit-profile-email" class="form-control form-control-dark" required>
             </div>
-            <div class="form-row">
+            <div class="form-row mb-2">
               <div class="form-group col-6">
-                <label class="font-weight-bold text-muted" style="font-size: 13px;">Wilayah Utama:</label>
+                <label class="font-weight-bold text-muted" style="font-size: 13px; display: block; margin-bottom: 6px;">Wilayah Utama:</label>
                 <select id="edit-profile-city" class="form-control form-control-dark">
                   <option value="siantar" style="color:#000;">Pematangsiantar</option>
                   <option value="jakarta" style="color:#000;">DKI Jakarta</option>
@@ -321,7 +484,7 @@
                 </select>
               </div>
               <div class="form-group col-6">
-                <label class="font-weight-bold text-muted" style="font-size: 13px;">No. WhatsApp / HP:</label>
+                <label class="font-weight-bold text-muted" style="font-size: 13px; display: block; margin-bottom: 6px;">No. WhatsApp / HP:</label>
                 <input type="text" id="edit-profile-phone" class="form-control form-control-dark">
               </div>
             </div>
@@ -329,34 +492,6 @@
           <div class="modal-footer modal-footer-dark">
             <button type="button" class="btn btn-secondary btn-sm" onclick="closeEditCustomerModal()">Batal</button>
             <button type="submit" class="btn btn-gold btn-sm"><i class="fas fa-save mr-1"></i> Simpan Perubahan</button>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
-
-  <!-- Modal Edit Kuota Customer -->
-  <div class="modal fade" id="modalEditQuota" tabindex="-1" role="dialog" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-sm" role="document">
-      <div class="modal-content modal-content-dark">
-        <div class="modal-header modal-header-dark">
-          <h5 class="modal-title font-weight-bold"><i class="fas fa-sliders-h text-warning mr-2"></i> Edit Kuota CCTV</h5>
-          <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-          </button>
-        </div>
-        <form id="formEditQuota" onsubmit="submitEditQuota(event)">
-          <input type="hidden" id="edit-cust-id">
-          <div class="modal-body text-center">
-            <h6 id="edit-cust-name" class="font-weight-bold text-info mb-3">Customer Name</h6>
-            <div class="form-group">
-              <label class="font-weight-bold text-muted" style="font-size: 13px;">Jumlah Akses Kuota Kamera:</label>
-              <input type="number" id="edit-cust-quota" class="form-control form-control-dark text-center font-weight-bold" style="font-size: 1.5rem;" min="1" max="500" required>
-            </div>
-          </div>
-          <div class="modal-footer modal-footer-dark justify-content-center">
-            <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Batal</button>
-            <button type="submit" class="btn btn-gold btn-sm"><i class="fas fa-check mr-1"></i> Update Kuota</button>
           </div>
         </form>
       </div>
@@ -374,12 +509,25 @@
         email: 'customer@jayasentosa.com',
         phone: '+62 812-3456-7890',
         city: 'siantar',
-        cctv_quota: 10,
+        cctv_quota: 20,
+        cctv_used: 0,
+        status: 'active',
+        created_at: '2026-08-14'
+      },
+      {
+        id: 3,
+        name: 'PT. Berlian Djaya Nusantara',
+        email: 'berlian@gmail.com',
+        phone: '+6285771593522',
+        city: 'jakarta',
+        cctv_quota: 20,
         cctv_used: 0,
         status: 'active',
         created_at: '2026-08-14'
       }
     ];
+
+    let cachedCustomers = [];
 
     function getStoredCustomers() {
       const stored = localStorage.getItem('loewix_customers');
@@ -405,13 +553,16 @@
         .then(res => res.json())
         .then(data => {
           if (!data.success) {
-            renderCustomerTable(getStoredCustomers());
+            cachedCustomers = getStoredCustomers();
+            renderCustomerTable(cachedCustomers);
             return;
           }
-          renderCustomerTable(data.customers);
+          cachedCustomers = data.customers;
+          renderCustomerTable(cachedCustomers);
         })
         .catch(err => {
-          renderCustomerTable(getStoredCustomers());
+          cachedCustomers = getStoredCustomers();
+          renderCustomerTable(cachedCustomers);
         });
     }
 
@@ -423,7 +574,7 @@
       let totalQuota = 0;
 
       if (!customers || customers.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-muted">Belum ada Customer terdaftar. Klik 'Tambah Customer Baru' untuk menambahkan.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-muted">Belum ada Customer terdaftar atau sesuai kriteria pencarian.</td></tr>`;
       } else {
         customers.forEach(c => {
           totalCameras += (c.cctv_used || 0);
@@ -438,14 +589,14 @@
             <tr>
               <td class="font-weight-bold text-muted">#${c.id}</td>
               <td>
-                <div class="font-weight-bold text-white">${c.name}</div>
-                <small class="text-muted"><i class="fas fa-history mr-1"></i> Terdaftar ${c.created_at.split(' ')[0]}</small>
+                <div class="font-weight-bold text-white" style="font-size: 15px;">${c.name}</div>
+                <small class="text-muted"><i class="fas fa-history mr-1"></i> Terdaftar ${c.created_at ? c.created_at.split(' ')[0] : '2026-08-14'}</small>
               </td>
               <td>
                 <div><i class="fas fa-envelope text-info mr-1"></i> ${c.email}</div>
                 <small class="text-muted"><i class="fas fa-phone mr-1"></i> ${c.phone}</small>
               </td>
-              <td><span class="badge badge-secondary" style="border-radius: 12px;">📍 ${(c.city || 'siantar').toUpperCase()}</span></td>
+              <td><span class="badge badge-secondary" style="border-radius: 12px; padding: 4px 10px;">📍 ${(c.city || 'siantar').toUpperCase()}</span></td>
               <td>
                 <div class="d-flex justify-content-between align-items-center mb-1">
                   <span class="font-weight-bold text-info" style="font-size: 13px;">${c.cctv_used || 0} / ${c.cctv_quota} CCTV</span>
@@ -457,21 +608,23 @@
               </td>
               <td>${statusBadge}</td>
               <td class="text-right">
-                <button class="btn btn-outline-primary btn-sm mr-1" onclick="openEditCustomerModal(${c.id})" title="Edit Data Profil Customer">
-                  <i class="fas fa-edit"></i> Edit
-                </button>
-                <button class="btn btn-outline-warning btn-sm mr-1" onclick="openEditQuotaModal(${c.id}, '${c.name.replace(/'/g, "\\'")}', ${c.cctv_quota})" title="Edit Kuota Kamera">
-                  <i class="fas fa-sliders-h"></i> Kuota
-                </button>
-                <button class="btn btn-outline-info btn-sm mr-1" onclick="resetCustomerPassword(${c.id}, '${c.name.replace(/'/g, "\\'")}')" title="Reset / Ubah Password Customer">
-                  <i class="fas fa-key"></i> Pass
-                </button>
-                <button class="btn btn-outline-secondary btn-sm mr-1" onclick="toggleStatus(${c.id})" title="Toggle Suspend">
-                  <i class="fas fa-power-off"></i>
-                </button>
-                <button class="btn btn-outline-danger btn-sm" onclick="deleteCustomer(${c.id}, '${c.name.replace(/'/g, "\\'")}')" title="Hapus Akun">
-                  <i class="fas fa-trash"></i>
-                </button>
+                <div class="action-btn-group">
+                  <button class="act-btn act-btn-edit" onclick="openEditCustomerModal(${c.id})" title="Edit Data Profil Customer">
+                    <i class="fas fa-edit"></i>
+                  </button>
+                  <button class="act-btn act-btn-quota" onclick="openEditQuotaModal(${c.id}, '${c.name.replace(/'/g, "\\'")}', ${c.cctv_quota})" title="Edit Kuota CCTV">
+                    <i class="fas fa-sliders-h"></i>
+                  </button>
+                  <button class="act-btn act-btn-pass" onclick="resetCustomerPassword(${c.id}, '${c.name.replace(/'/g, "\\'")}')" title="Reset Password Customer">
+                    <i class="fas fa-key"></i>
+                  </button>
+                  <button class="act-btn act-btn-status" onclick="toggleStatus(${c.id})" title="Toggle Suspend/Aktif">
+                    <i class="fas fa-power-off"></i>
+                  </button>
+                  <button class="act-btn act-btn-delete" onclick="deleteCustomer(${c.id}, '${c.name.replace(/'/g, "\\'")}')" title="Hapus Akun Customer">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </div>
               </td>
             </tr>
           `;
@@ -482,6 +635,35 @@
       document.getElementById('metric-total-customers').innerText = customers.length;
       document.getElementById('metric-total-cameras').innerText = totalCameras;
       document.getElementById('metric-total-quota').innerText = totalQuota;
+    }
+
+    function filterCustomerTable() {
+      const search = document.getElementById('search-customer-input').value.toLowerCase().trim();
+      const city = document.getElementById('filter-city-select').value;
+      const status = document.getElementById('filter-status-select').value;
+
+      let filtered = cachedCustomers.filter(c => {
+        const matchSearch = c.name.toLowerCase().includes(search) || c.email.toLowerCase().includes(search) || (c.phone && c.phone.includes(search));
+        const matchCity = (city === 'all' || (c.city && c.city.toLowerCase() === city));
+        const matchStatus = (status === 'all' || c.status === status);
+        return matchSearch && matchCity && matchStatus;
+      });
+
+      renderCustomerTable(filtered);
+    }
+
+    function exportCustomerCSV() {
+      let csvContent = "data:text/csv;charset=utf-8,ID,Nama Perusahaan,Email,No Telp,Wilayah,Kuota CCTV,Terpakai,Status\n";
+      cachedCustomers.forEach(c => {
+        csvContent += `${c.id},"${c.name}",${c.email},${c.phone},${c.city},${c.cctv_quota},${c.cctv_used || 0},${c.status}\n`;
+      });
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", `loewix_customers_${new Date().toISOString().split('T')[0]}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
     }
 
     function openAddCustomerModal() {
@@ -509,7 +691,7 @@
     }
 
     function openEditCustomerModal(id) {
-      let list = getStoredCustomers();
+      let list = cachedCustomers;
       const cust = list.find(c => c.id === id);
       if (!cust) return;
 
@@ -542,44 +724,6 @@
       document.getElementById('modalEditCustomer').classList.remove('show');
     }
 
-    function submitEditCustomer(e) {
-      if (e) e.preventDefault();
-      const id = parseInt(document.getElementById('edit-profile-id').value);
-      const name = document.getElementById('edit-profile-name').value.trim();
-      const email = document.getElementById('edit-profile-email').value.trim();
-      const city = document.getElementById('edit-profile-city').value;
-      const phone = document.getElementById('edit-profile-phone').value.trim() || '-';
-
-      if (!name || !email) {
-        alert('Nama dan Email wajib diisi!');
-        return;
-      }
-
-      let list = getStoredCustomers();
-      list.forEach(c => {
-        if (c.id === id) {
-          c.name = name;
-          c.email = email;
-          c.city = city;
-          c.phone = phone;
-        }
-      });
-      saveStoredCustomers(list);
-
-      const formData = new FormData();
-      formData.append('action', 'update_customer');
-      formData.append('id', id);
-      formData.append('name', name);
-      formData.append('email', email);
-      formData.append('city', city);
-      formData.append('phone', phone);
-      fetch('../api/admin_customers.php', { method: 'POST', body: formData }).catch(e => {});
-
-      alert(`BERHASIL: Data Customer '${name}' berhasil diperbarui!`);
-      closeEditCustomerModal();
-      renderCustomerTable(list);
-    }
-
     function submitAddCustomer(e) {
       if (e) e.preventDefault();
       const name = document.getElementById('cust-name').value.trim();
@@ -610,6 +754,7 @@
       };
       list.push(newCust);
       saveStoredCustomers(list);
+      cachedCustomers = list;
 
       const formData = new FormData();
       formData.append('action', 'create');
@@ -624,6 +769,45 @@
       alert(`BERHASIL: Customer baru '${name}' berhasil ditambahkan dengan kuota ${quota} CCTV!`);
       closeAddCustomerModal();
       document.getElementById('formAddCustomer').reset();
+      renderCustomerTable(list);
+    }
+
+    function submitEditCustomer(e) {
+      if (e) e.preventDefault();
+      const id = parseInt(document.getElementById('edit-profile-id').value);
+      const name = document.getElementById('edit-profile-name').value.trim();
+      const email = document.getElementById('edit-profile-email').value.trim();
+      const city = document.getElementById('edit-profile-city').value;
+      const phone = document.getElementById('edit-profile-phone').value.trim() || '-';
+
+      if (!name || !email) {
+        alert('Nama dan Email wajib diisi!');
+        return;
+      }
+
+      let list = getStoredCustomers();
+      list.forEach(c => {
+        if (c.id === id) {
+          c.name = name;
+          c.email = email;
+          c.city = city;
+          c.phone = phone;
+        }
+      });
+      saveStoredCustomers(list);
+      cachedCustomers = list;
+
+      const formData = new FormData();
+      formData.append('action', 'update_customer');
+      formData.append('id', id);
+      formData.append('name', name);
+      formData.append('email', email);
+      formData.append('city', city);
+      formData.append('phone', phone);
+      fetch('../api/admin_customers.php', { method: 'POST', body: formData }).catch(e => {});
+
+      alert(`BERHASIL: Data Customer '${name}' berhasil diperbarui!`);
+      closeEditCustomerModal();
       renderCustomerTable(list);
     }
 
@@ -644,6 +828,7 @@
         }
       });
       saveStoredCustomers(list);
+      cachedCustomers = list;
 
       const formData = new FormData();
       formData.append('action', 'update_quota');
@@ -652,28 +837,6 @@
       fetch('../api/admin_customers.php', { method: 'POST', body: formData }).catch(e => {});
 
       alert(`BERHASIL: Kuota CCTV untuk '${name}' diperbarui menjadi ${newQuota} CCTV!`);
-      renderCustomerTable(list);
-    }
-
-    function toggleStatus(id) {
-      let list = getStoredCustomers();
-      list.forEach(c => {
-        if (c.id === id) {
-          c.status = (c.status === 'active') ? 'suspended' : 'active';
-          alert(`Status Customer '${c.name}' diubah menjadi ${c.status.toUpperCase()}!`);
-        }
-      });
-      saveStoredCustomers(list);
-      renderCustomerTable(list);
-    }
-
-    function deleteCustomer(id, name) {
-      if (!confirm(`HAPUS PERMANEN: Apakah Anda yakin ingin menghapus akun Customer '${name}'?`)) return;
-
-      let list = getStoredCustomers();
-      list = list.filter(c => c.id !== id);
-      saveStoredCustomers(list);
-      alert(`Customer '${name}' berhasil dihapus!`);
       renderCustomerTable(list);
     }
 
@@ -721,6 +884,30 @@
       alert(`BERHASIL: Password Customer '${name}' telah diubah menjadi '${newPassword.trim()}'!`);
     }
 
+    function toggleStatus(id) {
+      let list = getStoredCustomers();
+      list.forEach(c => {
+        if (c.id === id) {
+          c.status = (c.status === 'active') ? 'suspended' : 'active';
+          alert(`Status Customer '${c.name}' diubah menjadi ${c.status.toUpperCase()}!`);
+        }
+      });
+      saveStoredCustomers(list);
+      cachedCustomers = list;
+      renderCustomerTable(list);
+    }
+
+    function deleteCustomer(id, name) {
+      if (!confirm(`HAPUS PERMANEN: Apakah Anda yakin ingin menghapus akun Customer '${name}'?`)) return;
+
+      let list = getStoredCustomers();
+      list = list.filter(c => c.id !== id);
+      saveStoredCustomers(list);
+      cachedCustomers = list;
+      alert(`Customer '${name}' berhasil dihapus!`);
+      renderCustomerTable(list);
+    }
+
     function logoutAdmin() {
       localStorage.removeItem('loewix_user');
       window.location.href = '../index.html';
@@ -737,6 +924,8 @@
     window.toggleAddCustPasswordVisibility = toggleAddCustPasswordVisibility;
     window.toggleStatus = toggleStatus;
     window.deleteCustomer = deleteCustomer;
+    window.exportCustomerCSV = exportCustomerCSV;
+    window.filterCustomerTable = filterCustomerTable;
     window.logoutAdmin = logoutAdmin;
   </script>
 </body>
