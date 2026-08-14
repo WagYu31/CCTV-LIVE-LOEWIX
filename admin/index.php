@@ -522,22 +522,48 @@
           </div>
 
           <!-- Form Tambah Kamera (Collapsible) -->
-          <div id="add-camera-form-box" class="p-3 mb-4 rounded" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(0, 210, 255, 0.3); display: none;">
-            <h6 class="font-weight-bold text-info mb-3" style="font-size: 14px;"><i class="fas fa-plus mr-1"></i> Input Detail Kamera CCTV Baru Customer</h6>
+          <div id="add-camera-form-box" class="p-4 mb-4 rounded" style="background: rgba(13, 27, 62, 0.95); border: 1px solid rgba(0, 210, 255, 0.4); display: none; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+            <h6 class="font-weight-bold text-success mb-3" style="font-size: 15px; letter-spacing: 0.5px;"><i class="fas fa-plus-circle mr-1"></i> TAMBAH KAMERA RTSP / IP BARU</h6>
             <form onsubmit="submitAddCameraForCustomer(event)">
-              <div class="form-row">
-                <div class="form-group col-md-6 mb-2">
-                  <label style="font-size: 12px; color: #94a3b8; font-weight: 600; display: block; margin-bottom: 4px;">Nama / Lokasi Kamera:</label>
-                  <input type="text" id="cam-input-title" class="form-control form-control-dark" placeholder="Contoh: CAM 01 - Lobby Utama" required>
+              <div class="form-group mb-3">
+                <label style="font-size: 13px; color: #e2e8f0; font-weight: 600; display: block; margin-bottom: 4px;">Nama Kamera / Lokasi:</label>
+                <input type="text" id="cam-input-title" class="form-control form-control-dark" placeholder="Contoh: Simpang Dewa Ruci - Kuta Bali" required>
+              </div>
+
+              <div class="form-group mb-3">
+                <label style="font-size: 13px; color: #e2e8f0; font-weight: 600; display: block; margin-bottom: 4px;">Wilayah / Kota:</label>
+                <select id="cam-input-city" class="form-control form-control-dark">
+                  <option value="siantar" style="color:#000;">Pematangsiantar</option>
+                  <option value="jakarta" style="color:#000;">DKI Jakarta</option>
+                  <option value="medan" style="color:#000;">Kota Medan</option>
+                  <option value="bandung" style="color:#000;">Kota Bandung</option>
+                  <option value="bali" style="color:#000;">Bali / Denpasar</option>
+                </select>
+              </div>
+
+              <div class="form-group mb-3">
+                <label style="font-size: 13px; color: #e2e8f0; font-weight: 600; display: block; margin-bottom: 4px;">Stream Path / RTSP Stream ID / HLS URL:</label>
+                <input type="text" id="cam-input-path" class="form-control form-control-dark" placeholder="Contoh: cam_bali_1 atau rtsp://admin:pass@IP:554/stream1" required>
+                <small class="text-muted d-block mt-1" style="font-size: 11px;">
+                  Gunakan Stream Path MediaMTX (contoh: <span class="text-danger font-weight-bold">cam_bali_1</span>), HLS URL (<span class="text-danger font-weight-bold">.m3u8</span>), atau IPCamLive.<br>
+                  <em>Catatan: Browser tidak bisa putar rtsp:// langsung tanpa MediaMTX/IPCamLive gateway.</em>
+                </small>
+              </div>
+
+              <div class="form-row mb-3">
+                <div class="form-group col-6 mb-0">
+                  <label style="font-size: 13px; color: #e2e8f0; font-weight: 600; display: block; margin-bottom: 4px;">Latitude GPS:</label>
+                  <input type="text" id="cam-input-lat" class="form-control form-control-dark" placeholder="-8.7188">
                 </div>
-                <div class="form-group col-md-6 mb-2">
-                  <label style="font-size: 12px; color: #94a3b8; font-weight: 600; display: block; margin-bottom: 4px;">Stream Path / RTSP ID:</label>
-                  <input type="text" id="cam-input-path" class="form-control form-control-dark" placeholder="Contoh: live/jayasentosa01" required>
+                <div class="form-group col-6 mb-0">
+                  <label style="font-size: 13px; color: #e2e8f0; font-weight: 600; display: block; margin-bottom: 4px;">Longitude GPS:</label>
+                  <input type="text" id="cam-input-lng" class="form-control form-control-dark" placeholder="115.1783">
                 </div>
               </div>
-              <div class="d-flex justify-content-end gap-2 mt-2">
-                <button type="button" class="btn btn-secondary btn-sm mr-2" onclick="closeAddCameraForCustomerForm()">Batal</button>
-                <button type="submit" class="btn btn-info btn-sm font-weight-bold"><i class="fas fa-save mr-1"></i> Simpan Kamera</button>
+
+              <div class="d-flex justify-content-end gap-2 mt-3">
+                <button type="button" class="btn btn-secondary btn-sm mr-2" style="border-radius: 8px; padding: 8px 18px;" onclick="closeAddCameraForCustomerForm()">Batal</button>
+                <button type="submit" class="btn btn-success btn-sm font-weight-bold" style="border-radius: 8px; padding: 8px 22px; background: #10b981; border: none;"><i class="fas fa-save mr-1"></i> Simpan Konfigurasi</button>
               </div>
             </form>
           </div>
@@ -1082,14 +1108,19 @@
 
     function closeAddCameraForCustomerForm() {
       document.getElementById('add-camera-form-box').style.display = 'none';
-      document.getElementById('cam-input-title').value = '';
-      document.getElementById('cam-input-path').value = '';
+      if (document.getElementById('cam-input-title')) document.getElementById('cam-input-title').value = '';
+      if (document.getElementById('cam-input-path')) document.getElementById('cam-input-path').value = '';
+      if (document.getElementById('cam-input-lat')) document.getElementById('cam-input-lat').value = '';
+      if (document.getElementById('cam-input-lng')) document.getElementById('cam-input-lng').value = '';
     }
 
     function submitAddCameraForCustomer(e) {
       if (e) e.preventDefault();
       const title = document.getElementById('cam-input-title').value.trim();
+      const city = document.getElementById('cam-input-city').value;
       const streamPath = document.getElementById('cam-input-path').value.trim();
+      const lat = document.getElementById('cam-input-lat').value.trim();
+      const lng = document.getElementById('cam-input-lng').value.trim();
 
       if (!title || !streamPath) {
         alert('Mohon isi nama kamera dan stream path!');
@@ -1108,7 +1139,10 @@
       const newCam = {
         id: newId,
         title: title,
+        city: city,
         streamPath: streamPath,
+        lat: lat,
+        lng: lng,
         status: 'online'
       };
 
@@ -1120,7 +1154,7 @@
         saveStoredCustomers(cachedCustomers);
       }
 
-      alert(`BERHASIL: Kamera '${title}' ditambahkan untuk ${cust ? cust.name : 'Customer'}!`);
+      alert(`BERHASIL: Kamera '${title}' (${city.toUpperCase()}) ditambahkan untuk ${cust ? cust.name : 'Customer'}!`);
       closeAddCameraForCustomerForm();
       renderCustomerCCTVTable(cust, cameras);
     }
