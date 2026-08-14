@@ -11248,7 +11248,8 @@
               <label style="font-size: 12px; color: #94a3b8; font-weight: 600; display: block; margin-bottom: 6px;">Password:</label>
               <div style="position: relative; width: 100%; display: block;">
                 <i class="fas fa-key" style="position: absolute; left: 14px; top: 15px; color: #38bdf8; font-size: 14px; z-index: 10; pointer-events: none;"></i>
-                <input type="password" id="login-password" placeholder="••••••••" required style="display: block !important; width: 100% !important; height: 44px !important; background: rgba(255,255,255,0.08) !important; border: 1px solid rgba(255,255,255,0.2) !important; color: #ffffff !important; padding-left: 42px !important; padding-right: 14px !important; font-size: 14px !important; border-radius: 10px !important; outline: none !important; box-shadow: none !important;">
+                <input type="password" id="login-password" placeholder="••••••••" required style="display: block !important; width: 100% !important; height: 44px !important; background: rgba(255,255,255,0.08) !important; border: 1px solid rgba(255,255,255,0.2) !important; color: #ffffff !important; padding-left: 42px !important; padding-right: 42px !important; font-size: 14px !important; border-radius: 10px !important; outline: none !important; box-shadow: none !important;">
+                <i class="fas fa-eye" id="toggle-password-icon" onclick="togglePasswordVisibility()" title="Tampilkan / Sembunyikan Password" style="position: absolute; right: 14px; top: 15px; color: #94a3b8; font-size: 14px; z-index: 10; cursor: pointer; transition: all 0.2s ease;"></i>
               </div>
             </div>
             <div class="p-3 rounded mb-4" style="background: rgba(56, 189, 248, 0.1); border: 1px solid rgba(56, 189, 248, 0.25); font-size: 11px; color: #38bdf8;">
@@ -11369,6 +11370,24 @@
           checkUserSession();
           generateCCTVHTML(currentGlobalCity);
         });
+    }
+
+    function togglePasswordVisibility() {
+      const pwdInput = document.getElementById('login-password');
+      const eyeIcon = document.getElementById('toggle-password-icon');
+      if (!pwdInput || !eyeIcon) return;
+
+      if (pwdInput.type === 'password') {
+        pwdInput.type = 'text';
+        eyeIcon.classList.remove('fa-eye');
+        eyeIcon.classList.add('fa-eye-slash');
+        eyeIcon.style.color = '#00d2ff';
+      } else {
+        pwdInput.type = 'password';
+        eyeIcon.classList.remove('fa-eye-slash');
+        eyeIcon.classList.add('fa-eye');
+        eyeIcon.style.color = '#94a3b8';
+      }
     }
 
     function showQuotaAlert(msg) {
