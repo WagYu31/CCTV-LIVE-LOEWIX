@@ -3690,13 +3690,6 @@
               <option value="name-asc">Nama A-Z</option>
               <option value="name-desc">Nama Z-A</option>
             </select>
-          </div>
-          <button class="btn btn-sm" onclick="openCameraConfigModal(null)" style="background: #20bf6b; color: #fff; border: none; padding: 6px 15px; border-radius: 6px; font-weight: 600;">
-            <i class="fas fa-plus"></i> Tambah Kamera RTSP / IP
-          </button>
-          <button class="btn btn-sm" onclick="clearFilters()" style="background: #dc3545; color: #fff; border: none; padding: 6px 15px; border-radius: 6px;">
-            <i class="fas fa-times"></i> Reset
-          </button>
           <div id="active-filters" style="display: flex; gap: 5px; flex-wrap: wrap;"></div>
         </div>
 
