@@ -648,6 +648,43 @@
       height: 100%;
       object-fit: cover;
       object-position: center;
+    }
+
+    /* Hero Responsiveness & Taste Skill Design */
+    @media (max-width: 991px) {
+      .banner-main-left-con {
+        text-align: center;
+        align-items: center !important;
+        margin-bottom: 30px;
+      }
+      .banner-heading h1 {
+        font-size: 2.5rem !important;
+      }
+      .banner-btn {
+        justify-content: center !important;
+      }
+      .banner-right-con figure img {
+        max-height: 300px !important;
+      }
+    }
+    @media (max-width: 575px) {
+      .banner-heading h1 {
+        font-size: 2.1rem !important;
+      }
+      .banner-content p {
+        font-size: 1rem !important;
+      }
+      .banner-btn a {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+
+    .thumbnail-overlay img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center;
       pointer-events: none;
       user-select: none;
     }
@@ -3250,19 +3287,12 @@
                       Advanced surveillance systems for a safer world. High-fidelity analytics, global scale, zero latency.
                     </p>
                   </div>
-                  <div class="banner-btn" style="display: flex; gap: 12px; flex-wrap: wrap; align-items: center;">
-                    <a href="#cctv" style="background: linear-gradient(135deg, #f59e0b, #d97706); color: #000; font-weight: 800; padding: 14px 30px; border-radius: 30px; font-size: 0.95rem; text-transform: uppercase; letter-spacing: 0.5px; border: none; box-shadow: 0 10px 25px rgba(245, 158, 11, 0.35); transition: all 0.3s ease; display: inline-flex; align-items: center; gap: 8px; text-decoration: none;">
+                  <div class="banner-btn" style="display: flex; gap: 14px; flex-wrap: wrap; align-items: center;">
+                    <a href="#cctv" style="background: linear-gradient(135deg, #f59e0b, #d97706); color: #000; font-weight: 800; padding: 14px 34px; border-radius: 30px; font-size: 0.95rem; text-transform: uppercase; letter-spacing: 0.5px; border: none; box-shadow: 0 10px 25px rgba(245, 158, 11, 0.4); transition: all 0.3s ease; display: inline-flex; align-items: center; gap: 8px; text-decoration: none;">
                       <i class="fas fa-play" style="font-size: 12px;"></i> Watch Live Stream
                     </a>
-
-                    <a href="#terminal-tanjung-pinggir" class="contact-btn contact-banner-btn" style="border-radius: 30px; padding: 12px 24px; font-weight: 600;">
-                      <i class="fas fa-building"></i>
-                      <span>Terminal Feeds</span>
-                    </a>
-
-                    <a href="#pasar-horas" class="contact-btn contact-banner-btn" style="border-radius: 30px; padding: 12px 24px; font-weight: 600;">
-                      <i class="fas fa-store"></i>
-                      <span>Relokasi Pasar Horas</span>
+                    <a href="#peta" style="background: rgba(255,255,255,0.1); color: #ffffff; font-weight: 600; padding: 13px 26px; border-radius: 30px; font-size: 0.95rem; border: 1px solid rgba(255,255,255,0.25); backdrop-filter: blur(8px); transition: all 0.3s ease; display: inline-flex; align-items: center; gap: 8px; text-decoration: none;">
+                      <i class="fas fa-map-marked-alt" style="font-size: 14px; color: #38bdf8;"></i> Explore Network Map
                     </a>
                   </div>
                 </div>
