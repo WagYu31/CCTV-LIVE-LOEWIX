@@ -11329,7 +11329,7 @@
       if (user) {
         if (user.role === 'super_admin') {
           userArea.innerHTML = `
-            <a href="admin/index.php" class="btn btn-sm btn-outline-warning font-weight-bold" style="border-radius: 20px; font-size: 11px;" title="Buka Super Admin Control Center">
+            <a href="admin/index.html" class="btn btn-sm btn-outline-warning font-weight-bold" style="border-radius: 20px; font-size: 11px;" title="Buka Super Admin Control Center">
               <i class="fas fa-user-shield mr-1"></i> ADMIN PANEL
             </a>
             <button class="btn btn-sm btn-outline-danger" onclick="logoutUser()" style="border-radius: 20px; font-size: 11px;">
@@ -11385,7 +11385,7 @@
           $('#modalLogin').modal('hide');
           checkUserSession();
           if (res.user && res.user.role === 'super_admin') {
-            window.location.href = 'admin/index.php';
+            window.location.href = 'admin/index.html';
           } else {
             generateCCTVHTML(currentGlobalCity);
           }
@@ -11398,7 +11398,7 @@
           localStorage.setItem('loewix_user', JSON.stringify(user));
           alert('Login Super Admin Berhasil!');
           $('#modalLogin').modal('hide');
-          window.location.href = 'admin/index.php';
+          window.location.href = 'admin/index.html';
         } else if (email === 'customer@jayasentosa.com' && password === 'customer123') {
           const user = { id: 2, name: 'PT. Jaya Sentosa Enterprise', email: email, role: 'customer', cctv_quota: 10, cctv_used: 0 };
           localStorage.setItem('loewix_user', JSON.stringify(user));
