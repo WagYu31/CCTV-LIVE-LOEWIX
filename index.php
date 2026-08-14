@@ -3295,7 +3295,7 @@
                 <div class="banner-right-con wow slideInRight" style="position: relative; display: flex; justify-content: center; align-items: center;">
                   <figure class="mb-0" style="position: relative; display: inline-block; max-width: 100%;">
                     <img
-                      src="assets/image/loewix_hero_cctv_camera.png?v=5"
+                      src="assets/image/loewix_hero_cctv_camera.png?v=6"
                       alt="Loewix CCTV Camera"
                       class="img-fluid"
                       style="max-width: 90%; max-height: 380px; width: auto; height: auto; filter: drop-shadow(0 15px 30px rgba(0,0,0,0.4)); transition: all 0.5s ease;"
