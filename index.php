@@ -4164,12 +4164,25 @@
           const list = JSON.parse(localStorage.getItem(key) || '[]');
           list.forEach(c => {
             if (!c || !c.title) return;
-            const exists = mediamtxData.some(m => m.id === c.id || m.streamPath === c.streamPath);
-            if (!exists) {
-              const lat = parseFloat(c.lat) || (c.coordinates ? c.coordinates[0] : 2.9750);
-              const lng = parseFloat(c.lng) || (c.coordinates ? c.coordinates[1] : 99.0789);
+
+            // Prevent collision with system static IDs (1-8, 101-104, 201-203, 301-303, 401-402)
+            let safeId = c.id;
+            if (safeId < 5000) {
+              safeId = 5000 + safeId;
+              c.id = safeId;
+            }
+
+            const existingIdx = mediamtxData.findIndex(m => m.id === safeId);
+            if (existingIdx !== -1) {
+              mediamtxData[existingIdx].title = c.title;
+              mediamtxData[existingIdx].city = c.city || mediamtxData[existingIdx].city;
+              mediamtxData[existingIdx].streamPath = c.streamPath;
+              mediamtxData[existingIdx].streamId = c.streamPath;
+            } else {
+              const lat = parseFloat(c.lat) || (c.coordinates ? c.coordinates[0] : 3.0148);
+              const lng = parseFloat(c.lng) || (c.coordinates ? c.coordinates[1] : 99.0852);
               mediamtxData.push({
-                id: c.id,
+                id: safeId,
                 city: c.city || 'siantar',
                 title: c.title,
                 streamPath: c.streamPath,

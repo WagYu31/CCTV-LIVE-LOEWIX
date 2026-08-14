@@ -1269,7 +1269,7 @@
         return;
       }
 
-      const newId = cameras.length > 0 ? Math.max(...cameras.map(c => c.id)) + 1 : 101;
+      const newId = cameras.length > 0 ? Math.max(5000, ...cameras.map(c => c.id)) + 1 : (5000 + (Date.now() % 1000));
       const newCam = {
         id: newId,
         title: title,
