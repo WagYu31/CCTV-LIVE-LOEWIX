@@ -488,15 +488,13 @@
   <style>
     /* Card Styles - Modern Professional Design (Image 2) */
     .traffic-card {
-      transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
       border-radius: 16px;
       overflow: hidden;
-      margin-bottom: 24px;
-      height: 100%;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       display: flex;
       flex-direction: column;
-      position: relative;
+      height: 100%;
       background: #ffffff;
       border: 1px solid rgba(0, 0, 0, 0.06);
     }
@@ -506,8 +504,24 @@
       box-shadow: 0 20px 35px -5px rgba(0, 0, 0, 0.12), 0 10px 15px -5px rgba(0, 0, 0, 0.04);
     }
 
-    .traffic-card-iframe {
+    /* Clean Card Header Bar (No Video Obstruction!) */
+    .card-header-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 14px;
+      background: #0f172a;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
       border-radius: 16px 16px 0 0;
+      gap: 10px;
+    }
+
+    body.dark-mode .card-header-bar {
+      background: #090d16;
+    }
+
+    .traffic-card-iframe {
+      border-radius: 0;
       position: relative;
       width: 100%;
       padding-bottom: 56.25%;
@@ -517,36 +531,31 @@
       flex-grow: 1;
     }
 
-    /* Badges Overlay Top-Left */
+    /* Badges Bar Top-Left */
     .card-top-badges {
-      position: absolute;
-      top: 12px;
-      left: 12px;
-      z-index: 12;
       display: flex;
       align-items: center;
-      gap: 8px;
-      pointer-events: none;
+      gap: 6px;
     }
 
     .badge-live-yellow {
       background: #ffd600;
       color: #111827;
-      font-size: 11px;
+      font-size: 10px;
       font-weight: 800;
       letter-spacing: 0.5px;
-      padding: 5px 12px;
+      padding: 4px 10px;
       border-radius: 20px;
       display: inline-flex;
       align-items: center;
-      gap: 6px;
+      gap: 5px;
       box-shadow: 0 2px 8px rgba(255, 214, 0, 0.4);
       text-transform: uppercase;
     }
 
     .badge-live-yellow .live-pulse-dot {
-      width: 7px;
-      height: 7px;
+      width: 6px;
+      height: 6px;
       background-color: #dc2626;
       border-radius: 50%;
       display: inline-block;
@@ -560,18 +569,49 @@
     }
 
     .badge-dark-pill {
-      background: rgba(17, 24, 39, 0.8);
-      backdrop-filter: blur(6px);
-      -webkit-backdrop-filter: blur(6px);
+      background: rgba(255, 255, 255, 0.1);
       color: #f3f4f6;
-      font-size: 11px;
+      font-size: 10px;
       font-weight: 600;
-      padding: 5px 12px;
+      padding: 4px 10px;
       border-radius: 20px;
       display: inline-flex;
       align-items: center;
       gap: 5px;
       border: 1px solid rgba(255, 255, 255, 0.15);
+      text-transform: uppercase;
+    }
+
+    .card-header-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .card-header-actions .header-btn {
+      background: rgba(255, 255, 255, 0.1);
+      color: #94a3b8;
+      border: none;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 12px;
+      transition: all 0.2s ease;
+    }
+
+    .card-header-actions .header-btn:hover {
+      background: #38bdf8;
+      color: #0f172a;
+      transform: scale(1.1);
+    }
+
+    .card-header-actions .header-btn.active {
+      color: #f59e0b;
+      background: rgba(245, 158, 11, 0.25);
     }
 
     /* Card Footer Content */
@@ -8607,24 +8647,30 @@
             const cctvCardHTML = `
                 <div class="col-lg-4 col-md-6 col-12 mb-4" data-camera-id="${camera.id}" data-platform="${camera.platform}" data-status="online">
                   <div class="traffic-card" id="card-${camera.id}">
-                    <div class="traffic-card-iframe">
+                    <!-- Header Bar (Badges & Controls Above Video) -->
+                    <div class="card-header-bar">
                       <div class="card-top-badges">
                         <span class="badge-live-yellow"><span class="live-pulse-dot"></span> LIVE</span>
                         <span class="badge-dark-pill"><i class="fas fa-microchip" style="font-size:10px; color:#facc15;"></i> AI DETECT</span>
                       </div>
-                      <button class="favorite-button ${favoriteClass}" onclick="event.stopPropagation(); toggleFavorite(${camera.id}, '${camera.title.replace(/'/g, "\\'")}')" title="${isFavorite ? 'Hapus dari Favorit' : 'Tambah ke Favorit'}">
-                        <i class="${favoriteIcon} fa-star"></i>
-                      </button>
-                      <button class="share-button" onclick="event.stopPropagation(); shareCCTV(${camera.id}, '${camera.title.replace(/'/g, "\\'")}')" title="Bagikan CCTV">
-                        <i class="fas fa-share-alt"></i>
-                      </button>
-                      <button class="settings-button" onclick="event.stopPropagation(); openCameraConfigModal(${camera.id})" title="Pengaturan IP / RTSP Kamera" style="position: absolute; top: 10px; right: 85px; z-index: 10; background: rgba(0,0,0,0.6); color: #fff; border: none; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s;">
-                        <i class="fas fa-cog"></i>
-                      </button>
-                      <button class="refresh-button" onclick="event.stopPropagation(); ${reloadFunction}">
-                        <i class="fas fa-sync-alt"></i>
-                      </button>
+                      <div class="card-header-actions">
+                        <button class="header-btn ${favoriteClass}" onclick="event.stopPropagation(); toggleFavorite(${camera.id}, '${camera.title.replace(/'/g, "\\'")}')" title="${isFavorite ? 'Hapus dari Favorit' : 'Tambah ke Favorit'}">
+                          <i class="${favoriteIcon} fa-star"></i>
+                        </button>
+                        <button class="header-btn" onclick="event.stopPropagation(); shareCCTV(${camera.id}, '${camera.title.replace(/'/g, "\\'")}')" title="Bagikan CCTV">
+                          <i class="fas fa-share-alt"></i>
+                        </button>
+                        <button class="header-btn" onclick="event.stopPropagation(); openCameraConfigModal(${camera.id})" title="Pengaturan IP / RTSP Kamera">
+                          <i class="fas fa-cog"></i>
+                        </button>
+                        <button class="header-btn" onclick="event.stopPropagation(); ${reloadFunction}" title="Refresh Stream">
+                          <i class="fas fa-sync-alt"></i>
+                        </button>
+                      </div>
+                    </div>
 
+                    <!-- Clean 100% Unobstructed Video Stream Canvas -->
+                    <div class="traffic-card-iframe">
                       <div class="loading-indicator" id="loading-${camera.id}">
                         <i class="fas fa-spinner fa-spin fa-3x mb-2"></i>
                         <div>Memuat ulang...</div>
