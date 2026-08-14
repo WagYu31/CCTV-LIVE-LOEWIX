@@ -3294,10 +3294,10 @@
                 <div class="banner-right-con wow slideInRight" style="position: relative; text-align: center;">
                   <figure class="mb-0" style="position: relative; display: inline-block;">
                     <img
-                      src="assets/image/loewix_hero_cctv_camera.png?v=3"
+                      src="assets/image/loewix_hero_cctv_camera.png?v=4"
                       alt="Loewix CCTV Camera"
                       class="img-fluid"
-                      style="max-width: 100%; height: auto; filter: drop-shadow(0 15px 30px rgba(0,0,0,0.5)); transform: scale(1.1); transition: all 0.5s ease;"
+                      style="max-width: 100%; height: auto; filter: drop-shadow(0 15px 30px rgba(0,0,0,0.4)); transform: scale(1.1); transition: all 0.5s ease;"
                       loading="eager" />
                   </figure>
                 </div>
