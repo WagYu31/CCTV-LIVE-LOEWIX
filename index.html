@@ -3243,6 +3243,56 @@
       }
     }
 
+    /* Modal Login Professional Overrides - Remove theme pseudo checkboxes */
+    .modal-content label::before,
+    .modal-content label::after,
+    #modalLogin label::before,
+    #modalLogin label::after,
+    .form-group label:before,
+    .form-group label::before {
+      display: none !important;
+      content: none !important;
+      border: none !important;
+      width: 0 !important;
+      height: 0 !important;
+      padding: 0 !important;
+      margin: 0 !important;
+    }
+
+    #modalLogin .modal-content {
+      background: rgba(13, 25, 52, 0.95) !important;
+      backdrop-filter: blur(20px) !important;
+      border: 1px solid rgba(255, 255, 255, 0.15) !important;
+      border-radius: 20px !important;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6) !important;
+      overflow: hidden;
+    }
+
+    #modalLogin .input-group-text {
+      background: rgba(255, 255, 255, 0.08) !important;
+      border: 1px solid rgba(255, 255, 255, 0.2) !important;
+      border-right: none !important;
+      color: #38bdf8 !important;
+      border-radius: 10px 0 0 10px !important;
+      padding: 10px 14px !important;
+    }
+
+    #modalLogin .form-control {
+      background: rgba(255, 255, 255, 0.08) !important;
+      border: 1px solid rgba(255, 255, 255, 0.2) !important;
+      border-left: none !important;
+      color: #ffffff !important;
+      height: 44px !important;
+      font-size: 14px !important;
+      border-radius: 0 10px 10px 0 !important;
+    }
+
+    #modalLogin .form-control:focus {
+      background: rgba(255, 255, 255, 0.12) !important;
+      border-color: #00d2ff !important;
+      box-shadow: 0 0 12px rgba(0, 210, 255, 0.3) !important;
+    }
+
     /* ===== END VIDEO RENDERING OPTIMIZATION ===== */
   </style>
 
@@ -11178,29 +11228,39 @@
   <!-- ===== LOGIN MODAL (SUPER ADMIN & CUSTOMER) ===== -->
   <div class="modal fade" id="modalLogin" tabindex="-1" role="dialog" aria-hidden="true" style="z-index: 1060;">
     <div class="modal-dialog modal-dialog-centered modal-sm" role="document">
-      <div class="modal-content" style="background: #0d1934; border: 1px solid rgba(255,255,255,0.15); color: #fff; border-radius: 16px;">
-        <div class="modal-header" style="border-bottom: 1px solid rgba(255,255,255,0.1);">
-          <h5 class="modal-title font-weight-bold" style="font-size: 16px;"><i class="fas fa-user-lock text-info mr-2"></i> Login Akun Loewix</h5>
-          <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+      <div class="modal-content" style="background: rgba(13, 25, 52, 0.95); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.15); color: #fff; border-radius: 20px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.6);">
+        <div class="modal-header" style="border-bottom: 1px solid rgba(255,255,255,0.1); padding: 16px 20px;">
+          <h5 class="modal-title font-weight-bold d-flex align-items-center" style="font-size: 15px; color: #ffffff; margin: 0;"><i class="fas fa-lock text-info mr-2" style="font-size: 16px;"></i> LOGIN AKUN LOEWIX</h5>
+          <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close" style="outline: none; opacity: 0.8;">
             <span aria-hidden="true">&times;</span>
           </button>
         </div>
         <form id="formLogin" onsubmit="submitLogin(event)">
-          <div class="modal-body py-4">
+          <div class="modal-body p-4">
             <div class="form-group mb-3">
-              <label style="font-size: 12px; color: #94a3b8; font-weight: 600; display: block; margin-bottom: 6px;">Email Login:</label>
-              <input type="email" id="login-email" class="form-control" style="display: block !important; width: 100% !important; height: 42px !important; background: rgba(255,255,255,0.1) !important; border: 1px solid rgba(255,255,255,0.25) !important; color: #ffffff !important; padding: 10px 14px !important; font-size: 14px !important; border-radius: 8px !important; appearance: auto !important; -webkit-appearance: auto !important;" placeholder="admin@loewixcctv.com" required>
+              <span style="font-size: 12px; color: #94a3b8; font-weight: 600; display: block; margin-bottom: 6px;">Email Login:</span>
+              <div class="input-group">
+                <div class="input-group-prepend">
+                  <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+                </div>
+                <input type="email" id="login-email" class="form-control" placeholder="admin@loewixcctv.com" required>
+              </div>
             </div>
-            <div class="form-group mb-3">
-              <label style="font-size: 12px; color: #94a3b8; font-weight: 600; display: block; margin-bottom: 6px;">Password:</label>
-              <input type="password" id="login-password" class="form-control" style="display: block !important; width: 100% !important; height: 42px !important; background: rgba(255,255,255,0.1) !important; border: 1px solid rgba(255,255,255,0.25) !important; color: #ffffff !important; padding: 10px 14px !important; font-size: 14px !important; border-radius: 8px !important; appearance: auto !important; -webkit-appearance: auto !important;" placeholder="••••••••" required>
+            <div class="form-group mb-4">
+              <span style="font-size: 12px; color: #94a3b8; font-weight: 600; display: block; margin-bottom: 6px;">Password:</span>
+              <div class="input-group">
+                <div class="input-group-prepend">
+                  <span class="input-group-text"><i class="fas fa-key"></i></span>
+                </div>
+                <input type="password" id="login-password" class="form-control" placeholder="••••••••" required>
+              </div>
             </div>
-            <div class="p-2 rounded mb-3" style="background: rgba(56, 189, 248, 0.1); border: 1px solid rgba(56, 189, 248, 0.25); font-size: 11px; color: #38bdf8;">
-              <i class="fas fa-info-circle mr-1"></i> Demo Login:
+            <div class="p-3 rounded mb-4" style="background: rgba(56, 189, 248, 0.1); border: 1px solid rgba(56, 189, 248, 0.25); font-size: 11px; color: #38bdf8;">
+              <div class="font-weight-bold mb-1"><i class="fas fa-info-circle mr-1"></i> Demo Access Accounts:</div>
               <div>• Super Admin: <code>admin@loewixcctv.com</code> / <code>admin123</code></div>
               <div>• Customer: <code>customer@jayasentosa.com</code> / <code>customer123</code></div>
             </div>
-            <button type="submit" class="btn btn-block" style="background: linear-gradient(135deg, #00d2ff, #0066ff); color: #fff; font-weight: 700; border-radius: 20px; height: 42px;">
+            <button type="submit" class="btn btn-block" style="background: linear-gradient(135deg, #00d2ff, #0066ff); color: #fff; font-weight: 800; border-radius: 25px; height: 44px; letter-spacing: 0.5px; box-shadow: 0 4px 15px rgba(0, 102, 255, 0.4); text-transform: uppercase; font-size: 13px;">
               <i class="fas fa-sign-in-alt mr-1"></i> LOGIN SEKARANG
             </button>
           </div>
