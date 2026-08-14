@@ -3189,8 +3189,9 @@
         <a class="navbar-brand p-0" href="index.php">
           <img
             src="assets/image/logo-loewix.png"
-            alt="Logo PELINTAS - Peta Titik Lokasi"
-            class="img-fluid" />
+            alt="Logo PELINTAS - Loewix"
+            class="img-fluid"
+            style="max-height: 42px; width: auto; display: block;" />
         </a>
         <button
           class="navbar-toggler p-0 collapsed"
@@ -3259,20 +3260,20 @@
       <section class="banner-main-con">
         <div class="container">
           <div class="banner-con">
-            <div class="row">
+            <div class="row align-items-center">
               <div
-                class="col-lg-7 col-md-7 col-sm-12 d-flex justify-content-center flex-column banner-main-left-con">
+                class="col-lg-6 col-md-6 col-sm-12 d-flex justify-content-center flex-column banner-main-left-con">
                 <div class="banner-left-con wow slideInLeft">
                   <div class="banner-heading">
-                    <h1>CCTV Online Kota Pematangsiantar</h1>
+                    <h1 style="font-size: 2.5rem; line-height: 1.2; font-weight: 800; margin-bottom: 15px;">CCTV Online Kota Pematangsiantar</h1>
                   </div>
                   <div class="banner-content">
-                    <p class="col-lg-11 pl-0 pr-0">
+                    <p class="col-lg-11 pl-0 pr-0" style="font-size: 1.1rem; opacity: 0.9;">
                       Selamat Datang Pada Halaman CCTV Online Kota
                       Pematangsiantar.
                     </p>
                   </div>
-                  <div class="banner-btn">
+                  <div class="banner-btn" style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 20px;">
                     <a href="#cctv" class="contact-btn contact-banner-btn">
                       <i class="fas fa-video"></i>
                       <span>Lihat CCTV</span>
@@ -3290,14 +3291,14 @@
                   </div>
                 </div>
               </div>
-              <div class="col-lg-5 col-md-5 col-sm-12">
-                <div class="banner-right-con wow slideInRight" style="position: relative; text-align: center;">
-                  <figure class="mb-0" style="position: relative; display: inline-block;">
+              <div class="col-lg-6 col-md-6 col-sm-12 text-center">
+                <div class="banner-right-con wow slideInRight" style="position: relative; display: flex; justify-content: center; align-items: center;">
+                  <figure class="mb-0" style="position: relative; display: inline-block; max-width: 100%;">
                     <img
-                      src="assets/image/loewix_hero_cctv_camera.png?v=4"
+                      src="assets/image/loewix_hero_cctv_camera.png?v=5"
                       alt="Loewix CCTV Camera"
                       class="img-fluid"
-                      style="max-width: 100%; height: auto; filter: drop-shadow(0 15px 30px rgba(0,0,0,0.4)); transform: scale(1.1); transition: all 0.5s ease;"
+                      style="max-width: 90%; max-height: 380px; width: auto; height: auto; filter: drop-shadow(0 15px 30px rgba(0,0,0,0.4)); transition: all 0.5s ease;"
                       loading="eager" />
                   </figure>
                 </div>
