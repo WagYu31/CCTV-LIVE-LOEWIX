@@ -4186,8 +4186,37 @@
               });
             }
           });
-        } catch(e) {}
-      });
+      // Fetch cameras from backend Database API for cross-device real-time sync
+      fetch('api/cameras.php?action=public_list')
+        .then(res => res.json())
+        .then(data => {
+          if (data.success && data.cameras) {
+            data.cameras.forEach(c => {
+              let safeId = c.id < 5000 ? 5000 + c.id : c.id;
+              const idx = mediamtxData.findIndex(m => m.id === safeId || m.title === c.title);
+              if (idx !== -1) {
+                mediamtxData[idx].title = c.title;
+                mediamtxData[idx].city = c.city || mediamtxData[idx].city;
+                mediamtxData[idx].streamPath = c.streamPath;
+                mediamtxData[idx].streamId = c.streamPath;
+              } else {
+                const lat = parseFloat(c.lat) || 3.0148;
+                const lng = parseFloat(c.lng) || 99.0852;
+                mediamtxData.push({
+                  id: safeId,
+                  city: c.city || 'siantar',
+                  title: c.title,
+                  streamPath: c.streamPath,
+                  streamId: c.streamPath,
+                  coordinates: [lat, lng],
+                  platform: PLATFORM_TYPES.MEDIAMTX,
+                  thumbnail: ASSET_BASE + '/image/logo-loewix.png'
+                });
+              }
+            });
+            if (typeof generateCCTVHTML === 'function') generateCCTVHTML(typeof currentGlobalCity !== 'undefined' ? currentGlobalCity : 'all');
+          }
+        }).catch(e => {});
     }
     syncCustomLocalStorageCameras();
 

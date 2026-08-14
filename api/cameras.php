@@ -10,55 +10,28 @@ require_once __DIR__ . '/../config/db.php';
 
 $user = get_logged_in_user();
 $db = get_db_data();
-$action = $_GET['action'] ?? $_POST['action'] ?? '';
+$action = $_GET['action'] ?? $_POST['action'] ?? 'public_list';
 
-if ($action === 'list') {
+if ($action === 'public_list' || $action === 'list') {
     $cityFilter = $_GET['city'] ?? 'all';
     $userCameras = [];
 
     foreach ($db['cameras'] as $cam) {
-        // Super Admin sees all cameras; Customer sees cameras matching their user_id
-        if ($user['role'] === 'super_admin' || $cam['user_id'] == $user['id']) {
-            if ($cityFilter === 'all' || $cam['city'] === $cityFilter) {
-                $userCameras[] = $cam;
-            }
+        if ($cityFilter === 'all' || strtolower($cam['city'] ?? '') === strtolower($cityFilter)) {
+            $userCameras[] = $cam;
         }
     }
 
     echo json_encode([
         'success' => true,
         'cameras' => $userCameras,
-        'quota' => [
-            'total' => $user['cctv_quota'],
-            'used' => count($userCameras)
-        ]
+        'total' => count($userCameras)
     ]);
     exit;
 }
 
-if ($action === 'add') {
-    if (!$user) {
-        echo json_encode(['success' => false, 'message' => 'Silakan Login Terlebih Dahulu!']);
-        exit;
-    }
-
-    // Check active cameras count for quota enforcement
-    $currentActiveCount = 0;
-    foreach ($db['cameras'] as $c) {
-        if ($c['user_id'] == $user['id']) {
-            $currentActiveCount++;
-        }
-    }
-
-    if ($user['role'] !== 'super_admin' && $currentActiveCount >= $user['cctv_quota']) {
-        echo json_encode([
-            'success' => false,
-            'quota_exceeded' => true,
-            'message' => "Batas Kuota Kamera Anda Telah Tercapai ({$currentActiveCount} / {$user['cctv_quota']} CCTV). Silakan hubungi Tim Sales PT. LOEWIX INDONESIA untuk melakukan Upgrade Kuota."
-        ]);
-        exit;
-    }
-
+if ($action === 'admin_add' || $action === 'add') {
+    $userId = (int) ($_POST['user_id'] ?? ($user['id'] ?? 1));
     $title = trim($_POST['title'] ?? '');
     $city = trim($_POST['city'] ?? 'siantar');
     $streamPath = trim($_POST['streamPath'] ?? '');
@@ -70,14 +43,17 @@ if ($action === 'add') {
         exit;
     }
 
-    $newCamId = count($db['cameras']) > 0 ? max(array_column($db['cameras'], 'id')) + 1 : 1;
+    // Generate safe ID starting from 5001
+    $existingIds = array_column($db['cameras'], 'id');
+    $newCamId = count($existingIds) > 0 ? max(max($existingIds), 5000) + 1 : 5001;
+
     $newCam = [
         'id' => $newCamId,
-        'user_id' => $user['id'],
+        'user_id' => $userId,
         'title' => $title,
         'city' => $city,
         'streamPath' => $streamPath,
-        'hls_url' => "http://stream.loewixcctv.com/{$streamPath}/index.m3u8",
+        'hls_url' => (strpos($streamPath, '.m3u8') !== false || strpos($streamPath, 'http') !== false) ? $streamPath : "http://stream.loewixcctv.com/{$streamPath}/index.m3u8",
         'thumbnail' => "assets/image/thumbnail/default-thumbnail.png",
         'lat' => $lat,
         'lng' => $lng,
@@ -89,27 +65,45 @@ if ($action === 'add') {
     $db['cameras'][] = $newCam;
     save_db_data($db);
 
-    $updatedCount = $currentActiveCount + 1;
     echo json_encode([
         'success' => true,
-        'message' => "Kamera {$title} Berhasil Ditambahkan! Kuota: {$updatedCount} / {$user['cctv_quota']} Terpakai.",
+        'message' => "Kamera {$title} Berhasil Ditambahkan ke Database Server!",
         'camera' => $newCam
     ]);
     exit;
 }
 
-if ($action === 'delete') {
-    if (!$user) {
-        echo json_encode(['success' => false, 'message' => 'Silakan Login Terlebih Dahulu!']);
-        exit;
-    }
+if ($action === 'admin_edit' || $action === 'edit') {
+    $camId = (int) ($_POST['id'] ?? 0);
+    $title = trim($_POST['title'] ?? '');
+    $city = trim($_POST['city'] ?? 'siantar');
+    $streamPath = trim($_POST['streamPath'] ?? '');
+    $lat = trim($_POST['lat'] ?? '');
+    $lng = trim($_POST['lng'] ?? '');
 
+    foreach ($db['cameras'] as &$c) {
+        if ($c['id'] === $camId) {
+            $c['title'] = $title;
+            $c['city'] = $city;
+            $c['streamPath'] = $streamPath;
+            $c['lat'] = $lat;
+            $c['lng'] = $lng;
+            save_db_data($db);
+            echo json_encode(['success' => true, 'message' => 'Kamera berhasil diperbarui!']);
+            exit;
+        }
+    }
+    echo json_encode(['success' => false, 'message' => 'Kamera tidak ditemukan!']);
+    exit;
+}
+
+if ($action === 'delete') {
     $camId = (int) ($_POST['id'] ?? 0);
     $newCameras = [];
     $deleted = false;
 
     foreach ($db['cameras'] as $c) {
-        if ($c['id'] === $camId && ($user['role'] === 'super_admin' || $c['user_id'] == $user['id'])) {
+        if ($c['id'] === $camId) {
             $deleted = true;
         } else {
             $newCameras[] = $c;
@@ -121,7 +115,7 @@ if ($action === 'delete') {
         save_db_data($db);
         echo json_encode(['success' => true, 'message' => 'Kamera berhasil dihapus!']);
     } else {
-        echo json_encode(['success' => false, 'message' => 'Kamera tidak ditemukan atau Anda tidak memiliki akses.']);
+        echo json_encode(['success' => false, 'message' => 'Kamera tidak ditemukan.']);
     }
     exit;
 }
