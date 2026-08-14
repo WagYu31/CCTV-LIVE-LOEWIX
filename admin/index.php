@@ -684,12 +684,14 @@
       localStorage.setItem('loewix_customers', JSON.stringify(list));
     }
 
+    const API_SERVER = (window.location.protocol === 'file:') ? '../api' : 'https://stream.loewixcctv.com/api';
+
     document.addEventListener('DOMContentLoaded', () => {
       loadCustomerData();
     });
 
     function loadCustomerData() {
-      fetch('../api/admin_customers.php')
+      fetch(`${API_SERVER}/admin_customers.php`)
         .then(res => res.json())
         .then(data => {
           if (!data.success) {
@@ -909,7 +911,7 @@
       formData.append('cctv_quota', quota);
       formData.append('city', city);
       formData.append('phone', phone);
-      fetch('../api/admin_customers.php', { method: 'POST', body: formData }).catch(e => {});
+      fetch(`${API_SERVER}/admin_customers.php`, { method: 'POST', body: formData }).then(() => loadCustomerData()).catch(e => {});
 
       alert(`BERHASIL: Customer baru '${name}' berhasil ditambahkan dengan kuota ${quota} CCTV!`);
       closeAddCustomerModal();
@@ -949,7 +951,7 @@
       formData.append('email', email);
       formData.append('city', city);
       formData.append('phone', phone);
-      fetch('../api/admin_customers.php', { method: 'POST', body: formData }).catch(e => {});
+      fetch(`${API_SERVER}/admin_customers.php`, { method: 'POST', body: formData }).then(() => loadCustomerData()).catch(e => {});
 
       alert(`BERHASIL: Data Customer '${name}' berhasil diperbarui!`);
       closeEditCustomerModal();
@@ -979,7 +981,7 @@
       formData.append('action', 'update_quota');
       formData.append('id', id);
       formData.append('cctv_quota', newQuota);
-      fetch('../api/admin_customers.php', { method: 'POST', body: formData }).catch(e => {});
+      fetch(`${API_SERVER}/admin_customers.php`, { method: 'POST', body: formData }).then(() => loadCustomerData()).catch(e => {});
 
       alert(`BERHASIL: Kuota CCTV untuk '${name}' diperbarui menjadi ${newQuota} CCTV!`);
       renderCustomerTable(list);
@@ -1024,7 +1026,7 @@
       formData.append('action', 'reset_password');
       formData.append('id', id);
       formData.append('password', newPassword.trim());
-      fetch('../api/admin_customers.php', { method: 'POST', body: formData }).catch(e => {});
+      fetch(`${API_SERVER}/admin_customers.php`, { method: 'POST', body: formData }).then(() => loadCustomerData()).catch(e => {});
 
       alert(`BERHASIL: Password Customer '${name}' telah diubah menjadi '${newPassword.trim()}'!`);
     }
@@ -1090,7 +1092,7 @@
       formData.append('streamPath', cam.streamPath);
       formData.append('lat', cam.lat || '');
       formData.append('lng', cam.lng || '');
-      fetch('../api/cameras.php', { method: 'POST', body: formData }).catch(e => {});
+      fetch(`${API_SERVER}/cameras.php`, { method: 'POST', body: formData }).then(() => loadCustomerData()).catch(e => {});
     }
 
     function openCustomerCCTVModal(customerId) {

@@ -4184,7 +4184,8 @@
         });
 
         // Fetch cameras from backend Database API for cross-device real-time sync
-        fetch('api/cameras.php?action=public_list')
+        const apiTarget = (window.location.protocol === 'file:') ? 'api/cameras.php?action=public_list' : 'https://stream.loewixcctv.com/api/cameras.php?action=public_list';
+        fetch(apiTarget)
           .then(res => res.json())
           .then(data => {
             if (data && data.success && data.cameras) {
