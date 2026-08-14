@@ -555,11 +555,16 @@
     /* Card Footer Command Center Panel */
     .traffic-card-content {
       padding: 14px 16px;
-      background: rgba(13, 27, 62, 0.95);
-      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      background: #ffffff;
+      border-top: 1px solid #f1f5f9;
       display: flex;
       flex-direction: column;
       gap: 8px;
+    }
+
+    body.dark-mode .traffic-card-content {
+      background: rgba(13, 27, 62, 0.95);
+      border-top-color: rgba(255, 255, 255, 0.08);
     }
 
     .card-footer-top-row {
@@ -572,7 +577,7 @@
     .card-location-title {
       font-size: 15px;
       font-weight: 700;
-      color: #ffffff;
+      color: #0f172a;
       display: flex;
       align-items: center;
       gap: 8px;
@@ -582,10 +587,18 @@
       max-width: 65%;
     }
 
+    body.dark-mode .card-location-title {
+      color: #ffffff;
+    }
+
     .card-location-title i {
-      color: #38bdf8;
-      font-size: 13px;
+      color: #0284c7;
+      font-size: 14px;
       flex-shrink: 0;
+    }
+
+    body.dark-mode .card-location-title i {
+      color: #38bdf8;
     }
 
     .card-action-toolbar {
@@ -595,9 +608,9 @@
     }
 
     .card-action-toolbar .action-btn {
-      background: rgba(255, 255, 255, 0.08);
-      color: rgba(255, 255, 255, 0.75);
-      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: #f1f5f9;
+      color: #475569;
+      border: 1px solid #cbd5e1;
       width: 32px;
       height: 32px;
       border-radius: 50%;
@@ -609,15 +622,34 @@
       transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
+    body.dark-mode .card-action-toolbar .action-btn {
+      background: rgba(255, 255, 255, 0.08);
+      color: rgba(255, 255, 255, 0.85);
+      border-color: rgba(255, 255, 255, 0.15);
+    }
+
     .card-action-toolbar .action-btn:hover {
+      background: #0284c7;
+      color: #ffffff;
+      border-color: #0284c7;
+      transform: scale(1.1);
+      box-shadow: 0 0 12px rgba(2, 132, 199, 0.4);
+    }
+
+    body.dark-mode .card-action-toolbar .action-btn:hover {
       background: #38bdf8;
       color: #0f172a;
       border-color: #38bdf8;
-      transform: scale(1.1);
       box-shadow: 0 0 12px rgba(56, 189, 248, 0.5);
     }
 
     .card-action-toolbar .action-btn.active {
+      color: #d97706;
+      background: #fef3c7;
+      border-color: #fde68a;
+    }
+
+    body.dark-mode .card-action-toolbar .action-btn.active {
       color: #f59e0b;
       background: rgba(245, 158, 11, 0.2);
       border-color: rgba(245, 158, 11, 0.4);
@@ -629,14 +661,30 @@
       justify-content: space-between;
       font-size: 11px;
       font-weight: 600;
-      color: rgba(255, 255, 255, 0.6);
+      color: #64748b;
       padding-top: 4px;
     }
 
+    body.dark-mode .card-footer-meta-row {
+      color: rgba(255, 255, 255, 0.6);
+    }
+
     .card-meta-code {
-      color: #38bdf8;
+      color: #0284c7;
       font-weight: 700;
       letter-spacing: 0.5px;
+    }
+
+    body.dark-mode .card-meta-code {
+      color: #38bdf8;
+    }
+
+    .card-meta-ai {
+      color: #0284c7;
+    }
+
+    body.dark-mode .card-meta-ai {
+      color: #38bdf8;
     }
 
     /* Card Footer Content */
@@ -8742,8 +8790,8 @@
                         <div class="card-meta-code">
                           CAM-${String(camera.id).padStart(2, '0')} • HIGH-FIDELITY FEED
                         </div>
-                        <div style="color: #38bdf8; font-weight: 600; font-size: 10px; display: inline-flex; align-items: center; gap: 4px;">
-                          <i class="fas fa-microchip" style="color: #facc15;"></i> AI ANALYTICS
+                        <div class="card-meta-ai" style="font-weight: 700; font-size: 10px; display: inline-flex; align-items: center; gap: 4px;">
+                          <i class="fas fa-microchip" style="color: #d97706;"></i> AI ANALYTICS
                         </div>
                       </div>
                     </div>
