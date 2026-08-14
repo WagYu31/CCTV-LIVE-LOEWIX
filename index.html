@@ -3224,22 +3224,28 @@
           id="navbarSupportedContent">
           <ul class="navbar-nav align-items-center" style="gap: 20px; margin-right: 15px;">
             <li class="nav-item active">
-              <a class="nav-link text-white" href="index.php" style="font-weight: 600; font-size: 14px; opacity: 1; transition: all 0.2s;">Home</a>
+              <a class="nav-link text-white d-flex align-items-center" href="index.php" style="font-weight: 600; font-size: 14px; opacity: 1; gap: 6px; transition: all 0.2s;">
+                <i class="fas fa-home" style="color: #38bdf8; font-size: 14px;"></i>
+                Home
+              </a>
             </li>
             <li class="nav-item">
               <a class="nav-link text-white d-flex align-items-center" href="#cctv" style="font-weight: 600; font-size: 14px; opacity: 0.85; gap: 6px; transition: all 0.2s;">
-                <img src="assets/image/icon-cctv.png" alt="CCTV" style="width: 18px; height: 18px;" />
+                <i class="fas fa-video" style="color: #38bdf8; font-size: 14px;"></i>
                 CCTV Live
               </a>
             </li>
             <li class="nav-item">
               <a class="nav-link text-white d-flex align-items-center" href="#wifi" style="font-weight: 600; font-size: 14px; opacity: 0.85; gap: 6px; transition: all 0.2s;">
-                <img src="assets/image/icon-wifi.svg" alt="WIFI" style="width: 18px; height: 18px;" />
+                <i class="fas fa-wifi" style="color: #38bdf8; font-size: 14px;"></i>
                 WiFi Network
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link text-white" href="about-us.php" style="font-weight: 600; font-size: 14px; opacity: 0.85; transition: all 0.2s;">About Loewix</a>
+              <a class="nav-link text-white d-flex align-items-center" href="about-us.php" style="font-weight: 600; font-size: 14px; opacity: 0.85; gap: 6px; transition: all 0.2s;">
+                <i class="fas fa-info-circle" style="color: #38bdf8; font-size: 14px;"></i>
+                About Loewix
+              </a>
             </li>
           </ul>
           <div class="d-flex align-items-center" style="gap: 10px;">
