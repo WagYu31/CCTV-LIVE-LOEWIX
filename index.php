@@ -6839,36 +6839,10 @@
       const card = document.getElementById(cardId);
       if (!card) return;
 
-      // Remove existing indicators
+      // Remove existing overlay indicators to keep video stream 100% clean
       const existingIndicator = card.querySelector('.stream-health-indicator');
       if (existingIndicator) {
         existingIndicator.remove();
-      }
-
-      // Create health indicator
-      const indicator = document.createElement('div');
-      indicator.className = 'stream-health-indicator';
-      indicator.setAttribute('data-health', health);
-
-      let healthClass = 'healthy';
-      let healthText = 'Baik';
-
-      if (health < 50) {
-        healthClass = 'poor';
-        healthText = 'Buruk';
-      } else if (health < 80) {
-        healthClass = 'medium';
-        healthText = 'Sedang';
-      }
-
-      indicator.className = `stream-health-indicator ${healthClass}`;
-      indicator.innerHTML = `<span class="health-dot"></span> ${healthText}`;
-      indicator.title = `Kesehatan Stream: ${health}%`;
-
-      // Add to card
-      const cardHeader = card.querySelector('.traffic-card-iframe');
-      if (cardHeader) {
-        cardHeader.appendChild(indicator);
       }
     }
 
@@ -8722,10 +8696,6 @@
                   <div class="traffic-card" id="card-${camera.id}">
                     <!-- Pure 100% Unobstructed Video Stream Canvas -->
                     <div class="traffic-card-iframe">
-                      <div class="live-status-badge-subdued">
-                        <span class="live-pulse-dot"></span> LIVE
-                      </div>
-
                       <div class="loading-indicator" id="loading-${camera.id}">
                         <i class="fas fa-spinner fa-spin fa-3x mb-2"></i>
                         <div>Memuat ulang...</div>
@@ -8788,7 +8758,10 @@
                       </div>
                       <div class="card-footer-meta-row">
                         <div class="card-meta-code">
-                          CAM-${String(camera.id).padStart(2, '0')} • HIGH-FIDELITY FEED
+                          <span style="display: inline-flex; align-items: center; gap: 5px; color: #10b981; font-weight: 800; margin-right: 6px;">
+                            <span style="width: 7px; height: 7px; background-color: #10b981; border-radius: 50%; display: inline-block; box-shadow: 0 0 6px #10b981;"></span> LIVE
+                          </span>
+                          • CAM-${String(camera.id).padStart(2, '0')}
                         </div>
                         <div class="card-meta-ai" style="font-weight: 700; font-size: 10px; display: inline-flex; align-items: center; gap: 4px;">
                           <i class="fas fa-microchip" style="color: #d97706;"></i> AI ANALYTICS
