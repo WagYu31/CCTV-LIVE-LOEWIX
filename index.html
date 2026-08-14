@@ -4144,54 +4144,20 @@
       if (!cam.thumbnail) cam.thumbnail = ASSET_BASE + '/image/logo-loewix.png';
     });
 
-    // Auto-sync custom cameras added by Super Admin or Users from localStorage
+    // Auto-sync custom cameras added by Super Admin or Users from localStorage & API
     function syncCustomLocalStorageCameras() {
-      const customKeys = ['loewix_custom_cameras'];
-      for (let i = 0; i < localStorage.length; i++) {
-        const k = localStorage.key(i);
-        if (k && k.startsWith('loewix_user_cameras_')) customKeys.push(k);
-      }
+      try {
+        const customKeys = ['loewix_custom_cameras'];
+        for (let i = 0; i < localStorage.length; i++) {
+          const k = localStorage.key(i);
+          if (k && k.startsWith('loewix_user_cameras_')) customKeys.push(k);
+        }
 
-      customKeys.forEach(key => {
-        try {
-          const list = JSON.parse(localStorage.getItem(key) || '[]');
-          list.forEach(c => {
-            if (!c || !c.title) return;
-
-            // Prevent collision with system static IDs (1-8, 101-104, 201-203, 301-303, 401-402)
-            let safeId = c.id;
-            if (safeId < 5000) {
-              safeId = 5000 + safeId;
-              c.id = safeId;
-            }
-
-            const existingIdx = mediamtxData.findIndex(m => m.id === safeId);
-            if (existingIdx !== -1) {
-              mediamtxData[existingIdx].title = c.title;
-              mediamtxData[existingIdx].city = c.city || mediamtxData[existingIdx].city;
-              mediamtxData[existingIdx].streamPath = c.streamPath;
-              mediamtxData[existingIdx].streamId = c.streamPath;
-            } else {
-              const lat = parseFloat(c.lat) || (c.coordinates ? c.coordinates[0] : 3.0148);
-              const lng = parseFloat(c.lng) || (c.coordinates ? c.coordinates[1] : 99.0852);
-              mediamtxData.push({
-                id: safeId,
-                city: c.city || 'siantar',
-                title: c.title,
-                streamPath: c.streamPath,
-                streamId: c.streamPath,
-                coordinates: [lat, lng],
-                platform: PLATFORM_TYPES.MEDIAMTX,
-                thumbnail: ASSET_BASE + '/image/logo-loewix.png'
-              });
-            }
-          });
-      // Fetch cameras from backend Database API for cross-device real-time sync
-      fetch('api/cameras.php?action=public_list')
-        .then(res => res.json())
-        .then(data => {
-          if (data.success && data.cameras) {
-            data.cameras.forEach(c => {
+        customKeys.forEach(key => {
+          try {
+            const list = JSON.parse(localStorage.getItem(key) || '[]');
+            list.forEach(c => {
+              if (!c || !c.title) return;
               let safeId = c.id < 5000 ? 5000 + c.id : c.id;
               const idx = mediamtxData.findIndex(m => m.id === safeId || m.title === c.title);
               if (idx !== -1) {
@@ -4200,8 +4166,8 @@
                 mediamtxData[idx].streamPath = c.streamPath;
                 mediamtxData[idx].streamId = c.streamPath;
               } else {
-                const lat = parseFloat(c.lat) || 3.0148;
-                const lng = parseFloat(c.lng) || 99.0852;
+                const lat = parseFloat(c.lat) || (c.coordinates ? c.coordinates[0] : 3.0148);
+                const lng = parseFloat(c.lng) || (c.coordinates ? c.coordinates[1] : 99.0852);
                 mediamtxData.push({
                   id: safeId,
                   city: c.city || 'siantar',
@@ -4214,9 +4180,41 @@
                 });
               }
             });
-            if (typeof generateCCTVHTML === 'function') generateCCTVHTML(typeof currentGlobalCity !== 'undefined' ? currentGlobalCity : 'all');
-          }
-        }).catch(e => {});
+          } catch(e) {}
+        });
+
+        // Fetch cameras from backend Database API for cross-device real-time sync
+        fetch('api/cameras.php?action=public_list')
+          .then(res => res.json())
+          .then(data => {
+            if (data && data.success && data.cameras) {
+              data.cameras.forEach(c => {
+                let safeId = c.id < 5000 ? 5000 + c.id : c.id;
+                const idx = mediamtxData.findIndex(m => m.id === safeId || m.title === c.title);
+                if (idx !== -1) {
+                  mediamtxData[idx].title = c.title;
+                  mediamtxData[idx].city = c.city || mediamtxData[idx].city;
+                  mediamtxData[idx].streamPath = c.streamPath;
+                  mediamtxData[idx].streamId = c.streamPath;
+                } else {
+                  const lat = parseFloat(c.lat) || 3.0148;
+                  const lng = parseFloat(c.lng) || 99.0852;
+                  mediamtxData.push({
+                    id: safeId,
+                    city: c.city || 'siantar',
+                    title: c.title,
+                    streamPath: c.streamPath,
+                    streamId: c.streamPath,
+                    coordinates: [lat, lng],
+                    platform: PLATFORM_TYPES.MEDIAMTX,
+                    thumbnail: ASSET_BASE + '/image/logo-loewix.png'
+                  });
+                }
+              });
+              if (typeof generateCCTVHTML === 'function') generateCCTVHTML(typeof currentGlobalCity !== 'undefined' ? currentGlobalCity : 'all');
+            }
+          }).catch(e => {});
+      } catch(globalErr) {}
     }
     syncCustomLocalStorageCameras();
 
