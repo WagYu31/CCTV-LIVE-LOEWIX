@@ -288,6 +288,53 @@
     </div>
   </div>
 
+  <!-- Modal Edit Data Customer -->
+  <div class="modal fade" id="modalEditCustomer" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content modal-content-dark">
+        <div class="modal-header modal-header-dark">
+          <h5 class="modal-title font-weight-bold"><i class="fas fa-user-edit text-warning mr-2"></i> Edit Data Profil Customer</h5>
+          <button type="button" class="close text-white" onclick="closeEditCustomerModal()" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <form id="formEditCustomer" onsubmit="submitEditCustomer(event)">
+          <input type="hidden" id="edit-profile-id">
+          <div class="modal-body">
+            <div class="form-group">
+              <label class="font-weight-bold text-muted" style="font-size: 13px;">Nama Customer / Perusahaan:</label>
+              <input type="text" id="edit-profile-name" class="form-control form-control-dark" required>
+            </div>
+            <div class="form-group">
+              <label class="font-weight-bold text-muted" style="font-size: 13px;">Email Login:</label>
+              <input type="email" id="edit-profile-email" class="form-control form-control-dark" required>
+            </div>
+            <div class="form-row">
+              <div class="form-group col-6">
+                <label class="font-weight-bold text-muted" style="font-size: 13px;">Wilayah Utama:</label>
+                <select id="edit-profile-city" class="form-control form-control-dark">
+                  <option value="siantar" style="color:#000;">Pematangsiantar</option>
+                  <option value="jakarta" style="color:#000;">DKI Jakarta</option>
+                  <option value="medan" style="color:#000;">Kota Medan</option>
+                  <option value="bandung" style="color:#000;">Kota Bandung</option>
+                  <option value="bali" style="color:#000;">Bali / Denpasar</option>
+                </select>
+              </div>
+              <div class="form-group col-6">
+                <label class="font-weight-bold text-muted" style="font-size: 13px;">No. WhatsApp / HP:</label>
+                <input type="text" id="edit-profile-phone" class="form-control form-control-dark">
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer modal-footer-dark">
+            <button type="button" class="btn btn-secondary btn-sm" onclick="closeEditCustomerModal()">Batal</button>
+            <button type="submit" class="btn btn-gold btn-sm"><i class="fas fa-save mr-1"></i> Simpan Perubahan</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
   <!-- Modal Edit Kuota Customer -->
   <div class="modal fade" id="modalEditQuota" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-sm" role="document">
@@ -410,6 +457,9 @@
               </td>
               <td>${statusBadge}</td>
               <td class="text-right">
+                <button class="btn btn-outline-primary btn-sm mr-1" onclick="openEditCustomerModal(${c.id})" title="Edit Data Profil Customer">
+                  <i class="fas fa-edit"></i> Edit
+                </button>
                 <button class="btn btn-outline-warning btn-sm mr-1" onclick="openEditQuotaModal(${c.id}, '${c.name.replace(/'/g, "\\'")}', ${c.cctv_quota})" title="Edit Kuota Kamera">
                   <i class="fas fa-sliders-h"></i> Kuota
                 </button>
@@ -456,6 +506,78 @@
       } catch(e) {}
       document.getElementById('modalAddCustomer').style.display = 'none';
       document.getElementById('modalAddCustomer').classList.remove('show');
+    }
+
+    function openEditCustomerModal(id) {
+      let list = getStoredCustomers();
+      const cust = list.find(c => c.id === id);
+      if (!cust) return;
+
+      document.getElementById('edit-profile-id').value = cust.id;
+      document.getElementById('edit-profile-name').value = cust.name;
+      document.getElementById('edit-profile-email').value = cust.email;
+      document.getElementById('edit-profile-city').value = cust.city || 'siantar';
+      document.getElementById('edit-profile-phone').value = cust.phone || '';
+
+      try {
+        if (typeof $ !== 'undefined' && $.fn && $.fn.modal) {
+          $('#modalEditCustomer').modal('show');
+        } else {
+          document.getElementById('modalEditCustomer').style.display = 'block';
+          document.getElementById('modalEditCustomer').classList.add('show');
+        }
+      } catch(e) {
+        document.getElementById('modalEditCustomer').style.display = 'block';
+        document.getElementById('modalEditCustomer').classList.add('show');
+      }
+    }
+
+    function closeEditCustomerModal() {
+      try {
+        if (typeof $ !== 'undefined' && $.fn && $.fn.modal) {
+          $('#modalEditCustomer').modal('hide');
+        }
+      } catch(e) {}
+      document.getElementById('modalEditCustomer').style.display = 'none';
+      document.getElementById('modalEditCustomer').classList.remove('show');
+    }
+
+    function submitEditCustomer(e) {
+      if (e) e.preventDefault();
+      const id = parseInt(document.getElementById('edit-profile-id').value);
+      const name = document.getElementById('edit-profile-name').value.trim();
+      const email = document.getElementById('edit-profile-email').value.trim();
+      const city = document.getElementById('edit-profile-city').value;
+      const phone = document.getElementById('edit-profile-phone').value.trim() || '-';
+
+      if (!name || !email) {
+        alert('Nama dan Email wajib diisi!');
+        return;
+      }
+
+      let list = getStoredCustomers();
+      list.forEach(c => {
+        if (c.id === id) {
+          c.name = name;
+          c.email = email;
+          c.city = city;
+          c.phone = phone;
+        }
+      });
+      saveStoredCustomers(list);
+
+      const formData = new FormData();
+      formData.append('action', 'update_customer');
+      formData.append('id', id);
+      formData.append('name', name);
+      formData.append('email', email);
+      formData.append('city', city);
+      formData.append('phone', phone);
+      fetch('../api/admin_customers.php', { method: 'POST', body: formData }).catch(e => {});
+
+      alert(`BERHASIL: Data Customer '${name}' berhasil diperbarui!`);
+      closeEditCustomerModal();
+      renderCustomerTable(list);
     }
 
     function submitAddCustomer(e) {
@@ -607,6 +729,9 @@
     window.openAddCustomerModal = openAddCustomerModal;
     window.closeAddCustomerModal = closeAddCustomerModal;
     window.submitAddCustomer = submitAddCustomer;
+    window.openEditCustomerModal = openEditCustomerModal;
+    window.closeEditCustomerModal = closeEditCustomerModal;
+    window.submitEditCustomer = submitEditCustomer;
     window.openEditQuotaModal = openEditQuotaModal;
     window.resetCustomerPassword = resetCustomerPassword;
     window.toggleAddCustPasswordVisibility = toggleAddCustPasswordVisibility;

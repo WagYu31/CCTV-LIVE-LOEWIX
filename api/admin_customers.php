@@ -121,6 +121,33 @@ if ($method === 'POST') {
         exit;
     }
 
+    if ($action === 'update_customer') {
+        $id = (int) ($_POST['id'] ?? 0);
+        $name = trim($_POST['name'] ?? '');
+        $email = trim($_POST['email'] ?? '');
+        $phone = trim($_POST['phone'] ?? '');
+        $city = trim($_POST['city'] ?? 'siantar');
+
+        if (empty($name) || empty($email)) {
+            echo json_encode(['success' => false, 'message' => 'Nama dan Email wajib diisi!']);
+            exit;
+        }
+
+        foreach ($db['users'] as &$u) {
+            if ($u['id'] === $id && $u['role'] === 'customer') {
+                $u['name'] = $name;
+                $u['email'] = $email;
+                $u['phone'] = $phone;
+                $u['city'] = $city;
+                save_db_data($db);
+                echo json_encode(['success' => true, 'message' => 'Data Customer ' . $name . ' berhasil diperbarui!']);
+                exit;
+            }
+        }
+        echo json_encode(['success' => false, 'message' => 'Customer tidak ditemukan!']);
+        exit;
+    }
+
     if ($action === 'reset_password') {
         $id = (int) ($_POST['id'] ?? 0);
         $newPassword = trim($_POST['password'] ?? '');
