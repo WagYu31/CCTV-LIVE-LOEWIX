@@ -3460,25 +3460,7 @@
   </section>
   <!-- ===== END Statistics Cards ===== -->
 
-  <!-- ===== TERMINAL TANJUNG PINGGIR: Section Baru ===== -->
-  <section id="terminal-tanjung-pinggir">
-    <div class="Pricing-con dots-left-img">
-      <div class="container overlay-content">
-        <div class="Pricing-title text-center">
-          <h5>PELINTAS - LIVE VIDEO TERMINAL TANJUNG PINGGIR</h5>
-          <h2 style="margin-top: 15px;">
-            <img src="assets/image/icon-cctv.svg" alt="Icon Terminal Tanjung Pinggir" class="icon" height="80" width="80" />
-            Terminal Tanjung Pinggir
-          </h2>
-          <p style="color: #666; margin-top: 15px; font-size: 15px; max-width: 700px; margin-left: auto; margin-right: auto;">
-            Monitoring real-time kondisi Terminal Tanjung Pinggir Kota Pematangsiantar untuk memastikan keamanan dan kenyamanan penumpang
-          </p>
-        </div>
-        <div id="terminal-tanjung-pinggir-container" style="margin-top: 40px;"></div>
-      </div>
-    </div>
-  </section>
-  <!-- ===== AKHIR TERMINAL TANJUNG PINGGIR ===== -->
+
 
   <!-- CCTV Section -->
   <section id="cctv">
@@ -3600,25 +3582,7 @@
   </section>
   <!-- CCTV Section End -->
 
-  <!-- ===== TAMBAHAN PASAR HORAS: Section Baru ===== -->
-  <section id="pasar-horas">
-    <div class="Pricing-con dots-left-img">
-      <div class="container overlay-content">
-        <div class="Pricing-title text-center">
-          <h5>PELINTAS - Live Video Relokasi Pasar Horas</h5>
-          <h2 style="margin-top: 15px;">
-            <img src="assets/image/icon-cctv.svg" alt="Icon Pasar Horas" class="icon" height="80" width="80" />
-            Pasar Horas
-          </h2>
-          <p style="color: #666; margin-top: 15px; font-size: 15px; max-width: 700px; margin-left: auto; margin-right: auto;">
-            Monitoring real-time kondisi Relokasi Pasar Horas Kota Pematangsiantar untuk memastikan keamanan dan kenyamanan pedagang serta pengunjung
-          </p>
-        </div>
-        <div id="pasar-horas-container" style="margin-top: 40px;"></div>
-      </div>
-    </div>
-  </section>
-  <!-- ===== AKHIR TAMBAHAN PASAR HORAS ===== -->
+
 
   <!--form-section-->
   <section id="wifi">
