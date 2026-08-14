@@ -684,7 +684,7 @@
       localStorage.setItem('loewix_customers', JSON.stringify(list));
     }
 
-    const API_SERVER = (window.location.protocol === 'file:') ? '../api' : 'https://stream.loewixcctv.com/api';
+    const API_SERVER = '../api';
 
     document.addEventListener('DOMContentLoaded', () => {
       loadCustomerData();
