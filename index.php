@@ -34,66 +34,39 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
   <!-- SEO Meta Tags -->
-  <title>PELINTAS - CCTV Online Kota Pematangsiantar | Monitoring Lalu Lintas Real-time</title>
-  <meta name="description" content="🔴 LIVE: Pantau kondisi lalu lintas Kota Pematangsiantar secara real-time melalui 35+ CCTV online. Akses mudah, aman, dan terpercaya dari DISKOMINFO dengan teknologi streaming canggih. Monitoring 24/7 untuk keamanan dan kenyamanan warga.">
-  <meta name="keywords" content="CCTV Pematangsiantar, traffic monitoring, lalu lintas real-time, DISKOMINFO, smart city, keamanan jalan, monitoring online, streaming CCTV, traffic camera, intelligent transportation system">
-  <meta name="author" content="DISKOMINFO Pematangsiantar">
-  <meta name="publisher" content="Dinas Komunikasi dan Informatika Kota Pematangsiantar">
+  <title>LOEWIX CCTV - Official Live Video Surveillance & Intelligent Monitoring Platform</title>
+  <meta name="description" content="🔴 LIVE SURVEILLANCE: Official Loewix Security Systems live video monitoring grid. High-fidelity analytics, 4K Ultra HD streams, AI motion detection, and zero latency global endpoints.">
+  <meta name="keywords" content="Loewix CCTV, Loewix Security Systems, Live Surveillance, Traffic Monitoring, AI Motion Detection, 4K Security Camera, Loewix Indonesia, Smart Surveillance, H.265 Streaming">
+  <meta name="author" content="PT. LOEWIX INDONESIA">
+  <meta name="publisher" content="LOEWIX Security Systems International">
   <meta name="robots" content="index, follow, max-snippet:150, max-image-preview:large, max-video-preview:30">
-  <meta name="googlebot" content="index, follow, max-snippet:150, max-image-preview:large">
-  <meta name="bingbot" content="index, follow, max-snippet:150, max-image-preview:large">
-  <meta name="revisit-after" content="1 day">
-  <meta name="language" content="Indonesian">
-  <meta name="geo.region" content="ID-SU">
-  <meta name="geo.placename" content="Pematangsiantar">
-  <meta name="geo.position" content="2.9586;99.0574">
-  <meta name="ICBM" content="2.9586, 99.0574">
+  <meta name="language" content="Indonesian, English">
 
-  <!-- Google Search Console Verification - Multiple Methods -->
-  <meta name="google-site-verification" content="2fh86tDr5sAyqJ1SR2dC3xTpu28kCOylMWKFOgNUU4s" />
-  <meta name="google-site-verification" content="A43e7z_Gw3_doR7GcJuhWJIB9pxww8vhKbacyWVGQ8A" />
-
-  <!-- Bing Webmaster Tools Verification -->
-  <meta name="msvalidate.01" content="7D5C4B8E9F0A1B2C3D4E5F6G7H8I9J0K" />
-
-  <!-- Yandex Webmaster Verification -->
-  <meta name="yandex-verification" content="9a8b7c6d5e4f3g2h1i0j" />
-
-  <!-- Open Graph Meta Tags - Optimized for WhatsApp, Facebook, LinkedIn -->
+  <!-- Open Graph Meta Tags -->
   <meta property="og:type" content="website">
-  <meta property="og:title" content="PELINTAS - CCTV Online Kota Pematangsiantar | Monitoring Lalu Lintas Real-time">
-  <meta property="og:description" content="🔴 LIVE: Pantau kondisi lalu lintas Kota Pematangsiantar secara real-time melalui 35+ CCTV online. Akses mudah, aman, dan terpercaya dari DISKOMINFO dengan teknologi streaming canggih. Monitoring 24/7 untuk keamanan dan kenyamanan warga.">
-  <meta property="og:url" content="https://cctv.pematangsiantar.go.id/">
-  <meta property="og:site_name" content="PELINTAS - CCTV Online Pematangsiantar">
-  <meta property="og:image" content="https://cctv.pematangsiantar.go.id/assets/image/logo-loewix.png">
-  <meta property="og:image:secure_url" content="https://cctv.pematangsiantar.go.id/assets/image/logo-loewix.png">
+  <meta property="og:title" content="LOEWIX CCTV - Official Live Video Surveillance Platform">
+  <meta property="og:description" content="🔴 LIVE SURVEILLANCE: Official Loewix Security Systems live video monitoring grid. High-fidelity analytics, 4K Ultra HD streams, AI motion detection, and zero latency.">
+  <meta property="og:url" content="https://www.loewixcctv.com/">
+  <meta property="og:site_name" content="LOEWIX CCTV Security Systems">
+  <meta property="og:image" content="https://www.loewixcctv.com/assets/image/logo-loewix.png">
+  <meta property="og:image:secure_url" content="https://www.loewixcctv.com/assets/image/logo-loewix.png">
   <meta property="og:image:type" content="image/png">
-  <meta property="og:image:alt" content="PELINTAS - CCTV Online Kota Pematangsiantar - Monitoring Lalu Lintas Real-time">
+  <meta property="og:image:alt" content="LOEWIX CCTV Security Systems - Intelligent Live Video Monitoring Platform">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta property="og:locale" content="id_ID">
   <meta property="og:locale:alternate" content="en_US">
-  <meta property="article:author" content="DISKOMINFO Pematangsiantar">
-  <meta property="article:publisher" content="https://pematangsiantar.go.id">
-  <meta property="article:section" content="Government Services">
-  <meta property="article:tag" content="CCTV">
-  <meta property="article:tag" content="Traffic Monitoring">
-  <meta property="article:tag" content="Smart City">
-  <meta property="article:tag" content="Pematangsiantar">
-
-  <!-- WhatsApp Specific Meta Tags -->
-  <meta property="og:image:url" content="https://cctv.pematangsiantar.go.id/assets/image/logo-loewix.png">
-  <meta name="whatsapp:image" content="https://cctv.pematangsiantar.go.id/assets/image/logo-loewix.png">
+  <meta property="article:author" content="PT. LOEWIX INDONESIA">
+  <meta property="article:publisher" content="https://www.loewixcctv.com">
 
   <!-- Twitter Card Meta Tags -->
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="PELINTAS - CCTV Online Kota Pematangsiantar | Monitoring Lalu Lintas Real-time">
-  <meta name="twitter:description" content="🔴 LIVE: Pantau kondisi lalu lintas Kota Pematangsiantar secara real-time melalui 35+ CCTV online. Akses mudah, aman, dan terpercaya dari DISKOMINFO dengan teknologi streaming canggih. Monitoring 24/7 untuk keamanan dan kenyamanan warga.">
-  <meta name="twitter:image" content="https://cctv.pematangsiantar.go.id/assets/image/logo-loewix.png">
-  <meta name="twitter:image:alt" content="PELINTAS - CCTV Online Kota Pematangsiantar - Monitoring Lalu Lintas Real-time">
-  <meta name="twitter:site" content="@PematangsiantarKota">
-  <meta name="twitter:creator" content="@DiskominfoSiantar">
-  <meta name="twitter:domain" content="cctv.pematangsiantar.go.id">
+  <meta name="twitter:title" content="LOEWIX CCTV - Official Live Video Surveillance Platform">
+  <meta name="twitter:description" content="🔴 LIVE SURVEILLANCE: Official Loewix Security Systems live video monitoring grid. High-fidelity analytics, 4K Ultra HD streams, AI motion detection, and zero latency.">
+  <meta name="twitter:image" content="https://www.loewixcctv.com/assets/image/logo-loewix.png">
+  <meta name="twitter:site" content="@LoewixCCTV">
+  <meta name="twitter:creator" content="@LoewixSecurity">
+  <meta name="twitter:domain" content="loewixcctv.com">
 
   <!-- LinkedIn Meta Tags -->
   <meta name="linkedin:owner" content="Dinas Komunikasi dan Informatika Kota Pematangsiantar">
@@ -3314,28 +3287,29 @@
     <div class="form-main-con dots-left-img">
       <div class="container overlay-content">
         <div class="form-title-con text-center wow slideInLeft">
-          <h5>PELINTAS - Peta Titik Lokasi</h5>
-          <h2>
+          <h5 style="color: #38bdf8; letter-spacing: 2px; text-transform: uppercase; font-weight: 700;">LOEWIX GLOBAL NETWORK MAP</h5>
+          <h2 style="font-size: 2.2rem; font-weight: 800; color: #ffffff; margin-top: 8px;">
             <img
-              src="assets/image/icon-cctv.svg"
-              alt="Icon CCTV"
+              src="assets/image/icon-cctv.png"
+              alt="Loewix CCTV Icon"
               class="icon"
-              height="80"
-              width="80" />
-            CCTV
+              height="50"
+              width="50" style="margin-right: 10px;" />
+            Interactive Endpoint Map
           </h2>
           <!-- Map Lokasi CCTV -->
           <div class="Pricing-box-con">
             <div
               style="
                   overflow: hidden;
-                  border-radius: 10px;
-                  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+                  border-radius: 16px;
+                  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.25);
+                  border: 1px solid rgba(255,255,255,0.1);
                 ">
               <div
                 id="map"
                 class="Pricing-box-img text-center"
-                style="height: 600px; position: relative; z-index: 1"></div>
+                style="height: 550px; position: relative; z-index: 1"></div>
             </div>
           </div>
         </div>
@@ -3436,17 +3410,18 @@
   <section id="cctv">
     <div class="Pricing-con dots-left-img">
       <div class="container overlay-content">
-        <div class="Pricing-title text-center">
-          <h5>PELINTAS - Live Video Streaming</h5>
-          <h2>
+        <div class="Pricing-title text-center" style="margin-bottom: 25px;">
+          <h5 style="color: #38bdf8; letter-spacing: 2px; text-transform: uppercase; font-weight: 700;">LOEWIX LIVE SURVEILLANCE GRID</h5>
+          <h2 style="font-size: 2.3rem; font-weight: 800; color: #ffffff; margin-top: 8px;">
             <img
-              src="assets/image/icon-cctv.svg"
-              alt="Icon CCTV"
+              src="assets/image/icon-cctv.png"
+              alt="Loewix CCTV Icon"
               class="icon"
-              height="80"
-              width="80" />
-            CCTV
+              height="50"
+              width="50" style="margin-right: 10px; filter: drop-shadow(0 0 10px rgba(56, 189, 248, 0.5));" />
+            Live Network Status
           </h2>
+          <p style="color: rgba(255,255,255,0.7); font-size: 1.05rem; margin-top: 8px;">Active surveillance grids across global enterprise endpoints.</p>
         </div>
 
         <!-- Overlay untuk Pop-up -->
@@ -3621,14 +3596,16 @@
                   <figure>
                     <img
                       src="assets/image/logo-loewix.png"
-                      alt="logo-img"
-                      class="img-fluid" />
+                      alt="Loewix Security Systems Logo"
+                      class="img-fluid"
+                      style="max-height: 45px; width: auto;" />
                   </figure>
                 </div>
                 <div class="weight-footer-item-content">
                   <p
-                    class="mb-xl-0 mb-lg-0 mb-md-4 weight-footer-item1-content">
-                    CCTV Online Kota Pematangsiantar
+                    class="mb-xl-0 mb-lg-0 mb-md-4 weight-footer-item1-content" style="color: rgba(255,255,255,0.7); font-size: 0.95rem; line-height: 1.6;">
+                    PT. LOEWIX INDONESIA<br>
+                    Official Live Video Surveillance & Intelligent Monitoring Platform. High-fidelity analytics & zero-latency streaming endpoints.
                   </p>
                 </div>
               </div>
@@ -3636,19 +3613,21 @@
             <div class="col-lg-2 col-md-3 col-5">
               <div class="weight-footer-item mb-lg-0 mb-md-0 mb-3">
                 <div class="weight-footer-item-title">
-                  <h3>DISKOMINFO</h3>
+                  <h3 style="color: #38bdf8; font-weight: 700; font-size: 1.1rem; letter-spacing: 1px;">SOLUTIONS</h3>
                 </div>
                 <div class="weight-footer-item-link">
                   <ul class="list-unstyled mb-0">
                     <li>
-                      <a href="#cctv"> CCTV </a>
+                      <a href="#cctv"> Live Grid </a>
                     </li>
                     <li>
-                      <a href="#wifi"> WIFI </a>
+                      <a href="#peta"> Network Map </a>
                     </li>
-
+                    <li>
+                      <a href="#terminal-tanjung-pinggir"> Terminal Feeds </a>
+                    </li>
                     <li class="mb-0">
-                      <a href="contact-us.php"> Contact us </a>
+                      <a href="contact-us.php"> Contact Us </a>
                     </li>
                   </ul>
                 </div>
@@ -3657,36 +3636,31 @@
             <div class="col-lg-3 col-md-4 col-7">
               <div class="weight-footer-item mb-lg-0 mb-md-0 mb-3">
                 <div class="weight-footer-item-title">
-                  <h3>ALAMAT</h3>
+                  <h3 style="color: #38bdf8; font-weight: 700; font-size: 1.1rem; letter-spacing: 1px;">HEADQUARTERS</h3>
                 </div>
                 <div
                   class="weight-footer-item-content weight-footer-item-link">
                   <ul class="list-unstyled mb-0 social-icon-list">
                     <li
-                      class="weight-footer-item2-content col-lg-11 pl-0 pr-0">
-                      Jl. W. R. Supratman No.4, Proklamasi, Kec. Siantar Bar.,
-                      Kota Pematangsiantar, Sumatera Utara 21145
+                      class="weight-footer-item2-content col-lg-11 pl-0 pr-0" style="color: rgba(255,255,255,0.8); font-size: 0.9rem;">
+                      📍 LOEWIX Security Systems Tower<br>
+                      Jl. W. R. Supratman No.4, Pematangsiantar, Sumatera Utara 21145
                     </li>
 
-                    <li></li>
+                    <li style="margin-top: 12px;"></li>
                     <li class="d-inline-block mb-0">
-                      <a href="https://www.facebook.com/kominfopematangsiantar" target="_blank" rel="noopener noreferrer" aria-label="Facebook DISKOMINFO Pematangsiantar">
-                        <i class="fab fa-facebook-f"></i>
+                      <a href="https://loewix.co.id" target="_blank" rel="noopener noreferrer" aria-label="Loewix Official Website">
+                        <i class="fas fa-globe"></i>
                       </a>
                     </li>
                     <li class="d-inline-block mb-0">
-                      <a href="https://www.instagram.com/diskominfopematangsiantar/" target="_blank" rel="noopener noreferrer" aria-label="Instagram DISKOMINFO Pematangsiantar">
+                      <a href="https://www.instagram.com/loewixcctv/" target="_blank" rel="noopener noreferrer" aria-label="Instagram Loewix CCTV">
                         <i class="fab fa-instagram"></i>
                       </a>
                     </li>
                     <li class="d-inline-block mb-0">
-                      <a href="https://www.youtube.com/@DiskominfoPematangsiantar" target="_blank" rel="noopener noreferrer" aria-label="YouTube DISKOMINFO Pematangsiantar">
+                      <a href="https://www.youtube.com/@loewixcctv" target="_blank" rel="noopener noreferrer" aria-label="YouTube Loewix CCTV">
                         <i class="fab fa-youtube"></i>
-                      </a>
-                    </li>
-                    <li class="d-inline-block mb-0">
-                      <a href="https://pematangsiantar.go.id/" target="_blank" rel="noopener noreferrer" aria-label="Website Resmi Kota Pematangsiantar">
-                        <i class="fas fa-globe"></i>
                       </a>
                     </li>
                   </ul>
@@ -3696,36 +3670,18 @@
             <div class="col-lg-3 col-md-5 col-12">
               <div class="weight-footer-item mb-0">
                 <div class="weight-footer-item-title">
-                  <h3 class="Newsletter-title">KONTAK</h3>
+                  <h3 class="Newsletter-title" style="color: #38bdf8; font-weight: 700; font-size: 1.1rem; letter-spacing: 1px;">SUPPORT & CONTACT</h3>
                 </div>
                 <div
                   class="weight-footer-item-content weight-footer-item-link">
                   <ul class="list-unstyled mb-0 social-icon-list">
                     <li>
-                      <a href="mailto:diskominfo@pematangsiantar.go.id">
-                        diskominfo@pematangsiantar.go.id
+                      <a href="mailto:support@loewixcctv.com" style="color: #38bdf8; font-weight: 600;">
+                        support@loewixcctv.com
                       </a>
                     </li>
-                    <li></li>
-                    <li class="d-inline-block mb-0">
-                      <a href="https://www.facebook.com/kominfopematangsiantar" target="_blank" rel="noopener noreferrer" aria-label="Facebook DISKOMINFO Pematangsiantar">
-                        <i class="fab fa-facebook-f"></i>
-                      </a>
-                    </li>
-                    <li class="d-inline-block mb-0">
-                      <a href="https://www.instagram.com/diskominfopematangsiantar/" target="_blank" rel="noopener noreferrer" aria-label="Instagram DISKOMINFO Pematangsiantar">
-                        <i class="fab fa-instagram"></i>
-                      </a>
-                    </li>
-                    <li class="d-inline-block mb-0">
-                      <a href="https://www.youtube.com/@DiskominfoPematangsiantar" target="_blank" rel="noopener noreferrer" aria-label="YouTube DISKOMINFO Pematangsiantar">
-                        <i class="fab fa-youtube"></i>
-                      </a>
-                    </li>
-                    <li class="d-inline-block mb-0">
-                      <a href="https://pematangsiantar.go.id/" target="_blank" rel="noopener noreferrer" aria-label="Website Resmi Kota Pematangsiantar">
-                        <i class="fas fa-globe"></i>
-                      </a>
+                    <li style="color: rgba(255,255,255,0.7); font-size: 0.85rem; margin-top: 5px;">
+                      📞 Hotline: +62 (021) 800-LOEWIX
                     </li>
                   </ul>
                 </div>
@@ -3738,10 +3694,9 @@
         <div class="container overlay-content">
           <div class="row">
             <div class="col-lg-12">
-              <div class="footer-con text-center">
-                <p>
-                  Dinas Komunikasi dan Informatika Kota Pematangsiantar ©
-                  2025.
+              <div class="footer-con text-center" style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px; margin-top: 20px;">
+                <p style="color: rgba(255,255,255,0.6); font-size: 0.88rem;">
+                  © 2026 PT. LOEWIX INDONESIA — LOEWIX CCTV Security Systems. All Rights Reserved.
                 </p>
               </div>
             </div>
