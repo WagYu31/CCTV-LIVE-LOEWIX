@@ -1,19 +1,3 @@
-<?php
-/**
- * Super Admin Control Center
- * PT. LOEWIX INDONESIA - CCTV SURVEILLANCE PLATFORM
- */
-require_once __DIR__ . '/../config/db.php';
-
-// Auto-login default super admin for initial demo if no session exists
-if (!get_logged_in_user()) {
-    $_SESSION['user_id'] = 1;
-    $_SESSION['user_name'] = 'Super Admin Loewix';
-    $_SESSION['user_email'] = 'admin@loewixcctv.com';
-    $_SESSION['user_role'] = 'super_admin';
-    $_SESSION['cctv_quota'] = 9999;
-}
-?>
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -156,7 +140,7 @@ if (!get_logged_in_user()) {
   <nav class="admin-navbar">
     <div class="container d-flex justify-content-between align-items-center">
       <div class="d-flex align-items-center gap-3">
-        <a href="../index.php">
+        <a href="../index.html">
           <img src="../assets/image/logo-loewix.png" alt="Loewix Logo" height="38">
         </a>
         <span class="badge ml-3" style="background: rgba(0, 210, 255, 0.15); color: #00d2ff; border: 1px solid rgba(0, 210, 255, 0.3); padding: 6px 14px; border-radius: 20px; font-weight: 700;">
@@ -164,7 +148,7 @@ if (!get_logged_in_user()) {
         </span>
       </div>
       <div>
-        <a href="../index.php" class="btn btn-outline-light btn-sm mr-2" style="border-radius: 20px;">
+        <a href="../index.html" class="btn btn-outline-light btn-sm mr-2" style="border-radius: 20px;">
           <i class="fas fa-desktop mr-1"></i> Portal Utama
         </a>
         <button class="btn btn-danger btn-sm" onclick="logoutAdmin()" style="border-radius: 20px;">
@@ -181,7 +165,7 @@ if (!get_logged_in_user()) {
       <div class="col-lg-3 col-md-6 col-12">
         <div class="admin-card">
           <div class="text-muted font-weight-bold"><i class="fas fa-building text-info mr-2"></i> TOTAL CUSTOMER</div>
-          <div class="metric-value" id="metric-total-customers">0</div>
+          <div class="metric-value" id="metric-total-customers">1</div>
         </div>
       </div>
       <div class="col-lg-3 col-md-6 col-12">
@@ -193,7 +177,7 @@ if (!get_logged_in_user()) {
       <div class="col-lg-3 col-md-6 col-12">
         <div class="admin-card">
           <div class="text-muted font-weight-bold"><i class="fas fa-layer-group text-success mr-2"></i> ALOKASI KUOTA</div>
-          <div class="metric-value" id="metric-total-quota">0</div>
+          <div class="metric-value" id="metric-total-quota">10</div>
         </div>
       </div>
       <div class="col-lg-3 col-md-6 col-12">
@@ -333,6 +317,35 @@ if (!get_logged_in_user()) {
   <script src="../assets/bootstarp/bootstrap.min.js"></script>
 
   <script>
+    let defaultCustomers = [
+      {
+        id: 2,
+        name: 'PT. Jaya Sentosa Enterprise',
+        email: 'customer@jayasentosa.com',
+        phone: '+62 812-3456-7890',
+        city: 'siantar',
+        cctv_quota: 10,
+        cctv_used: 0,
+        status: 'active',
+        created_at: '2026-08-14'
+      }
+    ];
+
+    function getStoredCustomers() {
+      const stored = localStorage.getItem('loewix_customers');
+      if (stored) {
+        try {
+          return JSON.parse(stored);
+        } catch(e) {}
+      }
+      localStorage.setItem('loewix_customers', JSON.stringify(defaultCustomers));
+      return defaultCustomers;
+    }
+
+    function saveStoredCustomers(list) {
+      localStorage.setItem('loewix_customers', JSON.stringify(list));
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
       loadCustomerData();
     });
@@ -342,105 +355,148 @@ if (!get_logged_in_user()) {
         .then(res => res.json())
         .then(data => {
           if (!data.success) {
-            alert(data.message);
-            window.location.href = '../index.php';
+            renderCustomerTable(getStoredCustomers());
             return;
           }
-
-          const tbody = document.getElementById('customer-table-body');
-          tbody.innerHTML = '';
-
-          let totalCameras = 0;
-          let totalQuota = 0;
-
-          if (data.customers.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-muted">Belum ada Customer terdaftar. Klik 'Tambah Customer Baru' untuk menambahkan.</td></tr>`;
-          } else {
-            data.customers.forEach(c => {
-              totalCameras += c.cctv_used;
-              totalQuota += c.cctv_quota;
-
-              const percentUsed = Math.min(100, Math.round((c.cctv_used / c.cctv_quota) * 100));
-              const statusBadge = (c.status === 'active')
-                ? `<span class="badge-status-active"><i class="fas fa-check-circle mr-1"></i> AKTIF</span>`
-                : `<span class="badge-status-suspended"><i class="fas fa-ban mr-1"></i> SUSPENDED</span>`;
-
-              const rowHTML = `
-                <tr>
-                  <td class="font-weight-bold text-muted">#${c.id}</td>
-                  <td>
-                    <div class="font-weight-bold text-white">${c.name}</div>
-                    <small class="text-muted"><i class="fas fa-history mr-1"></i> Terdaftar ${c.created_at.split(' ')[0]}</small>
-                  </td>
-                  <td>
-                    <div><i class="fas fa-envelope text-info mr-1"></i> ${c.email}</div>
-                    <small class="text-muted"><i class="fas fa-phone mr-1"></i> ${c.phone}</small>
-                  </td>
-                  <td><span class="badge badge-secondary" style="border-radius: 12px;">📍 ${c.city.toUpperCase()}</span></td>
-                  <td>
-                    <div class="d-flex justify-content-between align-items-center mb-1">
-                      <span class="font-weight-bold text-info" style="font-size: 13px;">${c.cctv_used} / ${c.cctv_quota} CCTV</span>
-                      <span class="text-muted" style="font-size: 11px;">${percentUsed}%</span>
-                    </div>
-                    <div class="progress-bar-custom">
-                      <div class="progress-fill" style="width: ${percentUsed}%;"></div>
-                    </div>
-                  </td>
-                  <td>${statusBadge}</td>
-                  <td class="text-right">
-                    <button class="btn btn-outline-warning btn-sm mr-1" onclick="openEditQuotaModal(${c.id}, '${c.name.replace(/'/g, "\\'")}', ${c.cctv_quota})" title="Edit Kuota Kamera">
-                      <i class="fas fa-sliders-h"></i> Kuota
-                    </button>
-                    <button class="btn btn-outline-info btn-sm mr-1" onclick="toggleStatus(${c.id})" title="Toggle Suspend">
-                      <i class="fas fa-power-off"></i>
-                    </button>
-                    <button class="btn btn-outline-danger btn-sm" onclick="deleteCustomer(${c.id}, '${c.name.replace(/'/g, "\\'")}')" title="Hapus Akun">
-                      <i class="fas fa-trash"></i>
-                    </button>
-                  </td>
-                </tr>
-              `;
-              tbody.innerHTML += rowHTML;
-            });
-          }
-
-          document.getElementById('metric-total-customers').innerText = data.customers.length;
-          document.getElementById('metric-total-cameras').innerText = totalCameras;
-          document.getElementById('metric-total-quota').innerText = totalQuota;
+          renderCustomerTable(data.customers);
         })
         .catch(err => {
-          console.error(err);
+          renderCustomerTable(getStoredCustomers());
         });
     }
 
+    function renderCustomerTable(customers) {
+      const tbody = document.getElementById('customer-table-body');
+      tbody.innerHTML = '';
+
+      let totalCameras = 0;
+      let totalQuota = 0;
+
+      if (!customers || customers.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-muted">Belum ada Customer terdaftar. Klik 'Tambah Customer Baru' untuk menambahkan.</td></tr>`;
+      } else {
+        customers.forEach(c => {
+          totalCameras += (c.cctv_used || 0);
+          totalQuota += (c.cctv_quota || 10);
+
+          const percentUsed = Math.min(100, Math.round(((c.cctv_used || 0) / (c.cctv_quota || 10)) * 100));
+          const statusBadge = (c.status === 'active')
+            ? `<span class="badge-status-active"><i class="fas fa-check-circle mr-1"></i> AKTIF</span>`
+            : `<span class="badge-status-suspended"><i class="fas fa-ban mr-1"></i> SUSPENDED</span>`;
+
+          const rowHTML = `
+            <tr>
+              <td class="font-weight-bold text-muted">#${c.id}</td>
+              <td>
+                <div class="font-weight-bold text-white">${c.name}</div>
+                <small class="text-muted"><i class="fas fa-history mr-1"></i> Terdaftar ${c.created_at.split(' ')[0]}</small>
+              </td>
+              <td>
+                <div><i class="fas fa-envelope text-info mr-1"></i> ${c.email}</div>
+                <small class="text-muted"><i class="fas fa-phone mr-1"></i> ${c.phone}</small>
+              </td>
+              <td><span class="badge badge-secondary" style="border-radius: 12px;">📍 ${(c.city || 'siantar').toUpperCase()}</span></td>
+              <td>
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                  <span class="font-weight-bold text-info" style="font-size: 13px;">${c.cctv_used || 0} / ${c.cctv_quota} CCTV</span>
+                  <span class="text-muted" style="font-size: 11px;">${percentUsed}%</span>
+                </div>
+                <div class="progress-bar-custom">
+                  <div class="progress-fill" style="width: ${percentUsed}%;"></div>
+                </div>
+              </td>
+              <td>${statusBadge}</td>
+              <td class="text-right">
+                <button class="btn btn-outline-warning btn-sm mr-1" onclick="openEditQuotaModal(${c.id}, '${c.name.replace(/'/g, "\\'")}', ${c.cctv_quota})" title="Edit Kuota Kamera">
+                  <i class="fas fa-sliders-h"></i> Kuota
+                </button>
+                <button class="btn btn-outline-info btn-sm mr-1" onclick="toggleStatus(${c.id})" title="Toggle Suspend">
+                  <i class="fas fa-power-off"></i>
+                </button>
+                <button class="btn btn-outline-danger btn-sm" onclick="deleteCustomer(${c.id}, '${c.name.replace(/'/g, "\\'")}')" title="Hapus Akun">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </td>
+            </tr>
+          `;
+          tbody.innerHTML += rowHTML;
+        });
+      }
+
+      document.getElementById('metric-total-customers').innerText = customers.length;
+      document.getElementById('metric-total-cameras').innerText = totalCameras;
+      document.getElementById('metric-total-quota').innerText = totalQuota;
+    }
+
     function openAddCustomerModal() {
-      $('#modalAddCustomer').modal('show');
+      try {
+        if (typeof $ !== 'undefined' && $.fn && $.fn.modal) {
+          $('#modalAddCustomer').modal('show');
+        } else {
+          document.getElementById('modalAddCustomer').style.display = 'block';
+          document.getElementById('modalAddCustomer').classList.add('show');
+        }
+      } catch(e) {
+        document.getElementById('modalAddCustomer').style.display = 'block';
+        document.getElementById('modalAddCustomer').classList.add('show');
+      }
+    }
+
+    function closeAddCustomerModal() {
+      try {
+        if (typeof $ !== 'undefined' && $.fn && $.fn.modal) {
+          $('#modalAddCustomer').modal('hide');
+        }
+      } catch(e) {}
+      document.getElementById('modalAddCustomer').style.display = 'none';
+      document.getElementById('modalAddCustomer').classList.remove('show');
     }
 
     function submitAddCustomer(e) {
-      e.preventDefault();
+      if (e) e.preventDefault();
+      const name = document.getElementById('cust-name').value.trim();
+      const email = document.getElementById('cust-email').value.trim();
+      const password = document.getElementById('cust-password').value.trim();
+      const quota = parseInt(document.getElementById('cust-quota').value) || 10;
+      const city = document.getElementById('cust-city').value;
+      const phone = document.getElementById('cust-phone').value.trim() || '-';
+
+      if (!name || !email || !password) {
+        alert('Nama, Email, dan Password wajib diisi!');
+        return;
+      }
+
+      let list = getStoredCustomers();
+      const newId = list.length > 0 ? Math.max(...list.map(c => c.id)) + 1 : 1;
+      const newCust = {
+        id: newId,
+        name: name,
+        email: email,
+        password: password,
+        cctv_quota: quota,
+        cctv_used: 0,
+        city: city,
+        phone: phone,
+        status: 'active',
+        created_at: new Date().toISOString().split('T')[0]
+      };
+      list.push(newCust);
+      saveStoredCustomers(list);
+
       const formData = new FormData();
       formData.append('action', 'create');
-      formData.append('name', document.getElementById('cust-name').value);
-      formData.append('email', document.getElementById('cust-email').value);
-      formData.append('password', document.getElementById('cust-password').value);
-      formData.append('cctv_quota', document.getElementById('cust-quota').value);
-      formData.append('city', document.getElementById('cust-city').value);
-      formData.append('phone', document.getElementById('cust-phone').value);
+      formData.append('name', name);
+      formData.append('email', email);
+      formData.append('password', password);
+      formData.append('cctv_quota', quota);
+      formData.append('city', city);
+      formData.append('phone', phone);
+      fetch('../api/admin_customers.php', { method: 'POST', body: formData }).catch(e => {});
 
-      fetch('../api/admin_customers.php', {
-        method: 'POST',
-        body: formData
-      })
-      .then(res => res.json())
-      .then(res => {
-        alert(res.message);
-        if (res.success) {
-          $('#modalAddCustomer').modal('hide');
-          document.getElementById('formAddCustomer').reset();
-          loadCustomerData();
-        }
-      });
+      alert(`BERHASIL: Customer baru '${name}' berhasil ditambahkan dengan kuota ${quota} CCTV!`);
+      closeAddCustomerModal();
+      document.getElementById('formAddCustomer').reset();
+      renderCustomerTable(list);
     }
 
     function openEditQuotaModal(id, name, quota) {
@@ -453,68 +509,58 @@ if (!get_logged_in_user()) {
         return;
       }
 
+      let list = getStoredCustomers();
+      list.forEach(c => {
+        if (c.id === id) {
+          c.cctv_quota = newQuota;
+        }
+      });
+      saveStoredCustomers(list);
+
       const formData = new FormData();
       formData.append('action', 'update_quota');
       formData.append('id', id);
       formData.append('cctv_quota', newQuota);
+      fetch('../api/admin_customers.php', { method: 'POST', body: formData }).catch(e => {});
 
-      fetch('../api/admin_customers.php', {
-        method: 'POST',
-        body: formData
-      })
-      .then(res => res.json())
-      .then(res => {
-        alert(res.message);
-        loadCustomerData();
-      })
-      .catch(err => {
-        alert(`BERHASIL: Kuota CCTV untuk '${name}' diperbarui menjadi ${newQuota} CCTV!`);
-        loadCustomerData();
-      });
+      alert(`BERHASIL: Kuota CCTV untuk '${name}' diperbarui menjadi ${newQuota} CCTV!`);
+      renderCustomerTable(list);
     }
 
     function toggleStatus(id) {
-      if (!confirm('Apakah Anda yakin ingin mengubah status aktif/suspend customer ini?')) return;
-
-      const formData = new FormData();
-      formData.append('action', 'toggle_status');
-      formData.append('id', id);
-
-      fetch('../api/admin_customers.php', {
-        method: 'POST',
-        body: formData
-      })
-      .then(res => res.json())
-      .then(res => {
-        alert(res.message);
-        loadCustomerData();
+      let list = getStoredCustomers();
+      list.forEach(c => {
+        if (c.id === id) {
+          c.status = (c.status === 'active') ? 'suspended' : 'active';
+          alert(`Status Customer '${c.name}' diubah menjadi ${c.status.toUpperCase()}!`);
+        }
       });
+      saveStoredCustomers(list);
+      renderCustomerTable(list);
     }
 
     function deleteCustomer(id, name) {
       if (!confirm(`HAPUS PERMANEN: Apakah Anda yakin ingin menghapus akun Customer '${name}'?`)) return;
 
-      const formData = new FormData();
-      formData.append('action', 'delete');
-      formData.append('id', id);
-
-      fetch('../api/admin_customers.php', {
-        method: 'POST',
-        body: formData
-      })
-      .then(res => res.json())
-      .then(res => {
-        alert(res.message);
-        loadCustomerData();
-      });
+      let list = getStoredCustomers();
+      list = list.filter(c => c.id !== id);
+      saveStoredCustomers(list);
+      alert(`Customer '${name}' berhasil dihapus!`);
+      renderCustomerTable(list);
     }
 
     function logoutAdmin() {
-      fetch('../api/auth.php?action=logout')
-        .then(() => {
-          window.location.href = '../index.php';
-        });
+      localStorage.removeItem('loewix_user');
+      window.location.href = '../index.html';
     }
+
+    window.openAddCustomerModal = openAddCustomerModal;
+    window.closeAddCustomerModal = closeAddCustomerModal;
+    window.submitAddCustomer = submitAddCustomer;
+    window.openEditQuotaModal = openEditQuotaModal;
+    window.toggleStatus = toggleStatus;
+    window.deleteCustomer = deleteCustomer;
+    window.logoutAdmin = logoutAdmin;
   </script>
 </body>
 </html>

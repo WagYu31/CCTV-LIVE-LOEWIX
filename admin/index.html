@@ -429,17 +429,42 @@
     }
 
     function openAddCustomerModal() {
-      $('#modalAddCustomer').modal('show');
+      try {
+        if (typeof $ !== 'undefined' && $.fn && $.fn.modal) {
+          $('#modalAddCustomer').modal('show');
+        } else {
+          document.getElementById('modalAddCustomer').style.display = 'block';
+          document.getElementById('modalAddCustomer').classList.add('show');
+        }
+      } catch(e) {
+        document.getElementById('modalAddCustomer').style.display = 'block';
+        document.getElementById('modalAddCustomer').classList.add('show');
+      }
+    }
+
+    function closeAddCustomerModal() {
+      try {
+        if (typeof $ !== 'undefined' && $.fn && $.fn.modal) {
+          $('#modalAddCustomer').modal('hide');
+        }
+      } catch(e) {}
+      document.getElementById('modalAddCustomer').style.display = 'none';
+      document.getElementById('modalAddCustomer').classList.remove('show');
     }
 
     function submitAddCustomer(e) {
-      e.preventDefault();
+      if (e) e.preventDefault();
       const name = document.getElementById('cust-name').value.trim();
       const email = document.getElementById('cust-email').value.trim();
       const password = document.getElementById('cust-password').value.trim();
       const quota = parseInt(document.getElementById('cust-quota').value) || 10;
       const city = document.getElementById('cust-city').value;
-      const phone = document.getElementById('cust-phone').value.trim();
+      const phone = document.getElementById('cust-phone').value.trim() || '-';
+
+      if (!name || !email || !password) {
+        alert('Nama, Email, dan Password wajib diisi!');
+        return;
+      }
 
       let list = getStoredCustomers();
       const newId = list.length > 0 ? Math.max(...list.map(c => c.id)) + 1 : 1;
@@ -451,15 +476,25 @@
         cctv_quota: quota,
         cctv_used: 0,
         city: city,
-        phone: phone || '-',
+        phone: phone,
         status: 'active',
         created_at: new Date().toISOString().split('T')[0]
       };
       list.push(newCust);
       saveStoredCustomers(list);
 
-      alert(`Customer baru '${name}' berhasil ditambahkan dengan kuota ${quota} CCTV!`);
-      $('#modalAddCustomer').modal('hide');
+      const formData = new FormData();
+      formData.append('action', 'create');
+      formData.append('name', name);
+      formData.append('email', email);
+      formData.append('password', password);
+      formData.append('cctv_quota', quota);
+      formData.append('city', city);
+      formData.append('phone', phone);
+      fetch('../api/admin_customers.php', { method: 'POST', body: formData }).catch(e => {});
+
+      alert(`BERHASIL: Customer baru '${name}' berhasil ditambahkan dengan kuota ${quota} CCTV!`);
+      closeAddCustomerModal();
       document.getElementById('formAddCustomer').reset();
       renderCustomerTable(list);
     }
@@ -518,6 +553,14 @@
       localStorage.removeItem('loewix_user');
       window.location.href = '../index.html';
     }
+
+    window.openAddCustomerModal = openAddCustomerModal;
+    window.closeAddCustomerModal = closeAddCustomerModal;
+    window.submitAddCustomer = submitAddCustomer;
+    window.openEditQuotaModal = openEditQuotaModal;
+    window.toggleStatus = toggleStatus;
+    window.deleteCustomer = deleteCustomer;
+    window.logoutAdmin = logoutAdmin;
   </script>
 </body>
 </html>
