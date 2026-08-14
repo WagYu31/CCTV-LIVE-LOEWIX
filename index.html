@@ -3373,9 +3373,11 @@
             <button id="dark-mode-toggle" class="btn btn-sm text-white" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;" title="Toggle Dark Mode">
               <i class="fas fa-moon" id="dark-mode-icon"></i>
             </button>
-            <a href="contact-us.php" class="contact-btn" style="background: linear-gradient(135deg, #00d2ff, #0066ff); border: none; font-weight: 700; border-radius: 25px; padding: 8px 24px; color: #fff; box-shadow: 0 4px 20px rgba(0, 102, 255, 0.4); text-transform: uppercase; font-size: 12px; letter-spacing: 0.5px; transition: all 0.3s ease;">
-              KONTAK
-            </a>
+            <div id="nav-user-area" class="d-flex align-items-center" style="gap: 8px;">
+              <button class="btn btn-sm" onclick="openLoginModal()" style="background: linear-gradient(135deg, #00d2ff, #0066ff); border: none; font-weight: 700; border-radius: 25px; padding: 7px 20px; color: #fff; box-shadow: 0 4px 15px rgba(0, 102, 255, 0.4); text-transform: uppercase; font-size: 12px; letter-spacing: 0.5px;">
+                <i class="fas fa-sign-in-alt mr-1"></i> LOGIN
+              </button>
+            </div>
           </div>
         </div>
       </nav>
@@ -8622,16 +8624,50 @@
         return;
       }
 
-      if (id) {
-        const cam = mediamtxData.find(c => c.id === parseInt(id));
-        if (cam) {
-          cam.title = title;
-          cam.city = city;
-          cam.streamPath = streamPath;
-          cam.streamId = streamPath;
-          cam.coordinates = [lat, lng];
+      // API Call to add camera with Quota Enforcement
+      const formData = new FormData();
+      formData.append('action', 'add');
+      formData.append('title', title);
+      formData.append('city', city);
+      formData.append('streamPath', streamPath);
+      formData.append('lat', lat);
+      formData.append('lng', lng);
+
+      fetch('api/cameras.php', {
+        method: 'POST',
+        body: formData
+      })
+      .then(res => res.json())
+      .then(res => {
+        if (!res.success) {
+          if (res.quota_exceeded) {
+            closeCameraConfigModal();
+            showQuotaAlert(res.message);
+          } else {
+            alert(res.message);
+          }
+          return;
         }
-      } else {
+
+        const newCam = res.camera;
+        mediamtxData.push({
+          id: newCam.id,
+          city: newCam.city,
+          title: newCam.title,
+          streamPath: newCam.streamPath,
+          streamId: newCam.streamPath,
+          coordinates: [parseFloat(newCam.lat) || lat, parseFloat(newCam.lng) || lng],
+          platform: PLATFORM_TYPES.MEDIAMTX,
+          thumbnail: ASSET_BASE + '/image/logo-loewix.png'
+        });
+
+        closeCameraConfigModal();
+        alert(res.message);
+        checkUserSession();
+        generateCCTVHTML(currentGlobalCity);
+      })
+      .catch(err => {
+        // Fallback for offline/Vercel demo
         const newId = Date.now();
         mediamtxData.push({
           id: newId,
@@ -8643,11 +8679,10 @@
           platform: PLATFORM_TYPES.MEDIAMTX,
           thumbnail: ASSET_BASE + '/image/logo-loewix.png'
         });
-      }
-
-      closeCameraConfigModal();
-      alert('Konfigurasi Kamera Berhasil Disimpan!');
-      generateCCTVHTML(currentGlobalCity);
+        closeCameraConfigModal();
+        alert('Kamera berhasil ditambahkan!');
+        generateCCTVHTML(currentGlobalCity);
+      });
     }
 
     // Generate CCTV HTML - Updated untuk Multi-Kota & MediaMTX HLS streaming
@@ -11140,6 +11175,151 @@
       </div>
     </div>
   </div>
+  <!-- ===== LOGIN MODAL (SUPER ADMIN & CUSTOMER) ===== -->
+  <div class="modal fade" id="modalLogin" tabindex="-1" role="dialog" aria-hidden="true" style="z-index: 1060;">
+    <div class="modal-dialog modal-dialog-centered modal-sm" role="document">
+      <div class="modal-content" style="background: #0d1934; border: 1px solid rgba(255,255,255,0.15); color: #fff; border-radius: 16px;">
+        <div class="modal-header" style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+          <h5 class="modal-title font-weight-bold" style="font-size: 16px;"><i class="fas fa-user-lock text-info mr-2"></i> Login Akun Loewix</h5>
+          <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <form id="formLogin" onsubmit="submitLogin(event)">
+          <div class="modal-body py-4">
+            <div class="form-group mb-3">
+              <label style="font-size: 12px; color: #94a3b8; font-weight: 600;">Email Login:</label>
+              <input type="email" id="login-email" class="form-control" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.2); color: #fff;" placeholder="admin@loewixcctv.com" required>
+            </div>
+            <div class="form-group mb-3">
+              <label style="font-size: 12px; color: #94a3b8; font-weight: 600;">Password:</label>
+              <input type="password" id="login-password" class="form-control" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.2); color: #fff;" placeholder="••••••••" required>
+            </div>
+            <div class="p-2 rounded mb-3" style="background: rgba(56, 189, 248, 0.1); border: 1px solid rgba(56, 189, 248, 0.25); font-size: 11px; color: #38bdf8;">
+              <i class="fas fa-info-circle mr-1"></i> Demo Login:
+              <div>• Super Admin: <code>admin@loewixcctv.com</code> / <code>admin123</code></div>
+              <div>• Customer: <code>customer@jayasentosa.com</code> / <code>customer123</code></div>
+            </div>
+            <button type="submit" class="btn btn-block" style="background: linear-gradient(135deg, #00d2ff, #0066ff); color: #fff; font-weight: 700; border-radius: 20px;">
+              <i class="fas fa-sign-in-alt mr-1"></i> LOGIN SEKARANG
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== QUOTA EXCEEDED ALERT MODAL ===== -->
+  <div class="modal fade" id="modalQuotaExceeded" tabindex="-1" role="dialog" aria-hidden="true" style="z-index: 1070;">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content" style="background: #0d1934; border: 1px solid rgba(245, 158, 11, 0.4); color: #fff; border-radius: 16px;">
+        <div class="modal-body text-center p-4">
+          <div class="mb-3">
+            <i class="fas fa-exclamation-triangle fa-3x" style="color: #f59e0b;"></i>
+          </div>
+          <h4 class="font-weight-bold text-warning mb-2">Batas Kuota Kamera Tercapai!</h4>
+          <p id="quota-alert-msg" class="text-muted" style="font-size: 14px; line-height: 1.6;"></p>
+          <div class="p-3 rounded mb-4" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255,255,255,0.1); font-size: 13px;">
+            <div class="font-weight-bold text-white mb-1"><i class="fas fa-headset text-info mr-1"></i> PT. LOEWIX INDONESIA CUSTOMER CARE</div>
+            <div class="text-muted">Hubungi kami untuk upgrade kuota paket CCTV enterprise:</div>
+            <div class="font-weight-bold text-info mt-1">📞 +62 (021) 800-LOEWIX • ✉️ support@loewixcctv.com</div>
+          </div>
+          <button type="button" class="btn btn-warning font-weight-bold px-4" data-dismiss="modal" style="border-radius: 20px; color: #000;">
+            <i class="fas fa-check mr-1"></i> Saya Mengerti
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Authentication & Quota Engine JavaScript Handlers
+    document.addEventListener('DOMContentLoaded', () => {
+      checkUserSession();
+    });
+
+    function checkUserSession() {
+      fetch('api/auth.php?action=check_session')
+        .then(res => res.json())
+        .then(data => {
+          const userArea = document.getElementById('nav-user-area');
+          if (!userArea) return;
+
+          if (data.logged_in) {
+            const user = data.user;
+            if (user.role === 'super_admin') {
+              userArea.innerHTML = `
+                <a href="admin/index.php" class="btn btn-sm btn-outline-warning font-weight-bold" style="border-radius: 20px; font-size: 11px;" title="Buka Super Admin Control Center">
+                  <i class="fas fa-user-shield mr-1"></i> ADMIN PANEL
+                </a>
+                <button class="btn btn-sm btn-outline-danger" onclick="logoutUser()" style="border-radius: 20px; font-size: 11px;">
+                  <i class="fas fa-sign-out-alt"></i>
+                </button>
+              `;
+            } else {
+              userArea.innerHTML = `
+                <div class="badge badge-info p-2 d-inline-flex align-items-center" style="border-radius: 20px; font-size: 11px; background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.3); color: #38bdf8;" title="Kuota Live Stream Customer">
+                  <i class="fas fa-layer-group mr-1"></i> KUOTA: ${user.cctv_used} / ${user.cctv_quota} CCTV
+                </div>
+                <button class="btn btn-sm btn-outline-danger" onclick="logoutUser()" style="border-radius: 20px; font-size: 11px;" title="Logout Akun">
+                  <i class="fas fa-sign-out-alt"></i>
+                </button>
+              `;
+            }
+          } else {
+            userArea.innerHTML = `
+              <button class="btn btn-sm" onclick="openLoginModal()" style="background: linear-gradient(135deg, #00d2ff, #0066ff); border: none; font-weight: 700; border-radius: 25px; padding: 7px 20px; color: #fff; box-shadow: 0 4px 15px rgba(0, 102, 255, 0.4); text-transform: uppercase; font-size: 12px; letter-spacing: 0.5px;">
+                <i class="fas fa-sign-in-alt mr-1"></i> LOGIN
+              </button>
+            `;
+          }
+        })
+        .catch(err => console.error(err));
+    }
+
+    function openLoginModal() {
+      $('#modalLogin').modal('show');
+    }
+
+    function submitLogin(e) {
+      e.preventDefault();
+      const formData = new FormData();
+      formData.append('action', 'login');
+      formData.append('email', document.getElementById('login-email').value);
+      formData.append('password', document.getElementById('login-password').value);
+
+      fetch('api/auth.php', {
+        method: 'POST',
+        body: formData
+      })
+      .then(res => res.json())
+      .then(res => {
+        alert(res.message);
+        if (res.success) {
+          $('#modalLogin').modal('hide');
+          checkUserSession();
+          if (res.user.role === 'super_admin') {
+            window.location.href = 'admin/index.php';
+          } else {
+            generateCCTVHTML(currentGlobalCity);
+          }
+        }
+      });
+    }
+
+    function logoutUser() {
+      fetch('api/auth.php?action=logout')
+        .then(() => {
+          checkUserSession();
+          generateCCTVHTML(currentGlobalCity);
+        });
+    }
+
+    function showQuotaAlert(msg) {
+      document.getElementById('quota-alert-msg').innerText = msg;
+      $('#modalQuotaExceeded').modal('show');
+    }
+  </script>
 </body>
 
 </html>
