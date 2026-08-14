@@ -4151,6 +4151,40 @@
       if (!cam.thumbnail) cam.thumbnail = ASSET_BASE + '/image/logo-loewix.png';
     });
 
+    // Auto-sync custom cameras added by Super Admin or Users from localStorage
+    function syncCustomLocalStorageCameras() {
+      const customKeys = ['loewix_custom_cameras'];
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (k && k.startsWith('loewix_user_cameras_')) customKeys.push(k);
+      }
+
+      customKeys.forEach(key => {
+        try {
+          const list = JSON.parse(localStorage.getItem(key) || '[]');
+          list.forEach(c => {
+            if (!c || !c.title) return;
+            const exists = mediamtxData.some(m => m.id === c.id || m.streamPath === c.streamPath);
+            if (!exists) {
+              const lat = parseFloat(c.lat) || (c.coordinates ? c.coordinates[0] : 2.9750);
+              const lng = parseFloat(c.lng) || (c.coordinates ? c.coordinates[1] : 99.0789);
+              mediamtxData.push({
+                id: c.id,
+                city: c.city || 'siantar',
+                title: c.title,
+                streamPath: c.streamPath,
+                streamId: c.streamPath,
+                coordinates: [lat, lng],
+                platform: PLATFORM_TYPES.MEDIAMTX,
+                thumbnail: ASSET_BASE + '/image/logo-loewix.png'
+              });
+            }
+          });
+        } catch(e) {}
+      });
+    }
+    syncCustomLocalStorageCameras();
+
     // Data CCTV Jakarta - menggunakan embed Balitower
     const cctvData = [{
         id: 1,

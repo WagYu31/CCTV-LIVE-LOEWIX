@@ -1073,6 +1073,26 @@
       localStorage.setItem(`loewix_user_cameras_${customerId}`, JSON.stringify(cameras));
     }
 
+    function syncGlobalCustomCameras(cam) {
+      let customList = [];
+      try {
+        customList = JSON.parse(localStorage.getItem('loewix_custom_cameras') || '[]');
+      } catch(e) {}
+
+      customList = customList.filter(c => c.id !== cam.id && c.streamPath !== cam.streamPath);
+      customList.push(cam);
+      localStorage.setItem('loewix_custom_cameras', JSON.stringify(customList));
+
+      const formData = new FormData();
+      formData.append('action', 'add');
+      formData.append('title', cam.title);
+      formData.append('city', cam.city || 'siantar');
+      formData.append('streamPath', cam.streamPath);
+      formData.append('lat', cam.lat || '');
+      formData.append('lng', cam.lng || '');
+      fetch('../api/cameras.php', { method: 'POST', body: formData }).catch(e => {});
+    }
+
     function openCustomerCCTVModal(customerId) {
       currentManagingCustomerId = customerId;
       const cust = cachedCustomers.find(c => c.id === customerId);
@@ -1199,6 +1219,9 @@
       });
       saveCustomerCameras(currentManagingCustomerId, cameras);
 
+      const targetCam = cameras.find(c => c.id === camId);
+      if (targetCam) syncGlobalCustomCameras(targetCam);
+
       const cust = cachedCustomers.find(c => c.id === currentManagingCustomerId);
       alert(`BERHASIL: Konfigurasi Kamera '${title}' berhasil diperbarui!`);
       closeEditCameraForm();
@@ -1259,6 +1282,7 @@
 
       cameras.push(newCam);
       saveCustomerCameras(currentManagingCustomerId, cameras);
+      syncGlobalCustomCameras(newCam);
 
       if (cust) {
         cust.cctv_used = cameras.length;
