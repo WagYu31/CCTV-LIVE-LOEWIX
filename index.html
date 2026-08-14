@@ -3183,69 +3183,67 @@
   <noscript><img height="1" width="1" style="display:none"
       src="https://www.facebook.com/tr?id=1234567890123456&ev=PageView&noscript=1" /></noscript>
 
-  <!--navbar-start-->
-  <div class="container">
-    <div class="header-con">
+  <!-- Floating Taste-Skill Glassmorphism Header Bar -->
+  <div class="header-floating-wrapper" style="position: fixed; top: 15px; left: 0; right: 0; z-index: 1040; pointer-events: none;">
+    <div class="container" style="max-width: 1200px;">
       <nav
-        class="navbar navbar-expand-lg navbar-light p-0 fixed-top"
+        class="navbar navbar-expand-lg navbar-dark p-0"
         id="myNavbar"
         style="
-            background-color: transparent;
-            padding-left: 30px !important;
-            padding-top: 10px !important;
-            padding-bottom: 10px !important;
-            padding-right: 30px !important;
+            background: rgba(13, 27, 62, 0.75);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 50px;
+            padding: 10px 24px !important;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.35);
+            pointer-events: auto;
+            transition: all 0.3s ease;
           ">
-        <a class="navbar-brand p-0" href="index.php">
+        <a class="navbar-brand p-0" href="index.php" style="display: flex; align-items: center;">
           <img
             src="assets/image/logo-loewix.png"
-            alt="Logo PELINTAS - Loewix"
+            alt="LOEWIX CCTV"
             class="img-fluid"
-            style="max-height: 42px; width: auto; display: block;" />
+            style="max-height: 38px; width: auto; display: block; filter: drop-shadow(0 2px 8px rgba(0,0,0,0.3));" />
         </a>
         <button
-          class="navbar-toggler p-0 collapsed"
+          class="navbar-toggler p-0 collapsed mr-2"
           type="button"
           data-toggle="collapse"
           data-target="#navbarSupportedContent"
           aria-controls="navbarSupportedContent"
           aria-expanded="false"
-          aria-label="Toggle navigation">
-          <span class="navbar-toggler-icon"></span>
-          <span class="navbar-toggler-icon"></span>
+          aria-label="Toggle navigation"
+          style="border: none; outline: none; background: transparent;">
           <span class="navbar-toggler-icon"></span>
         </button>
+
         <div
           class="collapse navbar-collapse justify-content-end"
           id="navbarSupportedContent">
-          <ul class="navbar-nav">
+          <ul class="navbar-nav align-items-center" style="gap: 20px; margin-right: 15px;">
             <li class="nav-item active">
-              <a class="nav-link text-white p-0" href="index.php">Home<span class="sr-only">(current)</span></a>
+              <a class="nav-link text-white" href="index.php" style="font-weight: 600; font-size: 14px; opacity: 1; transition: all 0.2s;">Home</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link text-white p-0" href="#cctv">
-                <img
-                  src="assets/image/icon-cctv.png"
-                  alt="CCTV"
-                  class="icon" />
-                CCTV
+              <a class="nav-link text-white d-flex align-items-center" href="#cctv" style="font-weight: 600; font-size: 14px; opacity: 0.85; gap: 6px; transition: all 0.2s;">
+                <img src="assets/image/icon-cctv.png" alt="CCTV" style="width: 18px; height: 18px;" />
+                CCTV Live
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link text-white p-0" href="#wifi">
-                <img
-                  src="assets/image/icon-wifi.svg"
-                  alt="WIFI"
-                  class="icon" />
-                WIFI
+              <a class="nav-link text-white d-flex align-items-center" href="#wifi" style="font-weight: 600; font-size: 14px; opacity: 0.85; gap: 6px; transition: all 0.2s;">
+                <img src="assets/image/icon-wifi.svg" alt="WIFI" style="width: 18px; height: 18px;" />
+                WiFi Network
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link text-white p-0" href="about-us.php">ABOUT US</a>
+              <a class="nav-link text-white" href="about-us.php" style="font-weight: 600; font-size: 14px; opacity: 0.85; transition: all 0.2s;">About Loewix</a>
             </li>
           </ul>
-          <div class="d-flex align-items-center">
-            <select id="city-selector-nav" class="form-control form-control-sm mr-3" style="background: rgba(255,255,255,0.15); color: white; border: 1px solid rgba(255,255,255,0.4); border-radius: 20px; padding: 5px 12px; font-weight: 600; cursor: pointer; width: auto; font-size: 13px;" onchange="changeGlobalCity(this.value)">
+          <div class="d-flex align-items-center" style="gap: 10px;">
+            <select id="city-selector-nav" class="form-control form-control-sm" style="background: rgba(255,255,255,0.12); color: white; border: 1px solid rgba(255,255,255,0.25); border-radius: 20px; padding: 5px 12px; font-weight: 600; cursor: pointer; width: auto; font-size: 13px; outline: none;" onchange="changeGlobalCity(this.value)">
               <option value="all" style="color: #111;">🌐 Semua Wilayah</option>
               <option value="siantar" selected style="color: #111;">📍 Pematangsiantar</option>
               <option value="jakarta" style="color: #111;">📍 DKI Jakarta</option>
@@ -3253,16 +3251,18 @@
               <option value="bandung" style="color: #111;">📍 Kota Bandung</option>
               <option value="bali" style="color: #111;">📍 Bali / Denpasar</option>
             </select>
-            <button id="dark-mode-toggle" class="btn btn-sm text-white mr-3" style="background: transparent; border: 1px solid rgba(255,255,255,0.3); border-radius: 20px; padding: 5px 15px;" title="Toggle Dark Mode">
+            <button id="dark-mode-toggle" class="btn btn-sm text-white" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;" title="Toggle Dark Mode">
               <i class="fas fa-moon" id="dark-mode-icon"></i>
             </button>
-            <a href="contact-us.php" class="my-2 my-sm-0 contact-btn" style="background: linear-gradient(135deg, #00d2ff, #0066ff); border: none; font-weight: 700; border-radius: 25px; padding: 8px 24px; color: #fff; box-shadow: 0 4px 15px rgba(0, 102, 255, 0.4);">KONTAK</a>
+            <a href="contact-us.php" class="contact-btn" style="background: linear-gradient(135deg, #00d2ff, #0066ff); border: none; font-weight: 700; border-radius: 25px; padding: 8px 24px; color: #fff; box-shadow: 0 4px 20px rgba(0, 102, 255, 0.4); text-transform: uppercase; font-size: 12px; letter-spacing: 0.5px; transition: all 0.3s ease;">
+              KONTAK
+            </a>
           </div>
         </div>
       </nav>
     </div>
   </div>
-  <!--navbar-end-->
+  <!-- Floating Taste-Skill Glassmorphism Header Bar End -->
 
   <!-- Banner Section -->
   <div class="header-and-banner-con w-100" style="padding-top: 40px; padding-bottom: 30px;">
