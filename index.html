@@ -3265,12 +3265,11 @@
                 class="col-lg-6 col-md-6 col-sm-12 d-flex justify-content-center flex-column banner-main-left-con">
                 <div class="banner-left-con wow slideInLeft">
                   <div class="banner-heading">
-                    <h1 style="font-size: 2.5rem; line-height: 1.2; font-weight: 800; margin-bottom: 15px;">CCTV Online Kota Pematangsiantar</h1>
+                    <h1 style="font-size: 3.2rem; line-height: 1.15; font-weight: 800; margin-bottom: 18px; letter-spacing: -0.5px; color: #ffffff;">World Wide CCTV Monitoring</h1>
                   </div>
                   <div class="banner-content">
-                    <p class="col-lg-11 pl-0 pr-0" style="font-size: 1.1rem; opacity: 0.9;">
-                      Selamat Datang Pada Halaman CCTV Online Kota
-                      Pematangsiantar.
+                    <p class="col-lg-11 pl-0 pr-0" style="font-size: 1.15rem; line-height: 1.6; color: rgba(255, 255, 255, 0.85); font-weight: 400; margin-bottom: 25px;">
+                      Advanced surveillance systems for a safer world. High-fidelity analytics, global scale, zero latency.
                     </p>
                   </div>
                   <div class="banner-btn" style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 20px;">
