@@ -121,6 +121,27 @@ if ($method === 'POST') {
         exit;
     }
 
+    if ($action === 'reset_password') {
+        $id = (int) ($_POST['id'] ?? 0);
+        $newPassword = trim($_POST['password'] ?? '');
+
+        if (empty($newPassword)) {
+            echo json_encode(['success' => false, 'message' => 'Password baru tidak boleh kosong!']);
+            exit;
+        }
+
+        foreach ($db['users'] as &$u) {
+            if ($u['id'] === $id && $u['role'] === 'customer') {
+                $u['password'] = password_hash($newPassword, PASSWORD_BCRYPT);
+                save_db_data($db);
+                echo json_encode(['success' => true, 'message' => 'Password Customer ' . $u['name'] . ' berhasil direset!']);
+                exit;
+            }
+        }
+        echo json_encode(['success' => false, 'message' => 'Customer tidak ditemukan!']);
+        exit;
+    }
+
     if ($action === 'delete') {
         $id = (int) ($_POST['id'] ?? 0);
         $newUsers = [];

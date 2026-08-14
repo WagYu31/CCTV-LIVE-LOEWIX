@@ -252,7 +252,10 @@
             </div>
             <div class="form-group">
               <label class="font-weight-bold text-muted" style="font-size: 13px;">Password Initial:</label>
-              <input type="password" id="cust-password" class="form-control form-control-dark" placeholder="Minimal 6 Karakter" required>
+              <div style="position: relative; width: 100%;">
+                <input type="password" id="cust-password" class="form-control form-control-dark" placeholder="Minimal 6 Karakter" required style="padding-right: 40px;">
+                <i class="fas fa-eye" id="toggle-add-cust-password-icon" onclick="toggleAddCustPasswordVisibility()" title="Tampilkan / Sembunyikan Password" style="position: absolute; right: 14px; top: 12px; color: #94a3b8; font-size: 14px; cursor: pointer; z-index: 10;"></i>
+              </div>
             </div>
             <div class="form-row">
               <div class="form-group col-6">
@@ -410,7 +413,10 @@
                 <button class="btn btn-outline-warning btn-sm mr-1" onclick="openEditQuotaModal(${c.id}, '${c.name.replace(/'/g, "\\'")}', ${c.cctv_quota})" title="Edit Kuota Kamera">
                   <i class="fas fa-sliders-h"></i> Kuota
                 </button>
-                <button class="btn btn-outline-info btn-sm mr-1" onclick="toggleStatus(${c.id})" title="Toggle Suspend">
+                <button class="btn btn-outline-info btn-sm mr-1" onclick="resetCustomerPassword(${c.id}, '${c.name.replace(/'/g, "\\'")}')" title="Reset / Ubah Password Customer">
+                  <i class="fas fa-key"></i> Pass
+                </button>
+                <button class="btn btn-outline-secondary btn-sm mr-1" onclick="toggleStatus(${c.id})" title="Toggle Suspend">
                   <i class="fas fa-power-off"></i>
                 </button>
                 <button class="btn btn-outline-danger btn-sm" onclick="deleteCustomer(${c.id}, '${c.name.replace(/'/g, "\\'")}')" title="Hapus Akun">
@@ -549,6 +555,50 @@
       renderCustomerTable(list);
     }
 
+    function toggleAddCustPasswordVisibility() {
+      const pwdInput = document.getElementById('cust-password');
+      const eyeIcon = document.getElementById('toggle-add-cust-password-icon');
+      if (!pwdInput || !eyeIcon) return;
+
+      if (pwdInput.type === 'password') {
+        pwdInput.type = 'text';
+        eyeIcon.classList.remove('fa-eye');
+        eyeIcon.classList.add('fa-eye-slash');
+        eyeIcon.style.color = '#00d2ff';
+      } else {
+        pwdInput.type = 'password';
+        eyeIcon.classList.remove('fa-eye-slash');
+        eyeIcon.classList.add('fa-eye');
+        eyeIcon.style.color = '#94a3b8';
+      }
+    }
+
+    function resetCustomerPassword(id, name) {
+      const newPassword = prompt(`RESET / UBAH PASSWORD CUSTOMER\n\nCustomer: ${name}\nMasukkan Password Baru untuk Customer ini:`);
+      if (newPassword === null) return;
+
+      if (!newPassword || newPassword.trim().length < 4) {
+        alert('Mohon masukkan password yang valid (minimal 4 karakter).');
+        return;
+      }
+
+      let list = getStoredCustomers();
+      list.forEach(c => {
+        if (c.id === id) {
+          c.password = newPassword.trim();
+        }
+      });
+      saveStoredCustomers(list);
+
+      const formData = new FormData();
+      formData.append('action', 'reset_password');
+      formData.append('id', id);
+      formData.append('password', newPassword.trim());
+      fetch('../api/admin_customers.php', { method: 'POST', body: formData }).catch(e => {});
+
+      alert(`BERHASIL: Password Customer '${name}' telah diubah menjadi '${newPassword.trim()}'!`);
+    }
+
     function logoutAdmin() {
       localStorage.removeItem('loewix_user');
       window.location.href = '../index.html';
@@ -558,6 +608,8 @@
     window.closeAddCustomerModal = closeAddCustomerModal;
     window.submitAddCustomer = submitAddCustomer;
     window.openEditQuotaModal = openEditQuotaModal;
+    window.resetCustomerPassword = resetCustomerPassword;
+    window.toggleAddCustPasswordVisibility = toggleAddCustPasswordVisibility;
     window.toggleStatus = toggleStatus;
     window.deleteCustomer = deleteCustomer;
     window.logoutAdmin = logoutAdmin;
