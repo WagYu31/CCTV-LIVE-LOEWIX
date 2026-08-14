@@ -498,6 +498,74 @@
     </div>
   </div>
 
+  <!-- Modal Kelola CCTV Customer -->
+  <div class="modal fade" id="modalCustomerCCTV" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+      <div class="modal-content modal-content-dark">
+        <div class="modal-header modal-header-dark d-flex justify-content-between align-items-center">
+          <div>
+            <h5 class="modal-title font-weight-bold mb-1" style="color: #ffffff;"><i class="fas fa-video text-info mr-2"></i> Kelola Channel CCTV Customer</h5>
+            <div id="cctv-modal-subtitle" class="text-muted" style="font-size: 13px;">Customer: PT. Jaya Sentosa Enterprise</div>
+          </div>
+          <button type="button" class="close text-white" onclick="closeCustomerCCTVModal()" aria-label="Close" style="outline: none;">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body p-4">
+          <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+            <div class="badge badge-info p-2" id="cctv-modal-quota-badge" style="border-radius: 20px; font-size: 12px; background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.3); color: #38bdf8;">
+              <i class="fas fa-layer-group mr-1"></i> KUOTA: 0 / 20 CCTV TERPAKAI
+            </div>
+            <button class="btn btn-gold btn-sm" onclick="openAddCameraForCustomerForm()">
+              <i class="fas fa-plus-circle mr-1"></i> Tambah Kamera Baru
+            </button>
+          </div>
+
+          <!-- Form Tambah Kamera (Collapsible) -->
+          <div id="add-camera-form-box" class="p-3 mb-4 rounded" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(0, 210, 255, 0.3); display: none;">
+            <h6 class="font-weight-bold text-info mb-3" style="font-size: 14px;"><i class="fas fa-plus mr-1"></i> Input Detail Kamera CCTV Baru Customer</h6>
+            <form onsubmit="submitAddCameraForCustomer(event)">
+              <div class="form-row">
+                <div class="form-group col-md-6 mb-2">
+                  <label style="font-size: 12px; color: #94a3b8; font-weight: 600; display: block; margin-bottom: 4px;">Nama / Lokasi Kamera:</label>
+                  <input type="text" id="cam-input-title" class="form-control form-control-dark" placeholder="Contoh: CAM 01 - Lobby Utama" required>
+                </div>
+                <div class="form-group col-md-6 mb-2">
+                  <label style="font-size: 12px; color: #94a3b8; font-weight: 600; display: block; margin-bottom: 4px;">Stream Path / RTSP ID:</label>
+                  <input type="text" id="cam-input-path" class="form-control form-control-dark" placeholder="Contoh: live/jayasentosa01" required>
+                </div>
+              </div>
+              <div class="d-flex justify-content-end gap-2 mt-2">
+                <button type="button" class="btn btn-secondary btn-sm mr-2" onclick="closeAddCameraForCustomerForm()">Batal</button>
+                <button type="submit" class="btn btn-info btn-sm font-weight-bold"><i class="fas fa-save mr-1"></i> Simpan Kamera</button>
+              </div>
+            </form>
+          </div>
+
+          <!-- Table List Kamera -->
+          <div class="table-responsive">
+            <table class="table table-dark-custom">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Nama / Lokasi Kamera</th>
+                  <th>Stream Path / HLS URL</th>
+                  <th>Status Stream</th>
+                  <th class="text-right">Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="cctv-modal-table-body">
+                <tr>
+                  <td colspan="5" class="text-center py-4 text-muted">Belum ada kamera CCTV terpasang untuk customer ini. Klik 'Tambah Kamera Baru'.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script src="../assets/js/jquery-3.3.1.min.js"></script>
   <script src="../assets/bootstarp/bootstrap.min.js"></script>
 
@@ -599,16 +667,21 @@
               <td><span class="badge badge-secondary" style="border-radius: 12px; padding: 4px 10px;">📍 ${(c.city || 'siantar').toUpperCase()}</span></td>
               <td>
                 <div class="d-flex justify-content-between align-items-center mb-1">
-                  <span class="font-weight-bold text-info" style="font-size: 13px;">${c.cctv_used || 0} / ${c.cctv_quota} CCTV</span>
+                  <span class="font-weight-bold text-info" style="font-size: 13px; cursor: pointer;" onclick="openCustomerCCTVModal(${c.id})" title="Klik untuk Kelola Kamera Customer Ini">
+                    <i class="fas fa-video mr-1 text-warning"></i> ${c.cctv_used || 0} / ${c.cctv_quota} CCTV
+                  </span>
                   <span class="text-muted" style="font-size: 11px;">${percentUsed}%</span>
                 </div>
-                <div class="progress-bar-custom">
+                <div class="progress-bar-custom" style="cursor: pointer;" onclick="openCustomerCCTVModal(${c.id})" title="Klik untuk Kelola Kamera Customer Ini">
                   <div class="progress-fill" style="width: ${percentUsed}%;"></div>
                 </div>
               </td>
               <td>${statusBadge}</td>
               <td class="text-right">
                 <div class="action-btn-group">
+                  <button class="act-btn" style="background: rgba(16, 185, 129, 0.15); border-color: rgba(16, 185, 129, 0.3); color: #10b981;" onclick="openCustomerCCTVModal(${c.id})" title="Kelola Channel Kamera CCTV Customer Ini">
+                    <i class="fas fa-video"></i>
+                  </button>
                   <button class="act-btn act-btn-edit" onclick="openEditCustomerModal(${c.id})" title="Edit Data Profil Customer">
                     <i class="fas fa-edit"></i>
                   </button>
@@ -913,6 +986,162 @@
       window.location.href = '../index.html';
     }
 
+    // ===== CUSTOMER CCTV CHANNEL MANAGER =====
+    let currentManagingCustomerId = null;
+
+    function getCustomerCameras(customerId) {
+      const stored = localStorage.getItem(`loewix_user_cameras_${customerId}`);
+      if (stored) {
+        try { return JSON.parse(stored); } catch(e) {}
+      }
+      return [];
+    }
+
+    function saveCustomerCameras(customerId, cameras) {
+      localStorage.setItem(`loewix_user_cameras_${customerId}`, JSON.stringify(cameras));
+    }
+
+    function openCustomerCCTVModal(customerId) {
+      currentManagingCustomerId = customerId;
+      const cust = cachedCustomers.find(c => c.id === customerId);
+      if (!cust) return;
+
+      document.getElementById('cctv-modal-subtitle').innerText = `Customer: ${cust.name} (${cust.email})`;
+      
+      const cameras = getCustomerCameras(customerId);
+      cust.cctv_used = cameras.length;
+      saveStoredCustomers(cachedCustomers);
+
+      renderCustomerCCTVTable(cust, cameras);
+      closeAddCameraForCustomerForm();
+
+      try {
+        if (typeof $ !== 'undefined' && $.fn && $.fn.modal) {
+          $('#modalCustomerCCTV').modal('show');
+        } else {
+          document.getElementById('modalCustomerCCTV').style.display = 'block';
+          document.getElementById('modalCustomerCCTV').classList.add('show');
+        }
+      } catch(e) {
+        document.getElementById('modalCustomerCCTV').style.display = 'block';
+        document.getElementById('modalCustomerCCTV').classList.add('show');
+      }
+    }
+
+    function closeCustomerCCTVModal() {
+      try {
+        if (typeof $ !== 'undefined' && $.fn && $.fn.modal) {
+          $('#modalCustomerCCTV').modal('hide');
+        }
+      } catch(e) {}
+      document.getElementById('modalCustomerCCTV').style.display = 'none';
+      document.getElementById('modalCustomerCCTV').classList.remove('show');
+      renderCustomerTable(cachedCustomers);
+    }
+
+    function renderCustomerCCTVTable(cust, cameras) {
+      const tbody = document.getElementById('cctv-modal-table-body');
+      tbody.innerHTML = '';
+
+      document.getElementById('cctv-modal-quota-badge').innerHTML = `<i class="fas fa-layer-group mr-1"></i> KUOTA: ${cameras.length} / ${cust.cctv_quota} CCTV TERPAKAI`;
+
+      if (!cameras || cameras.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" class="text-center py-4 text-muted">Belum ada kamera CCTV terpasang untuk customer ini. Klik 'Tambah Kamera Baru'.</td></tr>`;
+        return;
+      }
+
+      cameras.forEach(cam => {
+        const row = `
+          <tr>
+            <td class="font-weight-bold text-muted">#${cam.id}</td>
+            <td class="font-weight-bold text-white"><i class="fas fa-video text-info mr-2"></i> ${cam.title}</td>
+            <td><code>http://stream.loewixcctv.com/${cam.streamPath}/index.m3u8</code></td>
+            <td><span class="badge badge-success" style="border-radius: 12px; padding: 4px 10px;">● ONLINE MediaMTX</span></td>
+            <td class="text-right">
+              <button class="btn btn-outline-danger btn-sm" onclick="deleteCustomerCamera(${cam.id})" title="Hapus Channel Kamera Ini">
+                <i class="fas fa-trash"></i>
+              </button>
+            </td>
+          </tr>
+        `;
+        tbody.innerHTML += row;
+      });
+    }
+
+    function openAddCameraForCustomerForm() {
+      const cust = cachedCustomers.find(c => c.id === currentManagingCustomerId);
+      const cameras = getCustomerCameras(currentManagingCustomerId);
+      
+      if (cust && cameras.length >= cust.cctv_quota) {
+        alert(`Batas Kuota Kamera Customer Telah Tercapai (${cameras.length} / ${cust.cctv_quota} CCTV).\n\nSilakan tingkatkan Kuota Customer terlebih dahulu dengan mengklik tombol '⚙️ Kuota'.`);
+        return;
+      }
+
+      document.getElementById('add-camera-form-box').style.display = 'block';
+    }
+
+    function closeAddCameraForCustomerForm() {
+      document.getElementById('add-camera-form-box').style.display = 'none';
+      document.getElementById('cam-input-title').value = '';
+      document.getElementById('cam-input-path').value = '';
+    }
+
+    function submitAddCameraForCustomer(e) {
+      if (e) e.preventDefault();
+      const title = document.getElementById('cam-input-title').value.trim();
+      const streamPath = document.getElementById('cam-input-path').value.trim();
+
+      if (!title || !streamPath) {
+        alert('Mohon isi nama kamera dan stream path!');
+        return;
+      }
+
+      const cust = cachedCustomers.find(c => c.id === currentManagingCustomerId);
+      let cameras = getCustomerCameras(currentManagingCustomerId);
+
+      if (cust && cameras.length >= cust.cctv_quota) {
+        alert(`Batas Kuota Kamera Customer Telah Tercapai (${cameras.length} / ${cust.cctv_quota} CCTV).`);
+        return;
+      }
+
+      const newId = cameras.length > 0 ? Math.max(...cameras.map(c => c.id)) + 1 : 101;
+      const newCam = {
+        id: newId,
+        title: title,
+        streamPath: streamPath,
+        status: 'online'
+      };
+
+      cameras.push(newCam);
+      saveCustomerCameras(currentManagingCustomerId, cameras);
+
+      if (cust) {
+        cust.cctv_used = cameras.length;
+        saveStoredCustomers(cachedCustomers);
+      }
+
+      alert(`BERHASIL: Kamera '${title}' ditambahkan untuk ${cust ? cust.name : 'Customer'}!`);
+      closeAddCameraForCustomerForm();
+      renderCustomerCCTVTable(cust, cameras);
+    }
+
+    function deleteCustomerCamera(camId) {
+      if (!confirm('Apakah Anda yakin ingin menghapus channel kamera CCTV ini?')) return;
+
+      let cameras = getCustomerCameras(currentManagingCustomerId);
+      cameras = cameras.filter(c => c.id !== camId);
+      saveCustomerCameras(currentManagingCustomerId, cameras);
+
+      const cust = cachedCustomers.find(c => c.id === currentManagingCustomerId);
+      if (cust) {
+        cust.cctv_used = cameras.length;
+        saveStoredCustomers(cachedCustomers);
+      }
+
+      alert('Channel Kamera berhasil dihapus!');
+      renderCustomerCCTVTable(cust, cameras);
+    }
+
     window.openAddCustomerModal = openAddCustomerModal;
     window.closeAddCustomerModal = closeAddCustomerModal;
     window.submitAddCustomer = submitAddCustomer;
@@ -926,6 +1155,12 @@
     window.deleteCustomer = deleteCustomer;
     window.exportCustomerCSV = exportCustomerCSV;
     window.filterCustomerTable = filterCustomerTable;
+    window.openCustomerCCTVModal = openCustomerCCTVModal;
+    window.closeCustomerCCTVModal = closeCustomerCCTVModal;
+    window.openAddCameraForCustomerForm = openAddCameraForCustomerForm;
+    window.closeAddCameraForCustomerForm = closeAddCameraForCustomerForm;
+    window.submitAddCameraForCustomer = submitAddCameraForCustomer;
+    window.deleteCustomerCamera = deleteCustomerCamera;
     window.logoutAdmin = logoutAdmin;
   </script>
 </body>
