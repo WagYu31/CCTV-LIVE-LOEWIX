@@ -21,9 +21,13 @@ $action = $_GET['action'] ?? $_POST['action'] ?? 'public_list';
 
 if ($action === 'public_list' || $action === 'list') {
     $cityFilter = $_GET['city'] ?? 'all';
+    $userIdFilter = isset($_GET['user_id']) ? (int)$_GET['user_id'] : null;
     $userCameras = [];
 
     foreach ($db['cameras'] as $cam) {
+        if ($userIdFilter !== null && (int)($cam['user_id'] ?? 0) !== $userIdFilter) {
+            continue;
+        }
         if ($cityFilter === 'all' || strtolower($cam['city'] ?? '') === strtolower($cityFilter)) {
             $userCameras[] = $cam;
         }

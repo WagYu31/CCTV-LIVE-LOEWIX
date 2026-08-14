@@ -1062,6 +1062,7 @@
 
     // ===== CUSTOMER CCTV CHANNEL MANAGER =====
     let currentManagingCustomerId = null;
+    let currentCustomerCameras = [];
 
     function getCustomerCameras(customerId) {
       const stored = localStorage.getItem(`loewix_user_cameras_${customerId}`);
@@ -1086,7 +1087,8 @@
       localStorage.setItem('loewix_custom_cameras', JSON.stringify(customList));
 
       const formData = new FormData();
-      formData.append('action', 'add');
+      formData.append('action', 'admin_add');
+      formData.append('user_id', currentManagingCustomerId);
       formData.append('title', cam.title);
       formData.append('city', cam.city || 'siantar');
       formData.append('streamPath', cam.streamPath);
@@ -1102,11 +1104,10 @@
 
       document.getElementById('cctv-modal-subtitle').innerText = `Customer: ${cust.name} (${cust.email})`;
       
-      const cameras = getCustomerCameras(customerId);
-      cust.cctv_used = cameras.length;
-      saveStoredCustomers(cachedCustomers);
+      const tbody = document.getElementById('cctv-modal-table-body');
+      tbody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-muted"><i class="fas fa-spinner fa-spin mr-2"></i> Memuat data kamera dari server database...</td></tr>`;
+      document.getElementById('cctv-modal-quota-badge').innerHTML = `<i class="fas fa-layer-group mr-1"></i> KUOTA: Memuat... / ${cust.cctv_quota} CCTV TERPAKAI`;
 
-      renderCustomerCCTVTable(cust, cameras);
       closeAddCameraForCustomerForm();
 
       try {
@@ -1120,6 +1121,24 @@
         document.getElementById('modalCustomerCCTV').style.display = 'block';
         document.getElementById('modalCustomerCCTV').classList.add('show');
       }
+
+      // Fetch cameras from database API
+      fetch(`${API_SERVER}/cameras.php?action=list&user_id=${customerId}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            currentCustomerCameras = data.cameras || [];
+            cust.cctv_used = currentCustomerCameras.length;
+            // Sync local storage for offline backward compatibility
+            saveCustomerCameras(customerId, currentCustomerCameras);
+            renderCustomerCCTVTable(cust, currentCustomerCameras);
+          } else {
+            tbody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-danger">Gagal memuat data dari server.</td></tr>`;
+          }
+        })
+        .catch(e => {
+          tbody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-danger">Gagal menghubungi server.</td></tr>`;
+        });
     }
 
     function closeCustomerCCTVModal() {
@@ -1176,8 +1195,7 @@
     }
 
     function openEditCameraForm(camId) {
-      const cameras = getCustomerCameras(currentManagingCustomerId);
-      const cam = cameras.find(c => c.id === camId);
+      const cam = currentCustomerCameras.find(c => c.id === camId);
       if (!cam) return;
 
       closeAddCameraForCustomerForm();
@@ -1209,33 +1227,33 @@
         return;
       }
 
-      let cameras = getCustomerCameras(currentManagingCustomerId);
-      cameras.forEach(c => {
-        if (c.id === camId) {
-          c.title = title;
-          c.city = city;
-          c.streamPath = streamPath;
-          c.lat = lat;
-          c.lng = lng;
-        }
-      });
-      saveCustomerCameras(currentManagingCustomerId, cameras);
+      const formData = new FormData();
+      formData.append('action', 'admin_edit');
+      formData.append('id', camId);
+      formData.append('title', title);
+      formData.append('city', city);
+      formData.append('streamPath', streamPath);
+      formData.append('lat', lat);
+      formData.append('lng', lng);
 
-      const targetCam = cameras.find(c => c.id === camId);
-      if (targetCam) syncGlobalCustomCameras(targetCam);
-
-      const cust = cachedCustomers.find(c => c.id === currentManagingCustomerId);
-      alert(`BERHASIL: Konfigurasi Kamera '${title}' berhasil diperbarui!`);
-      closeEditCameraForm();
-      renderCustomerCCTVTable(cust, cameras);
+      fetch(`${API_SERVER}/cameras.php`, { method: 'POST', body: formData })
+        .then(res => res.json())
+        .then(resData => {
+          if (resData.success) {
+            alert(`BERHASIL: Konfigurasi Kamera '${title}' berhasil diperbarui!`);
+            closeEditCameraForm();
+            openCustomerCCTVModal(currentManagingCustomerId);
+          } else {
+            alert(`GAGAL: ${resData.message}`);
+          }
+        })
+        .catch(() => alert('Gagal menghubungi server database.'));
     }
 
     function openAddCameraForCustomerForm() {
       const cust = cachedCustomers.find(c => c.id === currentManagingCustomerId);
-      const cameras = getCustomerCameras(currentManagingCustomerId);
-      
-      if (cust && cameras.length >= cust.cctv_quota) {
-        alert(`Batas Kuota Kamera Customer Telah Tercapai (${cameras.length} / ${cust.cctv_quota} CCTV).\n\nSilakan tingkatkan Kuota Customer terlebih dahulu dengan mengklik tombol '⚙️ Kuota'.`);
+      if (cust && currentCustomerCameras.length >= cust.cctv_quota) {
+        alert(`Batas Kuota Kamera Customer Telah Tercapai (${currentCustomerCameras.length} / ${cust.cctv_quota} CCTV).\n\nSilakan tingkatkan Kuota Customer terlebih dahulu dengan mengklik tombol '⚙️ Kuota'.`);
         return;
       }
 
@@ -1264,53 +1282,54 @@
       }
 
       const cust = cachedCustomers.find(c => c.id === currentManagingCustomerId);
-      let cameras = getCustomerCameras(currentManagingCustomerId);
-
-      if (cust && cameras.length >= cust.cctv_quota) {
-        alert(`Batas Kuota Kamera Customer Telah Tercapai (${cameras.length} / ${cust.cctv_quota} CCTV).`);
+      if (cust && currentCustomerCameras.length >= cust.cctv_quota) {
+        alert(`Batas Kuota Kamera Customer Telah Tercapai (${currentCustomerCameras.length} / ${cust.cctv_quota} CCTV).`);
         return;
       }
 
-      const newId = cameras.length > 0 ? Math.max(5000, ...cameras.map(c => c.id)) + 1 : (5000 + (Date.now() % 1000));
-      const newCam = {
-        id: newId,
-        title: title,
-        city: city,
-        streamPath: streamPath,
-        lat: lat,
-        lng: lng,
-        status: 'online'
-      };
+      const formData = new FormData();
+      formData.append('action', 'admin_add');
+      formData.append('user_id', currentManagingCustomerId);
+      formData.append('title', title);
+      formData.append('city', city);
+      formData.append('streamPath', streamPath);
+      formData.append('lat', lat);
+      formData.append('lng', lng);
 
-      cameras.push(newCam);
-      saveCustomerCameras(currentManagingCustomerId, cameras);
-      syncGlobalCustomCameras(newCam);
-
-      if (cust) {
-        cust.cctv_used = cameras.length;
-        saveStoredCustomers(cachedCustomers);
-      }
-
-      alert(`BERHASIL: Kamera '${title}' (${city.toUpperCase()}) ditambahkan untuk ${cust ? cust.name : 'Customer'}!`);
-      closeAddCameraForCustomerForm();
-      renderCustomerCCTVTable(cust, cameras);
+      fetch(`${API_SERVER}/cameras.php`, { method: 'POST', body: formData })
+        .then(res => res.json())
+        .then(resData => {
+          if (resData.success) {
+            alert(`BERHASIL: Kamera '${title}' (${city.toUpperCase()}) ditambahkan ke database server!`);
+            closeAddCameraForCustomerForm();
+            openCustomerCCTVModal(currentManagingCustomerId);
+            loadCustomerData();
+          } else {
+            alert(`GAGAL: ${resData.message}`);
+          }
+        })
+        .catch(() => alert('Gagal menghubungi server database.'));
     }
 
     function deleteCustomerCamera(camId) {
       if (!confirm('Apakah Anda yakin ingin menghapus channel kamera CCTV ini?')) return;
 
-      let cameras = getCustomerCameras(currentManagingCustomerId);
-      cameras = cameras.filter(c => c.id !== camId);
-      saveCustomerCameras(currentManagingCustomerId, cameras);
+      const formData = new FormData();
+      formData.append('action', 'delete');
+      formData.append('id', camId);
 
-      const cust = cachedCustomers.find(c => c.id === currentManagingCustomerId);
-      if (cust) {
-        cust.cctv_used = cameras.length;
-        saveStoredCustomers(cachedCustomers);
-      }
-
-      alert('Channel Kamera berhasil dihapus!');
-      renderCustomerCCTVTable(cust, cameras);
+      fetch(`${API_SERVER}/cameras.php`, { method: 'POST', body: formData })
+        .then(res => res.json())
+        .then(resData => {
+          if (resData.success) {
+            alert('Channel Kamera berhasil dihapus dari database server!');
+            openCustomerCCTVModal(currentManagingCustomerId);
+            loadCustomerData();
+          } else {
+            alert(`GAGAL: ${resData.message}`);
+          }
+        })
+        .catch(() => alert('Gagal menghubungi server database.'));
     }
 
     window.openAddCustomerModal = openAddCustomerModal;
