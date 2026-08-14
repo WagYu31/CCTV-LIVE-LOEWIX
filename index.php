@@ -487,41 +487,29 @@
   <!-- Custom Card Styles -->
   <style>
     /* Card Styles - Modern Professional Design (Image 2) */
+    /* Verkada-Grade Enterprise CCTV Card Styling */
     .traffic-card {
       border-radius: 16px;
       overflow: hidden;
-      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+      box-shadow: 0 12px 30px -5px rgba(0, 0, 0, 0.25), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       display: flex;
       flex-direction: column;
       height: 100%;
-      background: #ffffff;
-      border: 1px solid rgba(0, 0, 0, 0.06);
+      background: rgba(13, 27, 62, 0.95);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
     }
 
     .traffic-card:hover {
       transform: translateY(-6px);
-      box-shadow: 0 20px 35px -5px rgba(0, 0, 0, 0.12), 0 10px 15px -5px rgba(0, 0, 0, 0.04);
-    }
-
-    /* Clean Card Header Bar (No Video Obstruction!) */
-    .card-header-bar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 10px 14px;
-      background: #0f172a;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 16px 16px 0 0;
-      gap: 10px;
-    }
-
-    body.dark-mode .card-header-bar {
-      background: #090d16;
+      box-shadow: 0 20px 40px -5px rgba(0, 102, 255, 0.3), 0 10px 15px -5px rgba(0, 0, 0, 0.2);
+      border-color: rgba(56, 189, 248, 0.4);
     }
 
     .traffic-card-iframe {
-      border-radius: 0;
+      border-radius: 16px 16px 0 0;
       position: relative;
       width: 100%;
       padding-bottom: 56.25%;
@@ -531,16 +519,17 @@
       flex-grow: 1;
     }
 
-    /* Badges Bar Top-Left */
-    .card-top-badges {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .badge-live-yellow {
-      background: #ffd600;
-      color: #111827;
+    /* Subdued Floating Bottom-Right Live Pill */
+    .live-status-badge-subdued {
+      position: absolute;
+      bottom: 12px;
+      right: 12px;
+      z-index: 10;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      color: #00ff66;
+      border: 1px solid rgba(0, 255, 102, 0.35);
       font-size: 10px;
       font-weight: 800;
       letter-spacing: 0.5px;
@@ -548,70 +537,106 @@
       border-radius: 20px;
       display: inline-flex;
       align-items: center;
-      gap: 5px;
-      box-shadow: 0 2px 8px rgba(255, 214, 0, 0.4);
-      text-transform: uppercase;
+      gap: 6px;
+      pointer-events: none;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
     }
 
-    .badge-live-yellow .live-pulse-dot {
+    .live-status-badge-subdued .live-pulse-dot {
       width: 6px;
       height: 6px;
-      background-color: #dc2626;
+      background-color: #00ff66;
       border-radius: 50%;
       display: inline-block;
+      box-shadow: 0 0 8px #00ff66;
       animation: livePulse 1.5s infinite;
     }
 
-    @keyframes livePulse {
-      0% { transform: scale(0.95); opacity: 1; }
-      50% { transform: scale(1.3); opacity: 0.6; }
-      100% { transform: scale(0.95); opacity: 1; }
+    /* Card Footer Command Center Panel */
+    .traffic-card-content {
+      padding: 14px 16px;
+      background: rgba(13, 27, 62, 0.95);
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
     }
 
-    .badge-dark-pill {
-      background: rgba(255, 255, 255, 0.1);
-      color: #f3f4f6;
-      font-size: 10px;
-      font-weight: 600;
-      padding: 4px 10px;
-      border-radius: 20px;
-      display: inline-flex;
+    .card-footer-top-row {
+      display: flex;
       align-items: center;
-      gap: 5px;
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      text-transform: uppercase;
+      justify-content: space-between;
+      gap: 10px;
     }
 
-    .card-header-actions {
+    .card-location-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 65%;
+    }
+
+    .card-location-title i {
+      color: #38bdf8;
+      font-size: 13px;
+      flex-shrink: 0;
+    }
+
+    .card-action-toolbar {
       display: flex;
       align-items: center;
       gap: 6px;
     }
 
-    .card-header-actions .header-btn {
-      background: rgba(255, 255, 255, 0.1);
-      color: #94a3b8;
-      border: none;
-      width: 30px;
-      height: 30px;
+    .card-action-toolbar .action-btn {
+      background: rgba(255, 255, 255, 0.08);
+      color: rgba(255, 255, 255, 0.75);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      width: 32px;
+      height: 32px;
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
       font-size: 12px;
-      transition: all 0.2s ease;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
-    .card-header-actions .header-btn:hover {
+    .card-action-toolbar .action-btn:hover {
       background: #38bdf8;
       color: #0f172a;
+      border-color: #38bdf8;
       transform: scale(1.1);
+      box-shadow: 0 0 12px rgba(56, 189, 248, 0.5);
     }
 
-    .card-header-actions .header-btn.active {
+    .card-action-toolbar .action-btn.active {
       color: #f59e0b;
-      background: rgba(245, 158, 11, 0.25);
+      background: rgba(245, 158, 11, 0.2);
+      border-color: rgba(245, 158, 11, 0.4);
+    }
+
+    .card-footer-meta-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 11px;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.6);
+      padding-top: 4px;
+    }
+
+    .card-meta-code {
+      color: #38bdf8;
+      font-weight: 700;
+      letter-spacing: 0.5px;
     }
 
     /* Card Footer Content */
@@ -8647,30 +8672,12 @@
             const cctvCardHTML = `
                 <div class="col-lg-4 col-md-6 col-12 mb-4" data-camera-id="${camera.id}" data-platform="${camera.platform}" data-status="online">
                   <div class="traffic-card" id="card-${camera.id}">
-                    <!-- Header Bar (Badges & Controls Above Video) -->
-                    <div class="card-header-bar">
-                      <div class="card-top-badges">
-                        <span class="badge-live-yellow"><span class="live-pulse-dot"></span> LIVE</span>
-                        <span class="badge-dark-pill"><i class="fas fa-microchip" style="font-size:10px; color:#facc15;"></i> AI DETECT</span>
-                      </div>
-                      <div class="card-header-actions">
-                        <button class="header-btn ${favoriteClass}" onclick="event.stopPropagation(); toggleFavorite(${camera.id}, '${camera.title.replace(/'/g, "\\'")}')" title="${isFavorite ? 'Hapus dari Favorit' : 'Tambah ke Favorit'}">
-                          <i class="${favoriteIcon} fa-star"></i>
-                        </button>
-                        <button class="header-btn" onclick="event.stopPropagation(); shareCCTV(${camera.id}, '${camera.title.replace(/'/g, "\\'")}')" title="Bagikan CCTV">
-                          <i class="fas fa-share-alt"></i>
-                        </button>
-                        <button class="header-btn" onclick="event.stopPropagation(); openCameraConfigModal(${camera.id})" title="Pengaturan IP / RTSP Kamera">
-                          <i class="fas fa-cog"></i>
-                        </button>
-                        <button class="header-btn" onclick="event.stopPropagation(); ${reloadFunction}" title="Refresh Stream">
-                          <i class="fas fa-sync-alt"></i>
-                        </button>
-                      </div>
-                    </div>
-
-                    <!-- Clean 100% Unobstructed Video Stream Canvas -->
+                    <!-- Pure 100% Unobstructed Video Stream Canvas -->
                     <div class="traffic-card-iframe">
+                      <div class="live-status-badge-subdued">
+                        <span class="live-pulse-dot"></span> LIVE
+                      </div>
+
                       <div class="loading-indicator" id="loading-${camera.id}">
                         <i class="fas fa-spinner fa-spin fa-3x mb-2"></i>
                         <div>Memuat ulang...</div>
@@ -8701,21 +8708,42 @@
                         <div class="buffering-spinner"></div>
                       </div>
 
-                      <!-- Video element untuk HLS player (bukan iframe) -->
+                      <!-- Video element untuk HLS player -->
                       <video id="player-${camera.id}" class="hidden-iframe hls-video-player"
                              controls autoplay muted playsinline webkit-playsinline x-webkit-airplay="allow" preload="auto"
                              style="display:none; width:100%; height:100%; position:absolute; top:0; left:0; object-fit:contain; background:#000;"
                              title="CCTV ${camera.title}">
                       </video>
                     </div>
+
+                    <!-- Unified Enterprise Command Center Footer Panel -->
                     <div class="traffic-card-content">
-                      <div class="card-footer-flex">
-                        <div class="card-location">
+                      <div class="card-footer-top-row">
+                        <div class="card-location-title" title="${camera.title}">
                           <i class="fas fa-map-marker-alt"></i>
                           <span>${camera.title}</span>
                         </div>
-                        <div class="card-cam-code">
-                          CAM-${String(camera.id).padStart(2, '0')}
+                        <div class="card-action-toolbar">
+                          <button class="action-btn ${favoriteClass}" onclick="event.stopPropagation(); toggleFavorite(${camera.id}, '${camera.title.replace(/'/g, "\\'")}')" title="${isFavorite ? 'Hapus dari Favorit' : 'Tambah ke Favorit'}">
+                            <i class="${favoriteIcon} fa-star"></i>
+                          </button>
+                          <button class="action-btn" onclick="event.stopPropagation(); shareCCTV(${camera.id}, '${camera.title.replace(/'/g, "\\'")}')" title="Bagikan CCTV">
+                            <i class="fas fa-share-alt"></i>
+                          </button>
+                          <button class="action-btn" onclick="event.stopPropagation(); openCameraConfigModal(${camera.id})" title="Pengaturan IP / RTSP Kamera">
+                            <i class="fas fa-cog"></i>
+                          </button>
+                          <button class="action-btn" onclick="event.stopPropagation(); ${reloadFunction}" title="Refresh Stream">
+                            <i class="fas fa-sync-alt"></i>
+                          </button>
+                        </div>
+                      </div>
+                      <div class="card-footer-meta-row">
+                        <div class="card-meta-code">
+                          CAM-${String(camera.id).padStart(2, '0')} • HIGH-FIDELITY FEED
+                        </div>
+                        <div style="color: #38bdf8; font-weight: 600; font-size: 10px; display: inline-flex; align-items: center; gap: 4px;">
+                          <i class="fas fa-microchip" style="color: #facc15;"></i> AI ANALYTICS
                         </div>
                       </div>
                     </div>
