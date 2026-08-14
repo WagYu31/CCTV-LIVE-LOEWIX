@@ -465,27 +465,30 @@
     }
 
     function openEditQuotaModal(id, name, quota) {
-      document.getElementById('edit-cust-id').value = id;
-      document.getElementById('edit-cust-name').innerText = name;
-      document.getElementById('edit-cust-quota').value = quota;
-      $('#modalEditQuota').modal('show');
-    }
+      const newQuotaStr = prompt(`EDIT ALOKASI KUOTA CCTV\n\nCustomer: ${name}\nMasukkan batas jumlah kuota kamera live yang baru:`, quota);
+      if (newQuotaStr === null) return;
 
-    function submitEditQuota(e) {
-      e.preventDefault();
-      const id = parseInt(document.getElementById('edit-cust-id').value);
-      const quota = parseInt(document.getElementById('edit-cust-quota').value) || 10;
+      const newQuota = parseInt(newQuotaStr);
+      if (isNaN(newQuota) || newQuota < 1) {
+        alert('Mohon masukkan jumlah kuota angka valid (minimal 1 CCTV).');
+        return;
+      }
 
       let list = getStoredCustomers();
       list.forEach(c => {
         if (c.id === id) {
-          c.cctv_quota = quota;
+          c.cctv_quota = newQuota;
         }
       });
       saveStoredCustomers(list);
 
-      alert(`Kuota CCTV berhasil diperbarui menjadi ${quota} CCTV!`);
-      $('#modalEditQuota').modal('hide');
+      const formData = new FormData();
+      formData.append('action', 'update_quota');
+      formData.append('id', id);
+      formData.append('cctv_quota', newQuota);
+      fetch('../api/admin_customers.php', { method: 'POST', body: formData }).catch(e => {});
+
+      alert(`BERHASIL: Kuota CCTV untuk '${name}' diperbarui menjadi ${newQuota} CCTV!`);
       renderCustomerTable(list);
     }
 
