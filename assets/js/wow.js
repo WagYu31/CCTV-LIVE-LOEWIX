@@ -180,7 +180,7 @@
 
     _createClass(MutationObserver, [{
       key: 'observe',
-      value: function observe() {}
+      value: function observe() { }
     }]);
 
     return MutationObserver;

@@ -1,0 +1,2251 @@
+
+
+<!DOCTYPE html>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js"> <!--<![endif]-->
+
+<head>
+  
+
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  
+  <meta http-equiv="refresh" content="900">
+  <meta name="description" content="Live monitoring CCTV lalu lintas Jakarta. Info lalu lintas terkini." />
+  <meta name="keywords" content="cctv, kamera, macet, lalu lintas, lalulintas, info tol, traffic, monitoring, peta, jakarta, info, rute, jalan" />
+
+
+  <title>Live Traffic CCTV & Info Lalu Lintas Terkini
+  - LewatMana.com</title>
+
+  <link rel="shortcut icon" href="//s.lewatmana.com/d2014b/img/favicon.b342f52bc6fc.ico">
+
+  
+  <link rel="stylesheet" href="//s.lewatmana.com/d2014b/css/bootstrap.min.a42c110716d7.css">
+  <link rel="stylesheet" href="//s.lewatmana.com/d2014b/css/bootflat.min.ac7fc7a760fc.css">
+  <link rel="stylesheet" href="//s.lewatmana.com/d2014b/css/font-awesome.min.bbfef9385083.css">
+  <link rel="stylesheet" href="//s.lewatmana.com/d2014b/css/open-sans.f6a8deddf2a7.css">
+  <link rel="stylesheet" href="//s.lewatmana.com/d2014b/css/main.2af00d16327a.css">
+  
+<link rel="stylesheet" type="text/css" href="//s.lewatmana.com/d2014b/js/vendor/slick/slick.823120da6cfa.css"/>
+
+
+  
+  <script>
+  var leaderboard_id;
+  var leaderboard_mobile_id;
+  var skyleft_id;
+  var skyright_id;
+  var showcase1_id;
+  var showcase2_id;
+  var large_showcase1_id;
+  var large_showcase2_id;
+  var large_showcase3_id;
+
+  var screenWidth = document.documentElement.clientWidth;
+
+  if (screenWidth > 991) {
+    skyleft_id = 35;
+    skyright_id = 36;
+  } else {
+    skyleft_id = 44;
+    skyright_id = 44;
+  }
+
+  if (screenWidth > 720) {
+    leaderboard_id = 16;
+    leaderboard_mobile_id = 44;
+    showcase1_id = 44;
+    showcase2_id = 44;
+    large_showcase1_id = 32;
+    large_showcase2_id = 33;
+    large_showcase3_id = 34;
+  } else {
+    leaderboard_id = 44;
+    leaderboard_mobile_id = 43;
+    showcase1_id = 10;
+    showcase2_id = 11;
+    large_showcase1_id = 44;
+    large_showcase2_id = 44;
+    large_showcase3_id = 44;
+  }
+</script>
+
+  
+
+  
+  <script type='text/javascript'><!--// <![CDATA[
+var OA_zones = {
+  'skyleft' : skyleft_id,
+  'skyright' : skyright_id,
+  'leaderboard' : leaderboard_id,
+  'leaderboard_mobile' : leaderboard_mobile_id,
+  'custom_showcase' : 37,
+  'large_showcase1' : large_showcase1_id,
+  'large_showcase2' : large_showcase2_id,
+  'large_showcase3' : large_showcase3_id,
+  'showcase1' : showcase1_id,
+  'showcase2' : showcase2_id
+};
+// ]]> --></script>
+
+  
+
+  
+  
+  <script src="//s.lewatmana.com/d2014b/js/vendor/modernizr-2.6.2-respond-1.1.0.min.70d492eca414.js"></script>
+  <script src='//openx.lewatmana.com/www/delivery/spcjs.php'></script>
+  
+
+</head>
+
+<body class="body-bg">
+
+
+
+
+<nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+  <div class="container-fluid">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar-lm-menu">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand lm-logo" href="/">
+        <img src="//s.lewatmana.com/d2014b/img/lewatmana-logo.5c169e7e9f08.jpg" width="182">
+      </a>
+    </div>
+    <div class="collapse navbar-collapse" id="navbar-lm-menu">
+      <ul class="nav navbar-nav navbar-nav">
+        <li class="dropdown">
+          <a href="/cam/" class="dropdown-toggle" data-toggle="dropdown">
+            <i class="fa fa-fw fa-video-camera"></i>
+            <span class="hidden-md hidden-sm"> CCTV <i class="fa fa-caret-down"></i></span>
+          </a>
+
+          
+          <ul class="dropdown-menu" role="menu">
+            
+            <li><a href="/kota/bandung/">Bandung</a></li>
+            
+            <li><a href="/kota/bekasi/">Bekasi</a></li>
+            
+            <li><a href="/kota/denpasar/">Denpasar</a></li>
+            
+            <li><a href="/kota/depok/">Depok</a></li>
+            
+            <li><a href="/kota/jakarta-barat/">Jakarta Barat</a></li>
+            
+            <li><a href="/kota/jakarta-pusat/">Jakarta Pusat</a></li>
+            
+            <li><a href="/kota/jakarta-selatan/">Jakarta Selatan</a></li>
+            
+            <li><a href="/kota/jakarta-timur/">Jakarta Timur</a></li>
+            
+            <li><a href="/kota/jakarta-utara/">Jakarta Utara</a></li>
+            
+            <li><a href="/kota/malang/">Malang</a></li>
+            
+            <li><a href="/kota/puncak/">Puncak</a></li>
+            
+            <li><a href="/kota/semarang/">Semarang</a></li>
+            
+            <li><a href="/kota/surabaya/">Surabaya</a></li>
+            
+            <li class="divider"></li>
+            <li><a href="/cam/">Semua CCTV</a></li>
+          </ul>
+          
+        </li>
+        <li>
+          <a href="/kondisi/">
+            <i class="fa fa-fw fa-info"></i> <span class="hidden-md hidden-sm">Kondisi</span>
+          </a>
+        </li>
+        <li>
+          <a href="https://id.lewatmana.com" target="_blank" rel="noopener">
+            <i class="fa fa-fw fa-compass"></i> <span class="hidden-md hidden-sm">Explore</span>
+          </a>
+        </li>
+        <li>
+          <a href="/peta/">
+            <i class="fa fa-fw fa-map-marker"></i> <span class="hidden-md hidden-sm">Peta</span>
+          </a>
+        </li>
+        <li>
+          <a href="/lokasi/home/">
+            <i class="fa fa-fw fa-building"></i> <span class="hidden-md hidden-sm">Lokasi</span>
+          </a>
+        </li>
+        <li class="hidden-xs">
+          <a href="https://lewatmana.com/download/">
+          <i class="fa fa-fw fa-download"></i> <span class="hidden-md hidden-sm">Download</span></a>
+        </li>
+        <li class="visible-xs">
+          <a href="http://m.lewatmana.com/download/">
+          <i class="fa fa-fw fa-download"></i> Download</a>
+        </li>
+
+        
+        <li class="visible-xs"><a href="/accounts/login/"><i class="fa fa-fw fa-sign-in"></i> Login</a></li>
+        
+
+      </ul>
+
+      <div class="col-sm-4 col-md-3 col-lg-3">
+        <form class="navbar-form navbar-form-lm-small" role="search" action="/cari/">
+          <div class="input-group">
+            <input type="text" class="form-control input-sm" placeholder="Cari CCTV & Kondisi lalu lintas" name="q" value="">
+            <div class="input-group-btn">
+              <button class="btn btn-danger btn-sm" type="submit"><i class="fa fa-search"></i></button>
+            </div>
+          </div>
+        </form>
+      </div>
+
+      
+      <div class="nav navbar-nav navbar-right navbar-lm-right hidden-xs">
+        <a class="btn btn-danger navbar-btn" href="/accounts/login/"><i class="fa fa-fw fa-sign-in"></i> Login</a>
+      </div>
+      
+    </div>
+  </div>
+</nav>
+
+
+
+  <div class="sky-container visible-md visible-lg">
+  <div class="sky-left">
+    <div class="sky-left-inner">
+      <div class="sky-left-sky">
+        
+          <script type='text/javascript'><!--// <![CDATA[
+    OA_show('skyleft');
+// ]]> --></script>
+
+        
+      </div>
+    </div>
+  </div>
+  <div class="sky-center container-bg">
+  </div>
+  <div class="sky-right">
+    <div class="sky-right-inner">
+      <div class="sky-right-sky">
+        
+          <script type='text/javascript'><!--// <![CDATA[
+    OA_show('skyright');
+// ]]> --></script>
+
+        
+      </div>
+    </div>
+  </div>
+  <div class="clearfix"></div>
+</div>
+
+
+
+
+  <div class="leaderboard-wrapper" id="top">
+  <div class="container">
+    <div class="leaderboard-container leaderboard-container-bg">
+      <div class="text-center hidden-xs">
+        
+          <script type='text/javascript'><!--// <![CDATA[
+    OA_show('leaderboard');
+// ]]> --></script>
+
+        
+      </div>
+      <div class="text-center visible-xs">
+        
+          <script type='text/javascript'><!--// <![CDATA[
+    OA_show('leaderboard_mobile');
+// ]]> --></script>
+
+        
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+
+  <div id="btnShowMap" class="text-center btn-show-map" style="display:block;background-color:#d1d5d8;">
+    <button 
+      class="down-arrow text-center" 
+      type="button"      
+    >
+      Tampilkan Peta
+    </button>
+  </div>
+  <div id="maps" class="maps maps-home"></div>
+
+  <div class="cams-featured-wrapper">
+    <div class="container hidden-xs">
+      <div class="cams-featured-container">
+        <div class="cam-featured-inner-container">
+          <div class="featured-cameras-list">
+          
+          
+            <div class="cam-featured pull-left">
+
+
+
+
+
+<div class="cam-thumb">
+  
+    
+      <a href="/cam/192/mt-haryono-cawang/">
+        <img src="https://media.lewatmana.com/cam/lintek/192/20260729_231142M-thumb.jpg" class="cam-thumb-img">
+      </a>
+    
+  
+
+  <div class="cam-thumb-info">
+    <p class="cam-name"><a href="/cam/192/mt-haryono-cawang/">MT Haryono - Cawang</a></p>
+  </div>
+</div>
+
+
+</div>
+          
+            <div class="cam-featured pull-left">
+
+
+
+
+
+<div class="cam-thumb">
+  
+    
+      <a href="/cam/191/mt-haryono-pancoran/">
+        <img src="https://media.lewatmana.com/cam/lintek/191/snapshot20260729_231141M-thumb.jpg" class="cam-thumb-img">
+      </a>
+    
+  
+
+  <div class="cam-thumb-info">
+    <p class="cam-name"><a href="/cam/191/mt-haryono-pancoran/">MT Haryono - Pancoran</a></p>
+  </div>
+</div>
+
+
+</div>
+          
+            <div class="cam-featured pull-left">
+
+
+
+
+
+<div class="cam-thumb">
+  
+    
+      <a href="/cam/336/flyover-jati-baru/">
+        <img src="https://media.lewatmana.com/cam/celvasha/336/20260729_231141M-thumb.jpg" class="cam-thumb-img">
+      </a>
+    
+  
+
+  <div class="cam-thumb-info">
+    <p class="cam-name"><a href="/cam/336/flyover-jati-baru/">Flyover Jati Baru</a></p>
+  </div>
+</div>
+
+
+</div>
+          
+            <div class="cam-featured pull-left">
+
+
+
+
+
+<div class="cam-thumb">
+  
+    
+      <a href="/cam/248/alternatif-cibubur/">
+        <img src="//s.lewatmana.com/d2014b/img/offline-thumb.4cd41528b361.jpg" class="cam-thumb-img">
+      </a>
+    
+  
+
+  <div class="cam-thumb-info">
+    <p class="cam-name"><a href="/cam/248/alternatif-cibubur/">Alternatif Cibubur</a></p>
+  </div>
+</div>
+
+
+</div>
+          
+            <div class="cam-featured pull-left">
+
+
+
+
+
+<div class="cam-thumb">
+  
+    
+      <a href="/cam/356/asia-afrika-ged-merdeka/">
+        <img src="//s.lewatmana.com/d2014b/img/offline-thumb.4cd41528b361.jpg" class="cam-thumb-img">
+      </a>
+    
+  
+
+  <div class="cam-thumb-info">
+    <p class="cam-name"><a href="/cam/356/asia-afrika-ged-merdeka/">Asia Afrika-Ged. Merdeka</a></p>
+  </div>
+</div>
+
+
+</div>
+          
+            <div class="cam-featured pull-left">
+
+
+
+
+
+<div class="cam-thumb">
+  
+    
+      <a href="/cam/357/asia-afrika-sudirman/">
+        <img src="//s.lewatmana.com/d2014b/img/offline-thumb.4cd41528b361.jpg" class="cam-thumb-img">
+      </a>
+    
+  
+
+  <div class="cam-thumb-info">
+    <p class="cam-name"><a href="/cam/357/asia-afrika-sudirman/">Asia Afrika - Sudirman</a></p>
+  </div>
+</div>
+
+
+</div>
+          
+            <div class="cam-featured pull-left">
+
+
+
+
+
+<div class="cam-thumb">
+  
+    
+      <a href="/cam/295/bandengan-kota/">
+        <img src="//s.lewatmana.com/d2014b/img/offline-thumb.4cd41528b361.jpg" class="cam-thumb-img">
+      </a>
+    
+  
+
+  <div class="cam-thumb-info">
+    <p class="cam-name"><a href="/cam/295/bandengan-kota/">Bandengan - Kota</a></p>
+  </div>
+</div>
+
+
+</div>
+          
+            <div class="cam-featured pull-left">
+
+
+
+
+
+<div class="cam-thumb">
+  
+    
+      <a href="/cam/102/buncit-raya/">
+        <img src="//s.lewatmana.com/d2014b/img/offline-thumb.4cd41528b361.jpg" class="cam-thumb-img">
+      </a>
+    
+  
+
+  <div class="cam-thumb-info">
+    <p class="cam-name"><a href="/cam/102/buncit-raya/">Buncit Raya</a></p>
+  </div>
+</div>
+
+
+</div>
+          
+            <div class="cam-featured pull-left">
+
+
+
+
+
+<div class="cam-thumb">
+  
+    
+      <a href="/cam/364/ciawi-sukabumi/">
+        <img src="//s.lewatmana.com/d2014b/img/offline-thumb.4cd41528b361.jpg" class="cam-thumb-img">
+      </a>
+    
+  
+
+  <div class="cam-thumb-info">
+    <p class="cam-name"><a href="/cam/364/ciawi-sukabumi/">Ciawi - Sukabumi</a></p>
+  </div>
+</div>
+
+
+</div>
+          
+            <div class="cam-featured pull-left">
+
+
+
+
+
+<div class="cam-thumb">
+  
+    
+      <a href="/cam/363/ciawi-sukaraja-puncak/">
+        <img src="//s.lewatmana.com/d2014b/img/offline-thumb.4cd41528b361.jpg" class="cam-thumb-img">
+      </a>
+    
+  
+
+  <div class="cam-thumb-info">
+    <p class="cam-name"><a href="/cam/363/ciawi-sukaraja-puncak/">Ciawi - Sukaraja - Puncak</a></p>
+  </div>
+</div>
+
+
+</div>
+          
+            <div class="cam-featured pull-left">
+
+
+
+
+
+<div class="cam-thumb">
+  
+    
+      <a href="/cam/289/cikini-raya/">
+        <img src="//s.lewatmana.com/d2014b/img/offline-thumb.4cd41528b361.jpg" class="cam-thumb-img">
+      </a>
+    
+  
+
+  <div class="cam-thumb-info">
+    <p class="cam-name"><a href="/cam/289/cikini-raya/">Cikini Raya</a></p>
+  </div>
+</div>
+
+
+</div>
+          
+            <div class="cam-featured pull-left">
+
+
+
+
+
+<div class="cam-thumb">
+  
+    
+      <a href="/cam/338/dewi-sartika-cawang/">
+        <img src="//s.lewatmana.com/d2014b/img/offline-thumb.4cd41528b361.jpg" class="cam-thumb-img">
+      </a>
+    
+  
+
+  <div class="cam-thumb-info">
+    <p class="cam-name"><a href="/cam/338/dewi-sartika-cawang/">Dewi Sartika Cawang</a></p>
+  </div>
+</div>
+
+
+</div>
+          
+            <div class="cam-featured pull-left">
+
+
+
+
+
+<div class="cam-thumb">
+  
+    
+      <a href="/cam/252/fatmawati-blok/">
+        <img src="//s.lewatmana.com/d2014b/img/offline-thumb.4cd41528b361.jpg" class="cam-thumb-img">
+      </a>
+    
+  
+
+  <div class="cam-thumb-info">
+    <p class="cam-name"><a href="/cam/252/fatmawati-blok/">Fatmawati - Blok A</a></p>
+  </div>
+</div>
+
+
+</div>
+          
+            <div class="cam-featured pull-left">
+
+
+
+
+
+<div class="cam-thumb">
+  
+    
+      <a href="/cam/253/fatmawati-cipete-raya/">
+        <img src="//s.lewatmana.com/d2014b/img/offline-thumb.4cd41528b361.jpg" class="cam-thumb-img">
+      </a>
+    
+  
+
+  <div class="cam-thumb-info">
+    <p class="cam-name"><a href="/cam/253/fatmawati-cipete-raya/">Fatmawati - Cipete Raya</a></p>
+  </div>
+</div>
+
+
+</div>
+          
+            <div class="cam-featured pull-left">
+
+
+
+
+
+<div class="cam-thumb">
+  
+    
+      <a href="/cam/77/gunung-sahari/">
+        <img src="//s.lewatmana.com/d2014b/img/offline-thumb.4cd41528b361.jpg" class="cam-thumb-img">
+      </a>
+    
+  
+
+  <div class="cam-thumb-info">
+    <p class="cam-name"><a href="/cam/77/gunung-sahari/">Gunung Sahari </a></p>
+  </div>
+</div>
+
+
+</div>
+          
+            <div class="cam-featured pull-left">
+
+
+
+
+
+<div class="cam-thumb">
+  
+    
+      <a href="/cam/273/jalan-mh-thamrin/">
+        <img src="//s.lewatmana.com/d2014b/img/offline-thumb.4cd41528b361.jpg" class="cam-thumb-img">
+      </a>
+    
+  
+
+  <div class="cam-thumb-info">
+    <p class="cam-name"><a href="/cam/273/jalan-mh-thamrin/">Jalan MH Thamrin</a></p>
+  </div>
+</div>
+
+
+</div>
+          
+            <div class="cam-featured pull-left">
+
+
+
+
+
+<div class="cam-thumb">
+  
+    
+      <a href="/cam/306/jalan-pakin/">
+        <img src="//s.lewatmana.com/d2014b/img/offline-thumb.4cd41528b361.jpg" class="cam-thumb-img">
+      </a>
+    
+  
+
+  <div class="cam-thumb-info">
+    <p class="cam-name"><a href="/cam/306/jalan-pakin/">Jalan Pakin</a></p>
+  </div>
+</div>
+
+
+</div>
+          
+            <div class="cam-featured pull-left">
+
+
+
+
+
+<div class="cam-thumb">
+  
+    
+      <a href="/cam/307/jalan-pakin-2/">
+        <img src="//s.lewatmana.com/d2014b/img/offline-thumb.4cd41528b361.jpg" class="cam-thumb-img">
+      </a>
+    
+  
+
+  <div class="cam-thumb-info">
+    <p class="cam-name"><a href="/cam/307/jalan-pakin-2/">Jalan Pakin 2</a></p>
+  </div>
+</div>
+
+
+</div>
+          
+          
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+
+
+  <div class="content-sidebar-container container container-bg">
+    <div class="content ">
+      
+  <div class="panel panel-success">
+  <div class="panel-heading">
+    <h2 class="panel-title">Kirim Info Lalu Lintas</h2>
+  </div>
+  
+  <div class="panel-body">
+    <textarea id="incident-textarea" class="form-control" disabled rows="3" placeholder="Silahkan login untuk bisa melaporkan info lalu lintas."></textarea>
+    <div class="incident-form-footer">
+      <a href="https://twitter.com/lewatmana" class="twitter-follow-button" data-show-count="true">Follow @lewatmana</a>
+      <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+'://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js,fjs);}}(document, 'script', 'twitter-wjs');</script>
+      <button type="submit" class="btn btn-primary pull-right disabled">Lapor</button>
+    </div>
+  </div>
+  
+</div>
+
+  
+<div class="content__incident panel panel-default-small">
+  <div class="panel-body">
+    <form class="incident-search-form" role="search" action="/kondisi/">
+      <div class="input-group">
+        <input type="text" class="form-control input-sm" placeholder="Cari informasi kondisi lalu lintas" name="q" value="">
+        <div class="input-group-btn">
+          <button class="btn btn-danger btn-sm" type="submit"><i class="fa fa-search"></i></button>
+        </div>
+      </div>
+    </form>
+  </div>
+  <ul class="media-list">
+  
+    
+
+
+
+
+<li class="media incident">
+  <div class="pull-left" href="#">
+    <img class="media-object incident-reporter-avatar"
+      src="//s.lewatmana.com/d2014b/img/profile-pic_lewatmana.630645a11968.png">
+  </div>
+  <div class="media-body">
+    <div class="media-heading incident-reporter">
+      LM
+      <span class="incident-time" data-toggle="tooltip" data-placement="right" title="12 Feb 2026 19:48 WIB">
+        &middot; <a href="/kondisi/laporan/1186292/2026/02/12/">5 months, 2 weeks ago</a></span>
+    </div>
+    <p class="incident-info"><a href="https://x.com/lewatmana/status/2021929692753015277?s=20" rel="external" target="_blank">https://x.com/lewatmana/status/2021929692753015277?s=20</a> Hasyim Ashari arah Roxy macet. sebaliknya ramai lancar. #macet</p>
+    
+
+    
+
+    <div class="incident-location">
+      
+        Jakarta Pusat
+      
+    </div>
+  </div>
+</li>
+
+
+    
+  
+    
+
+
+
+
+<li class="media incident">
+  <div class="pull-left" href="#">
+    <img class="media-object incident-reporter-avatar"
+      src="//s.lewatmana.com/d2014b/img/profile-pic_lewatmana.630645a11968.png">
+  </div>
+  <div class="media-body">
+    <div class="media-heading incident-reporter">
+      LM
+      <span class="incident-time" data-toggle="tooltip" data-placement="right" title="12 Feb 2026 19:45 WIB">
+        &middot; <a href="/kondisi/laporan/1186291/2026/02/12/">5 months, 2 weeks ago</a></span>
+    </div>
+    <p class="incident-info"><a href="https://x.com/lewatmana/status/2021928697134231941?s=20" rel="external" target="_blank">https://x.com/lewatmana/status/2021928697134231941?s=20</a> Pancoran arah Cawang tol dalam kota dan arterinya macet. Sebaliknya lancar. #macet</p>
+    
+
+    
+
+    <div class="incident-location">
+      
+        Jakarta Selatan
+      
+    </div>
+  </div>
+</li>
+
+
+    
+  
+    
+
+
+
+
+<li class="media incident">
+  <div class="pull-left" href="#">
+    <img class="media-object incident-reporter-avatar"
+      src="//s.lewatmana.com/d2014b/img/profile-pic_lewatmana.630645a11968.png">
+  </div>
+  <div class="media-body">
+    <div class="media-heading incident-reporter">
+      Mahrus Khomaini
+      <span class="incident-time" data-toggle="tooltip" data-placement="right" title="06 Feb 2026 21:42 WIB">
+        &middot; <a href="/kondisi/laporan/1186290/2026/02/06/">5 months, 3 weeks ago</a></span>
+    </div>
+    <p class="incident-info">Bundaran HI macet atau tidak ya?</p>
+    
+
+    
+
+    <div class="incident-location">
+      
+    </div>
+  </div>
+</li>
+
+
+    
+  
+    
+
+
+
+
+<li class="media incident">
+  <div class="pull-left" href="#">
+    <img class="media-object incident-reporter-avatar"
+      src="//s.lewatmana.com/d2014b/img/profile-pic_lewatmana.630645a11968.png">
+  </div>
+  <div class="media-body">
+    <div class="media-heading incident-reporter">
+      LM
+      <span class="incident-time" data-toggle="tooltip" data-placement="right" title="05 Feb 2026 12:18 WIB">
+        &middot; <a href="/kondisi/laporan/1186289/2026/02/05/">5 months, 3 weeks ago</a></span>
+    </div>
+    <p class="incident-info">MT Haryono kedua arah ramai lancar #lalin</p>
+    
+
+    
+
+    <div class="incident-location">
+      
+        Jakarta Selatan
+      
+    </div>
+  </div>
+</li>
+
+
+    
+  
+    
+
+
+
+
+<li class="media incident">
+  <div class="pull-left" href="#">
+    <img class="media-object incident-reporter-avatar"
+      src="//s.lewatmana.com/d2014b/img/profile-pic_lewatmana.630645a11968.png">
+  </div>
+  <div class="media-body">
+    <div class="media-heading incident-reporter">
+      LM
+      <span class="incident-time" data-toggle="tooltip" data-placement="right" title="23 Jan 2026 09:59 WIB">
+        &middot; <a href="/kondisi/laporan/1184476/2026/01/23/">6 months, 1 week ago</a></span>
+    </div>
+    <p class="incident-info">Ringkasan kondisi lalulintas dan bajir 23 Jan 2026 (Pagi) <a href="https://lewatmana.com/news/banjir/2026/january/summary-23-jan-2026-morning/" rel="external" target="_blank">https://lewatmana.com/news/banjir/2026/january/summary-23-jan-2026-morning/</a> #banjir #macet</p>
+    
+
+    
+
+    <div class="incident-location">
+      
+    </div>
+  </div>
+</li>
+
+
+    
+  
+    
+
+
+
+
+<li class="media incident">
+  <div class="pull-left" href="#">
+    <img class="media-object incident-reporter-avatar"
+      src="//s.lewatmana.com/d2014b/img/profile-pic_lewatmana.630645a11968.png">
+  </div>
+  <div class="media-body">
+    <div class="media-heading incident-reporter">
+      LM
+      <span class="incident-time" data-toggle="tooltip" data-placement="right" title="23 Jan 2026 09:40 WIB">
+        &middot; <a href="/kondisi/laporan/1184475/2026/01/23/">6 months, 1 week ago</a></span>
+    </div>
+    <p class="incident-info">Peralihan arus di TL Cengkareng dari Kalideres menuju Daan mogot. Ikuti arahan petugas <a href="https://x.com/TMCPoldaMetro/status/2014525349607178613" rel="external" target="_blank">https://x.com/TMCPoldaMetro/status/2014525349607178613</a> #macet #banjir</p>
+    
+
+    
+
+    <div class="incident-location">
+      
+        Jakarta Barat
+      
+    </div>
+  </div>
+</li>
+
+
+    
+    <li class="incident-ads text-center visible-xs">
+      
+        <script type='text/javascript'><!--// <![CDATA[
+    OA_show('showcase1');
+// ]]> --></script>
+
+      
+    </li>
+    
+  
+    
+
+
+
+
+<li class="media incident">
+  <div class="pull-left" href="#">
+    <img class="media-object incident-reporter-avatar"
+      src="//s.lewatmana.com/d2014b/img/profile-pic_lewatmana.630645a11968.png">
+  </div>
+  <div class="media-body">
+    <div class="media-heading incident-reporter">
+      LM
+      <span class="incident-time" data-toggle="tooltip" data-placement="right" title="24 Sep 2025 18:01 WIB">
+        &middot; <a href="/kondisi/laporan/1177924/2025/09/24/">10 months, 1 week ago</a></span>
+    </div>
+    <p class="incident-info">Slipi arah Semanggi di dalam tol dalam kota dan arterinya macet. sebaliknya lancar. <a href="https://x.com/lewatmana/status/1970805527040139748" rel="external" target="_blank">https://x.com/lewatmana/status/1970805527040139748</a></p>
+    
+
+    
+
+    <div class="incident-location">
+      
+        Jakarta Barat
+      
+    </div>
+  </div>
+</li>
+
+
+    
+  
+    
+
+
+
+
+<li class="media incident">
+  <div class="pull-left" href="#">
+    <img class="media-object incident-reporter-avatar"
+      src="//s.lewatmana.com/d2014b/img/profile-pic_lewatmana.630645a11968.png">
+  </div>
+  <div class="media-body">
+    <div class="media-heading incident-reporter">
+      LM
+      <span class="incident-time" data-toggle="tooltip" data-placement="right" title="01 Sep 2025 10:59 WIB">
+        &middot; <a href="/kondisi/laporan/1177918/2025/09/01/">11 months ago</a></span>
+    </div>
+    <p class="incident-info">Tol dalam kota daerah Slipi - Tomang kedua arah lenggang. demikian juga jalan arteri nya lancar. <a href="https://x.com/lewatmana/status/1962363870460420174" rel="external" target="_blank">https://x.com/lewatmana/status/1962363870460420174</a></p>
+    
+
+    
+
+    <div class="incident-location">
+      
+        Jakarta Barat
+      
+    </div>
+  </div>
+</li>
+
+
+    
+  
+    
+
+
+
+
+<li class="media incident">
+  <div class="pull-left" href="#">
+    <img class="media-object incident-reporter-avatar"
+      src="//s.lewatmana.com/d2014b/img/profile-pic_lewatmana.630645a11968.png">
+  </div>
+  <div class="media-body">
+    <div class="media-heading incident-reporter">
+      LM
+      <span class="incident-time" data-toggle="tooltip" data-placement="right" title="01 Sep 2025 10:58 WIB">
+        &middot; <a href="/kondisi/laporan/1177917/2025/09/01/">11 months ago</a></span>
+    </div>
+    <p class="incident-info">Jl Hasyim Ashari kedua arah terpantau lenggang. <a href="https://x.com/lewatmana/status/1962362762316960134" rel="external" target="_blank">https://x.com/lewatmana/status/1962362762316960134</a></p>
+    
+
+    
+
+    <div class="incident-location">
+      
+        Jakarta Pusat
+      
+    </div>
+  </div>
+</li>
+
+
+    
+  
+    
+
+
+
+
+<li class="media incident">
+  <div class="pull-left" href="#">
+    <img class="media-object incident-reporter-avatar"
+      src="//s.lewatmana.com/d2014b/img/profile-pic_lewatmana.630645a11968.png">
+  </div>
+  <div class="media-body">
+    <div class="media-heading incident-reporter">
+      LM
+      <span class="incident-time" data-toggle="tooltip" data-placement="right" title="01 Sep 2025 10:57 WIB">
+        &middot; <a href="/kondisi/laporan/1177916/2025/09/01/">11 months ago</a></span>
+    </div>
+    <p class="incident-info">MT Haryono - Pancoran kedua arahnya ramai lancar. <a href="https://x.com/lewatmana/status/1962362276574630131" rel="external" target="_blank">https://x.com/lewatmana/status/1962362276574630131</a></p>
+    
+
+    
+
+    <div class="incident-location">
+      
+        Jakarta
+      
+    </div>
+  </div>
+</li>
+
+
+    
+  
+    
+
+
+
+
+<li class="media incident">
+  <div class="pull-left" href="#">
+    <img class="media-object incident-reporter-avatar"
+      src="//s.lewatmana.com/d2014b/img/profile-pic_lewatmana.630645a11968.png">
+  </div>
+  <div class="media-body">
+    <div class="media-heading incident-reporter">
+      LM
+      <span class="incident-time" data-toggle="tooltip" data-placement="right" title="22 Aug 2025 19:07 WIB">
+        &middot; <a href="/kondisi/laporan/1177915/2025/08/22/">11 months, 1 week ago</a></span>
+    </div>
+    <p class="incident-info"><a href="https://lewatmana.com/cam/336/flyover-jati-baru/" rel="external" target="_blank">https://lewatmana.com/cam/336/flyover-jati-baru/</a> Flyover Jati Baru kedua arah padat</p>
+    
+
+    
+
+    <div class="incident-location">
+      
+        Jakarta Pusat
+      
+    </div>
+  </div>
+</li>
+
+
+    
+  
+    
+
+
+
+
+<li class="media incident">
+  <div class="pull-left" href="#">
+    <img class="media-object incident-reporter-avatar"
+      src="//s.lewatmana.com/d2014b/img/profile-pic_lewatmana.630645a11968.png">
+  </div>
+  <div class="media-body">
+    <div class="media-heading incident-reporter">
+      LM
+      <span class="incident-time" data-toggle="tooltip" data-placement="right" title="02 Jun 2025 12:39 WIB">
+        &middot; <a href="/kondisi/laporan/1177914/2025/06/02/">1 year, 1 month ago</a></span>
+    </div>
+    <p class="incident-info">Tugu Muda Semarang siang ini (12:28 WIB) <a href="https://lewatmana.com/cam/371/tugu-muda/" rel="external" target="_blank">https://lewatmana.com/cam/371/tugu-muda/</a> terpantau padat di kedua arah, baik ke Jl Mgr Sugiyopranoto maupun Jl Imam Bonjol. #Semarang #TuguMuda #LewatMana</p>
+    
+
+    
+
+    <div class="incident-location">
+      
+    </div>
+  </div>
+</li>
+
+
+    
+  
+    
+
+
+
+
+<li class="media incident">
+  <div class="pull-left" href="#">
+    <img class="media-object incident-reporter-avatar"
+      src="//s.lewatmana.com/d2014b/img/profile-pic_lewatmana.630645a11968.png">
+  </div>
+  <div class="media-body">
+    <div class="media-heading incident-reporter">
+      LM
+      <span class="incident-time" data-toggle="tooltip" data-placement="right" title="02 Jun 2025 12:35 WIB">
+        &middot; <a href="/kondisi/laporan/1177913/2025/06/02/">1 year, 1 month ago</a></span>
+    </div>
+    <p class="incident-info">Slipi arah Tomang siang ini (12:31 WIB) terpantau lancar di arah kiri menuju Tomang. Arah kanan menuju Slipi/Semanggi sedikit padat tapi masih mengalir. Cuaca cerah. #Jakarta #Slipi #Tomang #SParman #LewatMana</p>
+    
+
+    
+
+    <div class="incident-location">
+      
+    </div>
+  </div>
+</li>
+
+
+    
+  
+    
+
+
+
+
+<li class="media incident">
+  <div class="pull-left" href="#">
+    <img class="media-object incident-reporter-avatar"
+      src="//s.lewatmana.com/d2014b/img/profile-pic_lewatmana.630645a11968.png">
+  </div>
+  <div class="media-body">
+    <div class="media-heading incident-reporter">
+      LM
+      <span class="incident-time" data-toggle="tooltip" data-placement="right" title="02 Jun 2025 12:23 WIB">
+        &middot; <a href="/kondisi/laporan/1177912/2025/06/02/">1 year, 1 month ago</a></span>
+    </div>
+    <p class="incident-info">INFO LALU LINTAS Jakarta Selatan! Pukul 12:21 siang, Jl. MT Haryono terpantau cukup padat. Arus lalu lintas yang mengarah ke Pancoran maupun ke Cawang dan Semanggi terlihat cukup ramai dan cenderung merayap. #InfoLalin #Jakarta #MTHaryono #Pancoran #Cawang #Semanggi</p>
+    
+
+    
+
+    <div class="incident-location">
+      
+    </div>
+  </div>
+</li>
+
+
+    
+  
+    
+
+
+
+
+<li class="media incident">
+  <div class="pull-left" href="#">
+    <img class="media-object incident-reporter-avatar"
+      src="//s.lewatmana.com/d2014b/img/profile-pic_lewatmana.630645a11968.png">
+  </div>
+  <div class="media-body">
+    <div class="media-heading incident-reporter">
+      LM
+      <span class="incident-time" data-toggle="tooltip" data-placement="right" title="04 Apr 2025 17:54 WIB">
+        &middot; <a href="/kondisi/laporan/1177911/2025/04/04/">1 year, 3 months ago</a></span>
+    </div>
+    <p class="incident-info">CCTV Lalu lintas Kota Semarang <a href="https://lewatmana.com/kota/semarang/" rel="external" target="_blank">https://lewatmana.com/kota/semarang/</a> #lalin #semarang</p>
+    
+
+    
+
+    <div class="incident-location">
+      
+    </div>
+  </div>
+</li>
+
+
+    
+  
+    
+
+
+
+
+<li class="media incident">
+  <div class="pull-left" href="#">
+    <img class="media-object incident-reporter-avatar"
+      src="//s.lewatmana.com/d2014b/img/profile-pic_lewatmana.630645a11968.png">
+  </div>
+  <div class="media-body">
+    <div class="media-heading incident-reporter">
+      LM
+      <span class="incident-time" data-toggle="tooltip" data-placement="right" title="06 Mar 2025 19:01 WIB">
+        &middot; <a href="/kondisi/laporan/1177910/2025/03/06/">1 year, 4 months ago</a></span>
+    </div>
+    <p class="incident-info">CCTV Lalu lintas Bekasi <a href="https://lewatmana.com/kota/bekasi/" rel="external" target="_blank">https://lewatmana.com/kota/bekasi/</a> #lalin #bekasi</p>
+    
+
+    
+
+    <div class="incident-location">
+      
+    </div>
+  </div>
+</li>
+
+
+    
+  
+    
+
+
+
+
+<li class="media incident">
+  <div class="pull-left" href="#">
+    <img class="media-object incident-reporter-avatar"
+      src="//s.lewatmana.com/d2014b/img/profile-pic_lewatmana.630645a11968.png">
+  </div>
+  <div class="media-body">
+    <div class="media-heading incident-reporter">
+      LM
+      <span class="incident-time" data-toggle="tooltip" data-placement="right" title="04 Mar 2025 16:08 WIB">
+        &middot; <a href="/kondisi/laporan/1177909/2025/03/04/">1 year, 4 months ago</a></span>
+    </div>
+    <p class="incident-info">Flyover Jati Baru arah Tanah Abang terpantau padat, arah sebaliknya lancar. <a href="https://x.com/lewatmana/status/1896850128201486456" rel="external" target="_blank">https://x.com/lewatmana/status/1896850128201486456</a> #lalin #jakarta #macet</p>
+    
+
+    
+
+    <div class="incident-location">
+      
+    </div>
+  </div>
+</li>
+
+
+    
+  
+    
+
+
+
+
+<li class="media incident">
+  <div class="pull-left" href="#">
+    <img class="media-object incident-reporter-avatar"
+      src="//s.lewatmana.com/d2014b/img/profile-pic_lewatmana.630645a11968.png">
+  </div>
+  <div class="media-body">
+    <div class="media-heading incident-reporter">
+      LM
+      <span class="incident-time" data-toggle="tooltip" data-placement="right" title="13 Jan 2025 18:21 WIB">
+        &middot; <a href="/kondisi/laporan/1177908/2025/01/13/">1 year, 6 months ago</a></span>
+    </div>
+    <p class="incident-info">CCTV lalu lintas Puncak <a href="https://lewatmana.com/kota/puncak/" rel="external" target="_blank">https://lewatmana.com/kota/puncak/</a> #puncak #lalin</p>
+    
+
+    
+
+    <div class="incident-location">
+      
+    </div>
+  </div>
+</li>
+
+
+    
+  
+    
+
+
+
+
+<li class="media incident">
+  <div class="pull-left" href="#">
+    <img class="media-object incident-reporter-avatar"
+      src="//s.lewatmana.com/d2014b/img/profile-pic_lewatmana.630645a11968.png">
+  </div>
+  <div class="media-body">
+    <div class="media-heading incident-reporter">
+      LM
+      <span class="incident-time" data-toggle="tooltip" data-placement="right" title="10 Mar 2024 16:09 WIB">
+        &middot; <a href="/kondisi/laporan/1177907/2024/03/10/">2 years, 4 months ago</a></span>
+    </div>
+    <p class="incident-info">info lalu lintas kota Malang via cctv di <a href="https://lewatmana.com/kota/malang/" rel="external" target="_blank">https://lewatmana.com/kota/malang/</a> #malang #lalin</p>
+    
+
+    
+
+    <div class="incident-location">
+      
+    </div>
+  </div>
+</li>
+
+
+    
+  
+    
+
+
+
+
+<li class="media incident">
+  <div class="pull-left" href="#">
+    <img class="media-object incident-reporter-avatar"
+      src="//s.lewatmana.com/d2014b/img/profile-pic_lewatmana.630645a11968.png">
+  </div>
+  <div class="media-body">
+    <div class="media-heading incident-reporter">
+      LM
+      <span class="incident-time" data-toggle="tooltip" data-placement="right" title="18 Oct 2023 14:31 WIB">
+        &middot; <a href="/kondisi/laporan/1177906/2023/10/18/">2 years, 9 months ago</a></span>
+    </div>
+    <p class="incident-info">Flyover Jati Baru arah Tanah Abang terpantau padat, arah sebaliknya lancar.<a href="https://x.com/lewatmanacom/status/1714544660579074068?s=20" rel="external" target="_blank">https://x.com/lewatmanacom/status/1714544660579074068?s=20</a></p>
+    
+
+    
+
+    <div class="incident-location">
+      
+        Jakarta Pusat
+      
+    </div>
+  </div>
+</li>
+
+
+    
+  
+    
+
+
+
+
+<li class="media incident">
+  <div class="pull-left" href="#">
+    <img class="media-object incident-reporter-avatar"
+      src="//s.lewatmana.com/d2014b/img/profile-pic_lewatmana.630645a11968.png">
+  </div>
+  <div class="media-body">
+    <div class="media-heading incident-reporter">
+      SumberAuto
+      <span class="incident-time" data-toggle="tooltip" data-placement="right" title="24 Jul 2023 07:48 WIB">
+        &middot; <a href="/kondisi/laporan/1177868/2023/07/24/">3 years ago</a></span>
+    </div>
+    <p class="incident-info">Pakin Raya macet da kendaraan truk patah as</p>
+    
+
+    
+
+    <div class="incident-location">
+      
+        Jakarta
+      
+    </div>
+  </div>
+</li>
+
+
+    
+  
+    
+
+
+
+
+<li class="media incident">
+  <div class="pull-left" href="#">
+    <img class="media-object incident-reporter-avatar"
+      src="//s.lewatmana.com/d2014b/img/profile-pic_lewatmana.630645a11968.png">
+  </div>
+  <div class="media-body">
+    <div class="media-heading incident-reporter">
+      SumberAuto
+      <span class="incident-time" data-toggle="tooltip" data-placement="right" title="24 Jul 2023 07:42 WIB">
+        &middot; <a href="/kondisi/laporan/1177867/2023/07/24/">3 years ago</a></span>
+    </div>
+    <p class="incident-info">Truk angkutan barang patah as di jalan Pakin, Jakarta Utara. Macet total sekitar 1 jam melintasi jalan tsb</p>
+    
+
+    
+
+    <div class="incident-location">
+      
+    </div>
+  </div>
+</li>
+
+
+    
+  
+    
+
+
+
+
+<li class="media incident">
+  <a class="pull-left" href="https://twitter.com/Pai_C1" rel="nofollow" target="_blank">
+    <img class="media-object incident-reporter-avatar"
+      src="https://pbs.twimg.com/profile_images/1667841053234466818/nuX9K2c2_normal.jpg">
+  </a>
+  <div class="media-body">
+    <div class="media-heading incident-reporter">
+      <span class="incident-reporter-name">P𝘢𝘪</span>
+      (<a href="https://twitter.com/Pai_C1" rel="nofollow" target="_blank">@Pai_C1</a>)
+      <span class="incident-time" data-toggle="tooltip" data-placement="right" title="18 Jul 2023 16:46 WIB">
+        &middot; <a href="/kondisi/laporan/1177866/2023/07/18/">3 years ago</a></span>
+    </div>
+    
+      <p class="incident-info">Kuningan jaksel minggu jam 09 nan boss</p>
+      
+    
+
+    <div class="incident-location">
+      
+    </div>
+  </div>
+</li>
+
+
+    
+  
+    
+
+
+
+
+<li class="media incident">
+  <a class="pull-left" href="https://twitter.com/masantobbm" rel="nofollow" target="_blank">
+    <img class="media-object incident-reporter-avatar"
+      src="https://pbs.twimg.com/profile_images/812101999491616768/vO4B4BgE_normal.jpg">
+  </a>
+  <div class="media-body">
+    <div class="media-heading incident-reporter">
+      <span class="incident-reporter-name">Notonegoro</span>
+      (<a href="https://twitter.com/masantobbm" rel="nofollow" target="_blank">@masantobbm</a>)
+      <span class="incident-time" data-toggle="tooltip" data-placement="right" title="18 Jul 2023 09:30 WIB">
+        &middot; <a href="/kondisi/laporan/1177865/2023/07/18/">3 years ago</a></span>
+    </div>
+    
+      <p class="incident-info">macet parah di perempatan pondok pinang dari arah pasar jumat.. sepertinya ada kesalahan pengaturan traf… https://t.co/0ar3IrX2Eo</p>
+      
+    
+
+    <div class="incident-location">
+      
+    </div>
+  </div>
+</li>
+
+
+    
+  
+    
+
+
+
+
+<li class="media incident">
+  <a class="pull-left" href="https://twitter.com/masantobbm" rel="nofollow" target="_blank">
+    <img class="media-object incident-reporter-avatar"
+      src="https://pbs.twimg.com/profile_images/812101999491616768/vO4B4BgE_normal.jpg">
+  </a>
+  <div class="media-body">
+    <div class="media-heading incident-reporter">
+      <span class="incident-reporter-name">Notonegoro</span>
+      (<a href="https://twitter.com/masantobbm" rel="nofollow" target="_blank">@masantobbm</a>)
+      <span class="incident-time" data-toggle="tooltip" data-placement="right" title="12 Jul 2023 07:39 WIB">
+        &middot; <a href="/kondisi/laporan/1177862/2023/07/12/">3 years ago</a></span>
+    </div>
+    
+      <p class="incident-info">kemacetan panjang dari deplu raya ke pondok indah akibat naik turun penumpang di depan sekolah yg sepert… https://t.co/xlJvrwELmZ</p>
+      
+    
+
+    <div class="incident-location">
+      
+    </div>
+  </div>
+</li>
+
+
+    
+  
+    
+
+
+
+
+<li class="media incident">
+  <a class="pull-left" href="https://twitter.com/masantobbm" rel="nofollow" target="_blank">
+    <img class="media-object incident-reporter-avatar"
+      src="https://pbs.twimg.com/profile_images/812101999491616768/vO4B4BgE_normal.jpg">
+  </a>
+  <div class="media-body">
+    <div class="media-heading incident-reporter">
+      <span class="incident-reporter-name">Notonegoro</span>
+      (<a href="https://twitter.com/masantobbm" rel="nofollow" target="_blank">@masantobbm</a>)
+      <span class="incident-time" data-toggle="tooltip" data-placement="right" title="12 Jul 2023 07:36 WIB">
+        &middot; <a href="/kondisi/laporan/1177861/2023/07/12/">3 years ago</a></span>
+    </div>
+    
+      <p class="incident-info">macet panjang dari deplu bintaro ke pondok indah akibat arus kendaraan yg menurunkan penumpang di depan… https://t.co/XBx85qcipb</p>
+      
+    
+
+    <div class="incident-location">
+      
+    </div>
+  </div>
+</li>
+
+
+    
+  
+    
+
+
+
+
+<li class="media incident">
+  <a class="pull-left" href="https://twitter.com/Jon_D_GLM" rel="nofollow" target="_blank">
+    <img class="media-object incident-reporter-avatar"
+      src="https://pbs.twimg.com/profile_images/506072295534637058/iAKbDrEB_normal.png">
+  </a>
+  <div class="media-body">
+    <div class="media-heading incident-reporter">
+      <span class="incident-reporter-name">Pak Pokijan</span>
+      (<a href="https://twitter.com/Jon_D_GLM" rel="nofollow" target="_blank">@Jon_D_GLM</a>)
+      <span class="incident-time" data-toggle="tooltip" data-placement="right" title="28 Jun 2023 20:16 WIB">
+        &middot; <a href="/kondisi/laporan/1177853/2023/06/28/">3 years, 1 month ago</a></span>
+    </div>
+    
+      <p class="incident-info">apakah libur panjang berpengaruh pada situasi di pelabuhan Merak?</p>
+      
+    
+
+    <div class="incident-location">
+      
+    </div>
+  </div>
+</li>
+
+
+    
+  
+    
+
+
+
+
+<li class="media incident">
+  <a class="pull-left" href="https://twitter.com/kurniawanadhi" rel="nofollow" target="_blank">
+    <img class="media-object incident-reporter-avatar"
+      src="https://pbs.twimg.com/profile_images/1366725818777440270/--D--wyF_normal.jpg">
+  </a>
+  <div class="media-body">
+    <div class="media-heading incident-reporter">
+      <span class="incident-reporter-name">Adhi Kurniawan</span>
+      (<a href="https://twitter.com/kurniawanadhi" rel="nofollow" target="_blank">@kurniawanadhi</a>)
+      <span class="incident-time" data-toggle="tooltip" data-placement="right" title="24 Jun 2023 17:18 WIB">
+        &middot; <a href="/kondisi/laporan/1177852/2023/06/24/">3 years, 1 month ago</a></span>
+    </div>
+    
+      <p class="incident-info">Ini mulai mengular dan rapat gini dri jam berapa om Bow?</p>
+      
+    
+
+    <div class="incident-location">
+      
+    </div>
+  </div>
+</li>
+
+
+    
+  
+    
+
+
+
+
+<li class="media incident">
+  <a class="pull-left" href="https://twitter.com/noegroho_basuki" rel="nofollow" target="_blank">
+    <img class="media-object incident-reporter-avatar"
+      src="https://pbs.twimg.com/profile_images/1637435456395812865/az57njQV_normal.jpg">
+  </a>
+  <div class="media-body">
+    <div class="media-heading incident-reporter">
+      <span class="incident-reporter-name">Basuki Noegroho</span>
+      (<a href="https://twitter.com/noegroho_basuki" rel="nofollow" target="_blank">@noegroho_basuki</a>)
+      <span class="incident-time" data-toggle="tooltip" data-placement="right" title="23 Jun 2023 16:39 WIB">
+        &middot; <a href="/kondisi/laporan/1177849/2023/06/23/">3 years, 1 month ago</a></span>
+    </div>
+    
+      <p class="incident-info">Dr jakan H Ung ke Ancol tumben ramai cenderung macet.. apa axa yg bisa kasih info Makasih</p>
+      
+    
+
+    <div class="incident-location">
+      
+    </div>
+  </div>
+</li>
+
+
+    
+  
+    
+
+
+
+
+<li class="media incident">
+  <a class="pull-left" href="https://twitter.com/lewatmanacom" rel="nofollow" target="_blank">
+    <img class="media-object incident-reporter-avatar"
+      src="https://pbs.twimg.com/profile_images/581105686890692608/Kzj4Lzhe_normal.png">
+  </a>
+  <div class="media-body">
+    <div class="media-heading incident-reporter">
+      <span class="incident-reporter-name">LewatManaCom</span>
+      (<a href="https://twitter.com/lewatmanacom" rel="nofollow" target="_blank">@lewatmanacom</a>)
+      <span class="incident-time" data-toggle="tooltip" data-placement="right" title="23 Jun 2023 16:23 WIB">
+        &middot; <a href="/kondisi/laporan/1177848/2023/06/23/">3 years, 1 month ago</a></span>
+    </div>
+    
+      
+            <p class="incident-info">#lalulintas Tol dalkot MT Haryono kedua arah ramai padat. <a href="https://twitter.com/lewatmanacom/status/1672173619047460864/video/1" rel="nofollow" target="_blank">pic.twitter.com/aKUavcWipb</a></p>
+            <div class="incident-inline-images" data-toggle="modal" data-target="#pic-twitter-1672173568648712193">
+                <a href="#pic-twitter-1672173568648712193" rel="facebox">
+                    <img src="https://pbs.twimg.com/ext_tw_video_thumb/1672173568648712193/pu/img/ARSZ6mlr-o_oOAxD.jpg">
+                </a>
+            </div>
+            <!-- Modal -->
+            <div class="modal fade" id="pic-twitter-1672173568648712193" tabindex="-1" role="dialog" aria-hidden="true">
+              <div class="modal-dialog">
+                <div class="modal-content">
+                  <div class="modal-body">
+                    <img src="https://pbs.twimg.com/ext_tw_video_thumb/1672173568648712193/pu/img/ARSZ6mlr-o_oOAxD.jpg">
+                  </div>
+                  <div class="modal-footer">
+                    #lalulintas Tol dalkot MT Haryono kedua arah ramai padat. <a href="https://twitter.com/lewatmanacom/status/1672173619047460864/video/1" rel="nofollow" target="_blank">pic.twitter.com/aKUavcWipb</a>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+      
+    
+
+    <div class="incident-location">
+      
+        Jakarta Selatan
+      
+    </div>
+  </div>
+</li>
+
+
+    
+  
+  </ul>
+</div>
+
+<ul class="pager">
+  <li><a href="/kondisi/?page=2">Info Lalu Lintas Sebelumnya</a></li>
+</ul>
+
+<div class="footer-mobile-ads text-center visible-xs">
+  
+    <script type='text/javascript'><!--// <![CDATA[
+    OA_show('showcase2');
+// ]]> --></script>
+
+  
+</div>
+
+
+
+
+    </div>
+    <div class="sidebar hidden-xs">
+      
+  
+
+
+
+<div class="sidebar__showcase-small">
+  
+    <script type='text/javascript'><!--// <![CDATA[
+    OA_show('custom_showcase');
+// ]]> --></script>
+
+  
+</div>
+
+<div class="sidebar__showcase">
+  
+    <script type='text/javascript'><!--// <![CDATA[
+    OA_show('large_showcase1');
+// ]]> --></script>
+
+  
+</div>
+
+<div class="sidebar__showcase">
+  
+    <script type='text/javascript'><!--// <![CDATA[
+    OA_show('large_showcase2');
+// ]]> --></script>
+
+  
+</div>
+
+<div class="panel panel-danger">
+  <div class="panel-heading">
+    <h3 class="panel-title">CCTV Terbaru</h3>
+  </div>
+  <div class="panel-body sidebar-cams">
+    <ul class="list-inline">
+    
+    
+      <li class="sidebar-cam">
+
+
+
+
+
+<div class="cam-thumb">
+  
+    
+      <a href="/cam/336/flyover-jati-baru/">
+        <img src="https://media.lewatmana.com/cam/celvasha/336/20260729_231141M-thumb.jpg" class="cam-thumb-img">
+      </a>
+    
+  
+
+  <div class="cam-thumb-info">
+    <p class="cam-name"><a href="/cam/336/flyover-jati-baru/">Flyover Jati Baru</a></p>
+  </div>
+</div>
+
+
+</li>
+    
+      <li class="sidebar-cam">
+
+
+
+
+
+<div class="cam-thumb">
+  
+    
+      <a href="/cam/192/mt-haryono-cawang/">
+        <img src="https://media.lewatmana.com/cam/lintek/192/20260729_231142M-thumb.jpg" class="cam-thumb-img">
+      </a>
+    
+  
+
+  <div class="cam-thumb-info">
+    <p class="cam-name"><a href="/cam/192/mt-haryono-cawang/">MT Haryono - Cawang</a></p>
+  </div>
+</div>
+
+
+</li>
+    
+      <li class="sidebar-cam">
+
+
+
+
+
+<div class="cam-thumb">
+  
+    
+      <a href="/cam/191/mt-haryono-pancoran/">
+        <img src="https://media.lewatmana.com/cam/lintek/191/snapshot20260729_231141M-thumb.jpg" class="cam-thumb-img">
+      </a>
+    
+  
+
+  <div class="cam-thumb-info">
+    <p class="cam-name"><a href="/cam/191/mt-haryono-pancoran/">MT Haryono - Pancoran</a></p>
+  </div>
+</div>
+
+
+</li>
+    
+    
+    </ul>
+  </div>
+  <div class="panel-footer">
+    <small><i class="fa fa-caret-right"></i>
+    <a href="/cam/"> lihat CCTV lainnya</a></small>
+  </div>
+</div>
+
+<div class="panel panel-primary">
+  <div class="panel-heading">
+    <h3 class="panel-title">Top Kontributor 7 Hari Terakhir</h3>
+  </div>
+  <ul class="list-group">
+    
+  </ul>
+</div>
+
+<div class="sidebar__showcase">
+  
+    <script type='text/javascript'><!--// <![CDATA[
+    OA_show('large_showcase3');
+// ]]> --></script>
+
+  
+</div>
+
+
+    </div>
+  </div>
+
+
+<footer>
+
+  
+
+<div class="footer-media hidden-xs">
+    <h3 class="footer-media__title text-center">Media Coverage</h3>
+    <div class="text-center">
+      <img class="footer-media__logo" src="//s.lewatmana.com/d2014b/img/media_coverage/jakartapost.9f8853ccf7a9.png" width="100" />
+      <img class="footer-media__logo" src="//s.lewatmana.com/d2014b/img/media_coverage/detikcom.a7f146a6ada1.png" width="100" />
+      <img class="footer-media__logo" src="//s.lewatmana.com/d2014b/img/media_coverage/metrotv.2e6743a7ef17.png" width="100" />
+      <img class="footer-media__logo" src="//s.lewatmana.com/d2014b/img/media_coverage/techcrunch.f00f43cc4aa8.png" width="100" />
+      <img class="footer-media__logo" src="//s.lewatmana.com/d2014b/img/media_coverage/nhkworld.0524e6a8e03d.png"width="100" />
+    </div>
+    <div class="text-center">
+      <img class="footer-media__logo" src="//s.lewatmana.com/d2014b/img/media_coverage/bloombergtv.e749763a114f.png" width="100" />
+      <img class="footer-media__logo" src="//s.lewatmana.com/d2014b/img/media_coverage/kompastv.946c82d63be5.png" width="100" />
+      <img class="footer-media__logo" src="//s.lewatmana.com/d2014b/img/media_coverage/dailysocial.baf002c60357.png" width="100" />
+      <img class="footer-media__logo" src="//s.lewatmana.com/d2014b/img/media_coverage/antv.1babf9f0c456.png" width="80" />
+      <img class="footer-media__logo" src="//s.lewatmana.com/d2014b/img/media_coverage/fortune.9b139851c18e.png" width="100" />
+      <img class="footer-media__logo" src="//s.lewatmana.com/d2014b/img/media_coverage/kompascom.e792bf423e30.png" width="120" />
+      <img class="footer-media__logo" src="//s.lewatmana.com/d2014b/img/media_coverage/otomotif.dc056c88c749.png" width="100" />
+    </div>
+</div>
+
+  
+
+<div class="footer-links hidden-xs">
+  <div class="container">
+    <div class="row">
+      <div class="footer-links__col col-sm-6 col-md-3 col-lg-3">
+        <h6 class="footer-links__title">LewatMana.com</h6>
+        <ul class="list-unstyled">
+          <li><a href="/">Home</a></li>
+          <li><a href="/about/">Tentang</a></li>
+          <li><a href="http://blog.lewatmana.com" target="_blank">Blog</a></li>
+          <li><a href="/terms/">Ketentuan Layanan</a></li>
+          <li><a href="/participate/">Partisipasi</a></li>
+          <li><a href="/contact/">Hubungi Kami</a></li>
+        </ul>
+        <h6 class="footer-links__title">Partner</h6>
+        <ul class="list-unstyled">
+          <li>Detik.com</li>
+          <li>98.7 GenFM</li>
+          <li>Firstmedia</li>
+          <li>Google Maps</li>
+          <li>Samsung SmartTV</li>
+          <li>XL Axiata</li>
+        </ul>
+      </div>
+
+      <div class="footer-links__col col-sm-6 col-md-3 col-lg-3">
+        <h6 class="footer-links__title">CCTV</h6>
+        
+        <ul class="list-unstyled">
+          
+          <li><a href="/kota/bandung/">Bandung</a></li>
+          
+          <li><a href="/kota/bekasi/">Bekasi</a></li>
+          
+          <li><a href="/kota/denpasar/">Denpasar</a></li>
+          
+          <li><a href="/kota/depok/">Depok</a></li>
+          
+          <li><a href="/kota/jakarta-barat/">Jakarta Barat</a></li>
+          
+          <li><a href="/kota/jakarta-pusat/">Jakarta Pusat</a></li>
+          
+          <li><a href="/kota/jakarta-selatan/">Jakarta Selatan</a></li>
+          
+          <li><a href="/kota/jakarta-timur/">Jakarta Timur</a></li>
+          
+          <li><a href="/kota/jakarta-utara/">Jakarta Utara</a></li>
+          
+          <li><a href="/kota/malang/">Malang</a></li>
+          
+          <li><a href="/kota/puncak/">Puncak</a></li>
+          
+          <li><a href="/kota/semarang/">Semarang</a></li>
+          
+          <li><a href="/kota/surabaya/">Surabaya</a></li>
+          
+        </ul>
+        
+      </div>
+
+      <div class="col-sm-6 col-md-3 col-lg-3">
+        <h6 class="footer-links__title">Lokasi Penting</h6>
+        <ul class="list-unstyled">
+          <li><a href="/lokasi/fasilitas-kesehatan/apotek/">Apotek / Apotik</a></li>
+          <li><a href="/lokasi/atm/">ATM</a></li>
+          <li><a href="/lokasi/bank/">Bank</a></li>
+          <li><a href="/lokasi/bengkel/">Bengkel</a></li>
+          <li><a href="/lokasi/bus-stop/">Halte Busway</a></li>
+          <li><a href="/lokasi/accommodation/hotel/">Hotel</a></li>
+          <li><a href="/lokasi/fasilitas-kesehatan/laboratorium/">Laboratorium Klinik</a></li>
+          <li><a href="/lokasi/fasilitas-kesehatan/puskesmas/">Puskesmas</a></li>
+          <li><a href="/lokasi/fasilitas-kesehatan/rumah-sakit/">Rumah Sakit</a></li>
+          <li><a href="/lokasi/spbu/">SPBU</a></li>
+          <li><a href="/lokasi/taksi/">Taksi</a></li>
+          <li><a href="/lokasi/tempat-wisata/">Tempat Wisata</a></li>
+        </ul>
+      </div>
+
+      <div class="col-sm-6 col-md-3 col-lg-3">
+        <h6 class="footer-links__title">Rute</h6>
+        
+        <ul class="list-unstyled">
+          
+          <li><a href="/rute/651/">Ancol - Cawang via Priok</a></li>
+          
+          <li><a href="/rute/213/">Cawang ke Pluit</a></li>
+          
+          <li><a href="/rute/420/">Grogol ke Kebon Jeruk</a></li>
+          
+          <li><a href="/rute/215/">Grogol ke Pancoran</a></li>
+          
+          <li><a href="/rute/907/">Harmoni ke Tomang</a></li>
+          
+          <li><a href="/rute/2951/">Kb. Jeruk ke Tomang</a></li>
+          
+          <li><a href="/rute/3100/">Mangga Dua ke Matraman</a></li>
+          
+          <li><a href="/rute/3530/">MRT Jakarta (Bund.HI - Lb.Bulus)</a></li>
+          
+          <li><a href="/rute/2428/">Ragunan ke Kuningan</a></li>
+          
+          <li><a href="/rute/214/">Semanggi ke Meruya</a></li>
+          
+          <li><a href="/rute/419/">Serpong ke Semanggi</a></li>
+          
+          <li><a href="/rute/437/">Sudirman ke Serpong</a></li>
+          
+          <li><a href="/rute/3099/">Thamrin ke Fatmawati</a></li>
+          
+          <li><a href="/rute/1050/">Tol Dalam Kota Jakarta</a></li>
+          
+          <li><a href="/rute/333/">Tomang ke Sudirman</a></li>
+          
+        </ul>
+        
+      </div>
+
+    </div> <!-- row -->
+  </div> <!-- container -->
+</div>
+
+  
+
+<div class="footer-info">
+  <div class="container hidden-xs">
+    <span>&copy; 2008-2014 <a class="footer-info__highlight" href="/">LewatMana.com</a>.
+    Hak cipta dilindungi undang-undang.</span>
+    <div class="pull-right footer-info__icon">
+      <a class="facebook" href="https://www.facebook.com/lewatmana" target="_blank">
+        <span class="fa-stack fa-lg">
+          <i class="fa fa-square-o fa-stack-2x"></i>
+          <i class="fa fa-facebook fa-stack-1x"></i>
+        </span>
+      </a>
+      <a class="twitter" href="https://twitter.com/lewatmana" target="_blank">
+        <span class="fa-stack fa-lg">
+          <i class="fa fa-square-o fa-stack-2x"></i>
+          <i class="fa fa-twitter fa-stack-1x"></i>
+        </span>
+      </a>
+      <a class="rss" href="https://lewatmana.com/kondisi/feeds/latest/">
+        <span class="fa-stack fa-lg">
+          <i class="fa fa-square-o fa-stack-2x"></i>
+          <i class="fa fa-rss fa-stack-1x"></i>
+        </span>
+      </a>
+    </div>
+  </div>
+  <div class="container visible-xs">
+    <p class="text-center">
+      <a class="facebook" href="https://www.facebook.com/lewatmana" target="_blank">
+        <span class="fa-stack fa-lg">
+          <i class="fa fa-square-o fa-stack-2x"></i>
+          <i class="fa fa-facebook fa-stack-1x"></i>
+        </span>
+      </a>
+      <a class="twitter" href="https://twitter.com/lewatmana" target="_blank">
+        <span class="fa-stack fa-lg">
+          <i class="fa fa-square-o fa-stack-2x"></i>
+          <i class="fa fa-twitter fa-stack-1x"></i>
+        </span>
+      </a>
+      <a class="rss" href="https://lewatmana.com/kondisi/feeds/latest/">
+        <span class="fa-stack fa-lg">
+          <i class="fa fa-square-o fa-stack-2x"></i>
+          <i class="fa fa-rss fa-stack-1x"></i>
+        </span>
+      </a>
+    </p>
+    <p class="text-center">
+    <a href="/about/">Tentang</a> &middot;
+    <a href="/terms/">Ketentuan Layanan</a> &middot;
+    <a href="/contact/">Hubungi Kami</a>
+    </p>
+    <p class="text-center">&copy; 2008-2014 <a class="footer-info__highlight" href="/">LewatMana.com</a></p>
+  </div>
+</div>
+
+
+</footer>
+
+
+  <script src="//s.lewatmana.com/d2014b/js/vendor/jquery-1.11.0.min.8fc25e27d427.js"></script>
+  <script src="//s.lewatmana.com/d2014b/js/vendor/bootstrap.min.ba847811448e.js"></script>
+  <script src="//s.lewatmana.com/d2014b/js/main.8ea253fbe618.js"></script>
+
+    <script type="text/javascript" src="//s.lewatmana.com/d2014b/js/vendor/slick/slick.min.6bb8003ffa73.js"></script>
+
+    <script>
+      var maps_pois = "/peta/pois/";
+      var latest_incident_ajax = "/kondisi/latest_incident/";
+      var latest_nonincident_ajax = "/kondisi/latest_nonincident/";
+
+      var cctv_online = "//s.lewatmana.com/d2014b/img/cctv-online.e181802852c1.png";
+      var cctv_offline = "//s.lewatmana.com/d2014b/img/cctv-offline.5a612d7b27ce.png";
+
+      var incident = {
+        
+          
+            "kemacetan": "//s.lewatmana.com/d2014b/img/incident/kemacetan.0845232b1b58.png",
+          
+        
+          
+            "kecelakaan": "//s.lewatmana.com/d2014b/img/incident/kecelakaan.927736d1a1d5.png",
+          
+        
+          
+            "demonstrasi": "//s.lewatmana.com/d2014b/img/incident/demonstrasi.fca0c107a762.png",
+          
+        
+          
+            "penutupan-jalan": "//s.lewatmana.com/d2014b/img/incident/penutupan-jalan.1cbb5d98268c.png",
+          
+        
+          
+            "genangan-air": "//s.lewatmana.com/d2014b/img/incident/genangan-air.dc79937b142f.png",
+          
+        
+          
+            "kebakaran": "//s.lewatmana.com/d2014b/img/incident/kebakaran.30ea26bfbf8f.png",
+          
+        
+          
+            "kendaraan-mogok": "//s.lewatmana.com/d2014b/img/incident/kendaraan-mogok.718b44d28b8b.png",
+          
+        
+          
+            "perbaikan-jalan": "//s.lewatmana.com/d2014b/img/incident/perbaikan-jalan.8a5d8c874d09.png",
+          
+        
+      }
+
+      var incident_big = {
+        
+          
+            "kemacetan": "//s.lewatmana.com/d2014b/img/incident/kemacetan-big.f719293435b5.png",
+          
+        
+          
+            "kecelakaan": "//s.lewatmana.com/d2014b/img/incident/kecelakaan-big.4c5c07f6ae53.png",
+          
+        
+          
+            "demonstrasi": "//s.lewatmana.com/d2014b/img/incident/demonstrasi-big.b549030f7cc4.png",
+          
+        
+          
+            "penutupan-jalan": "//s.lewatmana.com/d2014b/img/incident/penutupan-jalan-big.3f55292afeb6.png",
+          
+        
+          
+            "genangan-air": "//s.lewatmana.com/d2014b/img/incident/genangan-air-big.bac5f78f01de.png",
+          
+        
+          
+            "kebakaran": "//s.lewatmana.com/d2014b/img/incident/kebakaran-big.6fbfef998694.png",
+          
+        
+          
+            "kendaraan-mogok": "//s.lewatmana.com/d2014b/img/incident/kendaraan-mogok-big.1531e74ec31d.png",
+          
+        
+          
+            "perbaikan-jalan": "//s.lewatmana.com/d2014b/img/incident/perbaikan-jalan-big.57281b15f9dc.png",
+          
+        
+      }
+    </script>
+   <!-- <script type="text/javascript"
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAPXTQse7H09ZkKJCXK073Np4ExbyR4O8A">
+    </script> -->
+    <script type="text/javascript" src="//s.lewatmana.com/d2014b/js/maps.f55ef2d68b66.js"></script>
+
+    <script>
+      // textarea character counter
+      $(document).ready(function() {
+        var text_max = 133;
+
+        $('#id_content').keyup(function() {
+            var text_length = $('#id_content').val().length;
+            var text_remaining = text_max - text_length;
+
+            $('#incident-char-remaining').html(text_remaining + ' characters remaining');
+        });
+        $(".down-arrow").click(function(){
+          $("#maps").slideDown('swing', function(){
+            $(".down-arrow").hide({
+              easing : "linear",
+              duration : 200
+            });
+            loadScriptMap();
+          });
+        });
+      });
+
+      // activate tooltip
+      $(function () {
+        $("[data-toggle='tooltip']").tooltip();
+      });
+
+      $('.featured-cameras-list').slick({
+        dots: false,
+        infinite: true,
+        speed: 300,
+        slidesToShow: 6,
+        slidesToScroll: 6,
+        responsive: [
+          {
+            breakpoint: 992,
+            settings: {
+              slidesToShow: 4,
+              slidesToScroll: 4,
+              infinite: true,
+              dots: true
+            }
+          }
+        ]
+      });
+    </script>
+
+
+
+  
+  <!-- Google tag (gtag.js) New-->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-N01PC0Y39Y"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-N01PC0Y39Y');
+</script>
+
+  
+  
+
+  
+  <!-- Start Alexa Certify Javascript -->
+<script type="text/javascript">
+_atrk_opts = { atrk_acct:"DQkYm1aMp4Z3em", domain:"lewatmana.com",dynamic: true};
+(function() { var as = document.createElement('script'); as.type = 'text/javascript'; as.async = true; as.src = "https://d31qbv1cthcecs.cloudfront.net/atrk.js"; var s = document.getElementsByTagName('script')[0];s.parentNode.insertBefore(as, s); })();
+</script>
+<noscript><img src="https://d5nxst8fruw4z.cloudfront.net/atrk.gif?account=DQkYm1aMp4Z3em" style="display:none" height="1" width="1" alt="" /></noscript>
+<!-- End Alexa Certify Javascript -->  
+
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"0c5ff4608e4544c48063cc0810d7d11d","r":1}' crossorigin="anonymous"></script>
+</body>
+</html>
