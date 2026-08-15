@@ -8750,10 +8750,13 @@
           popupAnchor: [0, -54]
         });
 
-        // ===== MEDIAMTX: Gunakan mediamtxData untuk semua kamera =====
-        // Include all cameras: mediamtxData + terminalTanjungPinggirData (total 50 cameras)
-        const allCCTVs = [...mediamtxData, ...terminalTanjungPinggirData];
-        // ===== AKHIR MEDIAMTX =====
+        // Filter CCTV list based on active city if not 'all'
+        let allCCTVs = [...mediamtxData, ...terminalTanjungPinggirData];
+        if (activeCity !== 'all') {
+          allCCTVs = allCCTVs.filter(c => c.city === activeCity);
+        }
+
+        const markersGroup = L.featureGroup();
 
         allCCTVs.forEach(function(location) {
           try {
@@ -8764,7 +8767,7 @@
 
             const marker = L.marker([latVal, lngVal], {
               icon: customIcon,
-            }).addTo(mapCCTV);
+            }).addTo(markersGroup);
 
             // ===== ADDED BY CURSOR AI: Use enhanced popup =====
             const popupContent = createEnhancedPopup(location);
@@ -8811,6 +8814,13 @@
             console.error(`Error adding marker for ${location.title}:`, err);
           }
         });
+
+        markersGroup.addTo(mapCCTV);
+
+        // Auto-fit to active city markers
+        if (markersGroup.getLayers().length > 0) {
+          mapCCTV.fitBounds(markersGroup.getBounds(), { padding: [50, 50], maxZoom: 15 });
+        }
 
         L.control.zoom({
           position: 'topright'
@@ -8941,10 +8951,8 @@
       if (navSelect) navSelect.value = cityId;
       if (filterSelect) filterSelect.value = cityId;
 
-      const config = CITY_CONFIG[cityId] || CITY_CONFIG.all;
-
-      if (typeof mapCCTV !== 'undefined' && mapCCTV) {
-        mapCCTV.flyTo(config.center, config.zoom, { animate: true, duration: 1.5 });
+      if (typeof initCCTVMap === 'function') {
+        initCCTVMap();
       }
 
       generateCCTVHTML(cityId);
