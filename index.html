@@ -3443,7 +3443,7 @@
           <div class="banner-con">
             <div class="row align-items-center">
               <div
-                class="col-lg-6 col-md-6 col-sm-12 d-flex justify-content-center flex-column banner-main-left-con">
+                class="col-lg-6 col-12 d-flex justify-content-center flex-column banner-main-left-con">
                 <div class="banner-left-con wow slideInLeft">
                   <!-- Live Status Pill -->
                   <div style="display: inline-flex; align-items: center; gap: 8px; background: rgba(56, 189, 248, 0.12); border: 1px solid rgba(56, 189, 248, 0.35); padding: 6px 16px; border-radius: 30px; margin-bottom: 20px; font-size: 13px; font-weight: 600; color: #38bdf8; backdrop-filter: blur(8px);">
@@ -3468,7 +3468,7 @@
                   </div>
                 </div>
               </div>
-              <div class="col-lg-6 col-md-6 col-sm-12 text-center">
+              <div class="col-lg-6 col-12 text-center">
                 <div class="banner-right-con wow slideInRight" style="position: relative; display: flex; justify-content: center; align-items: center;">
                   <figure class="mb-0" style="position: relative; display: inline-block; max-width: 100%;">
                     <img
