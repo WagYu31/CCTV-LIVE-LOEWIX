@@ -776,6 +776,10 @@
       .banner-btn {
         justify-content: center !important;
       }
+      .banner-right-con {
+        right: 0 !important;
+        top: 0 !important;
+      }
       .banner-right-con figure img {
         max-height: 300px !important;
       }
