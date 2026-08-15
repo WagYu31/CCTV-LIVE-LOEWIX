@@ -4393,40 +4393,37 @@
         fetch(apiTarget)
           .then(res => res.json())
           .then(data => {
-             if (data && data.success && data.cameras) {
+            if (data && data.success && Array.isArray(data.cameras) && data.cameras.length > 0) {
               const isValidLatLng = (lat, lng) => !isNaN(lat) && !isNaN(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180;
+              
+              // Clear static demo cameras so ONLY database cameras are rendered
+              mediamtxData.length = 0;
+
               data.cameras.forEach(c => {
-                let safeId = c.id < 5000 ? 5000 + c.id : c.id;
-                const idx = mediamtxData.findIndex(m => m.id === safeId || m.title === c.title);
-                
+                let safeId = parseInt(c.id);
                 let lat = parseFloat(c.lat);
                 let lng = parseFloat(c.lng);
                 const city = c.city || 'siantar';
-                const defaultCenter = CITY_CONFIG[city] ? CITY_CONFIG[city].center : [2.9568, 99.0619];
-                if (!isValidLatLng(lat, lng)) {
-                  lat = defaultCenter[0];
-                  lng = defaultCenter[1];
+                
+                let coords = null;
+                if (isValidLatLng(lat, lng)) {
+                  coords = [lat, lng];
                 }
 
-                if (idx !== -1) {
-                  mediamtxData[idx].title = c.title;
-                  mediamtxData[idx].city = city;
-                  mediamtxData[idx].streamPath = c.streamPath;
-                  mediamtxData[idx].streamId = c.streamPath;
-                  mediamtxData[idx].coordinates = [lat, lng];
-                } else {
-                  mediamtxData.push({
-                    id: safeId,
-                    city: city,
-                    title: c.title,
-                    streamPath: c.streamPath,
-                    streamId: c.streamPath,
-                    coordinates: [lat, lng],
-                    platform: PLATFORM_TYPES.MEDIAMTX,
-                    thumbnail: ASSET_BASE + '/image/logo-loewix.png'
-                  });
-                }
+                mediamtxData.push({
+                  id: safeId,
+                  city: city,
+                  title: c.title,
+                  streamPath: c.streamPath,
+                  streamId: c.streamPath,
+                  coordinates: coords,
+                  lat: c.lat,
+                  lng: c.lng,
+                  platform: PLATFORM_TYPES.MEDIAMTX,
+                  thumbnail: c.thumbnail || (ASSET_BASE + '/image/logo-loewix.png')
+                });
               });
+
               if (typeof generateCCTVHTML === 'function') generateCCTVHTML(typeof currentGlobalCity !== 'undefined' ? currentGlobalCity : 'all');
               if (typeof initCCTVMap === 'function') initCCTVMap();
             }
@@ -8750,8 +8747,8 @@
           popupAnchor: [0, -54]
         });
 
-        // Filter CCTV list based on active city if not 'all'
-        let allCCTVs = [...mediamtxData, ...terminalTanjungPinggirData];
+        // Filter CCTV list based on active city if not 'all' (strictly from Database)
+        let allCCTVs = mediamtxData.filter(c => c.coordinates && Array.isArray(c.coordinates) && c.coordinates.length === 2);
         if (activeCity !== 'all') {
           allCCTVs = allCCTVs.filter(c => c.city === activeCity);
         }
