@@ -8901,9 +8901,6 @@
                           <button class="action-btn" onclick="event.stopPropagation(); shareCCTV(${camera.id}, '${camera.title.replace(/'/g, "\\'")}')" title="Bagikan CCTV">
                             <i class="fas fa-share-alt"></i>
                           </button>
-                          <button class="action-btn" onclick="event.stopPropagation(); openCameraConfigModal(${camera.id})" title="Pengaturan IP / RTSP Kamera">
-                            <i class="fas fa-cog"></i>
-                          </button>
                           <button class="action-btn" onclick="event.stopPropagation(); ${reloadFunction}" title="Refresh Stream">
                             <i class="fas fa-sync-alt"></i>
                           </button>
