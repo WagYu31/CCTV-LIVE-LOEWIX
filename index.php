@@ -8319,6 +8319,8 @@
         }
       }
 
+      const weatherBadgeId = `popup-weather-${camera.id}`;
+
       const cityName = (typeof CITY_CONFIG !== 'undefined' && camera.city && CITY_CONFIG[camera.city]) 
         ? CITY_CONFIG[camera.city].name 
         : (camera.city ? camera.city.toUpperCase() : 'Wilayah Terdaftar');
