@@ -8295,7 +8295,9 @@
         }
       }
 
-      const weatherBadgeId = `popup-weather-${camera.id}`;
+      const cityName = (typeof CITY_CONFIG !== 'undefined' && camera.city && CITY_CONFIG[camera.city]) 
+        ? CITY_CONFIG[camera.city].name 
+        : (camera.city ? camera.city.toUpperCase() : 'Wilayah Terdaftar');
 
       return `
         <div class="map-popup-card">
@@ -8340,7 +8342,7 @@
           <div class="map-popup-footer">
             <div class="popup-location">
               <i class="fas fa-map-marker-alt"></i>
-              <span>Kota Pematangsiantar</span>
+              <span>${cityName}</span>
             </div>
             <div class="popup-weather-badge-container">
               <span class="weather-badge loading" id="${weatherBadgeId}">
