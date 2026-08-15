@@ -4393,26 +4393,46 @@
         });
 
         // Fetch cameras from backend Database API for cross-device real-time sync
+        function extractSafeLatLng(c) {
+          if (!c) return null;
+          let lat = NaN, lng = NaN;
+          if (typeof c.lat === 'string' && c.lat.includes(',')) {
+            const parts = c.lat.split(',');
+            lat = parseFloat(parts[0].trim());
+            lng = parseFloat(parts[1].trim());
+          } else if (Array.isArray(c.coordinates) && c.coordinates.length >= 2) {
+            lat = parseFloat(c.coordinates[0]);
+            lng = parseFloat(c.coordinates[1]);
+          } else {
+            lat = parseFloat(c.lat);
+            lng = parseFloat(c.lng);
+          }
+          if (isNaN(lat) || isNaN(lng)) {
+            if (typeof c.lng === 'string' && c.lng.includes(',')) {
+              const parts = c.lng.split(',');
+              lat = parseFloat(parts[0].trim());
+              lng = parseFloat(parts[1].trim());
+            }
+          }
+          if (!isNaN(lat) && !isNaN(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
+            return [lat, lng];
+          }
+          return null;
+        }
+
         const apiTarget = 'api/cameras.php?action=public_list';
         fetch(apiTarget)
           .then(res => res.json())
           .then(data => {
             if (data && data.success && Array.isArray(data.cameras) && data.cameras.length > 0) {
-              const isValidLatLng = (lat, lng) => !isNaN(lat) && !isNaN(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180;
-              
               // Clear static demo cameras so ONLY database cameras are rendered
               mediamtxData.length = 0;
 
               data.cameras.forEach(c => {
                 let safeId = parseInt(c.id);
-                let lat = parseFloat(c.lat);
-                let lng = parseFloat(c.lng);
                 const city = c.city || 'siantar';
-                
-                let coords = null;
-                if (isValidLatLng(lat, lng)) {
-                  coords = [lat, lng];
-                }
+                const defaultCenter = CITY_CONFIG[city] ? CITY_CONFIG[city].center : [2.9568, 99.0619];
+                let coords = extractSafeLatLng(c) || defaultCenter;
 
                 mediamtxData.push({
                   id: safeId,
@@ -4421,8 +4441,8 @@
                   streamPath: c.streamPath,
                   streamId: c.streamPath,
                   coordinates: coords,
-                  lat: c.lat,
-                  lng: c.lng,
+                  lat: coords[0],
+                  lng: coords[1],
                   platform: PLATFORM_TYPES.MEDIAMTX,
                   thumbnail: c.thumbnail || (ASSET_BASE + '/image/logo-loewix.png')
                 });
@@ -8835,8 +8855,18 @@
         });
 
         // Auto-fit to active city markers
-        if (cctvMarkersGroup.getLayers().length > 0) {
-          mapCCTV.fitBounds(cctvMarkersGroup.getBounds(), { padding: [50, 50], maxZoom: 15 });
+        if (cctvMarkersGroup && cctvMarkersGroup.getLayers().length > 0) {
+          try {
+            const layers = cctvMarkersGroup.getLayers();
+            if (layers.length === 1) {
+              mapCCTV.setView(layers[0].getLatLng(), 14);
+            } else {
+              const bounds = cctvMarkersGroup.getBounds();
+              if (bounds && bounds.isValid && bounds.isValid()) {
+                mapCCTV.fitBounds(bounds, { padding: [50, 50], maxZoom: 15 });
+              }
+            }
+          } catch(e) {}
         } else {
           mapCCTV.setView(initialCenter, initialZoom);
         }
