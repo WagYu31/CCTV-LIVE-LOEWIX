@@ -4259,6 +4259,9 @@
                   mediamtxData[idx].city = c.city || mediamtxData[idx].city;
                   mediamtxData[idx].streamPath = c.streamPath;
                   mediamtxData[idx].streamId = c.streamPath;
+                  if (c.lat && c.lng) {
+                    mediamtxData[idx].coordinates = [parseFloat(c.lat), parseFloat(c.lng)];
+                  }
                 } else {
                   const lat = parseFloat(c.lat) || 3.0148;
                   const lng = parseFloat(c.lng) || 99.0852;
@@ -4275,6 +4278,7 @@
                 }
               });
               if (typeof generateCCTVHTML === 'function') generateCCTVHTML(typeof currentGlobalCity !== 'undefined' ? currentGlobalCity : 'all');
+              if (typeof initCCTVMap === 'function') initCCTVMap();
             }
           }).catch(e => {});
       } catch(globalErr) {}
