@@ -4250,24 +4250,31 @@
         fetch(apiTarget)
           .then(res => res.json())
           .then(data => {
-            if (data && data.success && data.cameras) {
+             if (data && data.success && data.cameras) {
+              const isValidLatLng = (lat, lng) => !isNaN(lat) && !isNaN(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180;
               data.cameras.forEach(c => {
                 let safeId = c.id < 5000 ? 5000 + c.id : c.id;
                 const idx = mediamtxData.findIndex(m => m.id === safeId || m.title === c.title);
+                
+                let lat = parseFloat(c.lat);
+                let lng = parseFloat(c.lng);
+                const city = c.city || 'siantar';
+                const defaultCenter = CITY_CONFIG[city] ? CITY_CONFIG[city].center : [2.9568, 99.0619];
+                if (!isValidLatLng(lat, lng)) {
+                  lat = defaultCenter[0];
+                  lng = defaultCenter[1];
+                }
+
                 if (idx !== -1) {
                   mediamtxData[idx].title = c.title;
-                  mediamtxData[idx].city = c.city || mediamtxData[idx].city;
+                  mediamtxData[idx].city = city;
                   mediamtxData[idx].streamPath = c.streamPath;
                   mediamtxData[idx].streamId = c.streamPath;
-                  if (c.lat && c.lng) {
-                    mediamtxData[idx].coordinates = [parseFloat(c.lat), parseFloat(c.lng)];
-                  }
+                  mediamtxData[idx].coordinates = [lat, lng];
                 } else {
-                  const lat = parseFloat(c.lat) || 3.0148;
-                  const lng = parseFloat(c.lng) || 99.0852;
                   mediamtxData.push({
                     id: safeId,
-                    city: c.city || 'siantar',
+                    city: city,
                     title: c.title,
                     streamPath: c.streamPath,
                     streamId: c.streamPath,
@@ -8578,7 +8585,7 @@
         }).addTo(mapCCTV);
 
         const customIcon = L.icon({
-          iconUrl: ASSET_BASE + '/image/icon_cctv.png',
+          iconUrl: ASSET_BASE + '/image/icon-cctv.png',
           iconSize: [32, 45],
           iconAnchor: [16, 32],
           popupAnchor: [0, -32],
@@ -8691,7 +8698,7 @@
         }).addTo(mapWifi);
 
         const wifiIcon = L.icon({
-          iconUrl: ASSET_BASE + '/image/WIFIICON.svg',
+          iconUrl: ASSET_BASE + '/image/icon-wifi.svg',
           iconSize: [25, 41],
           iconAnchor: [12, 41],
           popupAnchor: [1, -34],

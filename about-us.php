@@ -1090,7 +1090,7 @@
           }).addTo(mymap);
 
           const wifiIcon = L.icon({
-            iconUrl: 'assets/image/WIFIICON.svg',
+            iconUrl: 'assets/image/icon-wifi.svg',
             iconSize: [25, 41],
             iconAnchor: [12, 41],
             popupAnchor: [1, -34],
