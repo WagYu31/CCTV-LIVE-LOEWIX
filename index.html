@@ -2257,64 +2257,91 @@
 
     /* Advanced Filter Toolbar */
     .cctv-filter-toolbar {
-      margin: 20px auto 30px;
-      max-width: 1200px;
-      padding: 15px;
-      background: rgba(255, 255, 255, 0.95);
-      border-radius: 12px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      align-items: center;
-      justify-content: center;
-    }
-
-    body.dark-mode .cctv-filter-toolbar {
-      background: rgba(45, 45, 45, 0.95);
+      background: rgba(13, 27, 62, 0.8) !important;
+      border: 1px solid rgba(255, 255, 255, 0.15) !important;
+      border-radius: 12px !important;
+      padding: 15px 20px !important;
+      display: flex !important;
+      gap: 15px !important;
+      flex-wrap: wrap !important;
+      align-items: center !important;
+      justify-content: center !important;
+      margin: 20px auto 30px !important;
+      max-width: 1200px !important;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
+      backdrop-filter: blur(12px) !important;
+      -webkit-backdrop-filter: blur(12px) !important;
     }
 
     .filter-group {
-      display: flex;
-      align-items: center;
-      gap: 8px;
+      display: flex !important;
+      align-items: center !important;
+      gap: 8px !important;
     }
 
     .filter-group label {
-      font-size: 13px;
-      font-weight: 500;
-      color: #666;
-      margin: 0;
+      font-size: 13px !important;
+      font-weight: 600 !important;
+      color: #94a3b8 !important;
+      margin: 0 !important;
     }
 
-    body.dark-mode .filter-group label {
-      color: #ccc;
+    .filter-group label i {
+      margin-right: 4px;
     }
 
     .filter-select {
-      padding: 6px 12px;
-      border: 1px solid #ddd;
-      border-radius: 6px;
-      font-size: 13px;
-      background: #fff;
-      cursor: pointer;
-      transition: all 0.2s;
+      background: rgba(255, 255, 255, 0.08) !important;
+      color: #fff !important;
+      border: 1px solid rgba(255, 255, 255, 0.18) !important;
+      border-radius: 8px !important;
+      padding: 6px 12px !important;
+      font-size: 13px !important;
+      font-weight: 600 !important;
+      cursor: pointer !important;
+      transition: all 0.2s ease !important;
+      outline: none !important;
+      min-width: 140px;
     }
 
-    body.dark-mode .filter-select {
-      background: #1a1a1a;
-      border-color: #444;
-      color: #e0e0e0;
+    .filter-select:hover, .filter-select:focus {
+      border-color: #38bdf8 !important;
+      background: rgba(255, 255, 255, 0.12) !important;
+      box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2) !important;
     }
 
-    .filter-select:hover {
-      border-color: #091650;
+    .filter-select option {
+      background: #0d1b3e !important;
+      color: #fff !important;
     }
 
-    .filter-select:focus {
-      outline: none;
-      border-color: #091650;
-      box-shadow: 0 0 0 2px rgba(9, 22, 80, 0.1);
+    /* Responsive Mobile styling for Filter Toolbar */
+    @media (max-width: 768px) {
+      .cctv-filter-toolbar {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 12px !important;
+        padding: 15px !important;
+      }
+
+      .filter-group {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 4px !important;
+        width: 100% !important;
+      }
+
+      .filter-group label {
+        text-align: left !important;
+        font-size: 12px !important;
+        width: 100% !important;
+      }
+
+      .filter-select {
+        width: 100% !important;
+        min-width: 100% !important;
+        box-sizing: border-box !important;
+      }
     }
 
     .filter-badge {
