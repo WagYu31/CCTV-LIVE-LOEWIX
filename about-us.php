@@ -50,6 +50,84 @@
         user-select: text;
       }
       
+      /* Loewix Custom Map Pin (Enterprise Vector Design) */
+      .loewix-custom-map-pin, .loewix-custom-wifi-pin {
+        background: transparent !important;
+        border: none !important;
+      }
+      .loewix-pin-wrapper {
+        position: relative;
+        width: 38px;
+        height: 48px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start;
+        cursor: pointer;
+        filter: drop-shadow(0 4px 10px rgba(0, 102, 255, 0.45));
+        transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+      }
+      .loewix-pin-wrapper:hover {
+        transform: scale(1.15) translateY(-4px);
+        filter: drop-shadow(0 8px 18px rgba(56, 189, 248, 0.8));
+      }
+      .loewix-pin-body {
+        position: relative;
+        width: 34px;
+        height: 34px;
+        background: linear-gradient(135deg, #0284c7 0%, #0369a1 60%, #0c4a6e 100%);
+        border: 2px solid #38bdf8;
+        border-radius: 50% 50% 50% 0;
+        transform: rotate(-45deg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 0 14px rgba(56, 189, 248, 0.6), inset 0 0 8px rgba(255, 255, 255, 0.35);
+      }
+      .loewix-pin-body.wifi-body {
+        background: linear-gradient(135deg, #10b981 0%, #059669 60%, #064e3b 100%);
+        border: 2px solid #34d399;
+        box-shadow: 0 0 14px rgba(52, 211, 153, 0.6), inset 0 0 8px rgba(255, 255, 255, 0.35);
+      }
+      .loewix-pin-cam-icon {
+        transform: rotate(45deg);
+        color: #ffffff;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .loewix-pin-pulse {
+        position: absolute;
+        top: 1px;
+        right: 1px;
+        width: 8px;
+        height: 8px;
+        background: #22c55e;
+        border: 1.5px solid #ffffff;
+        border-radius: 50%;
+        box-shadow: 0 0 6px #22c55e;
+        animation: loewixLivePulse 1.8s infinite;
+      }
+      .loewix-pin-pulse.wifi-pulse {
+        background: #38bdf8;
+        box-shadow: 0 0 6px #38bdf8;
+      }
+      @keyframes loewixLivePulse {
+        0% { transform: scale(0.9); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.8); }
+        70% { transform: scale(1.2); box-shadow: 0 0 0 6px rgba(34, 197, 94, 0); }
+        100% { transform: scale(0.9); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+      }
+      .loewix-pin-shadow {
+        position: absolute;
+        bottom: 0px;
+        width: 14px;
+        height: 4px;
+        background: rgba(0, 0, 0, 0.35);
+        border-radius: 50%;
+        filter: blur(1px);
+      }
+
       /* Developer Tools Detection Warning */
       .dev-tools-detected {
         position: fixed !important;
@@ -1089,14 +1167,20 @@
             maxZoom: 19,
           }).addTo(mymap);
 
-          const wifiIcon = L.icon({
-            iconUrl: 'assets/image/icon-wifi.svg',
-            iconSize: [25, 41],
-            iconAnchor: [12, 41],
-            popupAnchor: [1, -34],
-            shadowSize: [41, 41],
-            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-            shadowAnchor: [12, 41],
+          const wifiIcon = L.divIcon({
+            className: 'loewix-custom-wifi-pin',
+            html: `
+              <div class="loewix-pin-wrapper wifi-pin">
+                <div class="loewix-pin-body wifi-body">
+                  <span class="loewix-pin-cam-icon"><i class="fas fa-wifi"></i></span>
+                  <span class="loewix-pin-pulse wifi-pulse"></span>
+                </div>
+                <div class="loewix-pin-shadow"></div>
+              </div>
+            `,
+            iconSize: [36, 44],
+            iconAnchor: [18, 44],
+            popupAnchor: [0, -44]
           });
 
           wifiLocations.forEach((location) => {
