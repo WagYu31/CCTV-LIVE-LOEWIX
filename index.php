@@ -3690,6 +3690,16 @@
               <option value="name-asc">Nama A-Z</option>
               <option value="name-desc">Nama Z-A</option>
             </select>
+          </div>
+          <div class="filter-group">
+            <label style="color: #60a5fa;"><i class="fas fa-th"></i> Layout:</label>
+            <select class="filter-select" id="filter-grid" onchange="changeGridLayout(this.value)" style="background: rgba(255,255,255,0.1); color: #fff; border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; padding: 6px 12px; font-weight: 600;">
+              <option value="1" style="color: #111;">📺 1 Kolom</option>
+              <option value="2" style="color: #111;">👥 2 Kolom</option>
+              <option value="3" style="color: #111;">📱 3 Kolom</option>
+              <option value="4" style="color: #111;">🎛️ 4 Kolom</option>
+            </select>
+          </div>
           <div id="active-filters" style="display: flex; gap: 5px; flex-wrap: wrap;"></div>
         </div>
 
@@ -8677,6 +8687,13 @@
     }
 
     let currentGlobalCity = 'all';
+    let currentGridLayout = parseInt(localStorage.getItem('loewix_grid_layout') || '3');
+
+    function changeGridLayout(val) {
+      currentGridLayout = parseInt(val);
+      localStorage.setItem('loewix_grid_layout', val);
+      generateCCTVHTML(currentGlobalCity);
+    }
 
     function changeGlobalCity(cityId) {
       console.log('[City Filter] Changing city to:', cityId);
@@ -8823,109 +8840,103 @@
         return;
       }
 
-      const itemsPerRow = 3;
-      const totalRows = Math.ceil(mainCameras.length / itemsPerRow);
+      const row = document.createElement('div');
+      row.className = 'row wow fadeInUp';
+      cctvContainer.appendChild(row);
 
-      for (let rowIndex = 0; rowIndex < totalRows; rowIndex++) {
-        const row = document.createElement('div');
-        row.className = 'row wow fadeInUp';
-        row.setAttribute('data-row', rowIndex + 1);
-        cctvContainer.appendChild(row);
+      // Determine Bootstrap class based on grid preference
+      let colClass = 'col-lg-4 col-md-6 col-12 mb-4'; // default 3 columns
+      if (currentGridLayout === 1) {
+        colClass = 'col-lg-12 col-md-12 col-12 mb-4';
+      } else if (currentGridLayout === 2) {
+        colClass = 'col-lg-6 col-md-6 col-12 mb-4';
+      } else if (currentGridLayout === 3) {
+        colClass = 'col-lg-4 col-md-6 col-12 mb-4';
+      } else if (currentGridLayout === 4) {
+        colClass = 'col-lg-3 col-md-6 col-12 mb-4';
+      }
 
-        for (let colIndex = 0; colIndex < itemsPerRow; colIndex++) {
-          const itemIndex = rowIndex * itemsPerRow + colIndex;
+      mainCameras.forEach(camera => {
+        const reloadFunction = `reloadMediaMTXCCTV('player-${camera.id}', 'thumb-${camera.id}', 'offline-${camera.id}', '${camera.streamPath}')`;
 
-          if (itemIndex < mainCameras.length) {
-            const camera = mainCameras[itemIndex];
+        const isFavorite = isCCTVFavorite(camera.id);
+        const favoriteClass = isFavorite ? 'active' : '';
+        const favoriteIcon = isFavorite ? 'fas' : 'far';
 
-            const reloadFunction = `reloadMediaMTXCCTV('player-${camera.id}', 'thumb-${camera.id}', 'offline-${camera.id}', '${camera.streamPath}')`;
+        const cctvCardHTML = `
+            <div class="${colClass}" data-camera-id="${camera.id}" data-platform="${camera.platform}" data-status="online">
+              <div class="traffic-card" id="card-${camera.id}">
+                <!-- Pure 100% Unobstructed Video Stream Canvas -->
+                <div class="traffic-card-iframe">
+                  <div class="loading-indicator" id="loading-${camera.id}">
+                    <i class="fas fa-spinner fa-spin fa-3x mb-2"></i>
+                    <div>Memuat ulang...</div>
+                  </div>
 
-            const isFavorite = isCCTVFavorite(camera.id);
-            const favoriteClass = isFavorite ? 'active' : '';
-            const favoriteIcon = isFavorite ? 'fas' : 'far';
-
-            const cctvCardHTML = `
-                <div class="col-lg-4 col-md-6 col-12 mb-4" data-camera-id="${camera.id}" data-platform="${camera.platform}" data-status="online">
-                  <div class="traffic-card" id="card-${camera.id}">
-                    <!-- Pure 100% Unobstructed Video Stream Canvas -->
-                    <div class="traffic-card-iframe">
-                      <div class="loading-indicator" id="loading-${camera.id}">
-                        <i class="fas fa-spinner fa-spin fa-3x mb-2"></i>
-                        <div>Memuat ulang...</div>
-                      </div>
-
-                      <div class="thumbnail-overlay" id="thumb-${
-                        camera.id
-                      }" data-stream-path="${camera.streamPath}">
-                        <img src="${camera.thumbnail}?v=${Date.now()}" alt="Thumbnail CCTV ${
-                camera.title
-              }" loading="lazy" onerror="this.onerror=null;this.src='${ASSET_BASE}/image/thumbnail/default-thumbnail.png?v=' + Date.now()" />
-                        <div class="loading-text">
-                          <i class="fas fa-play-circle"></i> Klik untuk memuat video
-                        </div>
-                      </div>
-
-                      <div class="offline-msg" id="offline-${camera.id}">
-                        <i class="fas fa-exclamation-triangle fa-3x mb-3"></i>
-                        <div>CCTV Sedang Dalam Perbaikan</div>
-                        <button class="traffic-button mt-3" onclick="${reloadFunction}">
-                          <i class="fas fa-sync"></i> Refresh
-                        </button>
-                      </div>
-
-                      <div class="buffering-overlay" id="buffering-${
-                        camera.id
-                      }">
-                        <div class="buffering-spinner"></div>
-                      </div>
-
-                      <!-- Video element untuk HLS player -->
-                      <video id="player-${camera.id}" class="hidden-iframe hls-video-player"
-                             controls autoplay muted playsinline webkit-playsinline x-webkit-airplay="allow" preload="auto"
-                             style="display:none; width:100%; height:100%; position:absolute; top:0; left:0; object-fit:contain; background:#000;"
-                             title="CCTV ${camera.title}">
-                      </video>
+                  <div class="thumbnail-overlay" id="thumb-${camera.id}" data-stream-path="${camera.streamPath}">
+                    <img src="${camera.thumbnail}?v=${Date.now()}" alt="Thumbnail CCTV ${camera.title}" loading="lazy" onerror="this.onerror=null;this.src='${ASSET_BASE}/image/thumbnail/default-thumbnail.png?v=' + Date.now()" />
+                    <div class="loading-text">
+                      <i class="fas fa-play-circle"></i> Klik untuk memuat video
                     </div>
+                  </div>
 
-                    <!-- Unified Enterprise Command Center Footer Panel -->
-                    <div class="traffic-card-content">
-                      <div class="card-footer-top-row">
-                        <div class="card-location-title" title="${camera.title}">
-                          <i class="fas fa-map-marker-alt"></i>
-                          <span>${camera.title}</span>
-                        </div>
-                        <div class="card-action-toolbar">
-                          <button class="action-btn ${favoriteClass}" onclick="event.stopPropagation(); toggleFavorite(${camera.id}, '${camera.title.replace(/'/g, "\\'")}')" title="${isFavorite ? 'Hapus dari Favorit' : 'Tambah ke Favorit'}">
-                            <i class="${favoriteIcon} fa-star"></i>
-                          </button>
-                          <button class="action-btn" onclick="event.stopPropagation(); shareCCTV(${camera.id}, '${camera.title.replace(/'/g, "\\'")}')" title="Bagikan CCTV">
-                            <i class="fas fa-share-alt"></i>
-                          </button>
-                          <button class="action-btn" onclick="event.stopPropagation(); ${reloadFunction}" title="Refresh Stream">
-                            <i class="fas fa-sync-alt"></i>
-                          </button>
-                        </div>
-                      </div>
-                      <div class="card-footer-meta-row">
-                        <div class="card-meta-code">
-                          <span style="display: inline-flex; align-items: center; gap: 5px; color: #10b981; font-weight: 800; margin-right: 6px;">
-                            <span style="width: 7px; height: 7px; background-color: #10b981; border-radius: 50%; display: inline-block; box-shadow: 0 0 6px #10b981;"></span> LIVE
-                          </span>
-                          • CAM-${String(camera.id).padStart(2, '0')}
-                        </div>
-                        <div class="card-meta-ai" style="font-weight: 700; font-size: 10px; display: inline-flex; align-items: center; gap: 4px;">
-                          <i class="fas fa-microchip" style="color: #d97706;"></i> AI ANALYTICS
-                        </div>
-                      </div>
+                  <div class="offline-msg" id="offline-${camera.id}">
+                    <i class="fas fa-exclamation-triangle fa-3x mb-3"></i>
+                    <div>CCTV Sedang Dalam Perbaikan</div>
+                    <button class="traffic-button mt-3" onclick="${reloadFunction}">
+                      <i class="fas fa-sync"></i> Refresh
+                    </button>
+                  </div>
+
+                  <div class="buffering-overlay" id="buffering-${camera.id}">
+                    <div class="buffering-spinner"></div>
+                  </div>
+
+                  <!-- Video element untuk HLS player -->
+                  <video id="player-${camera.id}" class="hidden-iframe hls-video-player"
+                         controls autoplay muted playsinline webkit-playsinline x-webkit-airplay="allow" preload="auto"
+                         style="display:none; width:100%; height:100%; position:absolute; top:0; left:0; object-fit:contain; background:#000;"
+                         title="CCTV ${camera.title}">
+                  </video>
+                </div>
+
+                <!-- Unified Enterprise Command Center Footer Panel -->
+                <div class="traffic-card-content">
+                  <div class="card-footer-top-row">
+                    <div class="card-location-title" title="${camera.title}">
+                      <i class="fas fa-map-marker-alt"></i>
+                      <span>${camera.title}</span>
+                    </div>
+                    <div class="card-action-toolbar">
+                      <button class="action-btn ${favoriteClass}" onclick="event.stopPropagation(); toggleFavorite(${camera.id}, '${camera.title.replace(/'/g, "\\'")}')" title="${isFavorite ? 'Hapus dari Favorit' : 'Tambah ke Favorit'}">
+                        <i class="${favoriteIcon} fa-star"></i>
+                      </button>
+                      <button class="action-btn" onclick="event.stopPropagation(); shareCCTV(${camera.id}, '${camera.title.replace(/'/g, "\\'")}')" title="Bagikan CCTV">
+                        <i class="fas fa-share-alt"></i>
+                      </button>
+                      <button class="action-btn" onclick="event.stopPropagation(); ${reloadFunction}" title="Refresh Stream">
+                        <i class="fas fa-sync-alt"></i>
+                      </button>
+                    </div>
+                  </div>
+                  <div class="card-footer-meta-row">
+                    <div class="card-meta-code">
+                      <span style="display: inline-flex; align-items: center; gap: 5px; color: #10b981; font-weight: 800; margin-right: 6px;">
+                        <span style="width: 7px; height: 7px; background-color: #10b981; border-radius: 50%; display: inline-block; box-shadow: 0 0 6px #10b981;"></span> LIVE
+                      </span>
+                      • CAM-${String(camera.id).padStart(2, '0')}
+                    </div>
+                    <div class="card-meta-ai" style="font-weight: 700; font-size: 10px; display: inline-flex; align-items: center; gap: 4px;">
+                      <i class="fas fa-microchip" style="color: #d97706;"></i> AI ANALYTICS
                     </div>
                   </div>
                 </div>
-              `;
+              </div>
+            </div>
+          `;
 
-            row.innerHTML += cctvCardHTML;
-          }
-        }
-      }
+        row.innerHTML += cctvCardHTML;
+      });
 
       // Auto-play streams for newly generated CCTV cards
       if (typeof autoPlayCCTVStreams === 'function') {
@@ -9398,6 +9409,10 @@
     // ===== MODIFIKASI: Update DOMContentLoaded =====
     document.addEventListener('DOMContentLoaded', function() {
       preloadStreamingResources();
+      const gridSelect = document.getElementById('filter-grid');
+      if (gridSelect) {
+        gridSelect.value = currentGridLayout;
+      }
       generateCCTVHTML();
       generateTerminalTanjungPinggirHTML(); // ===== TAMBAHAN: Panggil fungsi Terminal Tanjung Pinggir =====
       generatePasarHorasHTML(); // ===== TAMBAHAN: Panggil fungsi Pasar Horas =====
