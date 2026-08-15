@@ -2008,7 +2008,7 @@
 
     .statistics-container {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      grid-template-columns: repeat(3, 1fr);
       gap: 25px;
       max-width: 1200px;
       margin: 0 auto;
@@ -2117,16 +2117,37 @@
       }
 
       .statistics-container {
-        grid-template-columns: 1fr;
-        gap: 20px;
+        grid-template-columns: repeat(3, 1fr) !important;
+        gap: 10px !important;
       }
 
       .stat-card {
-        padding: 25px;
+        padding: 12px 6px !important;
+        border-radius: 12px !important;
+        text-align: center;
+      }
+
+      .stat-card-icon {
+        font-size: 24px !important;
+        margin-bottom: 6px !important;
+      }
+
+      .stat-card-label {
+        font-size: 9px !important;
+        letter-spacing: 0.2px !important;
+        margin-bottom: 4px !important;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
 
       .stat-card-value {
-        font-size: 36px;
+        font-size: 18px !important;
+      }
+
+      .stat-card-value .stat-unit {
+        font-size: 11px !important;
+        margin-left: 2px !important;
       }
     }
 
