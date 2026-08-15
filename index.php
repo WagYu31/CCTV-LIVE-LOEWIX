@@ -2371,6 +2371,8 @@
     .loewix-custom-map-pin, .loewix-custom-wifi-pin {
       background: transparent !important;
       border: none !important;
+      pointer-events: auto !important;
+      cursor: pointer !important;
     }
     .loewix-pin-container {
       position: relative;
@@ -2380,8 +2382,9 @@
       flex-direction: column;
       align-items: center;
       justify-content: flex-start;
-      cursor: pointer;
+      cursor: pointer !important;
       user-select: none;
+      pointer-events: auto !important;
       transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
     .loewix-pin-container:hover {
@@ -2398,6 +2401,7 @@
       height: 12px;
       border-radius: 50%;
       background: radial-gradient(ellipse at center, rgba(56, 189, 248, 0.6) 0%, rgba(14, 165, 233, 0) 75%);
+      pointer-events: none !important;
     }
     .loewix-pin-radar::after {
       content: '';
@@ -8766,15 +8770,26 @@
 
             const marker = L.marker([latVal, lngVal], {
               icon: customIcon,
-            }).addTo(markersGroup);
+              interactive: true,
+              riseOnHover: true
+            }).addTo(mapCCTV);
 
             // ===== ADDED BY CURSOR AI: Use enhanced popup =====
             const popupContent = createEnhancedPopup(location);
             marker.bindPopup(popupContent, {
               maxWidth: 450,
               minWidth: 280,
-              className: 'custom-popup-cctv'
+              className: 'custom-popup-cctv',
+              autoPan: true,
+              autoPanPadding: [50, 50]
             });
+
+            marker.on('click', function(e) {
+              if (L.DomEvent) L.DomEvent.stopPropagation(e);
+              this.openPopup();
+            });
+
+            markersGroup.addLayer(marker);
 
             // Load weather data for popup when opened
             marker.on('popupopen', function() {
