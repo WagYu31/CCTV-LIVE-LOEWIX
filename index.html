@@ -8699,6 +8699,8 @@
     // ===== END MEDIAMTX POPUP FUNCTIONS =====
     // ===== END ADDED BY CURSOR AI =====
 
+    let cctvMarkersGroup = null;
+
     // ===== MODIFIKASI: Update initCCTVMap untuk include Pasar Horas =====
     function initCCTVMap() {
       if (!isLeafletLoaded()) {
@@ -8714,24 +8716,35 @@
       }
 
       try {
-        if (mapCCTV) {
-          mapCCTV.remove();
-        }
-
         const activeCity = typeof currentGlobalCity !== 'undefined' ? currentGlobalCity : 'all';
         const cityConf = CITY_CONFIG[activeCity] || CITY_CONFIG.all;
         const initialCenter = cityConf.center || [2.9568, 99.0619];
         const initialZoom = cityConf.zoom || 13;
 
-        mapCCTV = L.map('map', {
-          zoomControl: false,
-          attributionControl: true,
-        }).setView(initialCenter, initialZoom);
+        // Initialize Leaflet Map only ONCE so event listeners are never destroyed
+        if (!mapCCTV) {
+          mapCCTV = L.map('map', {
+            zoomControl: false,
+            attributionControl: true,
+          }).setView(initialCenter, initialZoom);
 
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-          attribution: 'Leaflet | © OpenStreetMap contributors',
-          maxZoom: 19,
-        }).addTo(mapCCTV);
+          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: 'Leaflet | © OpenStreetMap contributors',
+            maxZoom: 19,
+          }).addTo(mapCCTV);
+
+          L.control.zoom({
+            position: 'topright'
+          }).addTo(mapCCTV);
+
+          cctvMarkersGroup = L.featureGroup().addTo(mapCCTV);
+        } else {
+          if (cctvMarkersGroup) {
+            cctvMarkersGroup.clearLayers();
+          } else {
+            cctvMarkersGroup = L.featureGroup().addTo(mapCCTV);
+          }
+        }
 
         const customIcon = L.divIcon({
           className: 'loewix-custom-map-pin',
@@ -8759,8 +8772,6 @@
           allCCTVs = allCCTVs.filter(c => c.city === activeCity);
         }
 
-        const markersGroup = L.featureGroup();
-
         allCCTVs.forEach(function(location) {
           try {
             if (!location.coordinates || location.coordinates.length < 2) return;
@@ -8770,9 +8781,8 @@
 
             const marker = L.marker([latVal, lngVal], {
               icon: customIcon,
-              interactive: true,
               riseOnHover: true
-            }).addTo(mapCCTV);
+            });
 
             // ===== ADDED BY CURSOR AI: Use enhanced popup =====
             const popupContent = createEnhancedPopup(location);
@@ -8784,12 +8794,7 @@
               autoPanPadding: [50, 50]
             });
 
-            marker.on('click', function(e) {
-              if (L.DomEvent) L.DomEvent.stopPropagation(e);
-              this.openPopup();
-            });
-
-            markersGroup.addLayer(marker);
+            cctvMarkersGroup.addLayer(marker);
 
             // Load weather data for popup when opened
             marker.on('popupopen', function() {
@@ -8829,16 +8834,12 @@
           }
         });
 
-        markersGroup.addTo(mapCCTV);
-
         // Auto-fit to active city markers
-        if (markersGroup.getLayers().length > 0) {
-          mapCCTV.fitBounds(markersGroup.getBounds(), { padding: [50, 50], maxZoom: 15 });
+        if (cctvMarkersGroup.getLayers().length > 0) {
+          mapCCTV.fitBounds(cctvMarkersGroup.getBounds(), { padding: [50, 50], maxZoom: 15 });
+        } else {
+          mapCCTV.setView(initialCenter, initialZoom);
         }
-
-        L.control.zoom({
-          position: 'topright'
-        }).addTo(mapCCTV);
 
         setTimeout(() => {
           if (mapCCTV) {
