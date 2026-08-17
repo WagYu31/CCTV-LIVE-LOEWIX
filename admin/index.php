@@ -727,8 +727,10 @@
     </div>
   </div>
 
-  <script src="../assets/js/jquery-3.3.1.min.js"></script>
-  <script src="../assets/bootstarp/bootstrap.min.js"></script>
+  <!-- jQuery and Bootstrap JS with reliable CDN fallbacks -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script>window.jQuery || document.write('<script src="../assets/js/jquery-3.6.0.min.js"><\/script><script src="../assets/js/bootstrap.min.js"><\/script>')</script>
 
   <script>
     let defaultCustomers = [
@@ -1503,13 +1505,40 @@
     }
 
     function openCityManagementModal() {
-      $('#modalCityManagement').modal('show');
+      const modal = document.getElementById('modalCityManagement');
+      if (modal) {
+        modal.style.display = 'block';
+        modal.classList.add('show');
+        document.body.classList.add('modal-open');
+        
+        let backdrop = document.getElementById('custom-city-backdrop');
+        if (!backdrop) {
+          backdrop = document.createElement('div');
+          backdrop.id = 'custom-city-backdrop';
+          backdrop.className = 'modal-backdrop fade show';
+          backdrop.onclick = closeCityManagementModal;
+          document.body.appendChild(backdrop);
+        }
+      }
+      if (typeof $ !== 'undefined' && typeof $.fn.modal !== 'undefined') {
+        try { $('#modalCityManagement').modal('show'); } catch(e) {}
+      }
       loadAdminCities();
       toggleAddCityForm(false);
     }
 
     function closeCityManagementModal() {
-      $('#modalCityManagement').modal('hide');
+      const modal = document.getElementById('modalCityManagement');
+      if (modal) {
+        modal.style.display = 'none';
+        modal.classList.remove('show');
+        document.body.classList.remove('modal-open');
+        const backdrop = document.getElementById('custom-city-backdrop');
+        if (backdrop) backdrop.remove();
+      }
+      if (typeof $ !== 'undefined' && typeof $.fn.modal !== 'undefined') {
+        try { $('#modalCityManagement').modal('hide'); } catch(e) {}
+      }
     }
 
     function toggleAddCityForm(show) {
