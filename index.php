@@ -4356,6 +4356,39 @@
           return null;
         }
 
+        // 1. Sync Dynamic Master Cities from API
+        fetch('api/cities.php')
+          .then(res => res.json())
+          .then(cData => {
+            if (cData && cData.success && Array.isArray(cData.cities)) {
+              cData.cities.forEach(c => {
+                CITY_CONFIG[c.id] = {
+                  id: c.id,
+                  name: c.name,
+                  center: [parseFloat(c.lat), parseFloat(c.lng)],
+                  zoom: parseInt(c.zoom) || 12
+                };
+              });
+
+              // Dynamically update dropdown options in navbar & filters
+              const navSelect = document.getElementById('city-selector-nav');
+              const filterSelect = document.getElementById('filter-city');
+              [navSelect, filterSelect].forEach(sel => {
+                if (sel) {
+                  const curVal = sel.value;
+                  let html = '<option value="all" style="color:#000;">🌐 Semua Wilayah</option>';
+                  cData.cities.forEach(c => {
+                    html += `<option value="${c.id}" style="color:#000;">📍 ${c.name}</option>`;
+                  });
+                  sel.innerHTML = html;
+                  if (curVal && CITY_CONFIG[curVal]) sel.value = curVal;
+                }
+              });
+            }
+          })
+          .catch(() => {});
+
+        // 2. Sync Cameras from Database API
         const apiTarget = 'api/cameras.php?action=public_list';
         fetch(apiTarget)
           .then(res => res.json())

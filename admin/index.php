@@ -333,6 +333,9 @@
           <p class="text-muted mb-0" style="font-size: 14px;">Atur hak akses streaming, data profil, dan alokasi kuota live kamera pelanggan Loewix.</p>
         </div>
         <div class="d-flex align-items-center gap-2">
+          <button class="btn btn-outline-info btn-sm mr-2" style="border-radius: 20px;" onclick="openCityManagementModal()">
+            <i class="fas fa-map-marked-alt mr-1"></i> Kelola Wilayah
+          </button>
           <button class="btn btn-outline-info btn-sm mr-2" style="border-radius: 20px;" onclick="exportCustomerCSV()">
             <i class="fas fa-download mr-1"></i> Export CSV
           </button>
@@ -629,6 +632,92 @@
               <tbody id="cctv-modal-table-body">
                 <tr>
                   <td colspan="7" class="text-center py-4 text-muted">Belum ada kamera CCTV terpasang untuk customer ini. Klik 'Tambah Kamera Baru'.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  <!-- Modal Kelola Master Wilayah / Kota -->
+  <div class="modal fade" id="modalCityManagement" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+      <div class="modal-content modal-content-dark">
+        <div class="modal-header modal-header-dark d-flex justify-content-between align-items-center">
+          <div>
+            <h5 class="modal-title font-weight-bold mb-1" style="color: #ffffff;"><i class="fas fa-map-marked-alt text-info mr-2"></i> Kelola Master Data Wilayah & Kota</h5>
+            <div class="text-muted" style="font-size: 13px;">Tambah kota baru, ubah nama wilayah, serta setel koordinat pusat GPS & zoom level peta.</div>
+          </div>
+          <button type="button" class="close text-white" onclick="closeCityManagementModal()" aria-label="Close" style="outline: none;">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body p-4">
+          <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+            <span class="badge badge-info p-2" id="cities-count-badge" style="border-radius: 20px; font-size: 12px; background: rgba(0, 210, 255, 0.15); border: 1px solid rgba(0, 210, 255, 0.3); color: #00d2ff;">
+              <i class="fas fa-city mr-1"></i> MEMUAT DATA WILAYAH...
+            </span>
+            <button class="btn btn-gold btn-sm" onclick="toggleAddCityForm()">
+              <i class="fas fa-plus-circle mr-1"></i> Tambah Wilayah Baru
+            </button>
+          </div>
+
+          <!-- Form Tambah / Edit Wilayah (Collapsible) -->
+          <div id="city-form-box" class="p-4 mb-4 rounded" style="background: rgba(13, 27, 62, 0.95); border: 1px solid rgba(0, 210, 255, 0.4); display: none; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+            <h6 id="city-form-title" class="font-weight-bold text-success mb-3" style="font-size: 15px; letter-spacing: 0.5px;"><i class="fas fa-plus-circle mr-1"></i> TAMBAH WILAYAH / KOTA BARU</h6>
+            <form onsubmit="submitSaveCity(event)">
+              <input type="hidden" id="city-form-action" value="add">
+              <div class="form-row mb-3">
+                <div class="form-group col-md-6 mb-2">
+                  <label style="font-size: 13px; color: #e2e8f0; font-weight: 600; display: block; margin-bottom: 4px;">Nama Wilayah / Kota:</label>
+                  <input type="text" id="city-input-name" class="form-control form-control-dark" placeholder="Contoh: Kota Surabaya" onkeyup="autoGenerateCitySlug()" required>
+                </div>
+                <div class="form-group col-md-6 mb-2">
+                  <label style="font-size: 13px; color: #e2e8f0; font-weight: 600; display: block; margin-bottom: 4px;">Kode / Slug Wilayah (ID):</label>
+                  <input type="text" id="city-input-id" class="form-control form-control-dark" placeholder="surabaya" required>
+                  <small class="text-muted" style="font-size: 11px;">Huruf kecil tanpa spasi (contoh: surabaya, bandung, bali)</small>
+                </div>
+              </div>
+
+              <div class="form-row mb-3">
+                <div class="form-group col-md-4 mb-2">
+                  <label style="font-size: 13px; color: #e2e8f0; font-weight: 600; display: block; margin-bottom: 4px;">Latitude GPS Pusat:</label>
+                  <input type="text" id="city-input-lat" class="form-control form-control-dark" placeholder="-7.2575" required>
+                </div>
+                <div class="form-group col-md-4 mb-2">
+                  <label style="font-size: 13px; color: #e2e8f0; font-weight: 600; display: block; margin-bottom: 4px;">Longitude GPS Pusat:</label>
+                  <input type="text" id="city-input-lng" class="form-control form-control-dark" placeholder="112.7521" required>
+                </div>
+                <div class="form-group col-md-4 mb-2">
+                  <label style="font-size: 13px; color: #e2e8f0; font-weight: 600; display: block; margin-bottom: 4px;">Zoom Level Peta (1-19):</label>
+                  <input type="number" id="city-input-zoom" class="form-control form-control-dark" value="12" min="1" max="19" required>
+                </div>
+              </div>
+
+              <div class="d-flex justify-content-end gap-2 mt-3">
+                <button type="button" class="btn btn-secondary btn-sm mr-2" style="border-radius: 8px; padding: 8px 18px;" onclick="toggleAddCityForm(false)">Batal</button>
+                <button type="submit" class="btn btn-success btn-sm font-weight-bold" style="border-radius: 8px; padding: 8px 22px; background: #10b981; border: none;"><i class="fas fa-save mr-1"></i> Simpan Wilayah</button>
+              </div>
+            </form>
+          </div>
+
+          <!-- Tabel Daftar Wilayah -->
+          <div class="table-responsive">
+            <table class="table table-dark-custom table-hover">
+              <thead>
+                <tr>
+                  <th>KODE ID</th>
+                  <th>NAMA WILAYAH</th>
+                  <th>KOORDINAT PUSAT GPS</th>
+                  <th>ZOOM LEVEL</th>
+                  <th class="text-right">AKSI</th>
+                </tr>
+              </thead>
+              <tbody id="cities-table-body">
+                <tr>
+                  <td colspan="5" class="text-center py-3 text-muted">
+                    <i class="fas fa-spinner fa-spin mr-1"></i> Memuat data master wilayah...
+                  </td>
                 </tr>
               </tbody>
             </table>
@@ -1332,6 +1421,208 @@
         .catch(() => alert('Gagal menghubungi server database.'));
     }
 
+    // ==========================================
+    // MASTER DATA WILAYAH & KOTA MANAGEMENT
+    // ==========================================
+    let adminCitiesList = [];
+
+    function loadAdminCities() {
+      fetch(`${API_SERVER}/cities.php`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.success && Array.isArray(data.cities)) {
+            adminCitiesList = data.cities;
+            renderAdminCitiesDropdowns();
+            renderAdminCitiesTable();
+          }
+        })
+        .catch(() => {});
+    }
+
+    function renderAdminCitiesDropdowns() {
+      const filterSel = document.getElementById('filter-city-select');
+      if (filterSel) {
+        const curVal = filterSel.value;
+        let html = '<option value="all" style="color:#000;">🌐 Semua Wilayah</option>';
+        adminCitiesList.forEach(c => {
+          html += `<option value="${c.id}" style="color:#000;">📍 ${c.name}</option>`;
+        });
+        filterSel.innerHTML = html;
+        if (curVal) filterSel.value = curVal;
+      }
+
+      const selects = ['cust-city', 'edit-profile-city', 'cam-input-city', 'edit-cam-city'];
+      selects.forEach(id => {
+        const sel = document.getElementById(id);
+        if (sel) {
+          const val = sel.value;
+          let html = '';
+          adminCitiesList.forEach(c => {
+            html += `<option value="${c.id}" style="color:#000;">${c.name}</option>`;
+          });
+          sel.innerHTML = html;
+          if (val) sel.value = val;
+        }
+      });
+    }
+
+    function renderAdminCitiesTable() {
+      const tbody = document.getElementById('cities-table-body');
+      const badge = document.getElementById('cities-count-badge');
+      if (!tbody) return;
+
+      if (badge) {
+        badge.innerHTML = `<i class="fas fa-city mr-1"></i> TOTAL: ${adminCitiesList.length} WILAYAH TERDAFTAR`;
+      }
+
+      if (adminCitiesList.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" class="text-center py-4 text-muted">Belum ada data wilayah. Silakan klik 'Tambah Wilayah Baru'.</td></tr>`;
+        return;
+      }
+
+      let html = '';
+      adminCitiesList.forEach(c => {
+        html += `
+          <tr>
+            <td><span class="badge badge-secondary" style="border-radius: 12px; padding: 4px 10px; font-weight: 700;">${c.id}</span></td>
+            <td class="font-weight-bold text-white"><i class="fas fa-map-marker-alt text-danger mr-1"></i> ${c.name}</td>
+            <td class="text-info font-family-monospace" style="font-size: 13px;">${c.lat}, ${c.lng}</td>
+            <td><span class="badge badge-info" style="border-radius: 12px; padding: 4px 8px;">Zoom ${c.zoom || 12}</span></td>
+            <td class="text-right">
+              <button class="act-btn act-btn-edit mr-1" onclick="openEditCityForm('${c.id}')" title="Edit Data Wilayah">
+                <i class="fas fa-edit"></i>
+              </button>
+              <button class="act-btn act-btn-delete" onclick="deleteAdminCity('${c.id}')" title="Hapus Wilayah">
+                <i class="fas fa-trash-alt"></i>
+              </button>
+            </td>
+          </tr>
+        `;
+      });
+      tbody.innerHTML = html;
+    }
+
+    function openCityManagementModal() {
+      $('#modalCityManagement').modal('show');
+      loadAdminCities();
+      toggleAddCityForm(false);
+    }
+
+    function closeCityManagementModal() {
+      $('#modalCityManagement').modal('hide');
+    }
+
+    function toggleAddCityForm(show) {
+      const box = document.getElementById('city-form-box');
+      if (!box) return;
+      if (show === undefined) {
+        show = box.style.display === 'none';
+      }
+      box.style.display = show ? 'block' : 'none';
+      if (show) {
+        document.getElementById('city-form-action').value = 'add';
+        document.getElementById('city-form-title').innerHTML = '<i class="fas fa-plus-circle mr-1"></i> TAMBAH WILAYAH / KOTA BARU';
+        document.getElementById('city-input-name').value = '';
+        document.getElementById('city-input-id').value = '';
+        document.getElementById('city-input-id').readOnly = false;
+        document.getElementById('city-input-lat').value = '';
+        document.getElementById('city-input-lng').value = '';
+        document.getElementById('city-input-zoom').value = 12;
+      }
+    }
+
+    function autoGenerateCitySlug() {
+      const action = document.getElementById('city-form-action').value;
+      if (action !== 'add') return;
+      const name = document.getElementById('city-input-name').value;
+      const slug = name.toLowerCase().replace(/kota|kabupaten|provinsi/g, '').trim().replace(/[^a-z0-9]/g, '');
+      if (slug) {
+        document.getElementById('city-input-id').value = slug;
+      }
+    }
+
+    function openEditCityForm(id) {
+      const city = adminCitiesList.find(c => c.id === id);
+      if (!city) return;
+
+      const box = document.getElementById('city-form-box');
+      if (box) box.style.display = 'block';
+
+      document.getElementById('city-form-action').value = 'edit';
+      document.getElementById('city-form-title').innerHTML = `<i class="fas fa-edit mr-1 text-warning"></i> EDIT WILAYAH: ${city.name.toUpperCase()}`;
+      document.getElementById('city-input-name').value = city.name;
+      document.getElementById('city-input-id').value = city.id;
+      document.getElementById('city-input-id').readOnly = true;
+      document.getElementById('city-input-lat').value = city.lat;
+      document.getElementById('city-input-lng').value = city.lng;
+      document.getElementById('city-input-zoom').value = city.zoom || 12;
+
+      box.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function submitSaveCity(e) {
+      e.preventDefault();
+      const action = document.getElementById('city-form-action').value;
+      const name = document.getElementById('city-input-name').value.trim();
+      const id = document.getElementById('city-input-id').value.trim().toLowerCase();
+      const lat = parseFloat(document.getElementById('city-input-lat').value);
+      const lng = parseFloat(document.getElementById('city-input-lng').value);
+      const zoom = parseInt(document.getElementById('city-input-zoom').value) || 12;
+
+      if (!name || !id || isNaN(lat) || isNaN(lng)) {
+        alert('Mohon isi semua data nama, ID, dan koordinat GPS dengan benar!');
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append('action', action);
+      formData.append('id', id);
+      formData.append('name', name);
+      formData.append('lat', lat);
+      formData.append('lng', lng);
+      formData.append('zoom', zoom);
+
+      fetch(`${API_SERVER}/cities.php`, { method: 'POST', body: formData })
+        .then(res => res.json())
+        .then(resData => {
+          if (resData.success) {
+            alert(`BERHASIL: ${resData.message}`);
+            toggleAddCityForm(false);
+            loadAdminCities();
+          } else {
+            alert(`GAGAL: ${resData.message}`);
+          }
+        })
+        .catch(() => alert('Gagal menghubungi server API wilayah.'));
+    }
+
+    function deleteAdminCity(id) {
+      const city = adminCitiesList.find(c => c.id === id);
+      const cityName = city ? city.name : id;
+      if (!confirm(`Apakah Anda yakin ingin menghapus data wilayah '${cityName}'?`)) return;
+
+      const formData = new FormData();
+      formData.append('action', 'delete');
+      formData.append('id', id);
+
+      fetch(`${API_SERVER}/cities.php`, { method: 'POST', body: formData })
+        .then(res => res.json())
+        .then(resData => {
+          if (resData.success) {
+            alert(resData.message);
+            loadAdminCities();
+          } else {
+            alert(`GAGAL: ${resData.message}`);
+          }
+        })
+        .catch(() => alert('Gagal menghubungi server API wilayah.'));
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      loadCustomerData();
+      loadAdminCities();
+    });
+
     window.openAddCustomerModal = openAddCustomerModal;
     window.closeAddCustomerModal = closeAddCustomerModal;
     window.submitAddCustomer = submitAddCustomer;
@@ -1354,6 +1645,13 @@
     window.closeEditCameraForm = closeEditCameraForm;
     window.submitEditCameraForCustomer = submitEditCameraForCustomer;
     window.deleteCustomerCamera = deleteCustomerCamera;
+    window.openCityManagementModal = openCityManagementModal;
+    window.closeCityManagementModal = closeCityManagementModal;
+    window.toggleAddCityForm = toggleAddCityForm;
+    window.autoGenerateCitySlug = autoGenerateCitySlug;
+    window.openEditCityForm = openEditCityForm;
+    window.submitSaveCity = submitSaveCity;
+    window.deleteAdminCity = deleteAdminCity;
     window.logoutAdmin = logoutAdmin;
   </script>
 </body>

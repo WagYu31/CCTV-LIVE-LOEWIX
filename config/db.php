@@ -112,6 +112,13 @@ function get_db_data() {
                     'status' => 'online',
                     'created_at' => '2026-08-15 00:00:00'
                 ]
+            ],
+            'cities' => [
+                ['id' => 'siantar', 'name' => 'Kota Pematangsiantar', 'lat' => 2.9568, 'lng' => 99.0619, 'zoom' => 14],
+                ['id' => 'jakarta', 'name' => 'DKI Jakarta', 'lat' => -6.2088, 'lng' => 106.8456, 'zoom' => 12],
+                ['id' => 'medan', 'name' => 'Kota Medan', 'lat' => 3.5952, 'lng' => 98.6722, 'zoom' => 13],
+                ['id' => 'bandung', 'name' => 'Kota Bandung', 'lat' => -6.9175, 'lng' => 107.6191, 'zoom' => 12],
+                ['id' => 'bali', 'name' => 'Bali / Denpasar', 'lat' => -8.6705, 'lng' => 115.2126, 'zoom' => 12]
             ]
         ];
         file_put_contents(DB_FILE, json_encode($defaultData, JSON_PRETTY_PRINT));
@@ -157,6 +164,18 @@ function get_db_data() {
                     'city' => 'jakarta',
                     'status' => 'active',
                     'created_at' => '2026-08-14 00:00:00'
+                ],
+                [
+                    'id' => 4,
+                    'name' => 'Onefifteenh Caffe',
+                    'email' => 'Caffe@gmail.com',
+                    'password' => password_hash('caffe123', PASSWORD_BCRYPT),
+                    'role' => 'customer',
+                    'cctv_quota' => 5,
+                    'phone' => '085771593522',
+                    'city' => 'bali',
+                    'status' => 'active',
+                    'created_at' => '2026-08-15 00:00:00'
                 ]
             ],
             'cameras' => [
@@ -187,11 +206,45 @@ function get_db_data() {
                     'platform' => 'mediamtx',
                     'status' => 'online',
                     'created_at' => '2026-08-14 00:00:00'
+                ],
+                [
+                    'id' => 5003,
+                    'user_id' => 4,
+                    'title' => 'ONEFIFTEENH BALI CAM 1',
+                    'city' => 'bali',
+                    'streamPath' => 'cctv_loewix_3',
+                    'hls_url' => 'http://stream.loewixcctv.com/cctv_loewix_3/index.m3u8',
+                    'thumbnail' => 'assets/image/thumbnail/default-thumbnail.png',
+                    'lat' => '-8.6705',
+                    'lng' => '115.2126',
+                    'platform' => 'mediamtx',
+                    'status' => 'online',
+                    'created_at' => '2026-08-15 00:00:00'
                 ]
+            ],
+            'cities' => [
+                ['id' => 'siantar', 'name' => 'Kota Pematangsiantar', 'lat' => 2.9568, 'lng' => 99.0619, 'zoom' => 14],
+                ['id' => 'jakarta', 'name' => 'DKI Jakarta', 'lat' => -6.2088, 'lng' => 106.8456, 'zoom' => 12],
+                ['id' => 'medan', 'name' => 'Kota Medan', 'lat' => 3.5952, 'lng' => 98.6722, 'zoom' => 13],
+                ['id' => 'bandung', 'name' => 'Kota Bandung', 'lat' => -6.9175, 'lng' => 107.6191, 'zoom' => 12],
+                ['id' => 'bali', 'name' => 'Bali / Denpasar', 'lat' => -8.6705, 'lng' => 115.2126, 'zoom' => 12]
             ]
         ];
         file_put_contents(DB_FILE, json_encode($data, JSON_PRETTY_PRINT));
     }
+    
+    // Auto-migration: ensure 'cities' key exists
+    if (!isset($data['cities']) || !is_array($data['cities']) || empty($data['cities'])) {
+        $data['cities'] = [
+            ['id' => 'siantar', 'name' => 'Kota Pematangsiantar', 'lat' => 2.9568, 'lng' => 99.0619, 'zoom' => 14],
+            ['id' => 'jakarta', 'name' => 'DKI Jakarta', 'lat' => -6.2088, 'lng' => 106.8456, 'zoom' => 12],
+            ['id' => 'medan', 'name' => 'Kota Medan', 'lat' => 3.5952, 'lng' => 98.6722, 'zoom' => 13],
+            ['id' => 'bandung', 'name' => 'Kota Bandung', 'lat' => -6.9175, 'lng' => 107.6191, 'zoom' => 12],
+            ['id' => 'bali', 'name' => 'Bali / Denpasar', 'lat' => -8.6705, 'lng' => 115.2126, 'zoom' => 12]
+        ];
+        file_put_contents(DB_FILE, json_encode($data, JSON_PRETTY_PRINT));
+    }
+    
     return $data;
 }
 
