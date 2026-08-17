@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="../assets/bootstarp/bootstrap.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
   <style>
     :root {
       --bg-dark: #070b19;
@@ -45,7 +46,7 @@
     .admin-card {
       background: var(--panel-bg);
       border: 1px solid var(--border-color);
-      border-radius: 20px;
+      border-radius: 18px;
       padding: 24px;
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
@@ -118,47 +119,28 @@
       border-bottom: 2px solid rgba(255,255,255,0.15);
       color: var(--primary-cyan);
       font-weight: 700;
+      font-size: 13px;
+      letter-spacing: 0.5px;
       text-transform: uppercase;
-      font-size: 11px;
-      letter-spacing: 0.8px;
-      padding: 14px 12px;
+      padding: 16px;
+      background: rgba(0, 0, 0, 0.2);
     }
 
     .table-dark-custom td {
-      border-top: 1px solid rgba(255,255,255,0.08);
+      border-top: 1px solid rgba(255,255,255,0.06);
+      padding: 16px;
       vertical-align: middle;
       font-size: 14px;
-      padding: 16px 12px;
     }
 
-    /* Badges ISO Standard */
-    .badge-status-active {
-      background: rgba(16, 185, 129, 0.18);
-      color: #10b981;
-      border: 1px solid rgba(16, 185, 129, 0.35);
-      padding: 5px 14px;
-      border-radius: 20px;
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: 0.5px;
+    .table-dark-custom tr:hover {
+      background: rgba(0, 210, 255, 0.05);
     }
 
-    .badge-status-suspended {
-      background: rgba(239, 68, 68, 0.18);
-      color: #ef4444;
-      border: 1px solid rgba(239, 68, 68, 0.35);
-      padding: 5px 14px;
-      border-radius: 20px;
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: 0.5px;
-    }
-
-    /* Action Buttons Toolbar */
+    /* Action Buttons */
     .action-btn-group {
-      display: inline-flex;
-      gap: 6px;
-      align-items: center;
+      display: flex;
+      gap: 8px;
     }
 
     .act-btn {
@@ -169,33 +151,65 @@
       align-items: center;
       justify-content: center;
       border: 1px solid transparent;
-      font-size: 13px;
       transition: all 0.2s ease;
       cursor: pointer;
       color: #fff;
     }
 
-    .act-btn:hover {
-      transform: translateY(-2px);
-    }
-
-    .act-btn-edit { background: rgba(56, 189, 248, 0.15); border-color: rgba(56, 189, 248, 0.3); color: #38bdf8; }
-    .act-btn-edit:hover { background: #00d2ff; color: #000; }
+    .act-btn-edit { background: rgba(0, 210, 255, 0.15); border-color: rgba(0, 210, 255, 0.3); color: #00d2ff; }
+    .act-btn-edit:hover { background: #00d2ff; color: #000; box-shadow: 0 0 15px rgba(0, 210, 255, 0.5); }
 
     .act-btn-quota { background: rgba(245, 158, 11, 0.15); border-color: rgba(245, 158, 11, 0.3); color: #f59e0b; }
-    .act-btn-quota:hover { background: #f59e0b; color: #000; }
+    .act-btn-quota:hover { background: #f59e0b; color: #000; box-shadow: 0 0 15px rgba(245, 158, 11, 0.5); }
 
-    .act-btn-pass { background: rgba(168, 85, 247, 0.15); border-color: rgba(168, 85, 247, 0.3); color: #c084fc; }
-    .act-btn-pass:hover { background: #c084fc; color: #000; }
+    .act-btn-reset { background: rgba(168, 85, 247, 0.15); border-color: rgba(168, 85, 247, 0.3); color: #c084fc; }
+    .act-btn-reset:hover { background: #a855f7; color: #fff; box-shadow: 0 0 15px rgba(168, 85, 247, 0.5); }
 
-    .act-btn-status { background: rgba(255, 255, 255, 0.1); border-color: rgba(255, 255, 255, 0.2); color: #fff; }
-    .act-btn-status:hover { background: rgba(255, 255, 255, 0.25); }
+    .act-btn-cctv { background: rgba(16, 185, 129, 0.15); border-color: rgba(16, 185, 129, 0.3); color: #10b981; }
+    .act-btn-cctv:hover { background: #10b981; color: #fff; box-shadow: 0 0 15px rgba(16, 185, 129, 0.5); }
 
-    .act-btn-delete { background: rgba(239, 68, 68, 0.15); border-color: rgba(239, 68, 68, 0.3); color: #ef4444; }
-    .act-btn-delete:hover { background: #ef4444; color: #fff; }
+    .act-btn-status { background: rgba(59, 130, 246, 0.15); border-color: rgba(59, 130, 246, 0.3); color: #60a5fa; }
+    .act-btn-status:hover { background: #3b82f6; color: #fff; box-shadow: 0 0 15px rgba(59, 130, 246, 0.5); }
+
+    .act-btn-delete { background: rgba(239, 68, 68, 0.15); border-color: rgba(239, 68, 68, 0.3); color: #f87171; }
+    .act-btn-delete:hover { background: #ef4444; color: #fff; box-shadow: 0 0 15px rgba(239, 68, 68, 0.5); }
+
+    /* Custom Badges */
+    .status-badge-active {
+      background: rgba(16, 185, 129, 0.15);
+      color: #10b981;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-weight: 700;
+      font-size: 11px;
+      letter-spacing: 0.5px;
+    }
+
+    .status-badge-inactive {
+      background: rgba(239, 68, 68, 0.15);
+      color: #f87171;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-weight: 700;
+      font-size: 11px;
+      letter-spacing: 0.5px;
+    }
+
+    .city-badge {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 12px;
+      padding: 4px 10px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: #cbd5e1;
+    }
 
     .btn-gold {
-      background: linear-gradient(135deg, #f59e0b, #d97706);
+      background: linear-gradient(135deg, #fbbf24, #f59e0b);
       color: #000;
       font-weight: 800;
       border: none;
@@ -249,6 +263,81 @@
       box-shadow: 0 0 12px rgba(0,210,255,0.3);
     }
 
+    /* Connection Mode Switcher Tabs */
+    .conn-mode-tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      background: rgba(0, 0, 0, 0.35);
+      padding: 6px;
+      border-radius: 14px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .conn-tab-btn {
+      flex: 1;
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 13px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      border: 1px solid transparent;
+      background: transparent;
+      color: #94a3b8;
+      outline: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .conn-tab-btn:hover {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .conn-tab-btn.active {
+      background: linear-gradient(135deg, rgba(0, 210, 255, 0.25), rgba(0, 102, 255, 0.25));
+      border-color: #00d2ff;
+      color: #ffffff;
+      box-shadow: 0 4px 15px rgba(0, 210, 255, 0.3);
+    }
+
+    /* QR Code Scanner Box */
+    .qr-scanner-box {
+      position: relative;
+      width: 100%;
+      max-width: 380px;
+      height: 280px;
+      margin: 0 auto 16px;
+      border-radius: 16px;
+      overflow: hidden;
+      background: #000;
+      border: 2px solid #00d2ff;
+      box-shadow: 0 0 30px rgba(0, 210, 255, 0.35);
+    }
+
+    .qr-scanner-laser {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, transparent, #00d2ff, #10b981, transparent);
+      box-shadow: 0 0 15px #00d2ff;
+      animation: qrScanLaser 2.2s linear infinite;
+      z-index: 10;
+      pointer-events: none;
+    }
+
+    @keyframes qrScanLaser {
+      0% { top: 6%; opacity: 0.8; }
+      50% { top: 92%; opacity: 1; }
+      100% { top: 6%; opacity: 0.8; }
+    }
+
     /* Modal Form Pseudo Checkbox Fix Override */
     .modal label::before, .modal label::after, .form-group label::before, .form-group label::after {
       display: none !important;
@@ -262,10 +351,17 @@
       .admin-navbar { padding: 10px 0; }
     }
 
+    @media (max-width: 768px) {
+      .conn-mode-tabs { flex-direction: column; gap: 6px; }
+      .modal-body { padding: 16px !important; }
+      .qr-scanner-box { height: 230px; }
+    }
+
     @media (max-width: 575px) {
       .table-dark-custom th, .table-dark-custom td { padding: 10px 8px; font-size: 12px; }
       .action-btn-group { gap: 4px; }
       .act-btn { width: 32px; height: 32px; font-size: 11px; }
+      .btn-gold { padding: 8px 16px; font-size: 13px; }
     }
   </style>
 </head>
@@ -526,11 +622,31 @@
 
           <!-- Form Tambah Kamera (Collapsible) -->
           <div id="add-camera-form-box" class="p-4 mb-4 rounded" style="background: rgba(13, 27, 62, 0.95); border: 1px solid rgba(0, 210, 255, 0.4); display: none; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
-            <h6 class="font-weight-bold text-success mb-3" style="font-size: 15px; letter-spacing: 0.5px;"><i class="fas fa-plus-circle mr-1"></i> TAMBAH KAMERA RTSP / IP BARU</h6>
+            <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+              <h6 class="font-weight-bold text-success mb-0" style="font-size: 15px; letter-spacing: 0.5px;">
+                <i class="fas fa-plus-circle mr-1"></i> TAMBAH KAMERA BARU
+              </h6>
+              <span class="badge badge-info p-2" style="border-radius: 12px; font-size: 11px;">
+                <i class="fas fa-bolt mr-1"></i> Auto-Bridge MediaMTX Live
+              </span>
+            </div>
+
+            <!-- Tab Switcher Tipe Koneksi -->
+            <div class="conn-mode-tabs">
+              <button type="button" class="conn-tab-btn active" id="tab-add-xmeye" onclick="switchCamConnMode('xmeye_p2p', 'add')">
+                <i class="fas fa-qrcode mr-1 text-info"></i> Mode XMeye Cloud P2P (Scan QR / Serial)
+              </button>
+              <button type="button" class="conn-tab-btn" id="tab-add-rtsp" onclick="switchCamConnMode('rtsp', 'add')">
+                <i class="fas fa-video mr-1 text-warning"></i> Mode RTSP / HLS Manual
+              </button>
+            </div>
+
             <form onsubmit="submitAddCameraForCustomer(event)">
+              <input type="hidden" id="cam-input-conn-type" value="xmeye_p2p">
+
               <div class="form-group mb-3">
                 <label style="font-size: 13px; color: #e2e8f0; font-weight: 600; display: block; margin-bottom: 4px;">Nama Kamera / Lokasi:</label>
-                <input type="text" id="cam-input-title" class="form-control form-control-dark" placeholder="Contoh: Simpang Dewa Ruci - Kuta Bali" required>
+                <input type="text" id="cam-input-title" class="form-control form-control-dark" placeholder="Contoh: Kamera Depan Kasir / Parkiran Utama" required>
               </div>
 
               <div class="form-group mb-3">
@@ -544,12 +660,82 @@
                 </select>
               </div>
 
-              <div class="form-group mb-3">
+              <!-- Section 1: XMeye Cloud P2P Fields -->
+              <div id="add-xmeye-section" class="p-3 mb-3 rounded" style="background: rgba(0, 210, 255, 0.04); border: 1px dashed rgba(0, 210, 255, 0.3);">
+                <div class="form-group mb-3">
+                  <label style="font-size: 13px; color: #00d2ff; font-weight: 700; display: block; margin-bottom: 6px;">
+                    <i class="fas fa-barcode mr-1"></i> Serial Number / Cloud ID XMeye (16 Digit):
+                  </label>
+                  <div class="input-group">
+                    <input type="text" id="cam-input-xmeye-serial" class="form-control form-control-dark font-family-monospace" placeholder="Contoh: fe8a1234567890ab" maxlength="32">
+                    <div class="input-group-append">
+                      <button type="button" class="btn btn-info font-weight-bold px-3 d-flex align-items-center" onclick="openQRScannerModal('add')" style="border-radius: 0 10px 10px 0; background: linear-gradient(135deg, #00d2ff, #0077ff); border: none;">
+                        <i class="fas fa-camera mr-1"></i> Scan QR
+                      </button>
+                    </div>
+                  </div>
+                  <small class="text-muted d-block mt-1" style="font-size: 11px;">
+                    💡 Scan QR Code di menu <strong>Main Menu &gt; Info &gt; Version</strong> pada layar DVR XMeye, atau dari stiker dus.
+                  </small>
+                </div>
+
+                <div class="form-row mb-2">
+                  <div class="form-group col-md-6 col-12 mb-2">
+                    <label style="font-size: 13px; color: #e2e8f0; font-weight: 600; display: block; margin-bottom: 4px;">Username Perangkat:</label>
+                    <input type="text" id="cam-input-xmeye-user" class="form-control form-control-dark" value="admin">
+                  </div>
+                  <div class="form-group col-md-6 col-12 mb-2">
+                    <label style="font-size: 13px; color: #e2e8f0; font-weight: 600; display: block; margin-bottom: 4px;">Password DVR / Kamera:</label>
+                    <div class="input-group">
+                      <input type="password" id="cam-input-xmeye-pass" class="form-control form-control-dark" placeholder="Kosongkan jika tidak ada password">
+                      <div class="input-group-append">
+                        <button class="btn btn-outline-secondary" type="button" onclick="togglePassVisibility('cam-input-xmeye-pass')">
+                          <i class="fas fa-eye" id="cam-input-xmeye-pass-icon"></i>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="form-row mb-1">
+                  <div class="form-group col-md-6 col-12 mb-2">
+                    <label style="font-size: 13px; color: #e2e8f0; font-weight: 600; display: block; margin-bottom: 4px;">Pilih Channel DVR:</label>
+                    <select id="cam-input-xmeye-channel" class="form-control form-control-dark">
+                      <option value="1" style="color:#000;">Channel 1 (Kamera 1)</option>
+                      <option value="2" style="color:#000;">Channel 2 (Kamera 2)</option>
+                      <option value="3" style="color:#000;">Channel 3 (Kamera 3)</option>
+                      <option value="4" style="color:#000;">Channel 4 (Kamera 4)</option>
+                      <option value="5" style="color:#000;">Channel 5 (Kamera 5)</option>
+                      <option value="6" style="color:#000;">Channel 6 (Kamera 6)</option>
+                      <option value="7" style="color:#000;">Channel 7 (Kamera 7)</option>
+                      <option value="8" style="color:#000;">Channel 8 (Kamera 8)</option>
+                      <option value="9" style="color:#000;">Channel 9 (Kamera 9)</option>
+                      <option value="10" style="color:#000;">Channel 10 (Kamera 10)</option>
+                      <option value="11" style="color:#000;">Channel 11 (Kamera 11)</option>
+                      <option value="12" style="color:#000;">Channel 12 (Kamera 12)</option>
+                      <option value="13" style="color:#000;">Channel 13 (Kamera 13)</option>
+                      <option value="14" style="color:#000;">Channel 14 (Kamera 14)</option>
+                      <option value="15" style="color:#000;">Channel 15 (Kamera 15)</option>
+                      <option value="16" style="color:#000;">Channel 16 (Kamera 16)</option>
+                      <option value="32" style="color:#000;">Channel 32 (Kamera 32)</option>
+                    </select>
+                  </div>
+                  <div class="form-group col-md-6 col-12 mb-2">
+                    <label style="font-size: 13px; color: #e2e8f0; font-weight: 600; display: block; margin-bottom: 4px;">Kualitas Stream Web:</label>
+                    <select id="cam-input-xmeye-stream" class="form-control form-control-dark">
+                      <option value="sub" style="color:#000;">⚡ Sub Stream (Rekomendasi Cepat & Hemat Kuota Web)</option>
+                      <option value="main" style="color:#000;">💎 Main Stream (Kualitas HD)</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Section 2: Manual RTSP Fields -->
+              <div id="add-rtsp-section" class="form-group mb-3" style="display: none;">
                 <label style="font-size: 13px; color: #e2e8f0; font-weight: 600; display: block; margin-bottom: 4px;">Stream Path / RTSP Stream ID / HLS URL:</label>
-                <input type="text" id="cam-input-path" class="form-control form-control-dark" placeholder="Contoh: cam_bali_1 atau rtsp://admin:pass@IP:554/stream1" required>
+                <input type="text" id="cam-input-path" class="form-control form-control-dark" placeholder="Contoh: cam_bali_1 atau rtsp://admin:pass@IP:554/stream1">
                 <small class="text-muted d-block mt-1" style="font-size: 11px;">
-                  Gunakan Stream Path MediaMTX (contoh: <span class="text-danger font-weight-bold">cam_bali_1</span>), HLS URL (<span class="text-danger font-weight-bold">.m3u8</span>), atau IPCamLive.<br>
-                  <em>Catatan: Browser tidak bisa putar rtsp:// langsung tanpa MediaMTX/IPCamLive gateway.</em>
+                  Gunakan Stream Path MediaMTX (contoh: <span class="text-danger font-weight-bold">cam_bali_1</span>), HLS URL (<span class="text-danger font-weight-bold">.m3u8</span>), atau IPCamLive.
                 </small>
               </div>
 
@@ -564,18 +750,37 @@
                 </div>
               </div>
 
-              <div class="d-flex justify-content-end gap-2 mt-3">
+              <div class="d-flex justify-content-end gap-2 mt-3 flex-wrap">
                 <button type="button" class="btn btn-secondary btn-sm mr-2" style="border-radius: 8px; padding: 8px 18px;" onclick="closeAddCameraForCustomerForm()">Batal</button>
-                <button type="submit" class="btn btn-success btn-sm font-weight-bold" style="border-radius: 8px; padding: 8px 22px; background: #10b981; border: none;"><i class="fas fa-save mr-1"></i> Simpan Konfigurasi</button>
+                <button type="submit" class="btn btn-success btn-sm font-weight-bold" style="border-radius: 8px; padding: 8px 22px; background: #10b981; border: none;">
+                  <i class="fas fa-save mr-1"></i> Simpan Konfigurasi
+                </button>
               </div>
             </form>
           </div>
 
           <!-- Form Edit Kamera (Collapsible) -->
           <div id="edit-camera-form-box" class="p-4 mb-4 rounded" style="background: rgba(13, 27, 62, 0.95); border: 1px solid rgba(245, 158, 11, 0.4); display: none; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
-            <h6 class="font-weight-bold text-warning mb-3" style="font-size: 15px; letter-spacing: 0.5px;"><i class="fas fa-edit mr-1"></i> EDIT KONFIGURASI KAMERA CCTV</h6>
+            <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+              <h6 class="font-weight-bold text-warning mb-0" style="font-size: 15px; letter-spacing: 0.5px;">
+                <i class="fas fa-edit mr-1"></i> EDIT KONFIGURASI KAMERA CCTV
+              </h6>
+            </div>
+
+            <!-- Tab Switcher Edit Mode -->
+            <div class="conn-mode-tabs">
+              <button type="button" class="conn-tab-btn" id="tab-edit-xmeye" onclick="switchCamConnMode('xmeye_p2p', 'edit')">
+                <i class="fas fa-qrcode mr-1 text-info"></i> Mode XMeye Cloud P2P
+              </button>
+              <button type="button" class="conn-tab-btn" id="tab-edit-rtsp" onclick="switchCamConnMode('rtsp', 'edit')">
+                <i class="fas fa-video mr-1 text-warning"></i> Mode RTSP / HLS Manual
+              </button>
+            </div>
+
             <form onsubmit="submitEditCameraForCustomer(event)">
               <input type="hidden" id="edit-cam-id">
+              <input type="hidden" id="edit-cam-conn-type" value="rtsp">
+
               <div class="form-group mb-3">
                 <label style="font-size: 13px; color: #e2e8f0; font-weight: 600; display: block; margin-bottom: 4px;">Nama Kamera / Lokasi:</label>
                 <input type="text" id="edit-cam-title" class="form-control form-control-dark" required>
@@ -592,9 +797,63 @@
                 </select>
               </div>
 
-              <div class="form-group mb-3">
+              <!-- Edit Section XMeye -->
+              <div id="edit-xmeye-section" class="p-3 mb-3 rounded" style="background: rgba(0, 210, 255, 0.04); border: 1px dashed rgba(0, 210, 255, 0.3);">
+                <div class="form-group mb-3">
+                  <label style="font-size: 13px; color: #00d2ff; font-weight: 700; display: block; margin-bottom: 6px;">
+                    <i class="fas fa-barcode mr-1"></i> Serial Number / Cloud ID XMeye (16 Digit):
+                  </label>
+                  <div class="input-group">
+                    <input type="text" id="edit-cam-xmeye-serial" class="form-control form-control-dark font-family-monospace" placeholder="Contoh: fe8a1234567890ab">
+                    <div class="input-group-append">
+                      <button type="button" class="btn btn-info font-weight-bold px-3 d-flex align-items-center" onclick="openQRScannerModal('edit')" style="border-radius: 0 10px 10px 0; background: linear-gradient(135deg, #00d2ff, #0077ff); border: none;">
+                        <i class="fas fa-camera mr-1"></i> Scan QR
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="form-row mb-2">
+                  <div class="form-group col-md-6 col-12 mb-2">
+                    <label style="font-size: 13px; color: #e2e8f0; font-weight: 600; display: block; margin-bottom: 4px;">Username Perangkat:</label>
+                    <input type="text" id="edit-cam-xmeye-user" class="form-control form-control-dark" value="admin">
+                  </div>
+                  <div class="form-group col-md-6 col-12 mb-2">
+                    <label style="font-size: 13px; color: #e2e8f0; font-weight: 600; display: block; margin-bottom: 4px;">Password DVR (Isi jika diubah):</label>
+                    <input type="password" id="edit-cam-xmeye-pass" class="form-control form-control-dark" placeholder="••••••••">
+                  </div>
+                </div>
+
+                <div class="form-row mb-1">
+                  <div class="form-group col-md-6 col-12 mb-2">
+                    <label style="font-size: 13px; color: #e2e8f0; font-weight: 600; display: block; margin-bottom: 4px;">Pilih Channel DVR:</label>
+                    <select id="edit-cam-xmeye-channel" class="form-control form-control-dark">
+                      <option value="1" style="color:#000;">Channel 1 (Kamera 1)</option>
+                      <option value="2" style="color:#000;">Channel 2 (Kamera 2)</option>
+                      <option value="3" style="color:#000;">Channel 3 (Kamera 3)</option>
+                      <option value="4" style="color:#000;">Channel 4 (Kamera 4)</option>
+                      <option value="5" style="color:#000;">Channel 5 (Kamera 5)</option>
+                      <option value="6" style="color:#000;">Channel 6 (Kamera 6)</option>
+                      <option value="7" style="color:#000;">Channel 7 (Kamera 7)</option>
+                      <option value="8" style="color:#000;">Channel 8 (Kamera 8)</option>
+                      <option value="16" style="color:#000;">Channel 16 (Kamera 16)</option>
+                      <option value="32" style="color:#000;">Channel 32 (Kamera 32)</option>
+                    </select>
+                  </div>
+                  <div class="form-group col-md-6 col-12 mb-2">
+                    <label style="font-size: 13px; color: #e2e8f0; font-weight: 600; display: block; margin-bottom: 4px;">Kualitas Stream Web:</label>
+                    <select id="edit-cam-xmeye-stream" class="form-control form-control-dark">
+                      <option value="sub" style="color:#000;">⚡ Sub Stream (Rekomendasi Cepat & Hemat Kuota)</option>
+                      <option value="main" style="color:#000;">💎 Main Stream (Kualitas HD)</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Edit Section RTSP -->
+              <div id="edit-rtsp-section" class="form-group mb-3">
                 <label style="font-size: 13px; color: #e2e8f0; font-weight: 600; display: block; margin-bottom: 4px;">Stream Path / RTSP Stream ID / HLS URL:</label>
-                <input type="text" id="edit-cam-path" class="form-control form-control-dark" required>
+                <input type="text" id="edit-cam-path" class="form-control form-control-dark">
               </div>
 
               <div class="form-row mb-3">
@@ -608,9 +867,11 @@
                 </div>
               </div>
 
-              <div class="d-flex justify-content-end gap-2 mt-3">
+              <div class="d-flex justify-content-end gap-2 mt-3 flex-wrap">
                 <button type="button" class="btn btn-secondary btn-sm mr-2" style="border-radius: 8px; padding: 8px 18px;" onclick="closeEditCameraForm()">Batal</button>
-                <button type="submit" class="btn btn-warning btn-sm font-weight-bold" style="border-radius: 8px; padding: 8px 22px; background: #f59e0b; border: none; color: #000;"><i class="fas fa-save mr-1"></i> Update Kamera</button>
+                <button type="submit" class="btn btn-warning btn-sm font-weight-bold" style="border-radius: 8px; padding: 8px 22px; background: #f59e0b; border: none; color: #000;">
+                  <i class="fas fa-save mr-1"></i> Update Kamera
+                </button>
               </div>
             </form>
           </div>
@@ -724,6 +985,50 @@
               </tbody>
             </table>
           </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Scan Barcode / QR Code XMeye -->
+  <div class="modal fade" id="modalQRScanner" tabindex="-1" role="dialog" aria-hidden="true" style="z-index: 1070;">
+    <div class="modal-dialog modal-dialog-centered" role="document" style="max-width: 480px;">
+      <div class="modal-content modal-content-dark" style="border: 1px solid #00d2ff; box-shadow: 0 0 40px rgba(0, 210, 255, 0.35);">
+        <div class="modal-header modal-header-dark d-flex justify-content-between align-items-center">
+          <div>
+            <h5 class="modal-title font-weight-bold mb-0 text-info">
+              <i class="fas fa-qrcode mr-2"></i> Pindai Barcode / QR Code XMeye
+            </h5>
+            <div class="text-muted" style="font-size: 12px;">Arahkan kamera ke QR Code Cloud ID di layar DVR / stiker dus</div>
+          </div>
+          <button type="button" class="close text-white" onclick="closeQRScannerModal()" aria-label="Close" style="outline: none;">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body p-3 text-center">
+          <!-- Viewfinder Box with Laser Scan Effect -->
+          <div class="qr-scanner-box">
+            <div id="qr-reader" style="width: 100%; height: 100%;"></div>
+            <div class="qr-scanner-laser"></div>
+          </div>
+
+          <!-- Controls & Camera Switch -->
+          <div class="d-flex justify-content-center gap-2 mb-3 flex-wrap">
+            <button type="button" class="btn btn-outline-info btn-sm font-weight-bold" id="btn-switch-camera" onclick="switchCameraFacing()">
+              <i class="fas fa-sync-alt mr-1"></i> Ganti Kamera (Depan/Belakang)
+            </button>
+            <label class="btn btn-outline-warning btn-sm font-weight-bold mb-0" style="cursor: pointer;">
+              <i class="fas fa-image mr-1"></i> Upload Foto QR
+              <input type="file" id="qr-file-input" accept="image/*" style="display: none;" onchange="handleQRFileUpload(event)">
+            </label>
+          </div>
+
+          <div id="qr-scanner-status" class="alert alert-info py-2 mb-0 font-weight-bold" style="font-size: 12px; background: rgba(0, 210, 255, 0.1); border: 1px solid rgba(0, 210, 255, 0.3); color: #00d2ff;">
+            <i class="fas fa-camera mr-1"></i> Mengaktifkan kamera scanner...
+          </div>
+        </div>
+        <div class="modal-footer modal-footer-dark justify-content-center">
+          <button type="button" class="btn btn-secondary btn-sm px-4" onclick="closeQRScannerModal()">Tutup Scanner</button>
         </div>
       </div>
     </div>
@@ -1263,12 +1568,25 @@
           ? cam.streamPath
           : `http://stream.loewixcctv.com/${cam.streamPath}/index.m3u8`;
 
+        let streamTypeBadge = '';
+        if (cam.connection_type === 'xmeye_p2p') {
+          streamTypeBadge = `<span class="badge badge-info mb-1 d-block" style="border-radius: 8px; font-size: 11px; background: rgba(0, 210, 255, 0.15); border: 1px solid rgba(0, 210, 255, 0.3); color: #00d2ff;"><i class="fas fa-qrcode mr-1"></i> XMeye P2P (Ch ${cam.channel || 1})</span>`;
+        } else {
+          streamTypeBadge = `<span class="badge badge-secondary mb-1 d-block" style="border-radius: 8px; font-size: 11px;"><i class="fas fa-video mr-1"></i> RTSP Direct</span>`;
+        }
+
         const row = `
           <tr>
             <td class="font-weight-bold text-muted">#${cam.id}</td>
-            <td class="font-weight-bold text-white"><i class="fas fa-video text-info mr-2"></i> ${cam.title}</td>
+            <td class="font-weight-bold text-white">
+              <i class="fas fa-video text-info mr-2"></i> ${cam.title}
+              ${cam.serial_number ? `<div class="text-muted" style="font-size: 11px; font-family: monospace;">SN: ${cam.serial_number}</div>` : ''}
+            </td>
             <td>${cityBadge}</td>
-            <td><code>${streamUrl}</code></td>
+            <td>
+              ${streamTypeBadge}
+              <code style="font-size: 11px; word-break: break-all;">${cam.streamPath || streamUrl}</code>
+            </td>
             <td>${gpsCoords}</td>
             <td><span class="badge badge-success" style="border-radius: 12px; padding: 4px 10px;">● ONLINE MediaMTX</span></td>
             <td class="text-right">
@@ -1287,60 +1605,170 @@
       });
     }
 
-    function openEditCameraForm(camId) {
-      const cam = currentCustomerCameras.find(c => c.id === camId);
-      if (!cam) return;
+    // ==========================================
+    // XMEYE CLOUD P2P & CONNECTION MODE HANDLERS
+    // ==========================================
+    function switchCamConnMode(mode, target) {
+      target = target || 'add';
+      const typeInput = document.getElementById(target === 'add' ? 'cam-input-conn-type' : 'edit-cam-conn-type');
+      if (typeInput) typeInput.value = mode;
 
-      closeAddCameraForCustomerForm();
-      document.getElementById('edit-cam-id').value = cam.id;
-      document.getElementById('edit-cam-title').value = cam.title;
-      document.getElementById('edit-cam-city').value = cam.city || 'siantar';
-      document.getElementById('edit-cam-path').value = cam.streamPath;
-      document.getElementById('edit-cam-lat').value = cam.lat || '';
-      document.getElementById('edit-cam-lng').value = cam.lng || '';
+      const tabXmeye = document.getElementById(`tab-${target}-xmeye`);
+      const tabRtsp = document.getElementById(`tab-${target}-rtsp`);
+      const secXmeye = document.getElementById(`${target}-xmeye-section`);
+      const secRtsp = document.getElementById(`${target}-rtsp-section`);
 
-      document.getElementById('edit-camera-form-box').style.display = 'block';
+      if (mode === 'xmeye_p2p') {
+        if (tabXmeye) tabXmeye.classList.add('active');
+        if (tabRtsp) tabRtsp.classList.remove('active');
+        if (secXmeye) secXmeye.style.display = 'block';
+        if (secRtsp) secRtsp.style.display = 'none';
+      } else {
+        if (tabRtsp) tabRtsp.classList.add('active');
+        if (tabXmeye) tabXmeye.classList.remove('active');
+        if (secRtsp) secRtsp.style.display = 'block';
+        if (secXmeye) secXmeye.style.display = 'none';
+      }
     }
 
-    function closeEditCameraForm() {
-      document.getElementById('edit-camera-form-box').style.display = 'none';
+    function togglePassVisibility(inputId) {
+      const input = document.getElementById(inputId);
+      const icon = document.getElementById(`${inputId}-icon`);
+      if (!input) return;
+      if (input.type === 'password') {
+        input.type = 'text';
+        if (icon) { icon.classList.remove('fa-eye'); icon.classList.add('fa-eye-slash'); }
+      } else {
+        input.type = 'password';
+        if (icon) { icon.classList.remove('fa-eye-slash'); icon.classList.add('fa-eye'); }
+      }
     }
 
-    function submitEditCameraForCustomer(e) {
-      if (e) e.preventDefault();
-      const camId = parseInt(document.getElementById('edit-cam-id').value);
-      const title = document.getElementById('edit-cam-title').value.trim();
-      const city = document.getElementById('edit-cam-city').value;
-      const streamPath = document.getElementById('edit-cam-path').value.trim();
-      const lat = document.getElementById('edit-cam-lat').value.trim();
-      const lng = document.getElementById('edit-cam-lng').value.trim();
+    // ==========================================
+    // QR CODE SCANNER (CAMERA & FILE UPLOAD)
+    // ==========================================
+    let html5QrScannerInstance = null;
+    let currentQRScanTarget = 'add';
+    let currentCameraFacing = 'environment';
 
-      if (!title || !streamPath) {
-        alert('Mohon isi nama kamera dan stream path!');
+    function openQRScannerModal(target) {
+      currentQRScanTarget = target || 'add';
+      $('#modalQRScanner').modal('show');
+      const statusBox = document.getElementById('qr-scanner-status');
+      if (statusBox) statusBox.innerHTML = '<i class="fas fa-camera mr-1"></i> Mengaktifkan kamera scanner...';
+      setTimeout(startQRCameraScanner, 400);
+    }
+
+    function closeQRScannerModal() {
+      stopQRCameraScanner();
+      $('#modalQRScanner').modal('hide');
+    }
+
+    function startQRCameraScanner() {
+      if (typeof Html5Qrcode === 'undefined') {
+        const statusBox = document.getElementById('qr-scanner-status');
+        if (statusBox) statusBox.innerHTML = '<span class="text-danger"><i class="fas fa-exclamation-triangle mr-1"></i> Modul kamera scanner sedang dimuat, silakan coba upload foto barcode.</span>';
         return;
       }
 
-      const formData = new FormData();
-      formData.append('action', 'admin_edit');
-      formData.append('id', camId);
-      formData.append('title', title);
-      formData.append('city', city);
-      formData.append('streamPath', streamPath);
-      formData.append('lat', lat);
-      formData.append('lng', lng);
+      const qrBox = document.getElementById('qr-reader');
+      if (!qrBox) return;
 
-      fetch(`${API_SERVER}/cameras.php`, { method: 'POST', body: formData })
-        .then(res => res.json())
-        .then(resData => {
-          if (resData.success) {
-            alert(`BERHASIL: Konfigurasi Kamera '${title}' berhasil diperbarui!`);
-            closeEditCameraForm();
-            openCustomerCCTVModal(currentManagingCustomerId);
-          } else {
-            alert(`GAGAL: ${resData.message}`);
-          }
+      stopQRCameraScanner();
+
+      try {
+        html5QrScannerInstance = new Html5Qrcode("qr-reader");
+        const config = { fps: 10, qrbox: { width: 220, height: 220 } };
+
+        html5QrScannerInstance.start(
+          { facingMode: currentCameraFacing },
+          config,
+          (decodedText) => {
+            onQRCodeScannedSuccess(decodedText);
+          },
+          () => {}
+        ).then(() => {
+          const statusBox = document.getElementById('qr-scanner-status');
+          if (statusBox) statusBox.innerHTML = '<span class="text-success"><i class="fas fa-check-circle mr-1"></i> Kamera Aktif! Arahkan ke QR Code di layar DVR / stiker.</span>';
+        }).catch(err => {
+          console.warn('[QR Scanner Camera Error]', err);
+          const statusBox = document.getElementById('qr-scanner-status');
+          if (statusBox) statusBox.innerHTML = '<span class="text-warning"><i class="fas fa-info-circle mr-1"></i> Izin kamera belum diberikan. Anda juga bisa klik <strong>Upload Foto QR</strong>.</span>';
+        });
+      } catch(e) {
+        console.error(e);
+      }
+    }
+
+    function stopQRCameraScanner() {
+      if (html5QrScannerInstance) {
+        try {
+          html5QrScannerInstance.stop().then(() => {
+            try { html5QrScannerInstance.clear(); } catch(e) {}
+            html5QrScannerInstance = null;
+          }).catch(() => {
+            html5QrScannerInstance = null;
+          });
+        } catch(e) {
+          html5QrScannerInstance = null;
+        }
+      }
+    }
+
+    function switchCameraFacing() {
+      currentCameraFacing = (currentCameraFacing === 'environment') ? 'user' : 'environment';
+      startQRCameraScanner();
+    }
+
+    function handleQRFileUpload(event) {
+      const file = event.target.files && event.target.files[0];
+      if (!file) return;
+
+      const statusBox = document.getElementById('qr-scanner-status');
+      if (statusBox) statusBox.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> Membaca gambar barcode...';
+
+      if (typeof Html5Qrcode === 'undefined') {
+        alert('Modul pembaca barcode belum siap.');
+        return;
+      }
+
+      const html5QrCode = new Html5Qrcode("qr-reader");
+      html5QrCode.scanFile(file, true)
+        .then(decodedText => {
+          onQRCodeScannedSuccess(decodedText);
         })
-        .catch(() => alert('Gagal menghubungi server database.'));
+        .catch(() => {
+          if (statusBox) statusBox.innerHTML = '<span class="text-danger"><i class="fas fa-times-circle mr-1"></i> Tidak dapat mendeteksi QR code pada foto ini. Pastikan gambar jelas.</span>';
+        });
+    }
+
+    function onQRCodeScannedSuccess(decodedText) {
+      if (!decodedText) return;
+      
+      // Clean up scanned text (extract serial if it's a URL or formatted text)
+      let cleanSerial = decodedText.trim();
+      if (cleanSerial.includes('sn=')) {
+        const match = cleanSerial.match(/sn=([a-zA-Z0-9]+)/i);
+        if (match) cleanSerial = match[1];
+      } else if (cleanSerial.includes('/')) {
+        const parts = cleanSerial.split('/');
+        cleanSerial = parts[parts.length - 1];
+      }
+      cleanSerial = cleanSerial.replace(/[^a-zA-Z0-9]/g, '');
+
+      const targetInput = document.getElementById(currentQRScanTarget === 'add' ? 'cam-input-xmeye-serial' : 'edit-cam-xmeye-serial');
+      if (targetInput) {
+        targetInput.value = cleanSerial;
+        targetInput.style.borderColor = '#10b981';
+        targetInput.style.boxShadow = '0 0 15px rgba(16, 185, 129, 0.5)';
+        setTimeout(() => {
+          targetInput.style.borderColor = '';
+          targetInput.style.boxShadow = '';
+        }, 2500);
+      }
+
+      alert(`✅ BERHASIL PINDAI!\nSerial Number XMeye: ${cleanSerial}`);
+      closeQRScannerModal();
     }
 
     function openAddCameraForCustomerForm() {
@@ -1350,29 +1778,29 @@
         return;
       }
 
+      closeEditCameraForm();
+      switchCamConnMode('xmeye_p2p', 'add');
       document.getElementById('add-camera-form-box').style.display = 'block';
+      document.getElementById('add-camera-form-box').scrollIntoView({ behavior: 'smooth' });
     }
 
     function closeAddCameraForCustomerForm() {
       document.getElementById('add-camera-form-box').style.display = 'none';
       if (document.getElementById('cam-input-title')) document.getElementById('cam-input-title').value = '';
       if (document.getElementById('cam-input-path')) document.getElementById('cam-input-path').value = '';
+      if (document.getElementById('cam-input-xmeye-serial')) document.getElementById('cam-input-xmeye-serial').value = '';
+      if (document.getElementById('cam-input-xmeye-pass')) document.getElementById('cam-input-xmeye-pass').value = '';
       if (document.getElementById('cam-input-lat')) document.getElementById('cam-input-lat').value = '';
       if (document.getElementById('cam-input-lng')) document.getElementById('cam-input-lng').value = '';
     }
 
     function submitAddCameraForCustomer(e) {
       if (e) e.preventDefault();
+      const connType = document.getElementById('cam-input-conn-type').value;
       const title = document.getElementById('cam-input-title').value.trim();
       const city = document.getElementById('cam-input-city').value;
-      const streamPath = document.getElementById('cam-input-path').value.trim();
       const lat = document.getElementById('cam-input-lat').value.trim();
       const lng = document.getElementById('cam-input-lng').value.trim();
-
-      if (!title || !streamPath) {
-        alert('Mohon isi nama kamera dan stream path!');
-        return;
-      }
 
       const cust = cachedCustomers.find(c => c.id === currentManagingCustomerId);
       if (cust && currentCustomerCameras.length >= cust.cctv_quota) {
@@ -1385,9 +1813,36 @@
       formData.append('user_id', currentManagingCustomerId);
       formData.append('title', title);
       formData.append('city', city);
-      formData.append('streamPath', streamPath);
+      formData.append('connection_type', connType);
       formData.append('lat', lat);
       formData.append('lng', lng);
+
+      if (connType === 'xmeye_p2p') {
+        const serial = document.getElementById('cam-input-xmeye-serial').value.trim();
+        const user = document.getElementById('cam-input-xmeye-user').value.trim() || 'admin';
+        const pass = document.getElementById('cam-input-xmeye-pass').value.trim();
+        const channel = document.getElementById('cam-input-xmeye-channel').value;
+        const streamQuality = document.getElementById('cam-input-xmeye-stream').value;
+
+        if (!serial) {
+          alert('Mohon isi atau scan Serial Number / Cloud ID XMeye!');
+          return;
+        }
+
+        formData.append('serial_number', serial);
+        formData.append('device_user', user);
+        formData.append('device_pass', pass);
+        formData.append('channel', channel);
+        formData.append('stream_quality', streamQuality);
+        formData.append('streamPath', `xmeye_${serial}_ch${channel}`);
+      } else {
+        const streamPath = document.getElementById('cam-input-path').value.trim();
+        if (!streamPath) {
+          alert('Mohon isi Stream Path / RTSP URL!');
+          return;
+        }
+        formData.append('streamPath', streamPath);
+      }
 
       fetch(`${API_SERVER}/cameras.php`, { method: 'POST', body: formData })
         .then(res => res.json())
@@ -1397,6 +1852,93 @@
             closeAddCameraForCustomerForm();
             openCustomerCCTVModal(currentManagingCustomerId);
             loadCustomerData();
+          } else {
+            alert(`GAGAL: ${resData.message}`);
+          }
+        })
+        .catch(() => alert('Gagal menghubungi server database.'));
+    }
+
+    function openEditCameraForm(camId) {
+      const cam = currentCustomerCameras.find(c => c.id === camId);
+      if (!cam) return;
+
+      closeAddCameraForCustomerForm();
+      document.getElementById('edit-cam-id').value = cam.id;
+      document.getElementById('edit-cam-title').value = cam.title || '';
+      document.getElementById('edit-cam-city').value = cam.city || 'siantar';
+      document.getElementById('edit-cam-path').value = cam.streamPath || '';
+      document.getElementById('edit-cam-lat').value = cam.lat || '';
+      document.getElementById('edit-cam-lng').value = cam.lng || '';
+
+      const connType = cam.connection_type || (cam.serial_number ? 'xmeye_p2p' : 'rtsp');
+      switchCamConnMode(connType, 'edit');
+
+      if (document.getElementById('edit-cam-xmeye-serial')) document.getElementById('edit-cam-xmeye-serial').value = cam.serial_number || '';
+      if (document.getElementById('edit-cam-xmeye-user')) document.getElementById('edit-cam-xmeye-user').value = cam.device_user || 'admin';
+      if (document.getElementById('edit-cam-xmeye-channel')) document.getElementById('edit-cam-xmeye-channel').value = cam.channel || '1';
+      if (document.getElementById('edit-cam-xmeye-stream')) document.getElementById('edit-cam-xmeye-stream').value = cam.stream_quality || 'sub';
+
+      document.getElementById('edit-camera-form-box').style.display = 'block';
+      document.getElementById('edit-camera-form-box').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function closeEditCameraForm() {
+      document.getElementById('edit-camera-form-box').style.display = 'none';
+    }
+
+    function submitEditCameraForCustomer(e) {
+      if (e) e.preventDefault();
+      const camId = parseInt(document.getElementById('edit-cam-id').value);
+      const connType = document.getElementById('edit-cam-conn-type').value;
+      const title = document.getElementById('edit-cam-title').value.trim();
+      const city = document.getElementById('edit-cam-city').value;
+      const lat = document.getElementById('edit-cam-lat').value.trim();
+      const lng = document.getElementById('edit-cam-lng').value.trim();
+
+      const formData = new FormData();
+      formData.append('action', 'admin_edit');
+      formData.append('id', camId);
+      formData.append('title', title);
+      formData.append('city', city);
+      formData.append('connection_type', connType);
+      formData.append('lat', lat);
+      formData.append('lng', lng);
+
+      if (connType === 'xmeye_p2p') {
+        const serial = document.getElementById('edit-cam-xmeye-serial').value.trim();
+        const user = document.getElementById('edit-cam-xmeye-user').value.trim() || 'admin';
+        const pass = document.getElementById('edit-cam-xmeye-pass').value.trim();
+        const channel = document.getElementById('edit-cam-xmeye-channel').value;
+        const streamQuality = document.getElementById('edit-cam-xmeye-stream').value;
+
+        if (!serial) {
+          alert('Mohon isi atau scan Serial Number / Cloud ID XMeye!');
+          return;
+        }
+
+        formData.append('serial_number', serial);
+        formData.append('device_user', user);
+        if (pass) formData.append('device_pass', pass);
+        formData.append('channel', channel);
+        formData.append('stream_quality', streamQuality);
+        formData.append('streamPath', `xmeye_${serial}_ch${channel}`);
+      } else {
+        const streamPath = document.getElementById('edit-cam-path').value.trim();
+        if (!streamPath) {
+          alert('Mohon isi Stream Path / RTSP URL!');
+          return;
+        }
+        formData.append('streamPath', streamPath);
+      }
+
+      fetch(`${API_SERVER}/cameras.php`, { method: 'POST', body: formData })
+        .then(res => res.json())
+        .then(resData => {
+          if (resData.success) {
+            alert(`BERHASIL: Konfigurasi Kamera '${title}' berhasil diperbarui!`);
+            closeEditCameraForm();
+            openCustomerCCTVModal(currentManagingCustomerId);
           } else {
             alert(`GAGAL: ${resData.message}`);
           }
@@ -1676,6 +2218,12 @@
     window.closeEditCameraForm = closeEditCameraForm;
     window.submitEditCameraForCustomer = submitEditCameraForCustomer;
     window.deleteCustomerCamera = deleteCustomerCamera;
+    window.switchCamConnMode = switchCamConnMode;
+    window.togglePassVisibility = togglePassVisibility;
+    window.openQRScannerModal = openQRScannerModal;
+    window.closeQRScannerModal = closeQRScannerModal;
+    window.switchCameraFacing = switchCameraFacing;
+    window.handleQRFileUpload = handleQRFileUpload;
     window.openCityManagementModal = openCityManagementModal;
     window.closeCityManagementModal = closeCityManagementModal;
     window.toggleAddCityForm = toggleAddCityForm;
