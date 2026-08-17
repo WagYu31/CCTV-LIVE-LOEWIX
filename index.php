@@ -4313,86 +4313,22 @@
 
     const STREAM_BASE = 'https://stream.loewixcctv.com';
 
-    // ===== DATA KAMERA MULTI-KOTA (PORTAL TERPUSAT LOEWIX) =====
-    const mediamtxData = [
-      // Kota Pematangsiantar
-      { id: 1, city: 'siantar', title: 'YAMAHA DDS', streamPath: 'cctv_loewix_1', coordinates: [3.0148345268, 99.0852585533], platform: PLATFORM_TYPES.MEDIAMTX },
-      { id: 2, city: 'siantar', title: 'Jembatan Sigagak-Siantar', streamPath: 'jembatan_sigagak_siantar', coordinates: [3.0147983671, 99.0851459005], platform: PLATFORM_TYPES.MEDIAMTX },
-      { id: 3, city: 'siantar', title: 'Jalan Medan-Simpang Karang Sari', streamPath: 'jalan_medan_simpang_karang_sari', coordinates: [3.0152978701, 99.0855675950], platform: PLATFORM_TYPES.MEDIAMTX },
-      { id: 4, city: 'siantar', title: 'Jalan Medan-Simpang AMD', streamPath: 'jalan_medan_simpang_amd', coordinates: [3.0156978701, 99.0859675950], platform: PLATFORM_TYPES.MEDIAMTX },
-      { id: 5, city: 'siantar', title: 'Simpang Rambung Merah', streamPath: 'simpang_rb_merah', coordinates: [2.9750954176, 99.0789357872], platform: PLATFORM_TYPES.MEDIAMTX },
-      { id: 6, city: 'siantar', title: 'Jalan Sutomo-Pasar Horas', streamPath: 'jalan_sutomo_pasar_horas', coordinates: [2.9612223835, 99.0745549279], platform: PLATFORM_TYPES.MEDIAMTX },
-      { id: 7, city: 'siantar', title: 'Jl. Merdeka / Depan Balai Kota', streamPath: 'jl_merdeka', coordinates: [2.9568235619, 99.0619108184], platform: PLATFORM_TYPES.MEDIAMTX },
-      { id: 8, city: 'siantar', title: 'Simpang 4 Bundaran', streamPath: 'simpang_4_bundaran', coordinates: [2.9516202390, 99.0641781755], platform: PLATFORM_TYPES.MEDIAMTX },
+    // ===== DATA KAMERA (100% DISINKRONKAN DENGAN DATABASE ADMIN LOEWIX) =====
+    const mediamtxData = [];
 
-      // DKI Jakarta
-      { id: 101, city: 'jakarta', title: 'Bundaran HI - Jakarta', streamPath: 'cam_jakarta_1', streamId: 'cam_jakarta_1', coordinates: [-6.1950, 106.8230], platform: PLATFORM_TYPES.MEDIAMTX },
-      { id: 102, city: 'jakarta', title: 'Monas - Merdeka Barat', streamPath: 'cam_jakarta_2', streamId: 'cam_jakarta_2', coordinates: [-6.1754, 106.8272], platform: PLATFORM_TYPES.MEDIAMTX },
-      { id: 103, city: 'jakarta', title: 'GBK Senayan - Gelora', streamPath: 'cam_jakarta_3', streamId: 'cam_jakarta_3', coordinates: [-6.2186, 106.8024], platform: PLATFORM_TYPES.MEDIAMTX },
-      { id: 104, city: 'jakarta', title: 'Semanggi Interchange', streamPath: 'cam_jakarta_4', streamId: 'cam_jakarta_4', coordinates: [-6.2198, 106.8145], platform: PLATFORM_TYPES.MEDIAMTX },
-
-      // Kota Medan
-      { id: 201, city: 'medan', title: 'Simpang Pos - Medan', streamPath: 'cam_medan_1', streamId: 'cam_medan_1', coordinates: [3.5412, 98.6534], platform: PLATFORM_TYPES.MEDIAMTX },
-      { id: 202, city: 'medan', title: 'Lapangan Merdeka Medan', streamPath: 'cam_medan_2', streamId: 'cam_medan_2', coordinates: [3.5922, 98.6784], platform: PLATFORM_TYPES.MEDIAMTX },
-      { id: 203, city: 'medan', title: 'Simpang Kampus USU', streamPath: 'cam_medan_3', streamId: 'cam_medan_3', coordinates: [3.5645, 98.6578], platform: PLATFORM_TYPES.MEDIAMTX },
-
-      // Kota Bandung
-      { id: 301, city: 'bandung', title: 'Simpang Dago - Bandung', streamPath: 'cam_bandung_1', streamId: 'cam_bandung_1', coordinates: [-6.8915, 107.6106], platform: PLATFORM_TYPES.MEDIAMTX },
-      { id: 302, city: 'bandung', title: 'Alun-Alun Bandung', streamPath: 'cam_bandung_2', streamId: 'cam_bandung_2', coordinates: [-6.9218, 107.6070], platform: PLATFORM_TYPES.MEDIAMTX },
-      { id: 303, city: 'bandung', title: 'Gedung Sate Bandung', streamPath: 'cam_bandung_3', streamId: 'cam_bandung_3', coordinates: [-6.9025, 107.6186], platform: PLATFORM_TYPES.MEDIAMTX },
-
-      // Bali / Denpasar
-      { id: 401, city: 'bali', title: 'Simpang Dewa Ruci - Kuta Bali', streamPath: 'cam_bali_1', streamId: 'cam_bali_1', coordinates: [-8.7188, 115.1783], platform: PLATFORM_TYPES.MEDIAMTX },
-      { id: 402, city: 'bali', title: 'Renon Sanur - Denpasar', streamPath: 'cam_bali_2', streamId: 'cam_bali_2', coordinates: [-8.6723, 115.2345], platform: PLATFORM_TYPES.MEDIAMTX }
-    ];
-    // ===== AKHIR DATA KAMERA MULTI-KOTA =====
-
-    // Compatibility: ensure thumbnail & default city exist
-    mediamtxData.forEach(cam => {
-      if (!cam.city) cam.city = 'siantar';
-      if (!cam.thumbnail) cam.thumbnail = ASSET_BASE + '/image/logo-loewix.png';
-    });
-
-    // Auto-sync custom cameras added by Super Admin or Users from localStorage & API
+    // Auto-sync cameras strictly from backend Database API
     function syncCustomLocalStorageCameras() {
       try {
-        const customKeys = ['loewix_custom_cameras'];
-        for (let i = 0; i < localStorage.length; i++) {
+        // Clean up any stale localStorage camera caches from past test sessions
+        localStorage.removeItem('loewix_custom_cameras');
+        for (let i = localStorage.length - 1; i >= 0; i--) {
           const k = localStorage.key(i);
-          if (k && k.startsWith('loewix_user_cameras_')) customKeys.push(k);
+          if (k && k.startsWith('loewix_user_cameras_')) {
+            localStorage.removeItem(k);
+          }
         }
 
-        customKeys.forEach(key => {
-          try {
-            const list = JSON.parse(localStorage.getItem(key) || '[]');
-            list.forEach(c => {
-              if (!c || !c.title) return;
-              let safeId = c.id < 5000 ? 5000 + c.id : c.id;
-              const idx = mediamtxData.findIndex(m => m.id === safeId || m.title === c.title);
-              if (idx !== -1) {
-                mediamtxData[idx].title = c.title;
-                mediamtxData[idx].city = c.city || mediamtxData[idx].city;
-                mediamtxData[idx].streamPath = c.streamPath;
-                mediamtxData[idx].streamId = c.streamPath;
-              } else {
-                const lat = parseFloat(c.lat) || (c.coordinates ? c.coordinates[0] : 3.0148);
-                const lng = parseFloat(c.lng) || (c.coordinates ? c.coordinates[1] : 99.0852);
-                mediamtxData.push({
-                  id: safeId,
-                  city: c.city || 'siantar',
-                  title: c.title,
-                  streamPath: c.streamPath,
-                  streamId: c.streamPath,
-                  coordinates: [lat, lng],
-                  platform: PLATFORM_TYPES.MEDIAMTX,
-                  thumbnail: ASSET_BASE + '/image/logo-loewix.png'
-                });
-              }
-            });
-          } catch(e) {}
-        });
-
-        // Fetch cameras from backend Database API for cross-device real-time sync
+        // Fetch cameras from backend Database API for 100% accurate data sync
         function extractSafeLatLng(c) {
           if (!c) return null;
           let lat = NaN, lng = NaN;
@@ -4424,13 +4360,12 @@
         fetch(apiTarget)
           .then(res => res.json())
           .then(data => {
-            if (data && data.success && Array.isArray(data.cameras) && data.cameras.length > 0) {
-              // Clear static demo cameras so ONLY database cameras are rendered
+            if (data && data.success && Array.isArray(data.cameras)) {
               mediamtxData.length = 0;
 
               data.cameras.forEach(c => {
                 let safeId = parseInt(c.id);
-                const city = c.city || 'siantar';
+                const city = (c.city || 'siantar').toLowerCase();
                 const defaultCenter = CITY_CONFIG[city] ? CITY_CONFIG[city].center : [2.9568, 99.0619];
                 let coords = extractSafeLatLng(c) || defaultCenter;
 
@@ -8789,10 +8724,12 @@
         });
 
         // Filter CCTV list based on active city if not 'all' (strictly from Database)
-        let allCCTVs = mediamtxData.filter(c => c.coordinates && Array.isArray(c.coordinates) && c.coordinates.length === 2);
-        if (activeCity !== 'all') {
-          allCCTVs = allCCTVs.filter(c => c.city === activeCity);
-        }
+        const selectedCity = (activeCity || 'all').toLowerCase();
+        let allCCTVs = mediamtxData.filter(c => {
+          if (!c.coordinates || !Array.isArray(c.coordinates) || c.coordinates.length < 2) return false;
+          if (selectedCity === 'all') return true;
+          return (c.city || '').toLowerCase() === selectedCity;
+        });
 
         allCCTVs.forEach(function(location) {
           try {
@@ -9120,7 +9057,12 @@
       cctvContainer.innerHTML = '';
 
       // Filter kamera berdasarkan city & bukan section pasar-horas
-      let mainCameras = mediamtxData.filter(cam => !cam.section && (filterCity === 'all' || cam.city === filterCity));
+      const selectedCity = (filterCity || 'all').toLowerCase();
+      let mainCameras = mediamtxData.filter(cam => {
+        if (cam.section) return false;
+        if (selectedCity === 'all') return true;
+        return (cam.city || '').toLowerCase() === selectedCity;
+      });
 
       if (mainCameras.length === 0) {
         cctvContainer.innerHTML = `

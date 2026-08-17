@@ -55,6 +55,18 @@ function get_db_data() {
                     'city' => 'jakarta',
                     'status' => 'active',
                     'created_at' => '2026-08-14 00:00:00'
+                ],
+                [
+                    'id' => 4,
+                    'name' => 'Onefifteenh Caffe',
+                    'email' => 'Caffe@gmail.com',
+                    'password' => password_hash('caffe123', PASSWORD_BCRYPT),
+                    'role' => 'customer',
+                    'cctv_quota' => 5,
+                    'phone' => '085771593522',
+                    'city' => 'bali',
+                    'status' => 'active',
+                    'created_at' => '2026-08-15 00:00:00'
                 ]
             ],
             'cameras' => [
@@ -85,6 +97,20 @@ function get_db_data() {
                     'platform' => 'mediamtx',
                     'status' => 'online',
                     'created_at' => '2026-08-14 00:00:00'
+                ],
+                [
+                    'id' => 5003,
+                    'user_id' => 4,
+                    'title' => 'ONEFIFTEENH BALI CAM 1',
+                    'city' => 'bali',
+                    'streamPath' => 'cctv_loewix_3',
+                    'hls_url' => 'http://stream.loewixcctv.com/cctv_loewix_3/index.m3u8',
+                    'thumbnail' => 'assets/image/thumbnail/default-thumbnail.png',
+                    'lat' => '-8.6705',
+                    'lng' => '115.2126',
+                    'platform' => 'mediamtx',
+                    'status' => 'online',
+                    'created_at' => '2026-08-15 00:00:00'
                 ]
             ]
         ];
