@@ -639,8 +639,10 @@
         </div>
       </div>
     </div>
+  </div>
+
   <!-- Modal Kelola Master Wilayah / Kota -->
-  <div class="modal fade" id="modalCityManagement" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal fade" id="modalCityManagement" tabindex="-1" role="dialog" aria-hidden="true" style="z-index: 1060;">
     <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
       <div class="modal-content modal-content-dark">
         <div class="modal-header modal-header-dark d-flex justify-content-between align-items-center">
