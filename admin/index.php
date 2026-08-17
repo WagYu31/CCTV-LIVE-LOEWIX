@@ -333,7 +333,7 @@
           <p class="text-muted mb-0" style="font-size: 14px;">Atur hak akses streaming, data profil, dan alokasi kuota live kamera pelanggan Loewix.</p>
         </div>
         <div class="d-flex align-items-center gap-2">
-          <button class="btn btn-outline-info btn-sm mr-2" style="border-radius: 20px;" onclick="openCityManagementModal()">
+          <button class="btn btn-outline-info btn-sm mr-2" style="border-radius: 20px;" data-toggle="modal" data-target="#modalCityManagement" onclick="loadAdminCities()">
             <i class="fas fa-map-marked-alt mr-1"></i> Kelola Wilayah
           </button>
           <button class="btn btn-outline-info btn-sm mr-2" style="border-radius: 20px;" onclick="exportCustomerCSV()">
@@ -648,7 +648,7 @@
             <h5 class="modal-title font-weight-bold mb-1" style="color: #ffffff;"><i class="fas fa-map-marked-alt text-info mr-2"></i> Kelola Master Data Wilayah & Kota</h5>
             <div class="text-muted" style="font-size: 13px;">Tambah kota baru, ubah nama wilayah, serta setel koordinat pusat GPS & zoom level peta.</div>
           </div>
-          <button type="button" class="close text-white" onclick="closeCityManagementModal()" aria-label="Close" style="outline: none;">
+          <button type="button" class="close text-white" data-dismiss="modal" onclick="closeCityManagementModal()" aria-label="Close" style="outline: none;">
             <span aria-hidden="true">&times;</span>
           </button>
         </div>
