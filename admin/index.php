@@ -372,7 +372,7 @@
     <div class="container d-flex justify-content-between align-items-center">
       <div class="d-flex align-items-center gap-3">
         <a href="../index.html">
-          <img src="../assets/image/logo-loewix.png" alt="Loewix Logo" height="46" style="filter: drop-shadow(0 2px 8px rgba(0,0,0,0.3));">
+          <img src="../assets/image/logo-loewix-white.png" alt="Loewix Logo" height="38" style="filter: drop-shadow(0 2px 8px rgba(0,0,0,0.3));">
         </a>
         <span class="badge ml-3" style="background: rgba(0, 210, 255, 0.15); color: #00d2ff; border: 1px solid rgba(0, 210, 255, 0.3); padding: 6px 14px; border-radius: 20px; font-weight: 700;">
           <i class="fas fa-user-shield mr-1"></i> SUPER ADMIN CONTROL CENTER

@@ -3564,10 +3564,10 @@
           ">
         <a class="navbar-brand p-0 mr-3" href="index.php" style="display: flex; align-items: center;">
           <img
-            src="assets/image/logo-loewix.png"
+            src="assets/image/logo-loewix-white.png"
             alt="LOEWIX CCTV"
             class="img-fluid"
-            style="height: 48px; max-height: 52px; width: auto; display: block; filter: drop-shadow(0 2px 10px rgba(0,0,0,0.4));" />
+            style="height: 38px; width: auto; display: block; filter: drop-shadow(0 2px 8px rgba(0,0,0,0.3));" />
         </a>
         <button
           class="navbar-toggler p-0 collapsed mr-2"
@@ -4006,7 +4006,7 @@
                 <div class="weight-footer-item-img">
                   <figure>
                     <img
-                      src="assets/image/logo-loewix.png"
+                      src="assets/image/logo-loewix-white.png"
                       alt="Loewix Security Systems Logo"
                       class="img-fluid"
                       style="max-height: 45px; width: auto;" />
