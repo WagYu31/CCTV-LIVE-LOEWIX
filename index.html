@@ -3562,12 +3562,12 @@
             pointer-events: auto;
             transition: all 0.3s ease;
           ">
-        <a class="navbar-brand p-0" href="index.php" style="display: flex; align-items: center;">
+        <a class="navbar-brand p-0 mr-3" href="index.php" style="display: flex; align-items: center;">
           <img
             src="assets/image/logo-loewix.png"
             alt="LOEWIX CCTV"
             class="img-fluid"
-            style="max-height: 38px; width: auto; display: block; filter: drop-shadow(0 2px 8px rgba(0,0,0,0.3));" />
+            style="height: 48px; max-height: 52px; width: auto; display: block; filter: drop-shadow(0 2px 10px rgba(0,0,0,0.4));" />
         </a>
         <button
           class="navbar-toggler p-0 collapsed mr-2"
