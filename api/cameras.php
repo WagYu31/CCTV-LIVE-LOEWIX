@@ -265,4 +265,43 @@ if ($action === 'delete') {
     exit;
 }
 
+if ($action === 'batch_delete') {
+    $rawIds = $_POST['ids'] ?? [];
+    if (is_string($rawIds)) {
+        $decoded = json_decode($rawIds, true);
+        $rawIds = is_array($decoded) ? $decoded : explode(',', $rawIds);
+    }
+    $ids = array_map('intval', (array)$rawIds);
+    $ids = array_filter($ids, function($v) { return $v > 0; });
+
+    if (empty($ids)) {
+        echo json_encode(['success' => false, 'message' => 'Tidak ada kamera yang dipilih untuk dihapus.']);
+        exit;
+    }
+
+    $newCameras = [];
+    $deletedCount = 0;
+
+    foreach ($db['cameras'] as $c) {
+        if (in_array((int)$c['id'], $ids, true)) {
+            $deletedCount++;
+        } else {
+            $newCameras[] = $c;
+        }
+    }
+
+    if ($deletedCount > 0) {
+        $db['cameras'] = $newCameras;
+        save_db_data($db);
+        echo json_encode([
+            'success' => true, 
+            'message' => "Berhasil menghapus {$deletedCount} channel kamera secara massal!",
+            'deleted_count' => $deletedCount
+        ]);
+    } else {
+        echo json_encode(['success' => false, 'message' => 'Tidak ada kamera yang cocok untuk dihapus.']);
+    }
+    exit;
+}
+
 echo json_encode(['success' => false, 'message' => 'Invalid Action']);

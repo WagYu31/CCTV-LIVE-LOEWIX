@@ -1009,12 +1009,22 @@
         </div>
         <div class="modal-body p-4">
           <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
-            <div class="badge badge-info p-2" id="cctv-modal-quota-badge" style="border-radius: 20px; font-size: 12px; background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.3); color: #38bdf8;">
-              <i class="fas fa-layer-group mr-1"></i> KUOTA: 0 / 20 CCTV TERPAKAI
+            <div class="d-flex align-items-center flex-wrap gap-2">
+              <div class="badge badge-info p-2" id="cctv-modal-quota-badge" style="border-radius: 20px; font-size: 12px; background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.3); color: #38bdf8;">
+                <i class="fas fa-layer-group mr-1"></i> KUOTA: 0 / 20 CCTV TERPAKAI
+              </div>
+              <button type="button" class="btn btn-danger btn-sm" id="btn-batch-delete-cctv" style="display: none; border-radius: 20px; font-weight: bold; background: linear-gradient(135deg, #ef4444, #dc2626); border: 1px solid #f87171; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4); padding: 5px 14px;" onclick="deleteSelectedCustomerCameras()">
+                <i class="fas fa-trash-alt mr-1"></i> HAPUS TERPILIH (<span id="selected-cctv-count">0</span>)
+              </button>
             </div>
-            <button class="btn btn-gold btn-sm" onclick="openAddCameraForCustomerForm()">
-              <i class="fas fa-plus-circle mr-1"></i> Tambah Kamera Baru
-            </button>
+            <div class="d-flex align-items-center gap-2">
+              <button class="btn btn-outline-info btn-sm mr-2" type="button" onclick="selectAllCCTV(true)" style="border-radius: 8px; font-size: 12px; font-weight: 600;" title="Ceklis Semua Kamera">
+                <i class="fas fa-check-square mr-1"></i> Ceklis Semua
+              </button>
+              <button class="btn btn-gold btn-sm" onclick="openAddCameraForCustomerForm()">
+                <i class="fas fa-plus-circle mr-1"></i> Tambah Kamera Baru
+              </button>
+            </div>
           </div>
 
           <!-- Form Tambah Kamera (Collapsible) -->
@@ -1288,6 +1298,9 @@
             <table class="table table-dark-custom">
               <thead>
                 <tr>
+                  <th style="width: 45px; text-align: center; vertical-align: middle;">
+                    <input type="checkbox" id="check-all-cctv" onchange="toggleSelectAllCCTV(this.checked)" style="cursor: pointer; width: 16px; height: 16px; accent-color: #38bdf8;" title="Ceklis / Batalkan Semua">
+                  </th>
                   <th>ID</th>
                   <th>Nama / Lokasi Kamera</th>
                   <th>Wilayah</th>
@@ -1299,7 +1312,7 @@
               </thead>
               <tbody id="cctv-modal-table-body">
                 <tr>
-                  <td colspan="7" class="text-center py-4 text-muted">Belum ada kamera CCTV terpasang untuk customer ini. Klik 'Tambah Kamera Baru'.</td>
+                  <td colspan="8" class="text-center py-4 text-muted">Belum ada kamera CCTV terpasang untuk customer ini. Klik 'Tambah Kamera Baru'.</td>
                 </tr>
               </tbody>
             </table>
@@ -1941,8 +1954,15 @@
       document.getElementById('cctv-modal-subtitle').innerText = `Customer: ${cust.name} (${cust.email})`;
       
       const tbody = document.getElementById('cctv-modal-table-body');
-      tbody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-muted"><i class="fas fa-spinner fa-spin mr-2"></i> Memuat data kamera dari server database...</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="8" class="text-center py-4 text-muted"><i class="fas fa-spinner fa-spin mr-2"></i> Memuat data kamera dari server database...</td></tr>`;
       document.getElementById('cctv-modal-quota-badge').innerHTML = `<i class="fas fa-layer-group mr-1"></i> KUOTA: Memuat... / ${cust.cctv_quota} CCTV TERPAKAI`;
+
+      const masterCb = document.getElementById('check-all-cctv');
+      if (masterCb) masterCb.checked = false;
+      const batchBtn = document.getElementById('btn-batch-delete-cctv');
+      if (batchBtn) batchBtn.style.display = 'none';
+      const countSpan = document.getElementById('selected-cctv-count');
+      if (countSpan) countSpan.innerText = '0';
 
       closeAddCameraForCustomerForm();
 
@@ -1969,11 +1989,11 @@
             saveCustomerCameras(customerId, currentCustomerCameras);
             renderCustomerCCTVTable(cust, currentCustomerCameras);
           } else {
-            tbody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-danger">Gagal memuat data dari server.</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="8" class="text-center py-4 text-danger">Gagal memuat data dari server.</td></tr>`;
           }
         })
         .catch(e => {
-          tbody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-danger">Gagal menghubungi server.</td></tr>`;
+          tbody.innerHTML = `<tr><td colspan="8" class="text-center py-4 text-danger">Gagal menghubungi server.</td></tr>`;
         });
     }
 
@@ -1994,8 +2014,12 @@
 
       document.getElementById('cctv-modal-quota-badge').innerHTML = `<i class="fas fa-layer-group mr-1"></i> KUOTA: ${cameras.length} / ${cust.cctv_quota} CCTV TERPAKAI`;
 
+      const masterCb = document.getElementById('check-all-cctv');
+      if (masterCb) masterCb.checked = false;
+      updateBatchDeleteBtn();
+
       if (!cameras || cameras.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-muted">Belum ada kamera CCTV terpasang untuk customer ini. Klik 'Tambah Kamera Baru'.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="8" class="text-center py-4 text-muted">Belum ada kamera CCTV terpasang untuk customer ini. Klik 'Tambah Kamera Baru'.</td></tr>`;
         return;
       }
 
@@ -2014,7 +2038,10 @@
         }
 
         const row = `
-          <tr>
+          <tr id="cctv-row-${cam.id}">
+            <td style="text-align: center; vertical-align: middle;">
+              <input type="checkbox" class="cctv-row-checkbox" value="${cam.id}" onchange="updateBatchDeleteBtn()" style="cursor: pointer; width: 16px; height: 16px; accent-color: #38bdf8;">
+            </td>
             <td class="font-weight-bold text-muted">#${cam.id}</td>
             <td class="font-weight-bold text-white">
               <i class="fas fa-video text-info mr-2"></i> ${cam.title}
@@ -2494,6 +2521,82 @@
         .catch(() => alert('Gagal menghubungi server database.'));
     }
 
+    function toggleSelectAllCCTV(checked) {
+      const checkboxes = document.querySelectorAll('.cctv-row-checkbox');
+      checkboxes.forEach(cb => {
+        cb.checked = checked;
+        const row = document.getElementById(`cctv-row-${cb.value}`);
+        if (row) {
+          if (checked) row.style.background = 'rgba(56, 189, 248, 0.12)';
+          else row.style.background = '';
+        }
+      });
+      updateBatchDeleteBtn();
+    }
+
+    function selectAllCCTV(checked) {
+      const masterCb = document.getElementById('check-all-cctv');
+      if (masterCb) masterCb.checked = checked;
+      toggleSelectAllCCTV(checked);
+    }
+
+    function updateBatchDeleteBtn() {
+      const allCheckboxes = document.querySelectorAll('.cctv-row-checkbox');
+      const checkedBoxes = document.querySelectorAll('.cctv-row-checkbox:checked');
+      const count = checkedBoxes.length;
+      const btn = document.getElementById('btn-batch-delete-cctv');
+      const countSpan = document.getElementById('selected-cctv-count');
+      const masterCb = document.getElementById('check-all-cctv');
+
+      allCheckboxes.forEach(cb => {
+        const row = document.getElementById(`cctv-row-${cb.value}`);
+        if (row) {
+          if (cb.checked) row.style.background = 'rgba(56, 189, 248, 0.12)';
+          else row.style.background = '';
+        }
+      });
+
+      if (countSpan) countSpan.innerText = count;
+      if (btn) {
+        btn.style.display = count > 0 ? 'inline-block' : 'none';
+      }
+
+      if (masterCb && allCheckboxes.length > 0) {
+        masterCb.checked = (count === allCheckboxes.length);
+      }
+    }
+
+    function deleteSelectedCustomerCameras() {
+      const checkedBoxes = document.querySelectorAll('.cctv-row-checkbox:checked');
+      const selectedIds = Array.from(checkedBoxes).map(cb => parseInt(cb.value)).filter(id => id > 0);
+
+      if (selectedIds.length === 0) {
+        alert('Silakan centang/pilih minimal satu channel kamera yang ingin dihapus.');
+        return;
+      }
+
+      if (!confirm(`Apakah Anda yakin ingin menghapus ${selectedIds.length} channel kamera yang dipilih sekaligus?\n\n(Catatan: Kuota customer akan otomatis disesuaikan kembali).`)) {
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append('action', 'batch_delete');
+      formData.append('ids', JSON.stringify(selectedIds));
+
+      fetch(`${API_SERVER}/cameras.php`, { method: 'POST', body: formData })
+        .then(res => res.json())
+        .then(resData => {
+          if (resData.success) {
+            alert(`BERHASIL: ${resData.message}`);
+            openCustomerCCTVModal(currentManagingCustomerId);
+            loadCustomerData();
+          } else {
+            alert(`GAGAL: ${resData.message}`);
+          }
+        })
+        .catch(() => alert('Gagal menghubungi server database.'));
+    }
+
     // ==========================================
     // MASTER DATA WILAYAH & KOTA MANAGEMENT
     // ==========================================
@@ -2763,6 +2866,10 @@
     window.closeEditCameraForm = closeEditCameraForm;
     window.submitEditCameraForCustomer = submitEditCameraForCustomer;
     window.deleteCustomerCamera = deleteCustomerCamera;
+    window.toggleSelectAllCCTV = toggleSelectAllCCTV;
+    window.selectAllCCTV = selectAllCCTV;
+    window.updateBatchDeleteBtn = updateBatchDeleteBtn;
+    window.deleteSelectedCustomerCameras = deleteSelectedCustomerCameras;
     window.switchCamConnMode = switchCamConnMode;
     window.togglePassVisibility = togglePassVisibility;
     window.openQRScannerModal = openQRScannerModal;
