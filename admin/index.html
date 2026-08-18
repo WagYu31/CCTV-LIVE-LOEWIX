@@ -8,51 +8,188 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
   <style>
     :root {
-      --bg-dark: #070b19;
-      --panel-bg: rgba(13, 27, 62, 0.75);
-      --border-color: rgba(255, 255, 255, 0.12);
+      --bg-dark: #060b18;
+      --panel-bg: rgba(13, 24, 54, 0.72);
+      --panel-bg-hover: rgba(18, 33, 74, 0.85);
+      --border-color: rgba(255, 255, 255, 0.1);
+      --border-glow: rgba(0, 210, 255, 0.25);
       --primary-cyan: #00d2ff;
-      --accent-gold: #f59e0b;
+      --primary-blue: #0066ff;
+      --accent-emerald: #10b981;
+      --accent-amber: #f59e0b;
+      --accent-purple: #8b5cf6;
+      --accent-rose: #ef4444;
       --text-main: #ffffff;
       --text-muted: #94a3b8;
     }
     
     body {
       background-color: var(--bg-dark);
-      background-image: radial-gradient(circle at 50% 0%, #0d2352 0%, #070b19 80%);
-      font-family: 'Outfit', sans-serif;
+      background-image: 
+        radial-gradient(circle at 15% 10%, rgba(0, 210, 255, 0.12) 0%, transparent 45%),
+        radial-gradient(circle at 85% 15%, rgba(99, 102, 241, 0.12) 0%, transparent 45%),
+        radial-gradient(circle at 50% 80%, rgba(16, 185, 129, 0.08) 0%, transparent 50%),
+        linear-gradient(180deg, #070d1e 0%, #050814 100%);
+      background-attachment: fixed;
+      font-family: 'Plus Jakarta Sans', 'Outfit', sans-serif;
       color: var(--text-main);
       min-height: 100vh;
-      padding-bottom: 50px;
+      padding-bottom: 60px;
     }
 
-    /* Floating Glass Header */
+    /* Custom Futuristic Scrollbar */
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: #060b18; }
+    ::-webkit-scrollbar-thumb { background: rgba(0, 210, 255, 0.25); border-radius: 10px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(0, 210, 255, 0.5); }
+
+    /* Top Floating Glass Header */
     .admin-navbar {
-      background: rgba(13, 27, 62, 0.85);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
+      background: rgba(10, 20, 48, 0.8);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
       border-bottom: 1px solid var(--border-color);
-      padding: 14px 0;
-      margin-bottom: 30px;
+      padding: 12px 0;
+      margin-bottom: 28px;
       position: sticky;
       top: 0;
       z-index: 1030;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.45);
     }
 
-    /* Metric Cards Taste-Skill */
+    .brand-logo-container {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      text-decoration: none !important;
+    }
+
+    .badge-hub-live {
+      background: rgba(0, 210, 255, 0.12);
+      color: #00d2ff;
+      border: 1px solid rgba(0, 210, 255, 0.3);
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.8px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .pulse-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #10b981;
+      box-shadow: 0 0 10px #10b981;
+      animation: pulseGlow 1.8s infinite;
+    }
+
+    @keyframes pulseGlow {
+      0% { transform: scale(0.9); opacity: 0.7; }
+      50% { transform: scale(1.3); opacity: 1; box-shadow: 0 0 14px #10b981; }
+      100% { transform: scale(0.9); opacity: 0.7; }
+    }
+
+    .live-clock-widget {
+      font-size: 12px;
+      color: #94a3b8;
+      font-weight: 600;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 5px 12px;
+      border-radius: 15px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .admin-profile-pill {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      padding: 4px 12px 4px 6px;
+      border-radius: 25px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      color: #e2e8f0;
+    }
+
+    .admin-avatar {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #00d2ff, #0066ff);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 11px;
+      box-shadow: 0 0 10px rgba(0, 210, 255, 0.4);
+    }
+
+    .btn-portal-link {
+      background: rgba(0, 210, 255, 0.08);
+      border: 1px solid rgba(0, 210, 255, 0.3);
+      color: #00d2ff;
+      border-radius: 20px;
+      padding: 6px 16px;
+      font-size: 12px;
+      font-weight: 700;
+      transition: all 0.25s ease;
+      text-decoration: none !important;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-portal-link:hover {
+      background: #00d2ff;
+      color: #000;
+      box-shadow: 0 0 20px rgba(0, 210, 255, 0.4);
+      transform: translateY(-1px);
+    }
+
+    .btn-logout-pill {
+      background: rgba(239, 68, 68, 0.12);
+      border: 1px solid rgba(239, 68, 68, 0.35);
+      color: #f87171;
+      border-radius: 20px;
+      padding: 6px 16px;
+      font-size: 12px;
+      font-weight: 700;
+      transition: all 0.25s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-logout-pill:hover {
+      background: #ef4444;
+      color: #fff;
+      box-shadow: 0 0 20px rgba(239, 68, 68, 0.4);
+      transform: translateY(-1px);
+    }
+
+    /* Executive Metric Cards */
     .admin-card {
       background: var(--panel-bg);
       border: 1px solid var(--border-color);
-      border-radius: 18px;
+      border-radius: 22px;
       padding: 24px;
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      box-shadow: 0 20px 45px rgba(0, 0, 0, 0.45);
       margin-bottom: 24px;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
       position: relative;
       overflow: hidden;
     }
@@ -64,203 +201,411 @@
       left: 0;
       right: 0;
       height: 3px;
-      background: linear-gradient(90deg, #00d2ff, #0066ff);
-      opacity: 0.8;
+      background: linear-gradient(90deg, #00d2ff, #6366f1, #f59e0b);
+      opacity: 0.9;
     }
 
     .admin-card:hover {
       transform: translateY(-4px);
-      border-color: rgba(0, 210, 255, 0.3);
-      box-shadow: 0 20px 40px rgba(0, 210, 255, 0.15);
+      border-color: rgba(0, 210, 255, 0.35);
+      box-shadow: 0 25px 50px rgba(0, 210, 255, 0.15);
+    }
+
+    .metric-card-inner {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+    }
+
+    .metric-icon-box {
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      transition: all 0.3s ease;
+    }
+
+    .icon-cyan { background: rgba(0, 210, 255, 0.15); color: #00d2ff; border: 1px solid rgba(0, 210, 255, 0.3); box-shadow: 0 0 20px rgba(0, 210, 255, 0.2); }
+    .icon-amber { background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); box-shadow: 0 0 20px rgba(245, 158, 11, 0.2); }
+    .icon-emerald { background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); box-shadow: 0 0 20px rgba(16, 185, 129, 0.2); }
+    .icon-indigo { background: rgba(99, 102, 241, 0.15); color: #818cf8; border: 1px solid rgba(99, 102, 241, 0.3); box-shadow: 0 0 20px rgba(99, 102, 241, 0.2); }
+
+    .admin-card:hover .metric-icon-box {
+      transform: scale(1.08) rotate(3deg);
+    }
+
+    .metric-label {
+      font-size: 12px;
+      font-weight: 700;
+      color: #94a3b8;
+      letter-spacing: 0.6px;
+      text-transform: uppercase;
+      margin-bottom: 4px;
     }
 
     .metric-value {
-      font-size: 2.5rem;
+      font-size: 2.6rem;
       font-weight: 800;
-      color: var(--primary-cyan);
-      line-height: 1;
-      margin-top: 10px;
+      color: #ffffff;
+      line-height: 1.1;
+      margin-top: 6px;
       letter-spacing: -1px;
     }
 
-    /* Search & Filter Toolbar */
+    .metric-sub-badge {
+      display: inline-flex;
+      align-items: center;
+      font-size: 11px;
+      font-weight: 600;
+      color: #94a3b8;
+      margin-top: 8px;
+    }
+
+    /* Gradient Text & Headers */
+    .text-gradient-cyan {
+      background: linear-gradient(135deg, #ffffff 30%, #00d2ff 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .text-gradient-gold {
+      background: linear-gradient(135deg, #fef08a 0%, #f59e0b 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    /* Filter & Search Toolbar */
     .filter-toolbar {
-      background: rgba(255, 255, 255, 0.04);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 14px;
-      padding: 14px;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 18px;
+      padding: 12px 16px;
       margin-bottom: 24px;
     }
 
+    .search-input-wrapper {
+      position: relative;
+      flex: 1;
+      min-width: 260px;
+    }
+
     .search-input {
-      background: rgba(255, 255, 255, 0.08) !important;
-      border: 1px solid rgba(255, 255, 255, 0.15) !important;
+      background: rgba(255, 255, 255, 0.06) !important;
+      border: 1px solid rgba(255, 255, 255, 0.12) !important;
       color: #fff !important;
       border-radius: 25px !important;
-      padding-left: 40px !important;
-      height: 42px !important;
-      font-size: 14px !important;
+      padding-left: 42px !important;
+      height: 44px !important;
+      font-size: 13.5px !important;
+      font-weight: 500;
+      transition: all 0.25s ease !important;
     }
 
     .search-input:focus {
-      background: rgba(255, 255, 255, 0.12) !important;
-      border-color: var(--primary-cyan) !important;
-      box-shadow: 0 0 12px rgba(0, 210, 255, 0.3) !important;
+      background: rgba(255, 255, 255, 0.1) !important;
+      border-color: #00d2ff !important;
+      box-shadow: 0 0 16px rgba(0, 210, 255, 0.3) !important;
     }
 
-    /* Table Taste-Skill */
+    .custom-filter-select {
+      background: rgba(255, 255, 255, 0.06);
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 20px;
+      padding: 8px 16px;
+      font-size: 13px;
+      font-weight: 600;
+      height: 44px;
+      outline: none;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+
+    .custom-filter-select:focus, .custom-filter-select:hover {
+      border-color: #00d2ff;
+      background: rgba(255, 255, 255, 0.1);
+      box-shadow: 0 0 12px rgba(0, 210, 255, 0.25);
+    }
+
+    /* Buttons Suite */
+    .btn-gold {
+      background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 60%, #d97706 100%);
+      color: #000 !important;
+      font-weight: 800;
+      border: none;
+      border-radius: 25px;
+      padding: 10px 24px;
+      font-size: 13.5px;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 6px 20px rgba(245, 158, 11, 0.35);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-gold:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 28px rgba(245, 158, 11, 0.55);
+      color: #000 !important;
+    }
+
+    .btn-glass-cyan {
+      background: rgba(0, 210, 255, 0.08);
+      border: 1px solid rgba(0, 210, 255, 0.35);
+      color: #00d2ff !important;
+      font-weight: 700;
+      border-radius: 25px;
+      padding: 9px 20px;
+      font-size: 13px;
+      transition: all 0.25s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-glass-cyan:hover {
+      background: rgba(0, 210, 255, 0.2);
+      border-color: #00d2ff;
+      box-shadow: 0 0 20px rgba(0, 210, 255, 0.35);
+      transform: translateY(-1px);
+    }
+
+    .btn-glass-outline {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #cbd5e1 !important;
+      font-weight: 700;
+      border-radius: 25px;
+      padding: 9px 18px;
+      font-size: 13px;
+      transition: all 0.25s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-glass-outline:hover {
+      background: rgba(255, 255, 255, 0.12);
+      border-color: rgba(255, 255, 255, 0.3);
+      color: #fff !important;
+      transform: translateY(-1px);
+    }
+
+    /* Table Design */
+    .table-responsive {
+      border-radius: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(0, 0, 0, 0.2);
+      overflow-x: auto;
+    }
+
     .table-dark-custom {
       color: #fff;
       margin-bottom: 0;
+      border-collapse: separate;
+      border-spacing: 0;
     }
 
-    .table-dark-custom th {
+    .table-dark-custom thead th {
       border-top: none;
-      border-bottom: 2px solid rgba(255,255,255,0.15);
-      color: var(--primary-cyan);
-      font-weight: 700;
-      font-size: 13px;
-      letter-spacing: 0.5px;
+      border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+      color: #00d2ff;
+      font-weight: 800;
+      font-size: 12px;
+      letter-spacing: 0.8px;
       text-transform: uppercase;
-      padding: 16px;
-      background: rgba(0, 0, 0, 0.2);
+      padding: 16px 18px;
+      background: rgba(7, 14, 34, 0.9);
+      position: sticky;
+      top: 0;
+      z-index: 10;
     }
 
-    .table-dark-custom td {
-      border-top: 1px solid rgba(255,255,255,0.06);
-      padding: 16px;
+    .table-dark-custom tbody td {
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      padding: 18px 18px;
       vertical-align: middle;
-      font-size: 14px;
+      font-size: 13.5px;
+      background: transparent;
+      transition: all 0.2s ease;
     }
 
-    .table-dark-custom tr:hover {
-      background: rgba(0, 210, 255, 0.05);
+    .table-dark-custom tbody tr {
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
-    /* Action Buttons */
+    .table-dark-custom tbody tr:hover {
+      background: rgba(0, 210, 255, 0.04);
+      transform: scale(1.002);
+    }
+
+    .table-dark-custom tbody tr:hover td {
+      background: rgba(0, 210, 255, 0.03);
+    }
+
+    /* Custom Monospace ID Badge */
+    .cust-id-badge {
+      background: rgba(0, 210, 255, 0.1);
+      color: #00d2ff;
+      border: 1px solid rgba(0, 210, 255, 0.25);
+      font-family: monospace;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 8px;
+      font-size: 12px;
+      display: inline-block;
+    }
+
+    /* City Badges with Gradient Hues */
+    .city-badge-siantar { background: rgba(0, 210, 255, 0.12); color: #00d2ff; border: 1px solid rgba(0, 210, 255, 0.3); }
+    .city-badge-jakarta { background: rgba(16, 185, 129, 0.12); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); }
+    .city-badge-bali { background: rgba(245, 158, 11, 0.12); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); }
+    .city-badge-medan { background: rgba(168, 85, 247, 0.12); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.3); }
+    .city-badge-bandung { background: rgba(59, 130, 246, 0.12); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3); }
+    .city-badge-default { background: rgba(255, 255, 255, 0.1); color: #e2e8f0; border: 1px solid rgba(255, 255, 255, 0.2); }
+
+    .city-badge {
+      border-radius: 12px;
+      padding: 5px 12px;
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    /* Quota Progress Bar with Neon Glow */
+    .progress-bar-custom {
+      height: 8px;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.08);
+      overflow: hidden;
+      box-shadow: inset 0 1px 3px rgba(0,0,0,0.5);
+      position: relative;
+    }
+
+    .progress-fill {
+      height: 100%;
+      border-radius: 6px;
+      transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .progress-fill-low { background: linear-gradient(90deg, #00d2ff, #0066ff); box-shadow: 0 0 10px rgba(0, 210, 255, 0.5); }
+    .progress-fill-med { background: linear-gradient(90deg, #f59e0b, #ea580c); box-shadow: 0 0 10px rgba(245, 158, 11, 0.5); }
+    .progress-fill-high { background: linear-gradient(90deg, #ef4444, #dc2626); box-shadow: 0 0 10px rgba(239, 68, 68, 0.5); }
+
+    /* Action Buttons Suite */
     .action-btn-group {
       display: flex;
-      gap: 8px;
+      gap: 6px;
+      justify-content: flex-end;
     }
 
     .act-btn {
       width: 36px;
       height: 36px;
-      border-radius: 10px;
+      border-radius: 11px;
       display: inline-flex;
       align-items: center;
       justify-content: center;
       border: 1px solid transparent;
-      transition: all 0.2s ease;
+      transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
       cursor: pointer;
-      color: #fff;
+      font-size: 13px;
+      outline: none;
+      position: relative;
     }
 
-    .act-btn-edit { background: rgba(0, 210, 255, 0.15); border-color: rgba(0, 210, 255, 0.3); color: #00d2ff; }
-    .act-btn-edit:hover { background: #00d2ff; color: #000; box-shadow: 0 0 15px rgba(0, 210, 255, 0.5); }
+    .act-btn:hover {
+      transform: translateY(-2px);
+    }
 
-    .act-btn-quota { background: rgba(245, 158, 11, 0.15); border-color: rgba(245, 158, 11, 0.3); color: #f59e0b; }
-    .act-btn-quota:hover { background: #f59e0b; color: #000; box-shadow: 0 0 15px rgba(245, 158, 11, 0.5); }
+    .act-btn-cctv { background: rgba(16, 185, 129, 0.14); border-color: rgba(16, 185, 129, 0.35); color: #10b981; }
+    .act-btn-cctv:hover { background: #10b981; color: #fff; box-shadow: 0 0 16px rgba(16, 185, 129, 0.6); }
 
-    .act-btn-reset { background: rgba(168, 85, 247, 0.15); border-color: rgba(168, 85, 247, 0.3); color: #c084fc; }
-    .act-btn-reset:hover { background: #a855f7; color: #fff; box-shadow: 0 0 15px rgba(168, 85, 247, 0.5); }
+    .act-btn-edit { background: rgba(0, 210, 255, 0.14); border-color: rgba(0, 210, 255, 0.35); color: #00d2ff; }
+    .act-btn-edit:hover { background: #00d2ff; color: #000; box-shadow: 0 0 16px rgba(0, 210, 255, 0.6); }
 
-    .act-btn-cctv { background: rgba(16, 185, 129, 0.15); border-color: rgba(16, 185, 129, 0.3); color: #10b981; }
-    .act-btn-cctv:hover { background: #10b981; color: #fff; box-shadow: 0 0 15px rgba(16, 185, 129, 0.5); }
+    .act-btn-quota { background: rgba(245, 158, 11, 0.14); border-color: rgba(245, 158, 11, 0.35); color: #f59e0b; }
+    .act-btn-quota:hover { background: #f59e0b; color: #000; box-shadow: 0 0 16px rgba(245, 158, 11, 0.6); }
 
-    .act-btn-status { background: rgba(59, 130, 246, 0.15); border-color: rgba(59, 130, 246, 0.3); color: #60a5fa; }
-    .act-btn-status:hover { background: #3b82f6; color: #fff; box-shadow: 0 0 15px rgba(59, 130, 246, 0.5); }
+    .act-btn-pass { background: rgba(168, 85, 247, 0.14); border-color: rgba(168, 85, 247, 0.35); color: #c084fc; }
+    .act-btn-pass:hover { background: #a855f7; color: #fff; box-shadow: 0 0 16px rgba(168, 85, 247, 0.6); }
 
-    .act-btn-delete { background: rgba(239, 68, 68, 0.15); border-color: rgba(239, 68, 68, 0.3); color: #f87171; }
-    .act-btn-delete:hover { background: #ef4444; color: #fff; box-shadow: 0 0 15px rgba(239, 68, 68, 0.5); }
+    .act-btn-status { background: rgba(59, 130, 246, 0.14); border-color: rgba(59, 130, 246, 0.35); color: #60a5fa; }
+    .act-btn-status:hover { background: #3b82f6; color: #fff; box-shadow: 0 0 16px rgba(59, 130, 246, 0.6); }
 
-    /* Custom Badges */
+    .act-btn-delete { background: rgba(239, 68, 68, 0.14); border-color: rgba(239, 68, 68, 0.35); color: #f87171; }
+    .act-btn-delete:hover { background: #ef4444; color: #fff; box-shadow: 0 0 16px rgba(239, 68, 68, 0.6); }
+
+    /* Custom Status Badges */
     .status-badge-active {
-      background: rgba(16, 185, 129, 0.15);
+      background: rgba(16, 185, 129, 0.12);
       color: #10b981;
       border: 1px solid rgba(16, 185, 129, 0.3);
-      padding: 6px 12px;
+      padding: 6px 14px;
       border-radius: 20px;
-      font-weight: 700;
+      font-weight: 800;
       font-size: 11px;
-      letter-spacing: 0.5px;
+      letter-spacing: 0.6px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
     }
 
-    .status-badge-inactive {
-      background: rgba(239, 68, 68, 0.15);
+    .status-badge-suspended {
+      background: rgba(239, 68, 68, 0.12);
       color: #f87171;
       border: 1px solid rgba(239, 68, 68, 0.3);
-      padding: 6px 12px;
+      padding: 6px 14px;
       border-radius: 20px;
-      font-weight: 700;
-      font-size: 11px;
-      letter-spacing: 0.5px;
-    }
-
-    .city-badge {
-      background: rgba(255, 255, 255, 0.08);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      border-radius: 12px;
-      padding: 4px 10px;
-      font-size: 11px;
-      font-weight: 700;
-      text-transform: uppercase;
-      color: #cbd5e1;
-    }
-
-    .btn-gold {
-      background: linear-gradient(135deg, #fbbf24, #f59e0b);
-      color: #000;
       font-weight: 800;
-      border: none;
-      border-radius: 25px;
-      padding: 10px 24px;
-      transition: all 0.3s ease;
-      box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
+      font-size: 11px;
+      letter-spacing: 0.6px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
     }
 
-    .btn-gold:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 25px rgba(245, 158, 11, 0.5);
-      color: #000;
-    }
-
-    .progress-bar-custom {
-      height: 8px;
-      border-radius: 4px;
-      background: rgba(255,255,255,0.1);
-      overflow: hidden;
-    }
-
-    .progress-fill {
-      height: 100%;
-      background: linear-gradient(90deg, #00d2ff, #0066ff);
-      border-radius: 4px;
-    }
-
+    /* Modal Luxury Dark Styling */
     .modal-content-dark {
-      background: #0d1934;
-      border: 1px solid var(--border-color);
+      background: linear-gradient(180deg, #0d1a3b 0%, #080f24 100%);
+      border: 1px solid rgba(0, 210, 255, 0.25);
       color: #fff;
-      border-radius: 20px;
-      box-shadow: 0 25px 50px -12px rgba(0,0,0,0.6);
+      border-radius: 24px;
+      box-shadow: 0 30px 70px rgba(0, 0, 0, 0.8);
     }
 
-    .modal-header-dark { border-bottom: 1px solid rgba(255,255,255,0.1); padding: 18px 24px; }
-    .modal-footer-dark { border-top: 1px solid rgba(255,255,255,0.1); padding: 16px 24px; }
+    .modal-header-dark { 
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08); 
+      padding: 20px 26px; 
+    }
+    
+    .modal-footer-dark { 
+      border-top: 1px solid rgba(255, 255, 255, 0.08); 
+      padding: 18px 26px; 
+    }
 
     .form-control-dark {
-      background: rgba(255,255,255,0.08);
-      border: 1px solid rgba(255,255,255,0.2);
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.15);
       color: #fff !important;
-      border-radius: 10px;
-      height: 44px;
+      border-radius: 12px;
+      height: 46px;
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.25s ease;
     }
 
     .form-control-dark:focus {
-      background: rgba(255,255,255,0.12);
-      border-color: var(--primary-cyan);
-      box-shadow: 0 0 12px rgba(0,210,255,0.3);
+      background: rgba(255, 255, 255, 0.1);
+      border-color: #00d2ff;
+      box-shadow: 0 0 16px rgba(0, 210, 255, 0.3);
     }
 
     /* Connection Mode Switcher Tabs */
@@ -268,16 +613,16 @@
       display: flex;
       gap: 10px;
       margin-bottom: 20px;
-      background: rgba(0, 0, 0, 0.35);
+      background: rgba(0, 0, 0, 0.4);
       padding: 6px;
-      border-radius: 14px;
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
     }
 
     .conn-tab-btn {
       flex: 1;
-      padding: 10px 14px;
-      border-radius: 10px;
+      padding: 11px 16px;
+      border-radius: 12px;
       font-weight: 700;
       font-size: 13px;
       text-align: center;
@@ -302,7 +647,7 @@
       background: linear-gradient(135deg, rgba(0, 210, 255, 0.25), rgba(0, 102, 255, 0.25));
       border-color: #00d2ff;
       color: #ffffff;
-      box-shadow: 0 4px 15px rgba(0, 210, 255, 0.3);
+      box-shadow: 0 4px 18px rgba(0, 210, 255, 0.35);
     }
 
     /* QR Code Scanner Box */
@@ -312,11 +657,11 @@
       max-width: 380px;
       height: 280px;
       margin: 0 auto 16px;
-      border-radius: 16px;
+      border-radius: 18px;
       overflow: hidden;
       background: #000;
       border: 2px solid #00d2ff;
-      box-shadow: 0 0 30px rgba(0, 210, 255, 0.35);
+      box-shadow: 0 0 35px rgba(0, 210, 255, 0.4);
     }
 
     .qr-scanner-laser {
@@ -347,7 +692,7 @@
 
     /* ISO Responsive Breakpoints */
     @media (max-width: 991px) {
-      .metric-value { font-size: 2rem; }
+      .metric-value { font-size: 2.1rem; }
       .admin-navbar { padding: 10px 0; }
     }
 
@@ -358,7 +703,7 @@
     }
 
     @media (max-width: 575px) {
-      .table-dark-custom th, .table-dark-custom td { padding: 10px 8px; font-size: 12px; }
+      .table-dark-custom th, .table-dark-custom td { padding: 12px 10px; font-size: 12px; }
       .action-btn-group { gap: 4px; }
       .act-btn { width: 32px; height: 32px; font-size: 11px; }
       .btn-gold { padding: 8px 16px; font-size: 13px; }
@@ -369,21 +714,29 @@
 
   <!-- Super Admin Header Navbar -->
   <nav class="admin-navbar">
-    <div class="container d-flex justify-content-between align-items-center">
+    <div class="container d-flex justify-content-between align-items-center flex-wrap gap-3">
       <div class="d-flex align-items-center gap-3">
-        <a href="../index.html">
-          <img src="../assets/image/logo-loewix-white.png" alt="Loewix Logo" height="38" style="filter: drop-shadow(0 2px 8px rgba(0,0,0,0.3));">
+        <a href="../index.html" class="brand-logo-container">
+          <img src="../assets/image/logo-loewix-white.png" alt="Loewix Logo" height="38" style="filter: drop-shadow(0 2px 8px rgba(0,0,0,0.4));">
         </a>
-        <span class="badge ml-3" style="background: rgba(0, 210, 255, 0.15); color: #00d2ff; border: 1px solid rgba(0, 210, 255, 0.3); padding: 6px 14px; border-radius: 20px; font-weight: 700;">
-          <i class="fas fa-user-shield mr-1"></i> SUPER ADMIN CONTROL CENTER
+        <div class="d-none d-md-block" style="width: 1px; height: 26px; background: rgba(255, 255, 255, 0.15);"></div>
+        <span class="badge-hub-live d-none d-sm-inline-flex">
+          <span class="pulse-dot"></span> LOEWIX ENTERPRISE COMMAND
         </span>
       </div>
-      <div>
-        <a href="../index.html" class="btn btn-outline-light btn-sm mr-2" style="border-radius: 20px;">
-          <i class="fas fa-desktop mr-1"></i> Portal Utama
+      <div class="d-flex align-items-center gap-2">
+        <div class="live-clock-widget d-none d-lg-inline-flex" id="live-admin-clock">
+          <i class="far fa-clock text-info"></i> Memuat waktu...
+        </div>
+        <div class="admin-profile-pill d-none d-sm-inline-flex">
+          <div class="admin-avatar"><i class="fas fa-crown"></i></div>
+          <span>Super Admin</span>
+        </div>
+        <a href="../index.html" class="btn-portal-link">
+          <i class="fas fa-desktop"></i> Portal Live
         </a>
-        <button class="btn btn-danger btn-sm" onclick="logoutAdmin()" style="border-radius: 20px;">
-          <i class="fas fa-sign-out-alt mr-1"></i> Logout
+        <button class="btn-logout-pill" onclick="logoutAdmin()">
+          <i class="fas fa-sign-out-alt"></i> Logout
         </button>
       </div>
     </div>
@@ -395,27 +748,67 @@
     <div class="row">
       <div class="col-lg-3 col-md-6 col-12">
         <div class="admin-card">
-          <div class="text-muted font-weight-bold" style="font-size: 13px;"><i class="fas fa-building text-info mr-2"></i> TOTAL CUSTOMER</div>
-          <div class="metric-value" id="metric-total-customers">0</div>
+          <div class="metric-card-inner">
+            <div>
+              <div class="metric-label">TOTAL CUSTOMER</div>
+              <div class="metric-value" id="metric-total-customers">0</div>
+            </div>
+            <div class="metric-icon-box icon-cyan">
+              <i class="fas fa-building"></i>
+            </div>
+          </div>
+          <div class="metric-sub-badge">
+            <i class="fas fa-shield-alt text-cyan mr-1"></i> Multi-Tenant Ready
+          </div>
         </div>
       </div>
       <div class="col-lg-3 col-md-6 col-12">
         <div class="admin-card">
-          <div class="text-muted font-weight-bold" style="font-size: 13px;"><i class="fas fa-video text-warning mr-2"></i> TOTAL CHANNEL CCTV</div>
-          <div class="metric-value" id="metric-total-cameras">0</div>
+          <div class="metric-card-inner">
+            <div>
+              <div class="metric-label">LIVE CHANNEL CCTV</div>
+              <div class="metric-value" id="metric-total-cameras">0</div>
+            </div>
+            <div class="metric-icon-box icon-amber">
+              <i class="fas fa-video"></i>
+            </div>
+          </div>
+          <div class="metric-sub-badge">
+            <i class="fas fa-bolt text-amber mr-1"></i> P2P & RTSP Online
+          </div>
         </div>
       </div>
       <div class="col-lg-3 col-md-6 col-12">
         <div class="admin-card">
-          <div class="text-muted font-weight-bold" style="font-size: 13px;"><i class="fas fa-layer-group text-success mr-2"></i> ALOKASI KUOTA</div>
-          <div class="metric-value" id="metric-total-quota">0</div>
+          <div class="metric-card-inner">
+            <div>
+              <div class="metric-label">ALOKASI TOTAL KUOTA</div>
+              <div class="metric-value" id="metric-total-quota">0</div>
+            </div>
+            <div class="metric-icon-box icon-emerald">
+              <i class="fas fa-layer-group"></i>
+            </div>
+          </div>
+          <div class="metric-sub-badge">
+            <i class="fas fa-chart-pie text-emerald mr-1"></i> Kapasitas Tersedia
+          </div>
         </div>
       </div>
       <div class="col-lg-3 col-md-6 col-12">
         <div class="admin-card">
-          <div class="text-muted font-weight-bold" style="font-size: 13px;"><i class="fas fa-server text-primary mr-2"></i> SERVER MEDIAMTX</div>
-          <div class="metric-value" style="color: #10b981; font-size: 1.6rem; margin-top: 14px;">
-            <i class="fas fa-check-circle mr-1"></i> ONLINE 99.9%
+          <div class="metric-card-inner">
+            <div>
+              <div class="metric-label">SERVER GATEWAY</div>
+              <div class="metric-value" style="color: #10b981; font-size: 1.5rem; margin-top: 10px;">
+                <i class="fas fa-check-circle mr-1"></i> ONLINE 99.9%
+              </div>
+            </div>
+            <div class="metric-icon-box icon-indigo">
+              <i class="fas fa-server"></i>
+            </div>
+          </div>
+          <div class="metric-sub-badge">
+            <i class="fas fa-network-wired text-indigo mr-1"></i> MediaMTX RTMP/HLS
           </div>
         </div>
       </div>
@@ -425,30 +818,34 @@
     <div class="admin-card">
       <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
         <div>
-          <h4 class="font-weight-bold mb-1"><i class="fas fa-users-cog text-info mr-2"></i> Kelola Customer & Alokasi Kuota CCTV</h4>
-          <p class="text-muted mb-0" style="font-size: 14px;">Atur hak akses streaming, data profil, dan alokasi kuota live kamera pelanggan Loewix.</p>
+          <h4 class="font-weight-bold mb-1 text-gradient-cyan">
+            <i class="fas fa-users-cog text-cyan mr-2"></i> Kelola Customer & Alokasi Kuota CCTV
+          </h4>
+          <p class="text-muted mb-0" style="font-size: 13.5px;">
+            Atur hak akses streaming, data profil pelanggan, konfigurasi XMeye P2P, dan kuota live kamera.
+          </p>
         </div>
-        <div class="d-flex align-items-center gap-2">
-          <button class="btn btn-outline-info btn-sm mr-2" style="border-radius: 20px;" data-toggle="modal" data-target="#modalCityManagement" onclick="loadAdminCities()">
-            <i class="fas fa-map-marked-alt mr-1"></i> Kelola Wilayah
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+          <button class="btn-glass-cyan" data-toggle="modal" data-target="#modalCityManagement" onclick="loadAdminCities()">
+            <i class="fas fa-map-marked-alt"></i> Kelola Wilayah
           </button>
-          <button class="btn btn-outline-info btn-sm mr-2" style="border-radius: 20px;" onclick="exportCustomerCSV()">
-            <i class="fas fa-download mr-1"></i> Export CSV
+          <button class="btn-glass-outline" onclick="exportCustomerCSV()">
+            <i class="fas fa-download"></i> Export CSV
           </button>
-          <button class="btn btn-gold" onclick="openAddCustomerModal()">
-            <i class="fas fa-user-plus mr-1"></i> Tambah Customer Baru
+          <button class="btn-gold" onclick="openAddCustomerModal()">
+            <i class="fas fa-user-plus"></i> Tambah Customer Baru
           </button>
         </div>
       </div>
 
       <!-- Search & Filter Controls -->
       <div class="filter-toolbar d-flex justify-content-between align-items-center flex-wrap gap-3">
-        <div style="position: relative; flex: 1; min-width: 250px;">
-          <i class="fas fa-search" style="position: absolute; left: 14px; top: 14px; color: #94a3b8; font-size: 14px;"></i>
-          <input type="text" id="search-customer-input" class="form-control search-input" placeholder="🔍 Cari Nama Customer, Email, atau Telepon..." onkeyup="filterCustomerTable()">
+        <div class="search-input-wrapper">
+          <i class="fas fa-search" style="position: absolute; left: 16px; top: 15px; color: #94a3b8; font-size: 14px;"></i>
+          <input type="text" id="search-customer-input" class="form-control search-input" placeholder="🔍 Cari Nama Customer, Email, atau No. HP..." onkeyup="filterCustomerTable()">
         </div>
-        <div class="d-flex align-items-center gap-2">
-          <select id="filter-city-select" class="form-control form-control-sm" style="background: rgba(255,255,255,0.08); color: #fff; border: 1px solid rgba(255,255,255,0.2); border-radius: 20px; padding: 5px 12px;" onchange="filterCustomerTable()">
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+          <select id="filter-city-select" class="custom-filter-select" onchange="filterCustomerTable()">
             <option value="all" style="color:#000;">🌐 Semua Wilayah</option>
             <option value="siantar" style="color:#000;">📍 Pematangsiantar</option>
             <option value="jakarta" style="color:#000;">📍 DKI Jakarta</option>
@@ -456,7 +853,7 @@
             <option value="bandung" style="color:#000;">📍 Kota Bandung</option>
             <option value="bali" style="color:#000;">📍 Bali / Denpasar</option>
           </select>
-          <select id="filter-status-select" class="form-control form-control-sm" style="background: rgba(255,255,255,0.08); color: #fff; border: 1px solid rgba(255,255,255,0.2); border-radius: 20px; padding: 5px 12px;" onchange="filterCustomerTable()">
+          <select id="filter-status-select" class="custom-filter-select" onchange="filterCustomerTable()">
             <option value="all" style="color:#000;">⚡ Semua Status</option>
             <option value="active" style="color:#000;">✅ Status Aktif</option>
             <option value="suspended" style="color:#000;">⛔ Status Suspended</option>
@@ -466,23 +863,23 @@
 
       <!-- Customers Table -->
       <div class="table-responsive">
-        <table class="table table-dark-custom table-hover">
+        <table class="table table-dark-custom">
           <thead>
             <tr>
-              <th>ID</th>
+              <th style="width: 70px;">ID</th>
               <th>Customer / Perusahaan</th>
-              <th>Email / No. Telp</th>
+              <th>Email & Kontak</th>
               <th>Wilayah</th>
-              <th>Penggunaan Kuota CCTV</th>
+              <th style="min-width: 180px;">Penggunaan Kuota CCTV</th>
               <th>Status Akun</th>
-              <th class="text-right">Aksi Super Admin</th>
+              <th class="text-right" style="min-width: 240px;">Aksi Super Admin</th>
             </tr>
           </thead>
           <tbody id="customer-table-body">
             <tr>
-              <td colspan="7" class="text-center py-4 text-muted">
-                <i class="fas fa-spinner fa-spin fa-2x mb-2"></i>
-                <div>Memuat data customer...</div>
+              <td colspan="7" class="text-center py-5 text-muted">
+                <i class="fas fa-spinner fa-spin fa-2x mb-2 text-cyan"></i>
+                <div style="font-weight: 600;">Memuat data customer dari server...</div>
               </td>
             </tr>
           </tbody>
@@ -497,7 +894,7 @@
     <div class="modal-dialog modal-dialog-centered" role="document">
       <div class="modal-content modal-content-dark">
         <div class="modal-header modal-header-dark">
-          <h5 class="modal-title font-weight-bold"><i class="fas fa-user-plus text-info mr-2"></i> Tambah Customer Baru</h5>
+          <h5 class="modal-title font-weight-bold text-gradient-cyan"><i class="fas fa-user-plus text-info mr-2"></i> Tambah Customer Baru</h5>
           <button type="button" class="close text-white" onclick="closeAddCustomerModal()" aria-label="Close">
             <span aria-hidden="true">&times;</span>
           </button>
@@ -1084,10 +1481,6 @@
 
     const API_SERVER = '../api';
 
-    document.addEventListener('DOMContentLoaded', () => {
-      loadCustomerData();
-    });
-
     function loadCustomerData() {
       fetch(`${API_SERVER}/admin_customers.php`)
         .then(res => res.json())
@@ -1114,50 +1507,85 @@
       let totalQuota = 0;
 
       if (!customers || customers.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-muted">Belum ada Customer terdaftar atau sesuai kriteria pencarian.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="7" class="text-center py-5 text-muted"><i class="fas fa-search mr-2"></i> Belum ada Customer terdaftar atau sesuai kriteria filter.</td></tr>`;
       } else {
         customers.forEach(c => {
           totalCameras += (c.cctv_used || 0);
           totalQuota += (c.cctv_quota || 10);
 
-          const percentUsed = Math.min(100, Math.round(((c.cctv_used || 0) / (c.cctv_quota || 10)) * 100));
+          const used = c.cctv_used || 0;
+          const quota = c.cctv_quota || 10;
+          const percentUsed = Math.min(100, Math.round((used / quota) * 100));
+
+          let fillClass = 'progress-fill-low';
+          if (percentUsed >= 80) fillClass = 'progress-fill-high';
+          else if (percentUsed >= 50) fillClass = 'progress-fill-med';
+
+          const cityCode = (c.city || 'siantar').toLowerCase();
+          let cityBadgeClass = 'city-badge-default';
+          if (cityCode === 'siantar') cityBadgeClass = 'city-badge-siantar';
+          else if (cityCode === 'jakarta') cityBadgeClass = 'city-badge-jakarta';
+          else if (cityCode === 'bali') cityBadgeClass = 'city-badge-bali';
+          else if (cityCode === 'medan') cityBadgeClass = 'city-badge-medan';
+          else if (cityCode === 'bandung') cityBadgeClass = 'city-badge-bandung';
+
           const statusBadge = (c.status === 'active')
-            ? `<span class="badge-status-active"><i class="fas fa-check-circle mr-1"></i> AKTIF</span>`
-            : `<span class="badge-status-suspended"><i class="fas fa-ban mr-1"></i> SUSPENDED</span>`;
+            ? `<span class="status-badge-active"><span class="pulse-dot"></span> AKTIF</span>`
+            : `<span class="status-badge-suspended"><i class="fas fa-ban mr-1"></i> SUSPENDED</span>`;
+
+          const cleanPhone = (c.phone || '').replace(/[^0-9]/g, '');
+          const waLink = cleanPhone ? `https://wa.me/${cleanPhone.startsWith('0') ? '62' + cleanPhone.slice(1) : cleanPhone}` : '';
 
           const rowHTML = `
             <tr>
-              <td class="font-weight-bold text-muted">#${c.id}</td>
+              <td><span class="cust-id-badge">#${c.id}</span></td>
               <td>
-                <div class="font-weight-bold text-white" style="font-size: 15px;">${c.name}</div>
-                <small class="text-muted"><i class="fas fa-history mr-1"></i> Terdaftar ${c.created_at ? c.created_at.split(' ')[0] : '2026-08-14'}</small>
+                <div class="font-weight-bold text-white d-flex align-items-center" style="font-size: 14.5px;">
+                  <i class="fas fa-building text-info mr-2" style="opacity: 0.85;"></i> ${c.name}
+                </div>
+                <div class="text-muted mt-1" style="font-size: 11.5px;">
+                  <i class="fas fa-calendar-alt mr-1"></i> Terdaftar ${c.created_at ? c.created_at.split(' ')[0] : '2026-08-14'}
+                </div>
               </td>
               <td>
-                <div><i class="fas fa-envelope text-info mr-1"></i> ${c.email}</div>
-                <small class="text-muted"><i class="fas fa-phone mr-1"></i> ${c.phone}</small>
+                <div>
+                  <a href="mailto:${c.email}" class="text-info text-decoration-none" style="font-size: 13px;">
+                    <i class="fas fa-envelope mr-1"></i> ${c.email}
+                  </a>
+                </div>
+                <div class="mt-1 d-flex align-items-center">
+                  <span class="text-muted" style="font-size: 12px;"><i class="fas fa-phone mr-1"></i> ${c.phone || '-'}</span>
+                  ${waLink ? `<a href="${waLink}" target="_blank" class="badge badge-success ml-2 px-2 py-1" style="font-size: 10px; border-radius: 10px;" title="Hubungi via WhatsApp"><i class="fab fa-whatsapp mr-1"></i> Chat</a>` : ''}
+                </div>
               </td>
-              <td><span class="badge badge-secondary" style="border-radius: 12px; padding: 4px 10px;">📍 ${(c.city || 'siantar').toUpperCase()}</span></td>
+              <td>
+                <span class="city-badge ${cityBadgeClass}">
+                  <i class="fas fa-map-marker-alt"></i> ${cityCode.toUpperCase()}
+                </span>
+              </td>
               <td>
                 <div class="d-flex justify-content-between align-items-center mb-1">
-                  <span class="font-weight-bold text-info" style="font-size: 13px; cursor: pointer;" onclick="openCustomerCCTVModal(${c.id})" title="Klik untuk Kelola Kamera Customer Ini">
-                    <i class="fas fa-video mr-1 text-warning"></i> ${c.cctv_used || 0} / ${c.cctv_quota} CCTV
+                  <span class="font-weight-bold text-white" style="font-size: 12.5px; cursor: pointer;" onclick="openCustomerCCTVModal(${c.id})" title="Klik untuk Kelola Kamera Customer Ini">
+                    <i class="fas fa-video mr-1 text-warning"></i> <strong>${used}</strong> / ${quota} CCTV
                   </span>
-                  <span class="text-muted" style="font-size: 11px;">${percentUsed}%</span>
+                  <span class="badge ${percentUsed >= 80 ? 'badge-danger' : (percentUsed >= 50 ? 'badge-warning' : 'badge-info')}" style="font-size: 10.5px; border-radius: 8px; padding: 2px 6px;">
+                    ${percentUsed}%
+                  </span>
                 </div>
                 <div class="progress-bar-custom" style="cursor: pointer;" onclick="openCustomerCCTVModal(${c.id})" title="Klik untuk Kelola Kamera Customer Ini">
-                  <div class="progress-fill" style="width: ${percentUsed}%;"></div>
+                  <div class="progress-fill ${fillClass}" style="width: ${percentUsed}%;"></div>
                 </div>
               </td>
               <td>${statusBadge}</td>
               <td class="text-right">
                 <div class="action-btn-group">
-                  <button class="act-btn" style="background: rgba(16, 185, 129, 0.15); border-color: rgba(16, 185, 129, 0.3); color: #10b981;" onclick="openCustomerCCTVModal(${c.id})" title="Kelola Channel Kamera CCTV Customer Ini">
+                  <button class="act-btn act-btn-cctv" onclick="openCustomerCCTVModal(${c.id})" title="Kelola Channel Kamera CCTV Customer Ini">
                     <i class="fas fa-video"></i>
                   </button>
                   <button class="act-btn act-btn-edit" onclick="openEditCustomerModal(${c.id})" title="Edit Data Profil Customer">
                     <i class="fas fa-edit"></i>
                   </button>
-                  <button class="act-btn act-btn-quota" onclick="openEditQuotaModal(${c.id}, '${c.name.replace(/'/g, "\\'")}', ${c.cctv_quota})" title="Edit Kuota CCTV">
+                  <button class="act-btn act-btn-quota" onclick="openEditQuotaModal(${c.id}, '${c.name.replace(/'/g, "\\'")}', ${c.cctv_quota})" title="Atur Kuota CCTV">
                     <i class="fas fa-sliders-h"></i>
                   </button>
                   <button class="act-btn act-btn-pass" onclick="resetCustomerPassword(${c.id}, '${c.name.replace(/'/g, "\\'")}')" title="Reset Password Customer">
@@ -2191,9 +2619,27 @@
         .catch(() => alert('Gagal menghubungi server API wilayah.'));
     }
 
+    function updateLiveAdminClock() {
+      const clockEl = document.getElementById('live-admin-clock');
+      if (!clockEl) return;
+      const now = new Date();
+      const days = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+      const dayName = days[now.getDay()];
+      const day = now.getDate();
+      const monthName = months[now.getMonth()];
+      const year = now.getFullYear();
+      const hh = String(now.getHours()).padStart(2, '0');
+      const mm = String(now.getMinutes()).padStart(2, '0');
+      const ss = String(now.getSeconds()).padStart(2, '0');
+      clockEl.innerHTML = `<i class="far fa-clock text-cyan mr-1"></i> ${dayName}, ${day} ${monthName} ${year} • ${hh}:${mm}:${ss} WIB`;
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
       loadCustomerData();
       loadAdminCities();
+      updateLiveAdminClock();
+      setInterval(updateLiveAdminClock, 1000);
     });
 
     window.openAddCustomerModal = openAddCustomerModal;

@@ -76,7 +76,7 @@ if ($method === 'POST') {
             'name' => $name,
             'email' => $email,
             'password' => password_hash($password, PASSWORD_BCRYPT),
-            'role' => 'customer',
+            'role' => 'customer',  
             'cctv_quota' => max(1, $quota),
             'phone' => $phone,
             'city' => $city,
