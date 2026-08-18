@@ -2203,34 +2203,55 @@
       
       let cleanText = decodedText.trim();
       
-      // Clean up scanned text (extract serial if it's a URL or formatted text)
-      if (cleanText.includes('sn=')) {
-        const match = cleanText.match(/sn=([a-zA-Z0-9]+)/i);
-        if (match) cleanText = match[1];
-      } else if (cleanText.includes('id=')) {
-        const match = cleanText.match(/id=([a-zA-Z0-9]+)/i);
-        if (match) cleanText = match[1];
-      } else if (cleanText.includes('code=')) {
-        const match = cleanText.match(/code=([a-zA-Z0-9]+)/i);
-        if (match) cleanText = match[1];
-      } else if (cleanText.includes('//') && cleanText.includes('/')) {
-        const parts = cleanText.split('/');
-        cleanText = parts[parts.length - 1];
-      }
+      // Pass to JFTech Gateway API to parse/decrypt server-side
+      const formData = new FormData();
+      formData.append('action', 'parse_qr');
+      formData.append('qr_data', cleanText);
 
-      // Sanitize special characters
-      cleanText = cleanText.replace(/[^a-zA-Z0-9]/g, '');
+      fetch('../api/jftech_gateway.php', { method: 'POST', body: formData })
+        .then(res => res.json())
+        .then(data => {
+          const targetInput = document.getElementById(currentQRScanTarget === 'add' ? 'cam-input-xmeye-serial' : 'edit-cam-xmeye-serial');
+          if (data && data.success && data.serial_number) {
+            if (targetInput) {
+              targetInput.value = data.serial_number;
+              validateXmeyeSerialInput(currentQRScanTarget);
+            }
+          } else {
+            // Fallback: Use direct sanitization
+            if (cleanText.includes('sn=')) {
+              const match = cleanText.match(/sn=([a-zA-Z0-9]+)/i);
+              if (match) cleanText = match[1];
+            } else if (cleanText.includes('id=')) {
+              const match = cleanText.match(/id=([a-zA-Z0-9]+)/i);
+              if (match) cleanText = match[1];
+            } else if (cleanText.includes('//') && cleanText.includes('/')) {
+              const parts = cleanText.split('/');
+              cleanText = parts[parts.length - 1];
+            }
+            cleanText = cleanText.replace(/[^a-zA-Z0-9]/g, '');
+            if (targetInput) {
+              targetInput.value = cleanText;
+              validateXmeyeSerialInput(currentQRScanTarget);
+            }
+          }
 
-      const targetInput = document.getElementById(currentQRScanTarget === 'add' ? 'cam-input-xmeye-serial' : 'edit-cam-xmeye-serial');
-      if (targetInput) {
-        targetInput.value = cleanText;
-        validateXmeyeSerialInput(currentQRScanTarget);
-        targetInput.style.borderColor = '#10b981';
-        targetInput.style.boxShadow = '0 0 15px rgba(16, 185, 129, 0.5)';
-        setTimeout(() => {
-          targetInput.style.boxShadow = '';
-        }, 2500);
-      }
+          if (targetInput) {
+            targetInput.style.borderColor = '#10b981';
+            targetInput.style.boxShadow = '0 0 15px rgba(16, 185, 129, 0.5)';
+            setTimeout(() => {
+              targetInput.style.boxShadow = '';
+            }, 2500);
+          }
+        })
+        .catch(() => {
+          const targetInput = document.getElementById(currentQRScanTarget === 'add' ? 'cam-input-xmeye-serial' : 'edit-cam-xmeye-serial');
+          const fallbackSN = cleanText.replace(/[^a-zA-Z0-9]/g, '');
+          if (targetInput) {
+            targetInput.value = fallbackSN;
+            validateXmeyeSerialInput(currentQRScanTarget);
+          }
+        });
 
       if (navigator.vibrate) {
         try { navigator.vibrate([80, 50, 80]); } catch (e) {}
