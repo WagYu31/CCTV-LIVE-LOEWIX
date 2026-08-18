@@ -1,4 +1,4 @@
-# MediaMTX Configuration for Loewix CCTV
+# MediaMTX Configuration for Loewix CCTV Live Streaming
 hlsAlwaysRemux: true
 hlsAllowOrigins: ['*']
 
@@ -6,9 +6,91 @@ paths:
   cctv_loewix_1:
     source: rtsp://admin:@103.164.101.50:8203/user=admin&password=admin1234&channel=1&stream=0.sdp
     sourceProtocol: tcp
-    runOnInit: /home/loewix/bin/ffmpeg -rtsp_transport tcp -i rtsp://admin:@103.164.101.50:8203/user=admin&password=admin1234&channel=1&stream=0.sdp -c:v libx264 -preset ultrafast -tune zerolatency -an -f rtsp rtsp://127.0.0.1:8554/cctv_loewix_h264
-    runOnInitRestart: yes
+    sourceOnDemand: yes
 
   cctv_loewix_h264:
     source: publisher
 
+  # ===================================================
+  # Auto-Bridge XMeye DVR (Serial: 848f3922aa2875eb)
+  # Channels 1 - 16
+  # ===================================================
+  xmeye_848f3922aa2875eb_ch1:
+    source: rtsp://admin:@103.164.101.50:8203/user=admin&password=admin1234&channel=1&stream=0.sdp
+    sourceProtocol: tcp
+    sourceOnDemand: yes
+
+  xmeye_848f3922aa2875eb_ch2:
+    source: rtsp://admin:@103.164.101.50:8203/user=admin&password=admin1234&channel=2&stream=0.sdp
+    sourceProtocol: tcp
+    sourceOnDemand: yes
+
+  xmeye_848f3922aa2875eb_ch3:
+    source: rtsp://admin:@103.164.101.50:8203/user=admin&password=admin1234&channel=3&stream=0.sdp
+    sourceProtocol: tcp
+    sourceOnDemand: yes
+
+  xmeye_848f3922aa2875eb_ch4:
+    source: rtsp://admin:@103.164.101.50:8203/user=admin&password=admin1234&channel=4&stream=0.sdp
+    sourceProtocol: tcp
+    sourceOnDemand: yes
+
+  xmeye_848f3922aa2875eb_ch5:
+    source: rtsp://admin:@103.164.101.50:8203/user=admin&password=admin1234&channel=5&stream=0.sdp
+    sourceProtocol: tcp
+    sourceOnDemand: yes
+
+  xmeye_848f3922aa2875eb_ch6:
+    source: rtsp://admin:@103.164.101.50:8203/user=admin&password=admin1234&channel=6&stream=0.sdp
+    sourceProtocol: tcp
+    sourceOnDemand: yes
+
+  xmeye_848f3922aa2875eb_ch7:
+    source: rtsp://admin:@103.164.101.50:8203/user=admin&password=admin1234&channel=7&stream=0.sdp
+    sourceProtocol: tcp
+    sourceOnDemand: yes
+
+  xmeye_848f3922aa2875eb_ch8:
+    source: rtsp://admin:@103.164.101.50:8203/user=admin&password=admin1234&channel=8&stream=0.sdp
+    sourceProtocol: tcp
+    sourceOnDemand: yes
+
+  xmeye_848f3922aa2875eb_ch9:
+    source: rtsp://admin:@103.164.101.50:8203/user=admin&password=admin1234&channel=9&stream=0.sdp
+    sourceProtocol: tcp
+    sourceOnDemand: yes
+
+  xmeye_848f3922aa2875eb_ch10:
+    source: rtsp://admin:@103.164.101.50:8203/user=admin&password=admin1234&channel=10&stream=0.sdp
+    sourceProtocol: tcp
+    sourceOnDemand: yes
+
+  xmeye_848f3922aa2875eb_ch11:
+    source: rtsp://admin:@103.164.101.50:8203/user=admin&password=admin1234&channel=11&stream=0.sdp
+    sourceProtocol: tcp
+    sourceOnDemand: yes
+
+  xmeye_848f3922aa2875eb_ch12:
+    source: rtsp://admin:@103.164.101.50:8203/user=admin&password=admin1234&channel=12&stream=0.sdp
+    sourceProtocol: tcp
+    sourceOnDemand: yes
+
+  xmeye_848f3922aa2875eb_ch13:
+    source: rtsp://admin:@103.164.101.50:8203/user=admin&password=admin1234&channel=13&stream=0.sdp
+    sourceProtocol: tcp
+    sourceOnDemand: yes
+
+  xmeye_848f3922aa2875eb_ch14:
+    source: rtsp://admin:@103.164.101.50:8203/user=admin&password=admin1234&channel=14&stream=0.sdp
+    sourceProtocol: tcp
+    sourceOnDemand: yes
+
+  xmeye_848f3922aa2875eb_ch15:
+    source: rtsp://admin:@103.164.101.50:8203/user=admin&password=admin1234&channel=15&stream=0.sdp
+    sourceProtocol: tcp
+    sourceOnDemand: yes
+
+  xmeye_848f3922aa2875eb_ch16:
+    source: rtsp://admin:@103.164.101.50:8203/user=admin&password=admin1234&channel=16&stream=0.sdp
+    sourceProtocol: tcp
+    sourceOnDemand: yes
