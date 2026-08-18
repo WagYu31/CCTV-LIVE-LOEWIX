@@ -8,18 +8,13 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'OPTIONS') {
     exit(0);
 }
 
-// JFTech Official Open Platform Credentials
-const JF_UUID = '6583e8e82d362a5de618035a';
+// JFTech Official Open Platform Credentials (Loewix Surveillance Platform)
+const JF_UUID = '6a83efca64b42a6b4e0db2c3';
+const JF_APPKEY = '5de0b6544dc1b9c56385fb7f2867bc45';
+const JF_APPSECRET = 'e37c7fe1799a4c249ff0e1e4c715b43a';
+const JF_MOVECARD = 3;
 
-const JF_ANDROID_KEY = '9ba9c2913a896f694457b70811ae5468';
-const JF_ANDROID_SECRET = 'd9a2702958dc45f9a606c60b4ec49aba';
-const JF_ANDROID_MOVECARD = 7;
-
-const JF_IOS_KEY = '75f62dc38c78b68b35a9d81627353aba';
-const JF_IOS_SECRET = '6f4a471354bb416b9e40e905ef049999';
-const JF_IOS_MOVECARD = 5;
-
-const JF_API_BASE = 'https://rds.jftechws.com/v2';
+const JF_API_BASE = 'https://api-as.jftechws.com/gwp/v2';
 
 /**
  * Generate official JFTech signature
@@ -46,10 +41,10 @@ function generateJFTechSignature($uuid, $appKey, $appSecret, $timeMillis, $moveC
 /**
  * Make API Request to JFTech Open Platform Cloud
  */
-function callJFTechAPI($endpoint, $payload = [], $platform = 'android') {
-    $appKey = ($platform === 'ios') ? JF_IOS_KEY : JF_ANDROID_KEY;
-    $appSecret = ($platform === 'ios') ? JF_IOS_SECRET : JF_ANDROID_SECRET;
-    $moveCard = ($platform === 'ios') ? JF_IOS_MOVECARD : JF_ANDROID_MOVECARD;
+function callJFTechAPI($endpoint, $payload = []) {
+    $appKey = JF_APPKEY;
+    $appSecret = JF_APPSECRET;
+    $moveCard = JF_MOVECARD;
     
     $timeMillis = (string) round(microtime(true) * 1000);
     $signature = generateJFTechSignature(JF_UUID, $appKey, $appSecret, $timeMillis, $moveCard);
