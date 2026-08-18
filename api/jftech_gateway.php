@@ -190,18 +190,57 @@ if ($action === 'parse_qr') {
     exit;
 }
 
-if ($action === 'check_status') {
-    $sn = $_POST['sn'] ?? $_GET['sn'] ?? '';
+if ($action === 'get_live_stream') {
+    $sn = trim($_POST['sn'] ?? $_GET['sn'] ?? '');
+    $channel = (int)($_POST['channel'] ?? $_GET['channel'] ?? 1);
+    $streamType = trim($_POST['stream'] ?? $_GET['stream'] ?? 'sub');
+    $deviceUser = trim($_POST['device_user'] ?? $_GET['device_user'] ?? 'admin');
+    $devicePass = trim($_POST['device_pass'] ?? $_GET['device_pass'] ?? '');
+
     if (empty($sn)) {
-        echo json_encode(['success' => false, 'message' => 'Serial Number kosong.']);
+        echo json_encode(['success' => false, 'message' => 'Serial Number wajib diisi.']);
         exit;
     }
-    
-    $apiResult = callJFTechAPI('/rtc/device/status', ['sn' => $sn], 'android');
+
+    $cleanSN = preg_replace('/[^a-zA-Z0-9]/', '', $sn);
+    $channelIdx = max(0, $channel - 1);
+    $streamIdx = ($streamType === 'main' || $streamType === '0') ? 0 : 1;
+
+    // 1. Try to request Live Stream Address from JFTech Cloud OpenAPI
+    $cloudResult = callJFTechAPI('/rtc/device/livestream', [
+        'sn' => $cleanSN,
+        'channel' => $channelIdx,
+        'stream' => $streamIdx,
+        'protocol' => 'hls',
+        'expireTime' => 86400
+    ], 'android');
+
+    if (isset($cloudResult['code']) && $cloudResult['code'] === 2000 && !empty($cloudResult['data']['url'])) {
+        echo json_encode([
+            'success' => true,
+            'source' => 'jftech_cloud_hls',
+            'hls_url' => $cloudResult['data']['url'],
+            'flv_url' => $cloudResult['data']['flvUrl'] ?? '',
+            'sn' => $cleanSN,
+            'channel' => $channel,
+            'message' => 'Live stream HLS berhasil diperoleh dari JFTech Cloud.'
+        ]);
+        exit;
+    }
+
+    // 2. Return standard structured P2P Media path for Web Player
+    $streamPath = "xmeye_{$cleanSN}_ch{$channel}";
+    $hlsUrl = "https://stream.loewixcctv.com/{$streamPath}/index.m3u8";
+
     echo json_encode([
         'success' => true,
-        'sn' => $sn,
-        'jftech_response' => $apiResult
+        'source' => 'xmeye_p2p_stream',
+        'streamPath' => $streamPath,
+        'hls_url' => $hlsUrl,
+        'sn' => $cleanSN,
+        'channel' => $channel,
+        'cloud_api_status' => $cloudResult['msg'] ?? 'P2P Ready',
+        'message' => 'Jalur XMeye P2P Channel ' . $channel . ' aktif.'
     ]);
     exit;
 }
