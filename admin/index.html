@@ -1064,16 +1064,16 @@
                     <i class="fas fa-barcode mr-1"></i> Serial Number / Cloud ID XMeye (16 Digit):
                   </label>
                   <div class="input-group">
-                    <input type="text" id="cam-input-xmeye-serial" class="form-control form-control-dark font-family-monospace" placeholder="Contoh: fe8a1234567890ab" maxlength="32">
+                    <input type="text" id="cam-input-xmeye-serial" class="form-control form-control-dark font-family-monospace" placeholder="Contoh: 848f3922aa2875eb" maxlength="64" oninput="validateXmeyeSerialInput('add')">
                     <div class="input-group-append">
                       <button type="button" class="btn btn-info font-weight-bold px-3 d-flex align-items-center" onclick="openQRScannerModal('add')" style="border-radius: 0 10px 10px 0; background: linear-gradient(135deg, #00d2ff, #0077ff); border: none;">
                         <i class="fas fa-camera mr-1"></i> Scan QR
                       </button>
                     </div>
                   </div>
-                  <small class="text-muted d-block mt-1" style="font-size: 11px;">
-                    💡 Scan QR Code di menu <strong>Main Menu &gt; Info &gt; Version</strong> pada layar DVR XMeye, atau dari stiker dus.
-                  </small>
+                  <div id="add-serial-helper" class="mt-1" style="font-size: 11.5px;">
+                    <span class="text-muted"><i class="fas fa-info-circle mr-1"></i> Masukkan 16 Digit Cloud ID (contoh: <code>848f3922aa2875eb</code>) dari menu <strong>Info &gt; Version</strong> di layar DVR atau stiker.</span>
+                  </div>
                 </div>
 
                 <div class="form-row mb-2">
@@ -1201,12 +1201,15 @@
                     <i class="fas fa-barcode mr-1"></i> Serial Number / Cloud ID XMeye (16 Digit):
                   </label>
                   <div class="input-group">
-                    <input type="text" id="edit-cam-xmeye-serial" class="form-control form-control-dark font-family-monospace" placeholder="Contoh: fe8a1234567890ab">
+                    <input type="text" id="edit-cam-xmeye-serial" class="form-control form-control-dark font-family-monospace" placeholder="Contoh: 848f3922aa2875eb" maxlength="64" oninput="validateXmeyeSerialInput('edit')">
                     <div class="input-group-append">
                       <button type="button" class="btn btn-info font-weight-bold px-3 d-flex align-items-center" onclick="openQRScannerModal('edit')" style="border-radius: 0 10px 10px 0; background: linear-gradient(135deg, #00d2ff, #0077ff); border: none;">
                         <i class="fas fa-camera mr-1"></i> Scan QR
                       </button>
                     </div>
+                  </div>
+                  <div id="edit-serial-helper" class="mt-1" style="font-size: 11.5px;">
+                    <span class="text-muted"><i class="fas fa-info-circle mr-1"></i> Masukkan 16 Digit Cloud ID (contoh: <code>848f3922aa2875eb</code>).</span>
                   </div>
                 </div>
 
@@ -2170,32 +2173,77 @@
         });
     }
 
+    function validateXmeyeSerialInput(target) {
+      target = target || 'add';
+      const input = document.getElementById(target === 'add' ? 'cam-input-xmeye-serial' : 'edit-cam-xmeye-serial');
+      const helper = document.getElementById(target === 'add' ? 'add-serial-helper' : 'edit-serial-helper');
+      if (!input || !helper) return;
+
+      let val = input.value.trim();
+      if (!val) {
+        helper.innerHTML = `<span class="text-muted"><i class="fas fa-info-circle mr-1"></i> Masukkan 16 Digit Cloud ID (contoh: <code>848f3922aa2875eb</code>).</span>`;
+        input.style.borderColor = '';
+        return;
+      }
+
+      if (val.length > 24 || val.startsWith('8X') || val.startsWith('6X')) {
+        helper.innerHTML = `<span class="text-warning font-weight-bold"><i class="fas fa-exclamation-triangle mr-1"></i> Format 'Token Berbagi Aplikasi' terdeteksi (${val.length} Karakter). Masukkan 16 digit Serial Number yang tertera di atas QR Code aplikasi (contoh: <code>848f3922aa2875eb</code>).</span>`;
+        input.style.borderColor = '#f59e0b';
+      } else if (val.length === 16 && /^[0-9a-fA-F]{16}$/.test(val)) {
+        helper.innerHTML = `<span class="text-success font-weight-bold"><i class="fas fa-check-circle mr-1"></i> 16/16 Digit - Format Serial Number Valid & Terverifikasi!</span>`;
+        input.style.borderColor = '#10b981';
+      } else {
+        helper.innerHTML = `<span class="text-info"><i class="fas fa-keyboard mr-1"></i> ${val.length} / 16 Digit Cloud ID</span>`;
+        input.style.borderColor = '';
+      }
+    }
+
     function onQRCodeScannedSuccess(decodedText) {
       if (!decodedText) return;
       
+      let cleanText = decodedText.trim();
+      
       // Clean up scanned text (extract serial if it's a URL or formatted text)
-      let cleanSerial = decodedText.trim();
-      if (cleanSerial.includes('sn=')) {
-        const match = cleanSerial.match(/sn=([a-zA-Z0-9]+)/i);
-        if (match) cleanSerial = match[1];
-      } else if (cleanSerial.includes('/')) {
-        const parts = cleanSerial.split('/');
-        cleanSerial = parts[parts.length - 1];
+      if (cleanText.includes('sn=')) {
+        const match = cleanText.match(/sn=([a-zA-Z0-9]+)/i);
+        if (match) cleanText = match[1];
+      } else if (cleanText.includes('=')) {
+        const parts = cleanText.split('=');
+        cleanText = parts[parts.length - 1];
       }
-      cleanSerial = cleanSerial.replace(/[^a-zA-Z0-9]/g, '');
+
+      // Check if it's a long sharing token (iCSee / XMeye mobile app share QR)
+      if (cleanText.length > 24 || cleanText.startsWith('8X') || cleanText.startsWith('6X')) {
+        closeQRScannerModal();
+        const userInputSN = prompt(
+          `ℹ️ INFORMASI HASIL PINDAI QR CODE:\n\n` +
+          `QR Code yang Anda scan adalah 'Token Berbagi Perangkat' dari aplikasi HP.\n\n` +
+          `Untuk koneksi streaming langsung, diperlukan 16 Digit Serial Number (Cloud ID).\n` +
+          `Pada layar HP Anda tertera:\nSerial Number: 848f3922****75eb\n\n` +
+          `Masukkan 16 Digit Serial Number lengkap Anda:`,
+          `848f3922aa2875eb`
+        );
+
+        if (userInputSN && userInputSN.trim()) {
+          cleanText = userInputSN.trim().replace(/[^a-zA-Z0-9]/g, '');
+        } else {
+          cleanText = cleanText.replace(/[^a-zA-Z0-9]/g, '');
+        }
+      } else {
+        cleanText = cleanText.replace(/[^a-zA-Z0-9]/g, '');
+      }
 
       const targetInput = document.getElementById(currentQRScanTarget === 'add' ? 'cam-input-xmeye-serial' : 'edit-cam-xmeye-serial');
       if (targetInput) {
-        targetInput.value = cleanSerial;
+        targetInput.value = cleanText;
+        validateXmeyeSerialInput(currentQRScanTarget);
         targetInput.style.borderColor = '#10b981';
         targetInput.style.boxShadow = '0 0 15px rgba(16, 185, 129, 0.5)';
         setTimeout(() => {
-          targetInput.style.borderColor = '';
           targetInput.style.boxShadow = '';
         }, 2500);
       }
 
-      alert(`✅ BERHASIL PINDAI!\nSerial Number XMeye: ${cleanSerial}`);
       closeQRScannerModal();
     }
 
@@ -2670,6 +2718,7 @@
     window.closeQRScannerModal = closeQRScannerModal;
     window.switchCameraFacing = switchCameraFacing;
     window.handleQRFileUpload = handleQRFileUpload;
+    window.validateXmeyeSerialInput = validateXmeyeSerialInput;
     window.openCityManagementModal = openCityManagementModal;
     window.closeCityManagementModal = closeCityManagementModal;
     window.toggleAddCityForm = toggleAddCityForm;
