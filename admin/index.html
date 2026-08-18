@@ -1096,25 +1096,32 @@
 
                 <div class="form-row mb-1">
                   <div class="form-group col-md-6 col-12 mb-2">
-                    <label style="font-size: 13px; color: #e2e8f0; font-weight: 600; display: block; margin-bottom: 4px;">Pilih Channel DVR:</label>
+                    <label style="font-size: 13px; color: #e2e8f0; font-weight: 600; display: block; margin-bottom: 4px;">Pilih Channel / Mode Import:</label>
                     <select id="cam-input-xmeye-channel" class="form-control form-control-dark">
-                      <option value="1" style="color:#000;">Channel 1 (Kamera 1)</option>
-                      <option value="2" style="color:#000;">Channel 2 (Kamera 2)</option>
-                      <option value="3" style="color:#000;">Channel 3 (Kamera 3)</option>
-                      <option value="4" style="color:#000;">Channel 4 (Kamera 4)</option>
-                      <option value="5" style="color:#000;">Channel 5 (Kamera 5)</option>
-                      <option value="6" style="color:#000;">Channel 6 (Kamera 6)</option>
-                      <option value="7" style="color:#000;">Channel 7 (Kamera 7)</option>
-                      <option value="8" style="color:#000;">Channel 8 (Kamera 8)</option>
-                      <option value="9" style="color:#000;">Channel 9 (Kamera 9)</option>
-                      <option value="10" style="color:#000;">Channel 10 (Kamera 10)</option>
-                      <option value="11" style="color:#000;">Channel 11 (Kamera 11)</option>
-                      <option value="12" style="color:#000;">Channel 12 (Kamera 12)</option>
-                      <option value="13" style="color:#000;">Channel 13 (Kamera 13)</option>
-                      <option value="14" style="color:#000;">Channel 14 (Kamera 14)</option>
-                      <option value="15" style="color:#000;">Channel 15 (Kamera 15)</option>
-                      <option value="16" style="color:#000;">Channel 16 (Kamera 16)</option>
-                      <option value="32" style="color:#000;">Channel 32 (Kamera 32)</option>
+                      <optgroup label="Import Sekaligus Semua Channel DVR" style="color:#000;">
+                        <option value="all_16" style="color:#000; font-weight: bold; background: #e0f2fe;">⚡ IMPORT SEMUA 16 CHANNEL (DVR 16 CH)</option>
+                        <option value="all_8" style="color:#000; font-weight: bold; background: #e0f2fe;">⚡ IMPORT SEMUA 8 CHANNEL (DVR 8 CH)</option>
+                        <option value="all_4" style="color:#000; font-weight: bold; background: #e0f2fe;">⚡ IMPORT SEMUA 4 CHANNEL (DVR 4 CH)</option>
+                      </optgroup>
+                      <optgroup label="Tambah Satu Channel Spesifik" style="color:#000;">
+                        <option value="1" style="color:#000;">Channel 1 (Kamera 1)</option>
+                        <option value="2" style="color:#000;">Channel 2 (Kamera 2)</option>
+                        <option value="3" style="color:#000;">Channel 3 (Kamera 3)</option>
+                        <option value="4" style="color:#000;">Channel 4 (Kamera 4)</option>
+                        <option value="5" style="color:#000;">Channel 5 (Kamera 5)</option>
+                        <option value="6" style="color:#000;">Channel 6 (Kamera 6)</option>
+                        <option value="7" style="color:#000;">Channel 7 (Kamera 7)</option>
+                        <option value="8" style="color:#000;">Channel 8 (Kamera 8)</option>
+                        <option value="9" style="color:#000;">Channel 9 (Kamera 9)</option>
+                        <option value="10" style="color:#000;">Channel 10 (Kamera 10)</option>
+                        <option value="11" style="color:#000;">Channel 11 (Kamera 11)</option>
+                        <option value="12" style="color:#000;">Channel 12 (Kamera 12)</option>
+                        <option value="13" style="color:#000;">Channel 13 (Kamera 13)</option>
+                        <option value="14" style="color:#000;">Channel 14 (Kamera 14)</option>
+                        <option value="15" style="color:#000;">Channel 15 (Kamera 15)</option>
+                        <option value="16" style="color:#000;">Channel 16 (Kamera 16)</option>
+                        <option value="32" style="color:#000;">Channel 32 (Kamera 32)</option>
+                      </optgroup>
                     </select>
                   </div>
                   <div class="form-group col-md-6 col-12 mb-2">
@@ -2315,6 +2322,37 @@
 
         if (!serial) {
           alert('Mohon isi atau scan Serial Number / Cloud ID XMeye!');
+          return;
+        }
+
+        if (channel.startsWith('all_')) {
+          const totalChannels = parseInt(channel.replace('all_', ''));
+          const batchData = new FormData();
+          batchData.append('action', 'batch_add_dvr');
+          batchData.append('user_id', currentManagingCustomerId);
+          batchData.append('dvr_title', title);
+          batchData.append('city', city);
+          batchData.append('serial_number', serial);
+          batchData.append('device_user', user);
+          batchData.append('device_pass', pass);
+          batchData.append('channel_count', totalChannels);
+          batchData.append('stream_quality', streamQuality);
+          batchData.append('lat', lat);
+          batchData.append('lng', lng);
+
+          fetch(`${API_SERVER}/cameras.php`, { method: 'POST', body: batchData })
+            .then(res => res.json())
+            .then(data => {
+              if (data.success) {
+                alert(`✅ BERHASIL:\n${data.message}`);
+                closeAddCameraForCustomerForm();
+                openCustomerCCTVModal(currentManagingCustomerId);
+                loadCustomerData();
+              } else {
+                alert(`GAGAL: ${data.message}`);
+              }
+            })
+            .catch(() => alert('Gagal menghubungi server API.'));
           return;
         }
 

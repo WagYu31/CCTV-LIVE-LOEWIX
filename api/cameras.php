@@ -108,6 +108,95 @@ if ($action === 'admin_add' || $action === 'add') {
     exit;
 }
 
+if ($action === 'batch_add_dvr') {
+    $userId = (int) ($_POST['user_id'] ?? ($user['id'] ?? 1));
+    $dvrTitle = trim($_POST['dvr_title'] ?? 'Kamera DVR');
+    $city = trim($_POST['city'] ?? 'jakarta');
+    $serialNumber = trim($_POST['serial_number'] ?? '');
+    $deviceUser = trim($_POST['device_user'] ?? 'admin');
+    $devicePass = trim($_POST['device_pass'] ?? '');
+    $channelCount = (int) ($_POST['channel_count'] ?? 16); // 4, 8, 16, 32
+    $streamQuality = trim($_POST['stream_quality'] ?? 'sub');
+    $lat = trim($_POST['lat'] ?? '');
+    $lng = trim($_POST['lng'] ?? '');
+
+    if (empty($serialNumber)) {
+        echo json_encode(['success' => false, 'message' => 'Serial Number XMeye (Cloud ID) wajib diisi!']);
+        exit;
+    }
+
+    // Check customer quota
+    $userQuota = 10;
+    foreach ($db['users'] as $u) {
+        if ((int)$u['id'] === $userId) {
+            $userQuota = (int)($u['cctv_quota'] ?? 10);
+            break;
+        }
+    }
+
+    $currentUsed = 0;
+    foreach ($db['cameras'] as $c) {
+        if ((int)($c['user_id'] ?? 0) === $userId) {
+            $currentUsed++;
+        }
+    }
+
+    $availableSlots = max(0, $userQuota - $currentUsed);
+    $toAddCount = min($channelCount, $availableSlots);
+
+    if ($toAddCount <= 0) {
+        echo json_encode([
+            'success' => false, 
+            'message' => "Batas Kuota Customer Tercapai ({$currentUsed}/{$userQuota} CCTV). Silakan tingkatkan kuota terlebih dahulu."
+        ]);
+        exit;
+    }
+
+    $existingIds = array_column($db['cameras'], 'id');
+    $nextId = count($existingIds) > 0 ? max(max($existingIds), 5000) + 1 : 5001;
+    $addedCameras = [];
+    $cleanSN = preg_replace('/[^a-zA-Z0-9]/', '', $serialNumber);
+
+    for ($ch = 1; $ch <= $toAddCount; $ch++) {
+        $camTitle = "{$dvrTitle} (CH {$ch})";
+        $streamPath = "xmeye_{$cleanSN}_ch{$ch}";
+
+        $newCam = [
+            'id' => $nextId++,
+            'user_id' => $userId,
+            'title' => $camTitle,
+            'city' => $city,
+            'connection_type' => 'xmeye_p2p',
+            'serial_number' => $serialNumber,
+            'device_user' => $deviceUser,
+            'device_pass' => $devicePass,
+            'channel' => $ch,
+            'stream_quality' => $streamQuality,
+            'streamPath' => $streamPath,
+            'hls_url' => "http://stream.loewixcctv.com/{$streamPath}/index.m3u8",
+            'thumbnail' => "assets/image/thumbnail/default-thumbnail.png",
+            'lat' => $lat,
+            'lng' => $lng,
+            'platform' => 'xmeye_p2p',
+            'status' => 'online',
+            'created_at' => date('Y-m-d H:i:s')
+        ];
+
+        $db['cameras'][] = $newCam;
+        $addedCameras[] = $newCam;
+    }
+
+    save_db_data($db);
+
+    echo json_encode([
+        'success' => true,
+        'message' => "Berhasil menambahkan {$toAddCount} Channel Kamera sekaligus dari DVR ({$serialNumber})!",
+        'added_count' => $toAddCount,
+        'cameras' => $addedCameras
+    ]);
+    exit;
+}
+
 if ($action === 'admin_edit' || $action === 'edit') {
     $camId = (int) ($_POST['id'] ?? 0);
     $title = trim($_POST['title'] ?? '');
