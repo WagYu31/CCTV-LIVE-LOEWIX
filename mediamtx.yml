@@ -4,7 +4,17 @@ hlsAllowOrigins: ['*']
 
 paths:
   cctv_loewix_1:
-    source: rtsp://admin:@103.164.101.50:8203/user=admin&password=admin1234&channel=1&stream=0.sdp
+    source: rtsp://103.164.101.50:8203/user=admin&password=admin1234&channel=1&stream=0.sdp
+    sourceProtocol: tcp
+    sourceOnDemand: yes
+
+  cctv_loewix_2:
+    source: rtsp://103.164.101.50:8203/user=admin&password=admin1234&channel=2&stream=0.sdp
+    sourceProtocol: tcp
+    sourceOnDemand: yes
+
+  cctv_loewix_3:
+    source: rtsp://103.164.101.50:8203/user=admin&password=admin1234&channel=3&stream=0.sdp
     sourceProtocol: tcp
     sourceOnDemand: yes
 
