@@ -112,6 +112,24 @@ function parseAndResolveQRToken($rawInput) {
             ];
         }
     }
+
+    // Special Parser for XMeye Live Screen Wizard QR (xmeyectim...)
+    if (stripos($rawInput, 'xmeye') !== false || stripos($rawInput, 'ctim') !== false) {
+        // Try to search for base64 encoded hex in substrings
+        if (preg_match_all('/([a-zA-Z0-9+\/=]{12,})/', $rawInput, $b64Matches)) {
+            foreach ($b64Matches[1] as $b64Str) {
+                $decoded = base64_decode($b64Str, true);
+                if ($decoded && preg_match('/([0-9a-fA-F]{16})/', $decoded, $snMatches)) {
+                    return [
+                        'success' => true,
+                        'serial_number' => strtolower($snMatches[1]),
+                        'type' => 'xmeye_wizard_extracted',
+                        'message' => 'Serial Number berhasil diekstrak dari barcode DVR!'
+                    ];
+                }
+            }
+        }
+    }
     
     // If it is a long token (like 8qS50... or 8X63...)
     // Call JFTech Cloud API with Android Credentials first
@@ -142,14 +160,18 @@ function parseAndResolveQRToken($rawInput) {
     // If Cloud API returns raw token info or requires fallback
     $cleanAlphanumeric = preg_replace('/[^a-zA-Z0-9]/', '', $rawInput);
     
+    $isWizardQR = (stripos($rawInput, 'xmeye') !== false || stripos($rawInput, 'ctim') !== false);
+    
     return [
         'success' => true,
         'raw_token' => $cleanAlphanumeric,
         'serial_number' => (strlen($cleanAlphanumeric) === 16) ? strtolower($cleanAlphanumeric) : '',
-        'type' => (strlen($cleanAlphanumeric) > 20) ? 'xmeye_share_token' : 'unrecognized',
-        'message' => (strlen($cleanAlphanumeric) > 20) 
-            ? 'Format Token Berbagi terdeteksi. Silakan konfirmasi 16 digit Serial Number kamera.'
-            : 'Barcode berhasil dipindai.'
+        'type' => $isWizardQR ? 'dvr_wizard_qr' : ((strlen($cleanAlphanumeric) > 20) ? 'xmeye_share_token' : 'unrecognized'),
+        'message' => $isWizardQR 
+            ? 'Barcode Wizard Layar DVR terdeteksi. Buka menu [Main Menu > Info > Version] di DVR untuk QR Code Cloud ID 16 Digit.'
+            : ((strlen($cleanAlphanumeric) > 20) 
+                ? 'Format Token Berbagi terdeteksi. Silakan masukkan 16 digit Serial Number kamera.'
+                : 'Barcode berhasil dipindai.')
     ];
 }
 

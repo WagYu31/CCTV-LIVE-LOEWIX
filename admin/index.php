@@ -2186,8 +2186,8 @@
         return;
       }
 
-      if (val.length > 20) {
-        helper.innerHTML = `<span class="text-warning font-weight-bold"><i class="fas fa-exclamation-triangle mr-1"></i> Format 'Token Berbagi Aplikasi' terdeteksi (${val.length} Karakter). Masukkan 16 digit Serial Number Cloud ID yang tertera di menu Version DVR atau di atas barcode HP Anda.</span>`;
+      if (val.toLowerCase().startsWith('xmeye') || val.length > 20) {
+        helper.innerHTML = `<span class="text-warning font-weight-bold"><i class="fas fa-exclamation-triangle mr-1"></i> Barcode Download/Wizard terdeteksi (${val.length} Karakter). Buka menu <strong>Info &gt; Version</strong> pada DVR untuk QR Code Cloud ID 16 Digit (atau ketik 16 digitnya langsung).</span>`;
         input.style.borderColor = '#f59e0b';
       } else if (val.length === 16 && /^[0-9a-fA-F]{16}$/.test(val)) {
         helper.innerHTML = `<span class="text-success font-weight-bold"><i class="fas fa-check-circle mr-1"></i> 16/16 Digit - Format Serial Number Valid & Terverifikasi!</span>`;
