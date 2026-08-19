@@ -6716,6 +6716,12 @@
 
           const thumbnailElement = document.getElementById(thumbId);
           if (thumbnailElement) {
+            const connType = thumbnailElement.getAttribute('data-connection-type');
+            if (connType === 'xmeye_p2p' && !activePlayers.has(playerId)) {
+              // Do NOT auto-refresh inactive XMeye cameras
+              return;
+            }
+
             // Panggil fungsi play sesuai platform
             if (platform === 'denava') {
               playCCTV(thumbnailElement, playerId, thumbId);
@@ -7876,13 +7882,31 @@
                   console.log('[JFTech Cloud] ✅ Official Live Stream URL Ready for CH ' + channel + ':', data.hls_url);
                   mountHLS(data.hls_url);
                 } else {
-                  let fallback = streamPath.startsWith('http') ? streamPath : `${STREAM_BASE}/${streamPath}/index.m3u8`;
-                  mountHLS(fallback);
+                  console.warn('[JFTech Cloud] Live Stream URL not available:', data);
+                  if (bufferingOverlay) {
+                    bufferingOverlay.style.display = 'none';
+                    bufferingOverlay.style.opacity = '0';
+                  }
+                  if (thumb) {
+                    thumb.style.display = 'flex';
+                    thumb.style.opacity = '1';
+                    const loadingText = thumb.querySelector('.loading-text');
+                    if (loadingText) loadingText.innerHTML = '<i class="fas fa-play-circle"></i> Klik untuk memutar';
+                  }
                 }
               })
               .catch(e => {
-                let fallback = streamPath.startsWith('http') ? streamPath : `${STREAM_BASE}/${streamPath}/index.m3u8`;
-                mountHLS(fallback);
+                console.error('[JFTech Cloud] Gateway request error:', e);
+                if (bufferingOverlay) {
+                  bufferingOverlay.style.display = 'none';
+                  bufferingOverlay.style.opacity = '0';
+                }
+                if (thumb) {
+                  thumb.style.display = 'flex';
+                  thumb.style.opacity = '1';
+                  const loadingText = thumb.querySelector('.loading-text');
+                  if (loadingText) loadingText.innerHTML = '<i class="fas fa-play-circle"></i> Klik untuk memutar';
+                }
               });
             return;
           }
@@ -9576,6 +9600,10 @@
             const thumbId = playerId.replace('player-', 'thumb-');
             const thumb = document.getElementById(thumbId);
             if (thumb && typeof playMediaMTXCCTV === 'function') {
+              const connType = thumb.getAttribute('data-connection-type');
+              if (connType === 'xmeye_p2p') {
+                return; // Do NOT auto-resume XMeye streams via IntersectionObserver
+              }
               // Extract streamPath from saved state or thumb element
               const streamPath = thumb.getAttribute('data-stream-path');
               if (streamPath) {
