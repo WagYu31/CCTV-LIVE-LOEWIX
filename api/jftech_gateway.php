@@ -208,6 +208,22 @@ if ($action === 'get_live_stream') {
     $channelIdx = max(0, $channel - 1);
     $streamIdx = ($streamType === 'main' || $streamType === '0') ? '0' : '1';
 
+    if (empty($devicePass)) {
+        if (file_exists(__DIR__ . '/../config/db.php')) {
+            require_once __DIR__ . '/../config/db.php';
+            $dbData = get_db_data();
+            foreach (($dbData['cameras'] ?? []) as $cam) {
+                if (isset($cam['serial_number']) && strtolower($cam['serial_number']) === $cleanSN && !empty($cam['password'])) {
+                    $devicePass = $cam['password'];
+                    break;
+                }
+            }
+        }
+        if (empty($devicePass)) {
+            $devicePass = 'LoewixL12';
+        }
+    }
+
     // 1. Get Device Access Token
     $deviceToken = getJFDeviceToken($cleanSN);
     
