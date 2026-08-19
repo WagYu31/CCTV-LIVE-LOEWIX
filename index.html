@@ -6671,8 +6671,16 @@
       // Panggil fungsi reload sesuai platform
       // Untuk auto-refresh, kita perlu reload manual tanpa disable monitoring
       try {
-        const player = document.getElementById(playerId);
         const thumb = document.getElementById(thumbId);
+        if (thumb) {
+          const connType = thumb.getAttribute('data-connection-type');
+          if (connType === 'xmeye_p2p' && (!activePlayers || !activePlayers.has(playerId))) {
+            // Strictly ignore inactive XMeye cameras - do NOT touch loadingText or UI
+            return;
+          }
+        }
+
+        const player = document.getElementById(playerId);
         const offlineMsg = document.getElementById(offlineId);
         const bufferingId = 'buffering-' + thumbId.split('-')[1];
         const bufferingOverlay = document.getElementById(bufferingId);
@@ -9234,8 +9242,16 @@
                   buf.style.display = 'none';
                   buf.style.opacity = '0';
                 }
+                const loadInd = document.getElementById('loading-' + suffix);
+                if (loadInd) {
+                  loadInd.style.display = 'none';
+                }
                 item.element.style.display = 'flex';
                 item.element.style.opacity = '1';
+                const loadingText = item.element.querySelector('.loading-text');
+                if (loadingText) {
+                  loadingText.innerHTML = '<i class="fas fa-play-circle"></i> Klik untuk memutar video';
+                }
               });
               console.log('[XMeye Snapshot] ✅ Loaded real-time CCTV snapshots for SN:', sn);
             }
