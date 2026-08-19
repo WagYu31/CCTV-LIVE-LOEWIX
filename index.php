@@ -28,6 +28,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
   <meta name="format-detection" content="telephone=no">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -6668,8 +6671,16 @@
       // Panggil fungsi reload sesuai platform
       // Untuk auto-refresh, kita perlu reload manual tanpa disable monitoring
       try {
-        const player = document.getElementById(playerId);
         const thumb = document.getElementById(thumbId);
+        if (thumb) {
+          const connType = thumb.getAttribute('data-connection-type');
+          if (connType === 'xmeye_p2p' && (!activePlayers || !activePlayers.has(playerId))) {
+            // Strictly ignore inactive XMeye cameras - do NOT touch loadingText or UI
+            return;
+          }
+        }
+
+        const player = document.getElementById(playerId);
         const offlineMsg = document.getElementById(offlineId);
         const bufferingId = 'buffering-' + thumbId.split('-')[1];
         const bufferingOverlay = document.getElementById(bufferingId);
@@ -6716,6 +6727,12 @@
 
           const thumbnailElement = document.getElementById(thumbId);
           if (thumbnailElement) {
+            const connType = thumbnailElement.getAttribute('data-connection-type');
+            if (connType === 'xmeye_p2p' && !activePlayers.has(playerId)) {
+              // Do NOT auto-refresh inactive XMeye cameras
+              return;
+            }
+
             // Panggil fungsi play sesuai platform
             if (platform === 'denava') {
               playCCTV(thumbnailElement, playerId, thumbId);
@@ -7701,261 +7718,229 @@
           if (!videoPlayer.hasAttribute('preload') || videoPlayer.getAttribute('preload') === 'metadata') {
             videoPlayer.setAttribute('preload', 'auto');
           }
-          // Ensure muted for autoplay
-          videoPlayer.muted = true;
-          videoPlayer.setAttribute('muted', '');
-          // Disable picture-in-picture untuk performance
-          if (videoPlayer.disablePictureInPicture !== undefined) {
-            videoPlayer.disablePictureInPicture = true;
-          }
-        }
-
-        let hlsUrl;
-        if (streamPath.startsWith('http://') || streamPath.startsWith('https://')) {
-          hlsUrl = streamPath;
-        } else if (streamPath.startsWith('rtsp://')) {
-          console.warn('[MediaMTX] Direct RTSP URL detected:', streamPath);
-          if (thumb) {
-            const loadingText = thumb.querySelector('.loading-text');
-            if (loadingText) {
-              loadingText.innerHTML = '<i class="fas fa-exclamation-triangle text-warning"></i> RTSP Direct URL perlu MediaMTX / IPCamLive!';
-              loadingText.style.opacity = '1';
+          
+          function mountHLS(targetUrl) {
+            if (!targetUrl.includes('cookieCheck=1') && !targetUrl.includes('bcloud365.net')) {
+              targetUrl += (targetUrl.includes('?') ? '&' : '?') + 'cookieCheck=1';
             }
-          }
-          alert('⚠️ Browser Web HTML5 tidak mendukung protokol "rtsp://" secara langsung.\n\nAgar RTSP dapat diputar di web:\n1. Masukkan RTSP di server MediaMTX / IPCamLive kamu.\n2. Atau gunakan URL HLS HTTP/HTTPS (.m3u8).\n3. Atau isi dengan Stream Path (contoh: cam_bali_1).');
-          return;
-        } else {
-          hlsUrl = `${STREAM_BASE}/${streamPath}/index.m3u8`;
-        }
-        if (!hlsUrl.includes('cookieCheck=1')) {
-          hlsUrl += (hlsUrl.includes('?') ? '&' : '?') + 'cookieCheck=1';
-        }
-        console.log('[MediaMTX] Loading HLS:', hlsUrl);
+            console.log('[MediaMTX/JFTech] Loading HLS URL:', targetUrl);
 
-        if (typeof Hls !== 'undefined' && Hls.isSupported()) {
-          // ===== INSTANT PLAYBACK OPTIMIZATION CONFIGURATION =====
-          const hls = new Hls({
-            debug: false,
-            enableWorker: true,
-            xhrSetup: function(xhr, url) {
-              try {
-                xhr.setRequestHeader('Bypass-Tunnel-Reminder', 'true');
-                xhr.setRequestHeader('ngrok-skip-browser-warning', 'true');
-              } catch (e) {}
-            },
-
-            // ===== INSTANT PLAYBACK OPTIMIZATION =====
-            lowLatencyMode: true,
-
-            // MINIMAL BUFFERING - Start playing ASAP
-            maxBufferLength: 3, // REDUCED from 15 - start dengan buffer minimal
-            maxMaxBufferLength: 10, // REDUCED from 30
-            maxBufferSize: 10 * 1000 * 1000, // 10MB only - instant start priority
-            backBufferLength: 30, // REDUCED from 90
-
-            // INSTANT LOADING - No delay
-            maxLoadingDelay: 0, // CHANGED from 2 - load immediately!
-            maxFragLoadingTimeMs: 4000, // REDUCED from 15000 - fail fast
-
-            // FAST MANIFEST LOADING
-            manifestLoadingTimeOut: 3000, // REDUCED from 10000
-            manifestLoadingMaxRetry: 0, // CHANGED from 2 - no retry, fail fast
-            manifestLoadingRetryDelay: 0,
-
-            // MINIMAL RETRY - Fail fast, not slow retry
-            levelLoadingMaxRetry: 1, // Minimal retry
-            fragLoadingMaxRetry: 1, // Minimal retry
-
-            // FAST START - Prioritize quick start over quality
-            startLevel: 0, // CHANGED from -1 - start at lowest quality for instant play
-            capLevelToPlayerSize: true,
-
-            // AGGRESSIVE ABR - Quick quality adjustment
-            abrEwmaDefaultEstimate: 1000000, // Higher estimate for faster start
-            abrBandWidthFactor: 0.8,
-            abrBandWidthUpFactor: 0.5,
-
-            // PERFORMANCE
-            enableSoftwareAES: false,
-            maxBufferHole: 0.3,
-            highBufferWatchdogPeriod: 1,
-            nudgeOffset: 0.05,
-            nudgeMaxRetry: 2,
-            progressive: true,
-
-            // Fast fragment loading policy
-            fragLoadPolicy: {
-              default: {
-                maxTimeToFirstByteMs: 2000,
-                maxLoadTimeMs: 4000,
-                timeoutRetry: {
-                  maxNumRetry: 1,
-                  retryDelayMs: 0,
-                  maxRetryDelayMs: 0
+            if (typeof Hls !== 'undefined' && Hls.isSupported()) {
+              // ===== INSTANT PLAYBACK OPTIMIZATION CONFIGURATION =====
+              const hls = new Hls({
+                debug: false,
+                enableWorker: true,
+                xhrSetup: function(xhr, url) {
+                  try {
+                    xhr.setRequestHeader('Bypass-Tunnel-Reminder', 'true');
+                    xhr.setRequestHeader('ngrok-skip-browser-warning', 'true');
+                  } catch (e) {}
                 },
-                errorRetry: {
-                  maxNumRetry: 1,
-                  retryDelayMs: 0,
-                  maxRetryDelayMs: 0
-                }
-              }
-            }
-          });
 
-          hls.loadSource(hlsUrl);
-          hls.attachMedia(videoPlayer);
-
-          hls.on(Hls.Events.MANIFEST_PARSED, function() {
-            // Track load time from start timestamp
-            const loadStartTime = videoPlayer.getAttribute('data-load-start');
-            const startTime = loadStartTime ? parseInt(loadStartTime) : Date.now();
-            const loadTime = Date.now() - startTime;
-            console.log('[MediaMTX] Manifest parsed, starting playback');
-
-            // ===== INSTANT TRANSITION - NO DELAY =====
-            // Hide buffering immediately
-            if (bufferingOverlay) {
-              bufferingOverlay.style.display = 'none';
-              bufferingOverlay.style.opacity = '0';
-            }
-
-            // Hide thumbnail immediately
-            if (thumb) {
-              thumb.style.display = 'none';
-              thumb.style.opacity = '0'; // Instant hide
-              thumb.style.transition = 'none'; // No transition delay
-            }
-
-            // Show player immediately
-            videoPlayer.style.display = 'block';
-            videoPlayer.style.opacity = '1'; // Instant show
-            videoPlayer.classList.remove('hidden-iframe');
-            if (card) card.classList.remove('dark-card');
-
-            // Force play immediately - no waiting
-            const playPromise = videoPlayer.play();
-
-            if (playPromise !== undefined) {
-              playPromise
-                .then(() => {
-                  // Performance monitoring
-                  console.log(`[MediaMTX] ✅ Playing successfully in ${loadTime}ms`);
-                  if (typeof performanceMetrics !== 'undefined') {
-                    performanceMetrics.loads.push(loadTime);
-                    if (performanceMetrics.loads.length > 20) {
-                      performanceMetrics.loads.shift(); // Keep last 20
-                    }
-                    performanceMetrics.avgLoadTime =
-                      performanceMetrics.loads.reduce((a, b) => a + b, 0) / performanceMetrics.loads.length;
-                    console.log(`[Performance] Average load time: ${Math.round(performanceMetrics.avgLoadTime)}ms`);
-                  }
-                  if (loadTime > 2000) {
-                    console.warn(`[Performance] ⚠️ Slow load detected: ${loadTime}ms`);
-                  }
-                  activePlayers.add(playerId);
-                })
-                .catch(e => {
-                  // If autoplay blocked, try to play on next user interaction
-                  console.warn('[MediaMTX] Autoplay prevented, will play on interaction:', e);
-                  videoPlayer.muted = true; // Ensure muted
-                  videoPlayer.play().then(() => {
-                    activePlayers.add(playerId);
-                  }).catch(() => {
-                    activePlayers.add(playerId); // Add anyway, user can click play
-                  });
-                });
-            } else {
-              activePlayers.add(playerId);
-            }
-
-            // Enable auto-refresh
-            const offlineId = 'offline-' + thumbId.split('-')[1];
-            enableAutoRefreshForPlayer(playerId, 'mediamtx', streamPath, thumbId, offlineId);
-            resetAutoRefreshState(playerId);
-
-            // Check awal setelah video dimuat (reduced delay for faster detection)
-            setTimeout(() => {
-              if (typeof detectDarkVideo !== 'undefined') {
-                detectDarkVideo(playerId).then((isDark) => {
-                  if (isDark) {
-                    console.log(`[Auto-Refresh] ${playerId} - Video tidak muncul setelah load, initiating refresh...`);
-                    if (typeof smartAutoRefresh !== 'undefined') {
-                      smartAutoRefresh(playerId, 'video_not_appearing');
-                    }
-                  }
-                });
-              }
-            }, 1500); // REDUCED from 3000ms to 1500ms for faster detection
-
-            // Track successful stream load
-            if (typeof gtag !== 'undefined') {
-              gtag('event', 'mediamtx_load_success', {
-                event_category: 'CCTV Streaming',
-                event_action: 'mediamtx_loaded',
-                event_label: streamPath,
-                value: 1
+                // ===== INSTANT PLAYBACK OPTIMIZATION =====
+                lowLatencyMode: true,
+                maxBufferLength: 3,
+                maxMaxBufferLength: 10,
+                maxBufferSize: 10 * 1000 * 1000,
+                backBufferLength: 30,
+                maxLoadingDelay: 0,
+                maxFragLoadingTimeMs: 4000,
+                manifestLoadingTimeOut: 3000,
+                manifestLoadingMaxRetry: 0,
+                manifestLoadingRetryDelay: 0,
+                levelLoadingMaxRetry: 1,
+                fragLoadingMaxRetry: 1,
+                startLevel: 0,
+                capLevelToPlayerSize: true,
+                abrEwmaDefaultEstimate: 1000000,
+                abrBandWidthFactor: 0.8,
+                abrBandWidthUpFactor: 0.5,
+                enableSoftwareAES: false,
+                maxBufferHole: 0.3,
+                highBufferWatchdogPeriod: 1,
+                nudgeOffset: 0.05,
+                nudgeMaxRetry: 2,
+                progressive: true
               });
-            }
-          });
 
-          hls.on(Hls.Events.ERROR, function(event, data) {
-            console.error('[MediaMTX] HLS Error:', data);
-            if (data.fatal) {
-              switch (data.type) {
-                case Hls.ErrorTypes.NETWORK_ERROR:
-                  console.log('[MediaMTX] Network error, fast recovery...');
-                  // Fast reload - retry immediately instead of slow retry
-                  hls.destroy();
-                  setTimeout(() => {
-                    const thumbElement = document.getElementById(thumbId);
-                    if (thumbElement) {
-                      playMediaMTXCCTV(thumbElement, playerId, thumbId);
-                    }
-                  }, 500); // Very short delay for fast recovery
-                  break;
-                case Hls.ErrorTypes.MEDIA_ERROR:
-                  console.log('[MediaMTX] Media error, trying recovery...');
-                  hls.recoverMediaError();
-                  break;
-                default:
-                  // For other errors, show offline message immediately
-                  hls.destroy();
-                  showOfflineMessage(playerId, thumbId);
-                  break;
+              hls.loadSource(targetUrl);
+              hls.attachMedia(videoPlayer);
+
+              hls.on(Hls.Events.MANIFEST_PARSED, function() {
+                const loadStartTime = videoPlayer.getAttribute('data-load-start');
+                const startTime = loadStartTime ? parseInt(loadStartTime) : Date.now();
+                const loadTime = Date.now() - startTime;
+                console.log('[Stream] Manifest parsed, starting playback in ' + loadTime + 'ms');
+
+                if (bufferingOverlay) {
+                  bufferingOverlay.style.display = 'none';
+                  bufferingOverlay.style.opacity = '0';
+                }
+                if (thumb) {
+                  thumb.style.display = 'none';
+                  thumb.style.opacity = '0';
+                }
+                videoPlayer.style.display = 'block';
+                videoPlayer.classList.remove('hidden-iframe');
+                if (card) card.classList.remove('dark-card');
+
+                videoPlayer.play().catch(e => {
+                  videoPlayer.muted = true;
+                  videoPlayer.play().catch(() => {});
+                });
+
+                activePlayers.add(playerId);
+                const offlineId = 'offline-' + thumbId.split('-')[1];
+                enableAutoRefreshForPlayer(playerId, 'mediamtx', streamPath, thumbId, offlineId);
+                resetAutoRefreshState(playerId);
+              });
+
+              hls.on(Hls.Events.ERROR, function(event, data) {
+                if (data.fatal) {
+                  switch (data.type) {
+                    case Hls.ErrorTypes.NETWORK_ERROR:
+                      console.warn('[Stream] Fatal network error, recovering...', data);
+                      hls.startLoad();
+                      break;
+                    case Hls.ErrorTypes.MEDIA_ERROR:
+                      console.warn('[Stream] Fatal media error, recovering...', data);
+                      hls.recoverMediaError();
+                      break;
+                    default:
+                      console.error('[Stream] Fatal unrecoverable error:', data);
+                      hls.destroy();
+                      if (bufferingOverlay) bufferingOverlay.style.display = 'none';
+                      if (thumb) {
+                        thumb.style.display = 'flex';
+                        thumb.style.opacity = '1';
+                        const loadingText = thumb.querySelector('.loading-text');
+                        if (loadingText) loadingText.innerHTML = '<i class="fas fa-play-circle"></i> Klik untuk memutar';
+                      }
+                      break;
+                  }
+                }
+              });
+
+              videoPlayer.hlsInstance = hls;
+              videoPlayer.setAttribute('data-hls-loaded', 'true');
+            } else if (videoPlayer.canPlayType('application/vnd.apple.mpegurl')) {
+              // Safari iOS / Mobile native HLS
+              videoPlayer.src = targetUrl;
+              videoPlayer.addEventListener('loadedmetadata', function() {
+                videoPlayer.play().catch(e => {});
+                if (bufferingOverlay) bufferingOverlay.style.display = 'none';
+                if (thumb) thumb.style.display = 'none';
+                videoPlayer.style.display = 'block';
+                videoPlayer.classList.remove('hidden-iframe');
+                activePlayers.add(playerId);
+              });
+              videoPlayer.addEventListener('error', function() {
+                if (bufferingOverlay) bufferingOverlay.style.display = 'none';
+                if (thumb) {
+                  thumb.style.display = 'flex';
+                  thumb.style.opacity = '1';
+                  const loadingText = thumb.querySelector('.loading-text');
+                  if (loadingText) loadingText.innerHTML = '<i class="fas fa-play-circle"></i> Klik untuk memutar';
+                }
+              });
+            } else {
+              console.error('[Stream] HLS not supported in this browser');
+              if (bufferingOverlay) bufferingOverlay.style.display = 'none';
+              showOfflineMessage(playerId, thumbId);
+            }
+          }
+
+          const connType = element ? (element.getAttribute('data-connection-type') || '') : '';
+          let sn = element ? (element.getAttribute('data-serial-number') || '') : '';
+          let channel = element ? (element.getAttribute('data-channel') || 1) : 1;
+
+          if (streamPath.startsWith('xmeye_')) {
+            const parts = streamPath.split('_');
+            if (parts.length >= 3) {
+              sn = parts[1];
+              channel = parts[2].replace('ch', '') || 1;
+            }
+          }
+
+          if (connType === 'xmeye_p2p' || streamPath.startsWith('xmeye_')) {
+            if (!sn && streamPath.startsWith('xmeye_')) {
+              sn = streamPath.split('_')[1] || '';
+            }
+
+            // Release any other active XMeye video player to comply with JFTech single-stream limit per device
+            document.querySelectorAll('.hls-video-player').forEach(function(otherVideo) {
+              if (otherVideo.id !== playerId && otherVideo.hlsInstance) {
+                try {
+                  otherVideo.hlsInstance.destroy();
+                  otherVideo.hlsInstance = null;
+                  otherVideo.src = '';
+                  otherVideo.style.display = 'none';
+                  const otherThumbId = otherVideo.id.replace('player-', 'thumb-');
+                  const otherThumb = document.getElementById(otherThumbId);
+                  if (otherThumb) {
+                    otherThumb.style.display = 'flex';
+                    otherThumb.style.opacity = '1';
+                  }
+                } catch(e) {}
+              }
+            });
+
+            console.log('[JFTech Cloud] Fetching Live HLS for SN:', sn, 'CH:', channel);
+            fetch(`api/jftech_gateway.php?action=get_live_stream&sn=${encodeURIComponent(sn)}&channel=${encodeURIComponent(channel)}&device_user=admin&device_pass=LoewixL12`)
+              .then(res => res.json())
+              .then(data => {
+                if (data && data.success && data.hls_url) {
+                  console.log('[JFTech Cloud] ✅ Official Live Stream URL Ready for CH ' + channel + ':', data.hls_url);
+                  mountHLS(data.hls_url);
+                } else {
+                  console.warn('[JFTech Cloud] Live Stream URL not available:', data);
+                  if (bufferingOverlay) {
+                    bufferingOverlay.style.display = 'none';
+                    bufferingOverlay.style.opacity = '0';
+                  }
+                  if (thumb) {
+                    thumb.style.display = 'flex';
+                    thumb.style.opacity = '1';
+                    const loadingText = thumb.querySelector('.loading-text');
+                    if (loadingText) loadingText.innerHTML = '<i class="fas fa-play-circle"></i> Klik untuk memutar';
+                  }
+                }
+              })
+              .catch(e => {
+                console.error('[JFTech Cloud] Gateway request error:', e);
+                if (bufferingOverlay) {
+                  bufferingOverlay.style.display = 'none';
+                  bufferingOverlay.style.opacity = '0';
+                }
+                if (thumb) {
+                  thumb.style.display = 'flex';
+                  thumb.style.opacity = '1';
+                  const loadingText = thumb.querySelector('.loading-text');
+                  if (loadingText) loadingText.innerHTML = '<i class="fas fa-play-circle"></i> Klik untuk memutar';
+                }
+              });
+            return;
+          }
+
+          let hlsUrl;
+          if (streamPath.startsWith('http://') || streamPath.startsWith('https://')) {
+            hlsUrl = streamPath;
+          } else if (streamPath.startsWith('rtsp://')) {
+            console.warn('[MediaMTX] Direct RTSP URL detected:', streamPath);
+            if (thumb) {
+              const loadingText = thumb.querySelector('.loading-text');
+              if (loadingText) {
+                loadingText.innerHTML = '<i class="fas fa-exclamation-triangle text-warning"></i> RTSP Direct URL perlu MediaMTX / IPCamLive!';
+                loadingText.style.opacity = '1';
               }
             }
-          });
+            alert('⚠️ Browser Web HTML5 tidak mendukung protokol "rtsp://" secara langsung.\n\nAgar RTSP dapat diputar di web:\n1. Masukkan RTSP di server MediaMTX / IPCamLive kamu.\n2. Atau gunakan URL HLS HTTP/HTTPS (.m3u8).\n3. Atau isi dengan Stream Path (contoh: cam_bali_1).');
+            return;
+          } else {
+            hlsUrl = `${STREAM_BASE}/${streamPath}/index.m3u8`;
+          }
+          mountHLS(hlsUrl);
 
-          // Store HLS instance
-          videoPlayer.hlsInstance = hls;
-
-          // Mark play time
-          videoPlayer.setAttribute('data-play-time', Date.now().toString());
-
-        } else if (videoPlayer.canPlayType('application/vnd.apple.mpegurl')) {
-          // Native HLS support (Safari, iOS)
-          videoPlayer.src = hlsUrl;
-          videoPlayer.addEventListener('loadedmetadata', function() {
-            videoPlayer.play().catch(e => {
-              console.warn('[MediaMTX] Autoplay prevented:', e);
-            });
-            if (bufferingOverlay) bufferingOverlay.style.display = 'none';
-            if (thumb) thumb.style.display = 'none';
-            videoPlayer.style.display = 'block';
-            videoPlayer.classList.remove('hidden-iframe');
-            if (card) card.classList.remove('dark-card');
-
-            activePlayers.add(playerId);
-
-            const offlineId = 'offline-' + thumbId.split('-')[1];
-            enableAutoRefreshForPlayer(playerId, 'mediamtx', streamPath, thumbId, offlineId);
-            resetAutoRefreshState(playerId);
-          });
-
-          videoPlayer.setAttribute('data-play-time', Date.now().toString());
-        } else {
-          console.error('[MediaMTX] HLS not supported');
-          showOfflineMessage(playerId, thumbId);
         }
 
       } catch (error) {
@@ -9143,7 +9128,7 @@
                     <div>Memuat ulang...</div>
                   </div>
 
-                  <div class="thumbnail-overlay" id="thumb-${camera.id}" data-stream-path="${camera.streamPath}">
+                  <div class="thumbnail-overlay" id="thumb-${camera.id}" data-stream-path="${camera.streamPath}" data-connection-type="${camera.connection_type || 'rtsp'}" data-serial-number="${camera.serial_number || ''}" data-channel="${camera.channel || 1}">
                     <img src="${camera.thumbnail}?v=${Date.now()}" alt="Thumbnail CCTV ${camera.title}" loading="lazy" onerror="this.onerror=null;this.src='${ASSET_BASE}/image/thumbnail/default-thumbnail.png?v=' + Date.now()" />
                     <div class="loading-text">
                       <i class="fas fa-play-circle"></i> Klik untuk memuat video
@@ -9158,7 +9143,7 @@
                     </button>
                   </div>
 
-                  <div class="buffering-overlay" id="buffering-${camera.id}">
+                  <div class="buffering-overlay" id="buffering-${camera.id}" style="display: none;">
                     <div class="buffering-spinner"></div>
                   </div>
 
@@ -9194,7 +9179,7 @@
                       <span style="display: inline-flex; align-items: center; gap: 5px; color: #10b981; font-weight: 800; margin-right: 6px;">
                         <span style="width: 7px; height: 7px; background-color: #10b981; border-radius: 50%; display: inline-block; box-shadow: 0 0 6px #10b981;"></span> LIVE
                       </span>
-                      • CAM-${String(camera.id).padStart(2, '0')}
+                      ${camera.connection_type === 'xmeye_p2p' ? `<span style="color: #38bdf8; font-weight: 700;">• XMEYE P2P (CH ${camera.channel || 1})</span>` : `• RTSP • CAM-${String(camera.id).padStart(2, '0')}`}
                     </div>
                     <div class="card-meta-ai" style="font-weight: 700; font-size: 10px; display: inline-flex; align-items: center; gap: 4px;">
                       <i class="fas fa-microchip" style="color: #d97706;"></i> AI ANALYTICS
@@ -9208,9 +9193,77 @@
         row.innerHTML += cctvCardHTML;
       });
 
+      // Load real-time live camera snapshots for all XMeye DVR channels
+      if (typeof loadXMeyeLiveSnapshots === 'function') {
+        setTimeout(loadXMeyeLiveSnapshots, 300);
+      }
+
       // Auto-play streams for newly generated CCTV cards
       if (typeof autoPlayCCTVStreams === 'function') {
         setTimeout(autoPlayCCTVStreams, 200);
+      }
+    }
+
+    // ===== XMEYE LIVE CAMERA SNAPSHOT FETCHER =====
+    function loadXMeyeLiveSnapshots() {
+      const xmeyeThumbs = document.querySelectorAll('.thumbnail-overlay[data-connection-type="xmeye_p2p"]');
+      if (!xmeyeThumbs || xmeyeThumbs.length === 0) return;
+
+      const snMap = {};
+      xmeyeThumbs.forEach(function(thumb) {
+        const sn = thumb.getAttribute('data-serial-number');
+        const ch = thumb.getAttribute('data-channel') || '1';
+        if (sn) {
+          if (!snMap[sn]) snMap[sn] = [];
+          snMap[sn].push({ element: thumb, channel: ch });
+        }
+      });
+
+      Object.keys(snMap).forEach(function(sn) {
+        fetch('api/jftech_gateway.php?action=get_all_snapshots&sn=' + encodeURIComponent(sn))
+          .then(function(res) { return res.json(); })
+          .then(function(data) {
+            if (data.success && data.snapshots) {
+              snMap[sn].forEach(function(item) {
+                const snapUrl = data.snapshots[item.channel];
+                const img = item.element.querySelector('img');
+                if (img) {
+                  if (snapUrl) {
+                    img.src = snapUrl;
+                    img.style.objectFit = 'cover';
+                  } else {
+                    img.src = ASSET_BASE + '/image/logo-loewix.png';
+                  }
+                }
+                // Hide any buffering spinner so live snapshot is crystal clear
+                const suffix = item.element.id.slice('thumb-'.length);
+                const buf = document.getElementById('buffering-' + suffix);
+                if (buf) {
+                  buf.style.display = 'none';
+                  buf.style.opacity = '0';
+                }
+                const loadInd = document.getElementById('loading-' + suffix);
+                if (loadInd) {
+                  loadInd.style.display = 'none';
+                }
+                item.element.style.display = 'flex';
+                item.element.style.opacity = '1';
+                const loadingText = item.element.querySelector('.loading-text');
+                if (loadingText) {
+                  loadingText.innerHTML = '<i class="fas fa-play-circle"></i> Klik untuk memutar video';
+                }
+              });
+              console.log('[XMeye Snapshot] ✅ Loaded real-time CCTV snapshots for SN:', sn);
+            }
+          })
+          .catch(function(e) {
+            console.warn('[XMeye Snapshot] Error fetching snapshots:', e);
+          });
+      });
+
+      // Periodically refresh snapshots in background every 45 seconds
+      if (!window.xmeyeSnapshotTimer) {
+        window.xmeyeSnapshotTimer = setInterval(loadXMeyeLiveSnapshots, 45000);
       }
     }
 
@@ -9571,6 +9624,10 @@
             const thumbId = playerId.replace('player-', 'thumb-');
             const thumb = document.getElementById(thumbId);
             if (thumb && typeof playMediaMTXCCTV === 'function') {
+              const connType = thumb.getAttribute('data-connection-type');
+              if (connType === 'xmeye_p2p') {
+                return; // Do NOT auto-resume XMeye streams via IntersectionObserver
+              }
               // Extract streamPath from saved state or thumb element
               const streamPath = thumb.getAttribute('data-stream-path');
               if (streamPath) {
@@ -9657,22 +9714,27 @@
     }
     // ===== END HOVER PRELOAD =====
 
-    // ===== AUTOPLAY ALL LIVE CCTV STREAMS =====
+    // ===== AUTOPLAY LIVE CCTV STREAMS =====
     function autoPlayCCTVStreams() {
-      console.log('[AutoPlay] Automatically starting all active CCTV video streams...');
+      console.log('[AutoPlay] Starting active RTSP CCTV video streams...');
       const thumbnails = document.querySelectorAll('.thumbnail-overlay[data-stream-path]');
+
       thumbnails.forEach(function(thumb, index) {
         if (!thumb || !thumb.id || thumb.id.indexOf('thumb-') !== 0) return;
         const suffix = thumb.id.slice('thumb-'.length);
         const playerId = 'player-' + suffix;
-        const player = document.getElementById(playerId);
-        
-        // Stagger playback initiation slightly (100ms) to ensure smooth browser hardware acceleration
-        setTimeout(function() {
-          if (typeof playMediaMTXCCTV === 'function' && thumb) {
-            playMediaMTXCCTV(thumb, playerId, thumb.id);
-          }
-        }, index * 120);
+        const streamPath = thumb.getAttribute('data-stream-path') || '';
+        const connType = thumb.getAttribute('data-connection-type') || '';
+        const isXMeye = (connType === 'xmeye_p2p' || streamPath.startsWith('xmeye_'));
+
+        if (!isXMeye) {
+          // Direct RTSP streams via MediaMTX (instant multi-concurrency)
+          setTimeout(function() {
+            if (typeof playMediaMTXCCTV === 'function' && thumb) {
+              playMediaMTXCCTV(thumb, playerId, thumb.id);
+            }
+          }, index * 120);
+        }
       });
     }
 
