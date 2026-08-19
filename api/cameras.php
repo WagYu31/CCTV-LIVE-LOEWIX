@@ -23,12 +23,32 @@ if ($action === 'public_list' || $action === 'list') {
     $cityFilter = $_GET['city'] ?? 'all';
     $userIdFilter = isset($_GET['user_id']) ? (int)$_GET['user_id'] : null;
     $userCameras = [];
+    $snSnapshotCache = [];
 
     foreach ($db['cameras'] as $cam) {
         if ($userIdFilter !== null && (int)($cam['user_id'] ?? 0) !== $userIdFilter) {
             continue;
         }
         if ($cityFilter === 'all' || strtolower($cam['city'] ?? '') === strtolower($cityFilter)) {
+            // Automatically attach real-time snapshot URL for XMeye cameras
+            if (($cam['connection_type'] ?? '') === 'xmeye_p2p' && !empty($cam['serial_number'])) {
+                $sn = strtolower(preg_replace('/[^a-zA-Z0-9]/', '', $cam['serial_number']));
+                $ch = (int)($cam['channel'] ?? 1);
+                
+                if (!array_key_exists($sn, $snSnapshotCache)) {
+                    $cacheFile = sys_get_temp_dir() . '/jftech_snapshots_' . $sn . '.json';
+                    if (file_exists($cacheFile)) {
+                        $snSnapshotCache[$sn] = json_decode(file_get_contents($cacheFile), true);
+                    } else {
+                        $snSnapshotCache[$sn] = null;
+                    }
+                }
+
+                if (isset($snSnapshotCache[$sn]['snapshots'][$ch]) && !empty($snSnapshotCache[$sn]['snapshots'][$ch])) {
+                    $cam['thumbnail'] = $snSnapshotCache[$sn]['snapshots'][$ch];
+                }
+            }
+
             $userCameras[] = $cam;
         }
     }
