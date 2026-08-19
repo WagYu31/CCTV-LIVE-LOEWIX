@@ -9197,6 +9197,15 @@
                     img.src = snapUrl;
                     img.style.objectFit = 'cover';
                   }
+                  // Hide any buffering spinner so live snapshot is crystal clear
+                  const suffix = item.element.id.slice('thumb-'.length);
+                  const buf = document.getElementById('buffering-' + suffix);
+                  if (buf) {
+                    buf.style.display = 'none';
+                    buf.style.opacity = '0';
+                  }
+                  item.element.style.display = 'flex';
+                  item.element.style.opacity = '1';
                 }
               });
               console.log('[XMeye Snapshot] ✅ Loaded real-time CCTV snapshots for SN:', sn);
@@ -9653,9 +9662,8 @@
 
     // ===== AUTOPLAY LIVE CCTV STREAMS =====
     function autoPlayCCTVStreams() {
-      console.log('[AutoPlay] Starting active CCTV video streams...');
+      console.log('[AutoPlay] Starting active RTSP CCTV video streams...');
       const thumbnails = document.querySelectorAll('.thumbnail-overlay[data-stream-path]');
-      let firstXMeyePlayed = false;
 
       thumbnails.forEach(function(thumb, index) {
         if (!thumb || !thumb.id || thumb.id.indexOf('thumb-') !== 0) return;
@@ -9665,22 +9673,13 @@
         const connType = thumb.getAttribute('data-connection-type') || '';
         const isXMeye = (connType === 'xmeye_p2p' || streamPath.startsWith('xmeye_'));
 
-        if (isXMeye) {
-          if (!firstXMeyePlayed) {
-            firstXMeyePlayed = true;
-            setTimeout(function() {
-              if (typeof playMediaMTXCCTV === 'function' && thumb) {
-                playMediaMTXCCTV(thumb, playerId, thumb.id);
-              }
-            }, 600);
-          }
-        } else {
+        if (!isXMeye) {
           // Direct RTSP streams via MediaMTX (instant multi-concurrency)
           setTimeout(function() {
             if (typeof playMediaMTXCCTV === 'function' && thumb) {
               playMediaMTXCCTV(thumb, playerId, thumb.id);
             }
-          }, index * 150);
+          }, index * 120);
         }
       });
     }
