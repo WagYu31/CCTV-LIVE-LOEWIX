@@ -306,8 +306,7 @@ if ($action === 'get_snapshot') {
             'PicType' => 0
         ]
     ];
-    $headers = getJFHeaders();
-    $res = makeJFRequest($url, $body, $headers);
+    $res = callJFTechV3($url, $body);
 
     if (($res['code'] ?? 0) === 2000 && isset($res['data']['image'])) {
         echo json_encode([
@@ -334,6 +333,17 @@ if ($action === 'get_all_snapshots') {
         exit;
     }
     $cleanSN = strtolower(preg_replace('/[^a-zA-Z0-9]/', '', $sn));
+    
+    // Check local snapshot cache (valid 60 seconds)
+    $cacheFile = sys_get_temp_dir() . '/jf_snapshots_' . md5($cleanSN) . '.json';
+    if (file_exists($cacheFile) && (time() - filemtime($cacheFile) < 90)) {
+        $cached = json_decode(file_get_contents($cacheFile), true);
+        if ($cached && !empty($cached['snapshots'])) {
+            echo json_encode($cached);
+            exit;
+        }
+    }
+
     $deviceToken = getJFDeviceToken($cleanSN);
     if (!$deviceToken) {
         echo json_encode(['success' => false, 'message' => 'Gagal mendapatkan token']);
@@ -350,18 +360,23 @@ if ($action === 'get_all_snapshots') {
                 'PicType' => 0
             ]
         ];
-        $headers = getJFHeaders();
-        $res = makeJFRequest($url, $body, $headers);
+        $res = callJFTechV3($url, $body);
         if (($res['code'] ?? 0) === 2000 && isset($res['data']['image'])) {
             $snapshots[$ch + 1] = $res['data']['image'];
         }
     }
 
-    echo json_encode([
+    $result = [
         'success' => true,
         'sn' => $cleanSN,
         'snapshots' => $snapshots
-    ]);
+    ];
+    
+    if (!empty($snapshots)) {
+        @file_put_contents($cacheFile, json_encode($result));
+    }
+
+    echo json_encode($result);
     exit;
 }
 
