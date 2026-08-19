@@ -254,11 +254,19 @@ if ($action === 'get_live_stream') {
 
     $res = callJFTechV3($url, $body);
 
-    if (isset($res['code']) && $res['code'] === 2000 && !empty($res['data']['url'])) {
+    // Debug: log full response
+    @file_put_contents(sys_get_temp_dir() . '/jf_live_debug_ch' . $channel . '.json', json_encode($res, JSON_PRETTY_PRINT));
+
+    $hlsUrl = $res['data']['url'] ?? '';
+    if (empty($hlsUrl) && isset($res['data']['Url'])) {
+        $hlsUrl = $res['data']['Url'];
+    }
+
+    if (isset($res['code']) && $res['code'] === 2000 && !empty($hlsUrl)) {
         echo json_encode([
             'success' => true,
             'source' => 'jftech_cloud_hls',
-            'hls_url' => $res['data']['url'],
+            'hls_url' => $hlsUrl,
             'expireTime' => $res['data']['expireTime'] ?? null,
             'sn' => $cleanSN,
             'channel' => $channel,
@@ -277,7 +285,8 @@ if ($action === 'get_live_stream') {
         'sn' => $cleanSN,
         'channel' => $channel,
         'cloud_api_status' => $res['msg'] ?? 'Gagal membuat URL livestream',
-        'message' => $res['msg'] ?? 'Gagal membuat URL livestream'
+        'message' => $res['msg'] ?? 'Gagal membuat URL livestream',
+        'raw_response' => $res
     ]);
     exit;
 }
