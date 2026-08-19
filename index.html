@@ -9142,10 +9142,54 @@
         row.innerHTML += cctvCardHTML;
       });
 
+      // Load real-time live camera snapshots for all XMeye DVR channels
+      if (typeof loadXMeyeLiveSnapshots === 'function') {
+        setTimeout(loadXMeyeLiveSnapshots, 300);
+      }
+
       // Auto-play streams for newly generated CCTV cards
       if (typeof autoPlayCCTVStreams === 'function') {
         setTimeout(autoPlayCCTVStreams, 200);
       }
+    }
+
+    // ===== XMEYE LIVE CAMERA SNAPSHOT FETCHER =====
+    function loadXMeyeLiveSnapshots() {
+      const xmeyeThumbs = document.querySelectorAll('.thumbnail-overlay[data-connection-type="xmeye_p2p"]');
+      if (!xmeyeThumbs || xmeyeThumbs.length === 0) return;
+
+      const snMap = {};
+      xmeyeThumbs.forEach(function(thumb) {
+        const sn = thumb.getAttribute('data-serial-number');
+        const ch = thumb.getAttribute('data-channel') || '1';
+        if (sn) {
+          if (!snMap[sn]) snMap[sn] = [];
+          snMap[sn].push({ element: thumb, channel: ch });
+        }
+      });
+
+      Object.keys(snMap).forEach(function(sn) {
+        fetch('api/jftech_gateway.php?action=get_all_snapshots&sn=' + encodeURIComponent(sn))
+          .then(function(res) { return res.json(); })
+          .then(function(data) {
+            if (data.success && data.snapshots) {
+              snMap[sn].forEach(function(item) {
+                const snapUrl = data.snapshots[item.channel];
+                if (snapUrl) {
+                  const img = item.element.querySelector('img');
+                  if (img) {
+                    img.src = snapUrl;
+                    img.style.objectFit = 'cover';
+                  }
+                }
+              });
+              console.log('[XMeye Snapshot] ✅ Loaded real-time CCTV snapshots for SN:', sn);
+            }
+          })
+          .catch(function(e) {
+            console.warn('[XMeye Snapshot] Error fetching snapshots:', e);
+          });
+      });
     }
 
     // ===== PASAR HORAS: Fungsi Generate HTML dengan MediaMTX =====

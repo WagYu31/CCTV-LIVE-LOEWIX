@@ -254,19 +254,11 @@ if ($action === 'get_live_stream') {
 
     $res = callJFTechV3($url, $body);
 
-    // Debug: log full response
-    @file_put_contents(sys_get_temp_dir() . '/jf_live_debug_ch' . $channel . '.json', json_encode($res, JSON_PRETTY_PRINT));
-
-    $hlsUrl = $res['data']['url'] ?? '';
-    if (empty($hlsUrl) && isset($res['data']['Url'])) {
-        $hlsUrl = $res['data']['Url'];
-    }
-
-    if (isset($res['code']) && $res['code'] === 2000 && !empty($hlsUrl)) {
+    if (isset($res['code']) && $res['code'] === 2000 && !empty($res['data']['url'])) {
         echo json_encode([
             'success' => true,
             'source' => 'jftech_cloud_hls',
-            'hls_url' => $hlsUrl,
+            'hls_url' => $res['data']['url'],
             'expireTime' => $res['data']['expireTime'] ?? null,
             'sn' => $cleanSN,
             'channel' => $channel,
@@ -285,8 +277,90 @@ if ($action === 'get_live_stream') {
         'sn' => $cleanSN,
         'channel' => $channel,
         'cloud_api_status' => $res['msg'] ?? 'Gagal membuat URL livestream',
-        'message' => $res['msg'] ?? 'Gagal membuat URL livestream',
-        'raw_response' => $res
+        'message' => $res['msg'] ?? 'Gagal membuat URL livestream'
+    ]);
+    exit;
+}
+
+if ($action === 'get_snapshot') {
+    $sn = trim($_POST['sn'] ?? $_GET['sn'] ?? '');
+    $channel = (int)($_POST['channel'] ?? $_GET['channel'] ?? 1);
+    if (empty($sn)) {
+        echo json_encode(['success' => false, 'message' => 'SN wajib diisi.']);
+        exit;
+    }
+    $cleanSN = strtolower(preg_replace('/[^a-zA-Z0-9]/', '', $sn));
+    $channelIdx = max(0, $channel - 1);
+
+    $deviceToken = getJFDeviceToken($cleanSN);
+    if (!$deviceToken) {
+        echo json_encode(['success' => false, 'message' => 'Gagal mendapatkan token']);
+        exit;
+    }
+
+    $url = JF_BASE_URL . '/rtc/device/capture/' . $deviceToken;
+    $body = [
+        'Name' => 'OPSNAP',
+        'OPSNAP' => [
+            'Channel' => $channelIdx,
+            'PicType' => 0
+        ]
+    ];
+    $headers = getJFHeaders();
+    $res = makeJFRequest($url, $body, $headers);
+
+    if (($res['code'] ?? 0) === 2000 && isset($res['data']['image'])) {
+        echo json_encode([
+            'success' => true,
+            'image' => $res['data']['image'],
+            'sn' => $cleanSN,
+            'channel' => $channel
+        ]);
+        exit;
+    }
+
+    echo json_encode([
+        'success' => false,
+        'message' => $res['data']['RetMsg'] ?? $res['msg'] ?? 'Snapshot gagal',
+        'ret' => $res['data']['Ret'] ?? null
+    ]);
+    exit;
+}
+
+if ($action === 'get_all_snapshots') {
+    $sn = trim($_POST['sn'] ?? $_GET['sn'] ?? '');
+    if (empty($sn)) {
+        echo json_encode(['success' => false, 'message' => 'SN wajib diisi.']);
+        exit;
+    }
+    $cleanSN = strtolower(preg_replace('/[^a-zA-Z0-9]/', '', $sn));
+    $deviceToken = getJFDeviceToken($cleanSN);
+    if (!$deviceToken) {
+        echo json_encode(['success' => false, 'message' => 'Gagal mendapatkan token']);
+        exit;
+    }
+
+    $snapshots = [];
+    for ($ch = 0; $ch < 16; $ch++) {
+        $url = JF_BASE_URL . '/rtc/device/capture/' . $deviceToken;
+        $body = [
+            'Name' => 'OPSNAP',
+            'OPSNAP' => [
+                'Channel' => $ch,
+                'PicType' => 0
+            ]
+        ];
+        $headers = getJFHeaders();
+        $res = makeJFRequest($url, $body, $headers);
+        if (($res['code'] ?? 0) === 2000 && isset($res['data']['image'])) {
+            $snapshots[$ch + 1] = $res['data']['image'];
+        }
+    }
+
+    echo json_encode([
+        'success' => true,
+        'sn' => $cleanSN,
+        'snapshots' => $snapshots
     ]);
     exit;
 }
