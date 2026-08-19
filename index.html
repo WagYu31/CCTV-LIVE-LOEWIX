@@ -9260,6 +9260,11 @@
             console.warn('[XMeye Snapshot] Error fetching snapshots:', e);
           });
       });
+
+      // Periodically refresh snapshots in background every 45 seconds
+      if (!window.xmeyeSnapshotTimer) {
+        window.xmeyeSnapshotTimer = setInterval(loadXMeyeLiveSnapshots, 45000);
+      }
     }
 
     // ===== PASAR HORAS: Fungsi Generate HTML dengan MediaMTX =====
