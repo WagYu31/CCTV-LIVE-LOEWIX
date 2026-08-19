@@ -7792,7 +7792,13 @@
                     default:
                       console.error('[Stream] Fatal unrecoverable error:', data);
                       hls.destroy();
-                      showOfflineMessage(playerId, thumbId);
+                      if (bufferingOverlay) bufferingOverlay.style.display = 'none';
+                      if (thumb) {
+                        thumb.style.display = 'flex';
+                        thumb.style.opacity = '1';
+                        const loadingText = thumb.querySelector('.loading-text');
+                        if (loadingText) loadingText.innerHTML = '<i class="fas fa-play-circle"></i> Klik untuk memutar';
+                      }
                       break;
                   }
                 }
@@ -7801,7 +7807,7 @@
               videoPlayer.hlsInstance = hls;
               videoPlayer.setAttribute('data-hls-loaded', 'true');
             } else if (videoPlayer.canPlayType('application/vnd.apple.mpegurl')) {
-              // Safari iOS native HLS
+              // Safari iOS / Mobile native HLS
               videoPlayer.src = targetUrl;
               videoPlayer.addEventListener('loadedmetadata', function() {
                 videoPlayer.play().catch(e => {});
@@ -7811,8 +7817,18 @@
                 videoPlayer.classList.remove('hidden-iframe');
                 activePlayers.add(playerId);
               });
+              videoPlayer.addEventListener('error', function() {
+                if (bufferingOverlay) bufferingOverlay.style.display = 'none';
+                if (thumb) {
+                  thumb.style.display = 'flex';
+                  thumb.style.opacity = '1';
+                  const loadingText = thumb.querySelector('.loading-text');
+                  if (loadingText) loadingText.innerHTML = '<i class="fas fa-play-circle"></i> Klik untuk memutar';
+                }
+              });
             } else {
               console.error('[Stream] HLS not supported in this browser');
+              if (bufferingOverlay) bufferingOverlay.style.display = 'none';
               showOfflineMessage(playerId, thumbId);
             }
           }
