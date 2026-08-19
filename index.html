@@ -7833,6 +7833,25 @@
             if (!sn && streamPath.startsWith('xmeye_')) {
               sn = streamPath.split('_')[1] || '';
             }
+
+            // Release any other active XMeye video player to comply with JFTech single-stream limit per device
+            document.querySelectorAll('.hls-video-player').forEach(function(otherVideo) {
+              if (otherVideo.id !== playerId && otherVideo.hlsInstance) {
+                try {
+                  otherVideo.hlsInstance.destroy();
+                  otherVideo.hlsInstance = null;
+                  otherVideo.src = '';
+                  otherVideo.style.display = 'none';
+                  const otherThumbId = otherVideo.id.replace('player-', 'thumb-');
+                  const otherThumb = document.getElementById(otherThumbId);
+                  if (otherThumb) {
+                    otherThumb.style.display = 'flex';
+                    otherThumb.style.opacity = '1';
+                  }
+                } catch(e) {}
+              }
+            });
+
             console.log('[JFTech Cloud] Fetching Live HLS for SN:', sn, 'CH:', channel);
             fetch(`api/jftech_gateway.php?action=get_live_stream&sn=${encodeURIComponent(sn)}&channel=${encodeURIComponent(channel)}&device_user=admin&device_pass=LoewixL12`)
               .then(res => res.json())
@@ -9572,22 +9591,37 @@
     }
     // ===== END HOVER PRELOAD =====
 
-    // ===== AUTOPLAY ALL LIVE CCTV STREAMS =====
+    // ===== AUTOPLAY LIVE CCTV STREAMS =====
     function autoPlayCCTVStreams() {
-      console.log('[AutoPlay] Automatically starting all active CCTV video streams...');
+      console.log('[AutoPlay] Starting active CCTV video streams...');
       const thumbnails = document.querySelectorAll('.thumbnail-overlay[data-stream-path]');
+      let firstXMeyePlayed = false;
+
       thumbnails.forEach(function(thumb, index) {
         if (!thumb || !thumb.id || thumb.id.indexOf('thumb-') !== 0) return;
         const suffix = thumb.id.slice('thumb-'.length);
         const playerId = 'player-' + suffix;
-        const player = document.getElementById(playerId);
-        
-        // Stagger playback initiation slightly (100ms) to ensure smooth browser hardware acceleration
-        setTimeout(function() {
-          if (typeof playMediaMTXCCTV === 'function' && thumb) {
-            playMediaMTXCCTV(thumb, playerId, thumb.id);
+        const streamPath = thumb.getAttribute('data-stream-path') || '';
+        const connType = thumb.getAttribute('data-connection-type') || '';
+        const isXMeye = (connType === 'xmeye_p2p' || streamPath.startsWith('xmeye_'));
+
+        if (isXMeye) {
+          if (!firstXMeyePlayed) {
+            firstXMeyePlayed = true;
+            setTimeout(function() {
+              if (typeof playMediaMTXCCTV === 'function' && thumb) {
+                playMediaMTXCCTV(thumb, playerId, thumb.id);
+              }
+            }, 600);
           }
-        }, index * 120);
+        } else {
+          // Direct RTSP streams via MediaMTX (instant multi-concurrency)
+          setTimeout(function() {
+            if (typeof playMediaMTXCCTV === 'function' && thumb) {
+              playMediaMTXCCTV(thumb, playerId, thumb.id);
+            }
+          }, index * 150);
+        }
       });
     }
 
