@@ -9108,7 +9108,7 @@
                     </button>
                   </div>
 
-                  <div class="buffering-overlay" id="buffering-${camera.id}">
+                  <div class="buffering-overlay" id="buffering-${camera.id}" style="display: none;">
                     <div class="buffering-spinner"></div>
                   </div>
 
@@ -9191,22 +9191,24 @@
             if (data.success && data.snapshots) {
               snMap[sn].forEach(function(item) {
                 const snapUrl = data.snapshots[item.channel];
-                if (snapUrl) {
-                  const img = item.element.querySelector('img');
-                  if (img) {
+                const img = item.element.querySelector('img');
+                if (img) {
+                  if (snapUrl) {
                     img.src = snapUrl;
                     img.style.objectFit = 'cover';
+                  } else {
+                    img.src = ASSET_BASE + '/image/logo-loewix.png';
                   }
-                  // Hide any buffering spinner so live snapshot is crystal clear
-                  const suffix = item.element.id.slice('thumb-'.length);
-                  const buf = document.getElementById('buffering-' + suffix);
-                  if (buf) {
-                    buf.style.display = 'none';
-                    buf.style.opacity = '0';
-                  }
-                  item.element.style.display = 'flex';
-                  item.element.style.opacity = '1';
                 }
+                // Hide any buffering spinner so live snapshot is crystal clear
+                const suffix = item.element.id.slice('thumb-'.length);
+                const buf = document.getElementById('buffering-' + suffix);
+                if (buf) {
+                  buf.style.display = 'none';
+                  buf.style.opacity = '0';
+                }
+                item.element.style.display = 'flex';
+                item.element.style.opacity = '1';
               });
               console.log('[XMeye Snapshot] ✅ Loaded real-time CCTV snapshots for SN:', sn);
             }
