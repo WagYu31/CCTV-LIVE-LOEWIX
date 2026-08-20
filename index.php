@@ -7867,25 +7867,7 @@
               sn = streamPath.split('_')[1] || '';
             }
 
-            // Release any other active XMeye video player to comply with JFTech single-stream limit per device
-            document.querySelectorAll('.hls-video-player').forEach(function(otherVideo) {
-              if (otherVideo.id !== playerId && otherVideo.hlsInstance) {
-                try {
-                  otherVideo.hlsInstance.destroy();
-                  otherVideo.hlsInstance = null;
-                  otherVideo.src = '';
-                  otherVideo.style.display = 'none';
-                  const otherThumbId = otherVideo.id.replace('player-', 'thumb-');
-                  const otherThumb = document.getElementById(otherThumbId);
-                  if (otherThumb) {
-                    otherThumb.style.display = 'flex';
-                    otherThumb.style.opacity = '1';
-                  }
-                } catch(e) {}
-              }
-            });
-
-            console.log('[JFTech Cloud] Fetching Live HLS for SN:', sn, 'CH:', channel);
+            console.log('[JFTech/MediaMTX] Fetching Live stream for SN:', sn, 'CH:', channel);
             fetch(`api/jftech_gateway.php?action=get_live_stream&sn=${encodeURIComponent(sn)}&channel=${encodeURIComponent(channel)}&device_user=admin&device_pass=LoewixL12`)
               .then(res => res.json())
               .then(data => {
@@ -7893,31 +7875,15 @@
                   console.log('[JFTech Cloud] ✅ Official Live Stream URL Ready for CH ' + channel + ':', data.hls_url);
                   mountHLS(data.hls_url);
                 } else {
-                  console.warn('[JFTech Cloud] Live Stream URL not available:', data);
-                  if (bufferingOverlay) {
-                    bufferingOverlay.style.display = 'none';
-                    bufferingOverlay.style.opacity = '0';
-                  }
-                  if (thumb) {
-                    thumb.style.display = 'flex';
-                    thumb.style.opacity = '1';
-                    const loadingText = thumb.querySelector('.loading-text');
-                    if (loadingText) loadingText.innerHTML = '<i class="fas fa-play-circle"></i> Klik untuk memutar';
-                  }
+                  console.log('[MediaMTX Relay] Trying direct MediaMTX stream for:', streamPath);
+                  const fallbackUrl = `${STREAM_BASE}/${streamPath}/index.m3u8`;
+                  mountHLS(fallbackUrl);
                 }
               })
               .catch(e => {
-                console.error('[JFTech Cloud] Gateway request error:', e);
-                if (bufferingOverlay) {
-                  bufferingOverlay.style.display = 'none';
-                  bufferingOverlay.style.opacity = '0';
-                }
-                if (thumb) {
-                  thumb.style.display = 'flex';
-                  thumb.style.opacity = '1';
-                  const loadingText = thumb.querySelector('.loading-text');
-                  if (loadingText) loadingText.innerHTML = '<i class="fas fa-play-circle"></i> Klik untuk memutar';
-                }
+                console.warn('[JFTech/MediaMTX] Gateway request error, falling back to MediaMTX:', e);
+                const fallbackUrl = `${STREAM_BASE}/${streamPath}/index.m3u8`;
+                mountHLS(fallbackUrl);
               });
             return;
           }
