@@ -3,20 +3,85 @@ hlsAlwaysRemux: true
 hlsAllowOrigins: ['*']
 
 paths:
-  cctv_loewix_1:
-    source: rtsp://103.164.101.50:8203/user=admin&password=admin1234&channel=1&stream=0.sdp
+  # ==========================================
+  # LOEWIX DVR 16-CHANNEL (SN: 848f3922aa2875eb)
+  # ==========================================
+  xmeye_848f3922aa2875eb_ch1:
+    source: rtsp://admin:LoewixL12@103.121.245.177:554/user=admin_password=LoewixL12_channel=1_stream=1.sdp
     sourceProtocol: tcp
     sourceOnDemand: yes
 
-  cctv_loewix_2:
-    source: rtsp://103.164.101.50:8203/user=admin&password=admin1234&channel=2&stream=0.sdp
+  xmeye_848f3922aa2875eb_ch2:
+    source: rtsp://admin:LoewixL12@103.121.245.177:554/user=admin_password=LoewixL12_channel=2_stream=1.sdp
     sourceProtocol: tcp
     sourceOnDemand: yes
 
-  cctv_loewix_3:
-    source: rtsp://103.164.101.50:8203/user=admin&password=admin1234&channel=3&stream=0.sdp
+  xmeye_848f3922aa2875eb_ch3:
+    source: rtsp://admin:LoewixL12@103.121.245.177:554/user=admin_password=LoewixL12_channel=3_stream=1.sdp
     sourceProtocol: tcp
     sourceOnDemand: yes
 
-  cctv_loewix_h264:
-    source: publisher
+  xmeye_848f3922aa2875eb_ch4:
+    source: rtsp://admin:LoewixL12@103.121.245.177:554/user=admin_password=LoewixL12_channel=4_stream=1.sdp
+    sourceProtocol: tcp
+    sourceOnDemand: yes
+
+  xmeye_848f3922aa2875eb_ch5:
+    source: rtsp://admin:LoewixL12@103.121.245.177:554/user=admin_password=LoewixL12_channel=5_stream=1.sdp
+    sourceProtocol: tcp
+    sourceOnDemand: yes
+
+  xmeye_848f3922aa2875eb_ch6:
+    source: rtsp://admin:LoewixL12@103.121.245.177:554/user=admin_password=LoewixL12_channel=6_stream=1.sdp
+    sourceProtocol: tcp
+    sourceOnDemand: yes
+
+  xmeye_848f3922aa2875eb_ch7:
+    source: rtsp://admin:LoewixL12@103.121.245.177:554/user=admin_password=LoewixL12_channel=7_stream=1.sdp
+    sourceProtocol: tcp
+    sourceOnDemand: yes
+
+  xmeye_848f3922aa2875eb_ch8:
+    source: rtsp://admin:LoewixL12@103.121.245.177:554/user=admin_password=LoewixL12_channel=8_stream=1.sdp
+    sourceProtocol: tcp
+    sourceOnDemand: yes
+
+  xmeye_848f3922aa2875eb_ch9:
+    source: rtsp://admin:LoewixL12@103.121.245.177:554/user=admin_password=LoewixL12_channel=9_stream=1.sdp
+    sourceProtocol: tcp
+    sourceOnDemand: yes
+
+  xmeye_848f3922aa2875eb_ch10:
+    source: rtsp://admin:LoewixL12@103.121.245.177:554/user=admin_password=LoewixL12_channel=10_stream=1.sdp
+    sourceProtocol: tcp
+    sourceOnDemand: yes
+
+  xmeye_848f3922aa2875eb_ch11:
+    source: rtsp://admin:LoewixL12@103.121.245.177:554/user=admin_password=LoewixL12_channel=11_stream=1.sdp
+    sourceProtocol: tcp
+    sourceOnDemand: yes
+
+  xmeye_848f3922aa2875eb_ch12:
+    source: rtsp://admin:LoewixL12@103.121.245.177:554/user=admin_password=LoewixL12_channel=12_stream=1.sdp
+    sourceProtocol: tcp
+    sourceOnDemand: yes
+
+  xmeye_848f3922aa2875eb_ch13:
+    source: rtsp://admin:LoewixL12@103.121.245.177:554/user=admin_password=LoewixL12_channel=13_stream=1.sdp
+    sourceProtocol: tcp
+    sourceOnDemand: yes
+
+  xmeye_848f3922aa2875eb_ch14:
+    source: rtsp://admin:LoewixL12@103.121.245.177:554/user=admin_password=LoewixL12_channel=14_stream=1.sdp
+    sourceProtocol: tcp
+    sourceOnDemand: yes
+
+  xmeye_848f3922aa2875eb_ch15:
+    source: rtsp://admin:LoewixL12@103.121.245.177:554/user=admin_password=LoewixL12_channel=15_stream=1.sdp
+    sourceProtocol: tcp
+    sourceOnDemand: yes
+
+  xmeye_848f3922aa2875eb_ch16:
+    source: rtsp://admin:LoewixL12@103.121.245.177:554/user=admin_password=LoewixL12_channel=16_stream=1.sdp
+    sourceProtocol: tcp
+    sourceOnDemand: yes
