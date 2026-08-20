@@ -11,6 +11,10 @@ if [ -f "/usr/local/bin/go2rtc" ]; then
     echo "Starting go2rtc P2P/DVRIP Engine..."
     nohup /usr/local/bin/go2rtc -config /www/wwwroot/CCTV-LIVE-LOEWIX/go2rtc.yaml > /tmp/go2rtc.log 2>&1 &
     sleep 1
+elif [ -f "/home/loewix/go2rtc" ]; then
+    echo "Starting go2rtc P2P/DVRIP Engine..."
+    nohup /home/loewix/go2rtc -config /www/wwwroot/CCTV-LIVE-LOEWIX/go2rtc.yaml > /tmp/go2rtc.log 2>&1 &
+    sleep 1
 fi
 
 echo "Starting MediaMTX..."
