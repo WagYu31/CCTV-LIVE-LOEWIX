@@ -2,7 +2,7 @@
 # Loewix MediaMTX Safe Restart Script
 
 echo "Stopping existing MediaMTX processes..."
-sudo killall -9 mediamtx 2>/dev/null || sudo pkill -9 -x mediamtx 2>/dev/null || true
+killall -9 mediamtx 2>/dev/null || pkill -9 -x mediamtx 2>/dev/null || true
 sleep 1
 
 echo "Starting MediaMTX..."
