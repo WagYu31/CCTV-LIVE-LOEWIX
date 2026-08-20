@@ -7744,12 +7744,12 @@
                 maxBufferSize: 10 * 1000 * 1000,
                 backBufferLength: 30,
                 maxLoadingDelay: 0,
-                maxFragLoadingTimeMs: 4000,
-                manifestLoadingTimeOut: 3000,
-                manifestLoadingMaxRetry: 0,
-                manifestLoadingRetryDelay: 0,
-                levelLoadingMaxRetry: 1,
-                fragLoadingMaxRetry: 1,
+                maxFragLoadingTimeMs: 6000,
+                manifestLoadingTimeOut: 8000,
+                manifestLoadingMaxRetry: 10,
+                manifestLoadingRetryDelay: 800,
+                levelLoadingMaxRetry: 5,
+                fragLoadingMaxRetry: 5,
                 startLevel: 0,
                 capLevelToPlayerSize: true,
                 abrEwmaDefaultEstimate: 1000000,
@@ -7780,67 +7780,36 @@
                   thumb.style.display = 'none';
                   thumb.style.opacity = '0';
                 }
-                videoPlayer.style.display = 'block';
-                videoPlayer.classList.remove('hidden-iframe');
-                if (card) card.classList.remove('dark-card');
+                if (card) {
+                  card.classList.add('stream-active');
+                }
 
-                videoPlayer.play().catch(e => {
+                videoPlayer.play().catch(function(e) {
+                  console.log('[Stream] Autoplay prevented, retrying muted:', e);
                   videoPlayer.muted = true;
-                  videoPlayer.play().catch(() => {});
+                  videoPlayer.play().catch(function() {});
                 });
-
-                activePlayers.add(playerId);
-                const offlineId = 'offline-' + thumbId.split('-')[1];
-                enableAutoRefreshForPlayer(playerId, 'mediamtx', streamPath, thumbId, offlineId);
-                resetAutoRefreshState(playerId);
               });
 
               hls.on(Hls.Events.ERROR, function(event, data) {
+                console.warn('[Stream] HLS Event Error:', data.type, data.details, 'Fatal:', data.fatal);
                 if (data.fatal) {
-                  switch (data.type) {
+                  switch(data.type) {
                     case Hls.ErrorTypes.NETWORK_ERROR:
-                      console.warn('[Stream] Fatal network error, recovering...', data);
+                      console.log('[Stream] Fatal network error encountered, trying to recover...');
                       hls.startLoad();
                       break;
                     case Hls.ErrorTypes.MEDIA_ERROR:
-                      console.warn('[Stream] Fatal media error, recovering...', data);
+                      console.log('[Stream] Fatal media error encountered, trying to recover...');
                       hls.recoverMediaError();
                       break;
                     default:
-                      console.error('[Stream] Fatal unrecoverable error:', data);
+                      console.error('[Stream] Fatal unrecoverable error:', data.details);
                       hls.destroy();
                       if (bufferingOverlay) bufferingOverlay.style.display = 'none';
-                      if (thumb) {
-                        thumb.style.display = 'flex';
-                        thumb.style.opacity = '1';
-                        const loadingText = thumb.querySelector('.loading-text');
-                        if (loadingText) loadingText.innerHTML = '<i class="fas fa-play-circle"></i> Klik untuk memutar';
-                      }
+                      showOfflineMessage(playerId, thumbId);
                       break;
                   }
-                }
-              });
-
-              videoPlayer.hlsInstance = hls;
-              videoPlayer.setAttribute('data-hls-loaded', 'true');
-            } else if (videoPlayer.canPlayType('application/vnd.apple.mpegurl')) {
-              // Safari iOS / Mobile native HLS
-              videoPlayer.src = targetUrl;
-              videoPlayer.addEventListener('loadedmetadata', function() {
-                videoPlayer.play().catch(e => {});
-                if (bufferingOverlay) bufferingOverlay.style.display = 'none';
-                if (thumb) thumb.style.display = 'none';
-                videoPlayer.style.display = 'block';
-                videoPlayer.classList.remove('hidden-iframe');
-                activePlayers.add(playerId);
-              });
-              videoPlayer.addEventListener('error', function() {
-                if (bufferingOverlay) bufferingOverlay.style.display = 'none';
-                if (thumb) {
-                  thumb.style.display = 'flex';
-                  thumb.style.opacity = '1';
-                  const loadingText = thumb.querySelector('.loading-text');
-                  if (loadingText) loadingText.innerHTML = '<i class="fas fa-play-circle"></i> Klik untuk memutar';
                 }
               });
             } else {
@@ -7863,28 +7832,9 @@
           }
 
           if (connType === 'xmeye_p2p' || streamPath.startsWith('xmeye_')) {
-            if (!sn && streamPath.startsWith('xmeye_')) {
-              sn = streamPath.split('_')[1] || '';
-            }
-
-            console.log('[JFTech/MediaMTX] Fetching Live stream for SN:', sn, 'CH:', channel);
-            fetch(`api/jftech_gateway.php?action=get_live_stream&sn=${encodeURIComponent(sn)}&channel=${encodeURIComponent(channel)}&device_user=admin&device_pass=LoewixL12`)
-              .then(res => res.json())
-              .then(data => {
-                if (data && data.success && data.hls_url) {
-                  console.log('[JFTech Cloud] ✅ Official Live Stream URL Ready for CH ' + channel + ':', data.hls_url);
-                  mountHLS(data.hls_url);
-                } else {
-                  console.log('[MediaMTX Relay] Trying direct MediaMTX stream for:', streamPath);
-                  const fallbackUrl = `${STREAM_BASE}/${streamPath}/index.m3u8`;
-                  mountHLS(fallbackUrl);
-                }
-              })
-              .catch(e => {
-                console.warn('[JFTech/MediaMTX] Gateway request error, falling back to MediaMTX:', e);
-                const fallbackUrl = `${STREAM_BASE}/${streamPath}/index.m3u8`;
-                mountHLS(fallbackUrl);
-              });
+            console.log('[MediaMTX Direct] Loading direct HLS stream for:', streamPath);
+            const directUrl = `${STREAM_BASE}/${streamPath}/index.m3u8`;
+            mountHLS(directUrl);
             return;
           }
 
