@@ -324,4 +324,29 @@ if ($action === 'batch_delete') {
     exit;
 }
 
+if ($action === 'upload_snapshot') {
+    $sn = strtolower(preg_replace('/[^a-zA-Z0-9]/', '', $_POST['sn'] ?? $_GET['sn'] ?? ''));
+    $channel = (int)($_POST['channel'] ?? $_GET['channel'] ?? 1);
+    $imageData = $_POST['image'] ?? '';
+
+    if (empty($sn) || empty($imageData)) {
+        echo json_encode(['success' => false, 'message' => 'SN dan Image wajib diisi.']);
+        exit;
+    }
+
+    $cacheFile = sys_get_temp_dir() . '/jftech_snapshots_' . $sn . '.json';
+    $cache = file_exists($cacheFile) ? json_decode(file_get_contents($cacheFile), true) : ['sn' => $sn, 'snapshots' => []];
+    
+    if (strpos($imageData, 'data:image') === false) {
+        $imageData = 'data:image/jpeg;base64,' . $imageData;
+    }
+    
+    $cache['snapshots'][$channel] = $imageData;
+    $cache['updated_at'] = time();
+    @file_put_contents($cacheFile, json_encode($cache));
+
+    echo json_encode(['success' => true, 'message' => "Snapshot CH {$channel} berhasil diupload!"]);
+    exit;
+}
+
 echo json_encode(['success' => false, 'message' => 'Invalid Action']);
