@@ -7782,7 +7782,10 @@
                 }
                 if (card) {
                   card.classList.add('stream-active');
+                  card.classList.remove('dark-card');
                 }
+                videoPlayer.style.display = 'block';
+                videoPlayer.classList.remove('hidden-iframe');
 
                 videoPlayer.play().catch(function(e) {
                   console.log('[Stream] Autoplay prevented, retrying muted:', e);
