@@ -1,6 +1,3 @@
-# go2rtc Configuration for Loewix CCTV Live Streaming
-# High-Performance DVRIP / RTSP / WebRTC Bridge
-
 api:
   listen: ":1984"
 
@@ -8,7 +5,7 @@ rtsp:
   listen: ":8555"
 
 webrtc:
-  listen: ":8890"
+  listen: ":1889"
 
 streams:
   # ==========================================

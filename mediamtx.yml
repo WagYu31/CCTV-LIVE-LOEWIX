@@ -28,7 +28,7 @@ paths:
   # LOEWIX DVR 16-CHANNEL (SN: 848f3922aa2875eb)
   # ==========================================
   xmeye_848f3922aa2875eb_ch1:
-    source: rtsp://admin:LoewixL12@103.121.245.177:554/user=admin_password=LoewixL12_channel=1_stream=1.sdp
+    source: rtsp://127.0.0.1:8555/xmeye_848f3922aa2875eb_ch1
     rtspTransport: tcp
     sourceOnDemand: yes
 
