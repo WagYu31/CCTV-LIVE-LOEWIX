@@ -7838,24 +7838,6 @@
             }
           }
 
-          const connType = element ? (element.getAttribute('data-connection-type') || '') : '';
-          let sn = element ? (element.getAttribute('data-serial-number') || '') : '';
-          let channel = element ? (element.getAttribute('data-channel') || 1) : 1;
-
-          if (streamPath.startsWith('xmeye_')) {
-            const parts = streamPath.split('_');
-            if (parts.length >= 3) {
-              sn = parts[1];
-              channel = parts[2].replace('ch', '') || 1;
-            }
-          }
-
-          if (connType === 'xmeye_p2p' || streamPath.startsWith('xmeye_')) {
-                mountHLS(fallbackUrl);
-              });
-            return;
-          }
-
           let hlsUrl;
           if (streamPath.startsWith('http://') || streamPath.startsWith('https://')) {
             hlsUrl = streamPath;
