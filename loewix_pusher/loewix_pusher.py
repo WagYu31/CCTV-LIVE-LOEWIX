@@ -20,7 +20,7 @@ from typing import List, Optional
 # ============================================================
 # CONFIGURATION
 # ============================================================
-DVR_IP = os.getenv("LOEWIX_DVR_IP", "")               # Leave blank for auto-discovery
+DVR_IP = os.getenv("LOEWIX_DVR_IP", "192.168.11.161")
 DVR_PORT = int(os.getenv("LOEWIX_DVR_PORT", "554"))
 DVR_USER = os.getenv("LOEWIX_DVR_USER", "admin")
 DVR_PASS = os.getenv("LOEWIX_DVR_PASS", "LoewixL12")
@@ -33,57 +33,14 @@ SERVER_RTMP_PORT = int(os.getenv("LOEWIX_SERVER_RTMP_PORT", "1935"))
 WEB_API_URL = "https://loewixcctv.com/api/cameras.php"
 
 # ============================================================
-# DVR AUTO-DISCOVERY
-# ============================================================
-def discover_local_dvr() -> Optional[str]:
-    """Scans local subnet for Xiongmai / Loewix DVR on port 34567 or 554"""
-    print("🔍 Mencari alamat IP DVR di jaringan lokal...")
-    try:
-        # Get local IP to determine subnet
-        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        s.connect(("8.8.8.8", 80))
-        local_ip = s.getsockname()[0]
-        s.close()
-    except Exception:
-        local_ip = "192.168.1.50"
-
-    parts = local_ip.split('.')
-    subnet = f"{parts[0]}.{parts[1]}.{parts[2]}"
-    print(f"📡 Subnet jaringan terdeteksi: {subnet}.0/24 (IP Komputer ini: {local_ip})")
-
-    # Common DVR candidate IPs
-    candidates = [
-        f"{subnet}.100", f"{subnet}.10", f"{subnet}.200", f"{subnet}.101",
-        f"{subnet}.2", f"{subnet}.3", f"{subnet}.4", f"{subnet}.5",
-        f"{subnet}.128", f"{subnet}.108", f"{subnet}.168", f"{subnet}.188"
-    ]
-    # Add full scan range
-    for i in range(1, 255):
-        ip = f"{subnet}.{i}"
-        if ip not in candidates:
-            candidates.append(ip)
-
-    for ip in candidates:
-        for port in [34567, 554]:
-            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            sock.settimeout(0.15)
-            res = sock.connect_ex((ip, port))
-            sock.close()
-            if res == 0:
-                print(f"✅ DVR Ditemukan di IP: {ip} (Port {port})")
-                return ip
-
-    return None
-
-# ============================================================
 # STREAM PUSHER WORKER
 # ============================================================
 def push_channel(dvr_ip: str, channel: int):
     """Pushes a single DVR channel stream to the VPS server"""
     stream_path = f"xmeye_{DVR_SN}_ch{channel}"
     
-    # Sub-stream for smooth, bandwidth-efficient web streaming (subtype=1 or stream=1)
-    source_url = f"rtsp://{DVR_USER}:{DVR_PASS}@{dvr_ip}:{DVR_PORT}/user={DVR_USER}&password={DVR_PASS}&channel={channel}&stream=1.sdp"
+    # Official XMeye/Dahua/Loewix sub-stream URL
+    source_url = f"rtsp://{DVR_USER}:{DVR_PASS}@{dvr_ip}:{DVR_PORT}/cam/realmonitor?channel={channel}&subtype=1"
     
     # Target RTMP / RTSP URL on MediaMTX
     target_rtsp = f"rtsp://{SERVER_HOST}:{SERVER_RTSP_PORT}/{stream_path}"
@@ -101,14 +58,14 @@ def push_channel(dvr_ip: str, channel: int):
         target_rtsp
     ]
 
-    print(f"🚀 [CH {channel}] Memulai streaming {stream_path} -> {SERVER_HOST}...")
+    print(f"🚀 [CH {channel:02d}] Streaming: {stream_path} -> {SERVER_HOST}...")
 
     while True:
         try:
             p = subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
             _, err = p.communicate()
             if err:
-                # If RTSP push failed, try RTMP push fallback
+                # If RTSP push fails, fallback to RTMP push
                 cmd_rtmp = [
                     "ffmpeg", "-nostdin", "-loglevel", "warning",
                     "-rtsp_transport", "tcp", "-i", source_url,
@@ -117,9 +74,9 @@ def push_channel(dvr_ip: str, channel: int):
                 p2 = subprocess.Popen(cmd_rtmp, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
                 p2.communicate()
         except Exception as e:
-            print(f"⚠️ [CH {channel}] Koneksi terputus: {e}. Menghubungkan ulang dalam 5 detik...")
+            print(f"⚠️ [CH {channel:02d}] Koneksi terputus: {e}. Menghubungkan ulang...")
         
-        time.sleep(5)
+        time.sleep(3)
 
 # ============================================================
 # MAIN
