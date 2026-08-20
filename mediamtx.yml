@@ -25,84 +25,56 @@ paths:
     source: publisher
 
   # ==========================================
-  # LOEWIX DVR 16-CHANNEL (SN: 848f3922aa2875eb)
+  # LOEWIX DVR 16-CHANNELS (Local Pusher & Dynamic Relay)
   # ==========================================
   xmeye_848f3922aa2875eb_ch1:
-    source: rtsp://127.0.0.1:8555/xmeye_848f3922aa2875eb_ch1
-    rtspTransport: tcp
-    sourceOnDemand: yes
+    source: publisher
 
   xmeye_848f3922aa2875eb_ch2:
-    source: rtsp://admin:LoewixL12@103.121.245.177:554/user=admin_password=LoewixL12_channel=2_stream=1.sdp
-    rtspTransport: tcp
-    sourceOnDemand: yes
+    source: publisher
 
   xmeye_848f3922aa2875eb_ch3:
-    source: rtsp://admin:LoewixL12@103.121.245.177:554/user=admin_password=LoewixL12_channel=3_stream=1.sdp
-    rtspTransport: tcp
-    sourceOnDemand: yes
+    source: publisher
 
   xmeye_848f3922aa2875eb_ch4:
-    source: rtsp://admin:LoewixL12@103.121.245.177:554/user=admin_password=LoewixL12_channel=4_stream=1.sdp
-    rtspTransport: tcp
-    sourceOnDemand: yes
+    source: publisher
 
   xmeye_848f3922aa2875eb_ch5:
-    source: rtsp://admin:LoewixL12@103.121.245.177:554/user=admin_password=LoewixL12_channel=5_stream=1.sdp
-    rtspTransport: tcp
-    sourceOnDemand: yes
+    source: publisher
 
   xmeye_848f3922aa2875eb_ch6:
-    source: rtsp://admin:LoewixL12@103.121.245.177:554/user=admin_password=LoewixL12_channel=6_stream=1.sdp
-    rtspTransport: tcp
-    sourceOnDemand: yes
+    source: publisher
 
   xmeye_848f3922aa2875eb_ch7:
-    source: rtsp://admin:LoewixL12@103.121.245.177:554/user=admin_password=LoewixL12_channel=7_stream=1.sdp
-    rtspTransport: tcp
-    sourceOnDemand: yes
+    source: publisher
 
   xmeye_848f3922aa2875eb_ch8:
-    source: rtsp://admin:LoewixL12@103.121.245.177:554/user=admin_password=LoewixL12_channel=8_stream=1.sdp
-    rtspTransport: tcp
-    sourceOnDemand: yes
+    source: publisher
 
   xmeye_848f3922aa2875eb_ch9:
-    source: rtsp://admin:LoewixL12@103.121.245.177:554/user=admin_password=LoewixL12_channel=9_stream=1.sdp
-    rtspTransport: tcp
-    sourceOnDemand: yes
+    source: publisher
 
   xmeye_848f3922aa2875eb_ch10:
-    source: rtsp://admin:LoewixL12@103.121.245.177:554/user=admin_password=LoewixL12_channel=10_stream=1.sdp
-    rtspTransport: tcp
-    sourceOnDemand: yes
+    source: publisher
 
   xmeye_848f3922aa2875eb_ch11:
-    source: rtsp://admin:LoewixL12@103.121.245.177:554/user=admin_password=LoewixL12_channel=11_stream=1.sdp
-    rtspTransport: tcp
-    sourceOnDemand: yes
+    source: publisher
 
   xmeye_848f3922aa2875eb_ch12:
-    source: rtsp://admin:LoewixL12@103.121.245.177:554/user=admin_password=LoewixL12_channel=12_stream=1.sdp
-    rtspTransport: tcp
-    sourceOnDemand: yes
+    source: publisher
 
   xmeye_848f3922aa2875eb_ch13:
-    source: rtsp://admin:LoewixL12@103.121.245.177:554/user=admin_password=LoewixL12_channel=13_stream=1.sdp
-    sourceProtocol: tcp
-    sourceOnDemand: yes
+    source: publisher
 
   xmeye_848f3922aa2875eb_ch14:
-    source: rtsp://admin:LoewixL12@103.121.245.177:554/user=admin_password=LoewixL12_channel=14_stream=1.sdp
-    sourceProtocol: tcp
-    sourceOnDemand: yes
+    source: publisher
 
   xmeye_848f3922aa2875eb_ch15:
-    source: rtsp://admin:LoewixL12@103.121.245.177:554/user=admin_password=LoewixL12_channel=15_stream=1.sdp
-    sourceProtocol: tcp
-    sourceOnDemand: yes
+    source: publisher
 
   xmeye_848f3922aa2875eb_ch16:
-    source: rtsp://admin:LoewixL12@103.121.245.177:554/user=admin_password=LoewixL12_channel=16_stream=1.sdp
-    sourceProtocol: tcp
-    sourceOnDemand: yes
+    source: publisher
+
+  # Allow all other dynamic camera streams
+  all_others:
+    source: publisher
