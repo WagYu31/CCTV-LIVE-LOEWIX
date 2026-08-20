@@ -7629,20 +7629,6 @@
         player.setAttribute('data-load-start', Date.now());
       }
 
-      // Show buffering with instant feedback
-      if (bufferingOverlay) {
-        bufferingOverlay.style.display = 'flex';
-        bufferingOverlay.style.opacity = '1';
-        bufferingOverlay.style.transition = 'opacity 0.1s'; // Very fast transition
-      }
-      if (thumb) {
-        const loadingText = thumb.querySelector('.loading-text');
-        if (loadingText) {
-          loadingText.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memuat video...';
-          loadingText.style.opacity = '1'; // Show immediately
-        }
-      }
-
       try {
         // Destroy existing HLS instance if exists
         if (player.hlsInstance) {
@@ -9635,25 +9621,19 @@
 
     // ===== AUTOPLAY LIVE CCTV STREAMS =====
     function autoPlayCCTVStreams() {
-      console.log('[AutoPlay] Starting active RTSP CCTV video streams...');
+      console.log('[AutoPlay] Starting active CCTV video streams...');
       const thumbnails = document.querySelectorAll('.thumbnail-overlay[data-stream-path]');
 
       thumbnails.forEach(function(thumb, index) {
         if (!thumb || !thumb.id || thumb.id.indexOf('thumb-') !== 0) return;
         const suffix = thumb.id.slice('thumb-'.length);
         const playerId = 'player-' + suffix;
-        const streamPath = thumb.getAttribute('data-stream-path') || '';
-        const connType = thumb.getAttribute('data-connection-type') || '';
-        const isXMeye = (connType === 'xmeye_p2p' || streamPath.startsWith('xmeye_'));
 
-        if (!isXMeye) {
-          // Direct RTSP streams via MediaMTX (instant multi-concurrency)
-          setTimeout(function() {
-            if (typeof playMediaMTXCCTV === 'function' && thumb) {
-              playMediaMTXCCTV(thumb, playerId, thumb.id);
-            }
-          }, index * 120);
-        }
+        setTimeout(function() {
+          if (typeof playMediaMTXCCTV === 'function' && thumb) {
+            playMediaMTXCCTV(thumb, playerId, thumb.id);
+          }
+        }, index * 80);
       });
     }
 
