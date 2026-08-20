@@ -30,6 +30,11 @@ if ($action === 'public_list' || $action === 'list') {
             continue;
         }
         if ($cityFilter === 'all' || strtolower($cam['city'] ?? '') === strtolower($cityFilter)) {
+            // Force HTTPS for stream.loewixcctv.com to prevent mixed-content blocking
+            if (!empty($cam['hls_url']) && strpos($cam['hls_url'], 'http://stream.loewixcctv.com') === 0) {
+                $cam['hls_url'] = str_replace('http://', 'https://', $cam['hls_url']);
+            }
+
             // Automatically attach real-time snapshot URL for XMeye cameras
             if (($cam['connection_type'] ?? '') === 'xmeye_p2p' && !empty($cam['serial_number'])) {
                 $sn = strtolower(preg_replace('/[^a-zA-Z0-9]/', '', $cam['serial_number']));
@@ -108,7 +113,7 @@ if ($action === 'admin_add' || $action === 'add') {
         'channel' => $channel,
         'stream_quality' => $streamQuality,
         'streamPath' => $streamPath,
-        'hls_url' => (strpos($streamPath, '.m3u8') !== false || strpos($streamPath, 'http') !== false) ? $streamPath : "http://stream.loewixcctv.com/{$streamPath}/index.m3u8",
+        'hls_url' => (strpos($streamPath, '.m3u8') !== false || strpos($streamPath, 'http') !== false) ? $streamPath : "https://stream.loewixcctv.com/{$streamPath}/index.m3u8",
         'thumbnail' => "assets/image/thumbnail/default-thumbnail.png",
         'lat' => $lat,
         'lng' => $lng,
@@ -193,7 +198,7 @@ if ($action === 'batch_add_dvr') {
             'channel' => $ch,
             'stream_quality' => $streamQuality,
             'streamPath' => $streamPath,
-            'hls_url' => "http://stream.loewixcctv.com/{$streamPath}/index.m3u8",
+            'hls_url' => "https://stream.loewixcctv.com/{$streamPath}/index.m3u8",
             'thumbnail' => "assets/image/thumbnail/default-thumbnail.png",
             'lat' => $lat,
             'lng' => $lng,
