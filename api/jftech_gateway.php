@@ -214,14 +214,11 @@ if ($action === 'get_live_stream') {
             require_once __DIR__ . '/../config/db.php';
             $dbData = get_db_data();
             foreach (($dbData['cameras'] ?? []) as $cam) {
-                if (isset($cam['serial_number']) && strtolower($cam['serial_number']) === $cleanSN && !empty($cam['password'])) {
-                    $devicePass = $cam['password'];
+                if (isset($cam['serial_number']) && strtolower($cam['serial_number']) === $cleanSN && isset($cam['device_pass'])) {
+                    $devicePass = $cam['device_pass'];
                     break;
                 }
             }
-        }
-        if (empty($devicePass)) {
-            $devicePass = 'LoewixL12';
         }
     }
 
@@ -254,6 +251,19 @@ if ($action === 'get_live_stream') {
     ];
 
     $res = callJFTechV3($url, $body);
+
+    // Auto-fallback for password mismatches
+    if (isset($res['data']['Ret']) && $res['data']['Ret'] === 106) {
+        // Try empty password
+        if ($body['password'] !== '') {
+            $body['password'] = '';
+            $res = callJFTechV3($url, $body);
+        } else {
+            // Try LoewixL12
+            $body['password'] = 'LoewixL12';
+            $res = callJFTechV3($url, $body);
+        }
+    }
 
     if (isset($res['code']) && $res['code'] === 2000 && !empty($res['data']['url'])) {
         echo json_encode([
