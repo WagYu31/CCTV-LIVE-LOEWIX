@@ -1894,14 +1894,33 @@
     }
 
     function deleteCustomer(id, name) {
-      if (!confirm(`HAPUS PERMANEN: Apakah Anda yakin ingin menghapus akun Customer '${name}'?`)) return;
+      if (!confirm(`HAPUS PERMANEN: Apakah Anda yakin ingin menghapus akun Customer '${name}' dan semua channel kameranya?`)) return;
 
-      let list = getStoredCustomers();
-      list = list.filter(c => c.id !== id);
-      saveStoredCustomers(list);
-      cachedCustomers = list;
-      alert(`Customer '${name}' berhasil dihapus!`);
-      renderCustomerTable(list);
+      const formData = new FormData();
+      formData.append('action', 'delete');
+      formData.append('id', id);
+
+      fetch(`${API_SERVER}/admin_customers.php`, {
+        method: 'POST',
+        body: formData
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          alert(`BERHASIL: ${data.message || `Customer '${name}' berhasil dihapus!`}`);
+          let list = getStoredCustomers();
+          list = list.filter(c => c.id !== id);
+          saveStoredCustomers(list);
+          cachedCustomers = list;
+          renderCustomerTable(list);
+          loadCustomerData();
+        } else {
+          alert(`GAGAL: ${data.message || 'Terjadi kesalahan saat menghapus data.'}`);
+        }
+      })
+      .catch(e => {
+        alert('Gagal menghubungi server database: ' + e);
+      });
     }
 
     function logoutAdmin() {

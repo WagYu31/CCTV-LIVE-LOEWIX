@@ -185,8 +185,22 @@ if ($method === 'POST') {
 
         if ($deletedName) {
             $db['users'] = $newUsers;
+
+            // Also delete all cameras associated with this customer
+            $newCameras = [];
+            $deletedCamCount = 0;
+            foreach ($db['cameras'] as $c) {
+                if ((int)($c['user_id'] ?? 0) === $id) {
+                    $deletedCamCount++;
+                } else {
+                    $newCameras[] = $c;
+                }
+            }
+            $db['cameras'] = $newCameras;
             save_db_data($db);
-            echo json_encode(['success' => true, 'message' => 'Akun Customer ' . $deletedName . ' berhasil dihapus!']);
+
+            $camInfo = $deletedCamCount > 0 ? " beserta {$deletedCamCount} channel kameranya" : "";
+            echo json_encode(['success' => true, 'message' => "Akun Customer '{$deletedName}'{$camInfo} berhasil dihapus permanen!"]);
         } else {
             echo json_encode(['success' => false, 'message' => 'Customer tidak ditemukan!']);
         }
