@@ -7827,9 +7827,8 @@
             return;
           }
 
-          let hlsUrl;
           if (streamPath.startsWith('http://') || streamPath.startsWith('https://')) {
-            hlsUrl = streamPath;
+            mountHLS(streamPath);
           } else if (streamPath.startsWith('rtsp://')) {
             console.warn('[MediaMTX] Direct RTSP URL detected:', streamPath);
             if (thumb) {
@@ -7841,10 +7840,32 @@
             }
             alert('⚠️ Browser Web HTML5 tidak mendukung protokol "rtsp://" secara langsung.\n\nAgar RTSP dapat diputar di web:\n1. Masukkan RTSP di server MediaMTX / IPCamLive kamu.\n2. Atau gunakan URL HLS HTTP/HTTPS (.m3u8).\n3. Atau isi dengan Stream Path (contoh: cam_bali_1).');
             return;
+          } else if (streamPath.startsWith('xmeye_')) {
+            const match = streamPath.match(/^xmeye_([a-fA-F0-9]+)(?:_ch(\d+))?/i);
+            if (match) {
+              const sn = match[1];
+              const ch = match[2] || 1;
+              fetch(`api/jftech_gateway.php?action=get_live_stream&sn=${encodeURIComponent(sn)}&channel=${encodeURIComponent(ch)}`)
+                .then(r => r.json())
+                .then(data => {
+                  if (data.success && data.hls_url) {
+                    console.log('[JFTech Cloud Live] Mount official HLS URL:', data.hls_url);
+                    mountHLS(data.hls_url);
+                  } else {
+                    console.warn('[JFTech Cloud Live] Fallback to MediaMTX stream path:', data.message);
+                    mountHLS(`${STREAM_BASE}/${streamPath}/index.m3u8`);
+                  }
+                })
+                .catch(err => {
+                  console.error('[JFTech Cloud Live] Failed to fetch live stream:', err);
+                  mountHLS(`${STREAM_BASE}/${streamPath}/index.m3u8`);
+                });
+            } else {
+              mountHLS(`${STREAM_BASE}/${streamPath}/index.m3u8`);
+            }
           } else {
-            hlsUrl = `${STREAM_BASE}/${streamPath}/index.m3u8`;
+            mountHLS(`${STREAM_BASE}/${streamPath}/index.m3u8`);
           }
-          mountHLS(hlsUrl);
 
         }
 
@@ -8392,111 +8413,119 @@
           }
         }
 
-        const hlsUrl = `${STREAM_BASE}/${streamPath}/index.m3u8?cookieCheck=1`;
-        console.log('[MediaMTX Popup] Loading HLS:', hlsUrl);
-
-        if (typeof Hls !== 'undefined' && Hls.isSupported()) {
-          // Destroy existing HLS instance
-          if (videoPlayer.hlsInstance) {
-            videoPlayer.hlsInstance.destroy();
+        function mountPopupHLS(targetUrl) {
+          if (!targetUrl.includes('cookieCheck=1') && !targetUrl.includes('bcloud365.net')) {
+            targetUrl += (targetUrl.includes('?') ? '&' : '?') + 'cookieCheck=1';
           }
+          console.log('[MediaMTX Popup] Loading HLS:', targetUrl);
 
-          // ===== INSTANT PLAYBACK OPTIMIZATION CONFIGURATION FOR POPUP =====
-          const hls = new Hls({
-            debug: false,
-            enableWorker: true,
+          if (typeof Hls !== 'undefined' && Hls.isSupported()) {
+            if (videoPlayer.hlsInstance) {
+              videoPlayer.hlsInstance.destroy();
+            }
 
-            // ===== INSTANT PLAYBACK OPTIMIZATION =====
-            lowLatencyMode: true,
+            const hls = new Hls({
+              debug: false,
+              enableWorker: true,
+              lowLatencyMode: true,
+              maxBufferLength: 3,
+              maxMaxBufferLength: 10,
+              maxBufferSize: 10 * 1000 * 1000,
+              backBufferLength: 30,
+              maxLoadingDelay: 0,
+              maxFragLoadingTimeMs: 4000,
+              manifestLoadingTimeOut: 8000,
+              manifestLoadingMaxRetry: 5,
+              manifestLoadingRetryDelay: 500,
+              levelLoadingMaxRetry: 3,
+              fragLoadingMaxRetry: 3,
+              startLevel: 0,
+              capLevelToPlayerSize: true,
+              abrEwmaDefaultEstimate: 1000000,
+              abrBandWidthFactor: 0.8,
+              abrBandWidthUpFactor: 0.5,
+              enableSoftwareAES: false,
+              maxBufferHole: 0.3,
+              highBufferWatchdogPeriod: 1,
+              nudgeOffset: 0.05,
+              nudgeMaxRetry: 2,
+              progressive: true
+            });
 
-            // MINIMAL BUFFERING - Start playing ASAP
-            maxBufferLength: 3, // REDUCED from 15 - start dengan buffer minimal
-            maxMaxBufferLength: 10, // REDUCED from 30
-            maxBufferSize: 10 * 1000 * 1000, // 10MB only - instant start priority
-            backBufferLength: 30, // REDUCED from 90
+            hls.loadSource(targetUrl);
+            hls.attachMedia(videoPlayer);
 
-            // INSTANT LOADING - No delay
-            maxLoadingDelay: 0, // CHANGED from 2 - load immediately!
-            maxFragLoadingTimeMs: 4000, // REDUCED from 15000 - fail fast
+            hls.on(Hls.Events.MANIFEST_PARSED, function() {
+              if (bufferingOverlay) {
+                bufferingOverlay.style.display = 'none';
+                bufferingOverlay.style.opacity = '0';
+              }
+              videoPlayer.style.display = 'block';
+              videoPlayer.style.opacity = '1';
+              videoPlayer.classList.remove('hidden-iframe');
+              const playPromise = videoPlayer.play();
+              if (playPromise !== undefined) {
+                playPromise.catch(e => {
+                  videoPlayer.muted = true;
+                  videoPlayer.play();
+                });
+              }
+            });
 
-            // FAST MANIFEST LOADING
-            manifestLoadingTimeOut: 3000, // REDUCED from 10000
-            manifestLoadingMaxRetry: 0, // CHANGED from 2 - no retry, fail fast
-            manifestLoadingRetryDelay: 0,
-
-            // MINIMAL RETRY - Fail fast, not slow retry
-            levelLoadingMaxRetry: 1, // Minimal retry
-            fragLoadingMaxRetry: 1, // Minimal retry
-
-            // FAST START - Prioritize quick start over quality
-            startLevel: 0, // CHANGED from -1 - start at lowest quality for instant play
-            capLevelToPlayerSize: true,
-
-            // AGGRESSIVE ABR - Quick quality adjustment
-            abrEwmaDefaultEstimate: 1000000, // Higher estimate for faster start
-            abrBandWidthFactor: 0.8,
-            abrBandWidthUpFactor: 0.5,
-
-            // PERFORMANCE
-            enableSoftwareAES: false,
-            maxBufferHole: 0.3,
-            highBufferWatchdogPeriod: 1,
-            nudgeOffset: 0.05,
-            nudgeMaxRetry: 2,
-            progressive: true,
-
-            // Fast fragment loading policy
-            fragLoadPolicy: {
-              default: {
-                maxTimeToFirstByteMs: 2000,
-                maxLoadTimeMs: 4000,
-                timeoutRetry: {
-                  maxNumRetry: 1,
-                  retryDelayMs: 0,
-                  maxRetryDelayMs: 0
-                },
-                errorRetry: {
-                  maxNumRetry: 1,
-                  retryDelayMs: 0,
-                  maxRetryDelayMs: 0
+            hls.on(Hls.Events.ERROR, function(event, data) {
+              if (data.fatal) {
+                switch (data.type) {
+                  case Hls.ErrorTypes.NETWORK_ERROR:
+                    hls.startLoad();
+                    break;
+                  case Hls.ErrorTypes.MEDIA_ERROR:
+                    hls.recoverMediaError();
+                    break;
+                  default:
+                    hls.destroy();
+                    if (bufferingOverlay) bufferingOverlay.style.display = 'none';
+                    break;
                 }
               }
-            }
-          });
+            });
 
-          hls.loadSource(hlsUrl);
-          hls.attachMedia(videoPlayer);
+            videoPlayer.hlsInstance = hls;
+          } else if (videoPlayer.canPlayType('application/vnd.apple.mpegurl')) {
+            videoPlayer.src = targetUrl;
+            videoPlayer.addEventListener('loadedmetadata', function() {
+              if (bufferingOverlay) bufferingOverlay.style.display = 'none';
+              videoPlayer.style.display = 'block';
+              videoPlayer.style.opacity = '1';
+              videoPlayer.play().catch(e => {});
+            });
+          }
+        }
 
-          hls.on(Hls.Events.MANIFEST_PARSED, function() {
-            // ===== INSTANT TRANSITION - NO DELAY =====
-            // Hide buffering immediately
-            if (bufferingOverlay) {
-              bufferingOverlay.style.display = 'none';
-              bufferingOverlay.style.opacity = '0';
-            }
-
-            // Show player immediately
-            videoPlayer.style.display = 'block';
-            videoPlayer.style.opacity = '1';
-            videoPlayer.classList.remove('hidden-iframe');
-
-            // Force play immediately - no waiting
-            const playPromise = videoPlayer.play();
-            if (playPromise !== undefined) {
-              playPromise.catch(e => {
-                console.warn('[MediaMTX Popup] Autoplay prevented:', e);
-                videoPlayer.muted = true;
-                videoPlayer.play();
+        if (streamPath.startsWith('http://') || streamPath.startsWith('https://')) {
+          mountPopupHLS(streamPath);
+        } else if (streamPath.startsWith('xmeye_')) {
+          const match = streamPath.match(/^xmeye_([a-fA-F0-9]+)(?:_ch(\d+))?/i);
+          if (match) {
+            const sn = match[1];
+            const ch = match[2] || 1;
+            fetch(`api/jftech_gateway.php?action=get_live_stream&sn=${encodeURIComponent(sn)}&channel=${encodeURIComponent(ch)}`)
+              .then(r => r.json())
+              .then(data => {
+                if (data.success && data.hls_url) {
+                  mountPopupHLS(data.hls_url);
+                } else {
+                  mountPopupHLS(`${STREAM_BASE}/${streamPath}/index.m3u8`);
+                }
+              })
+              .catch(() => {
+                mountPopupHLS(`${STREAM_BASE}/${streamPath}/index.m3u8`);
               });
-            }
-          });
-
-          hls.on(Hls.Events.ERROR, function(event, data) {
-            if (data.fatal) {
-              switch (data.type) {
-                case Hls.ErrorTypes.NETWORK_ERROR:
-                  console.log('[MediaMTX Popup] Network error, fast recovery...');
-                  // Fast reload - retry immediately instead of slow retry
+          } else {
+            mountPopupHLS(`${STREAM_BASE}/${streamPath}/index.m3u8`);
+          }
+        } else {
+          mountPopupHLS(`${STREAM_BASE}/${streamPath}/index.m3u8`);
+        }
                   hls.destroy();
                   setTimeout(() => {
                     if (typeof window.playPopupMediaMTX === 'function') {
