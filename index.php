@@ -8526,49 +8526,6 @@
         } else {
           mountPopupHLS(`${STREAM_BASE}/${streamPath}/index.m3u8`);
         }
-                  hls.destroy();
-                  setTimeout(() => {
-                    if (typeof window.playPopupMediaMTX === 'function') {
-                      window.playPopupMediaMTX(playerId, thumbId, streamPath);
-                    }
-                  }, 500); // Very short delay for fast recovery
-                  break;
-                case Hls.ErrorTypes.MEDIA_ERROR:
-                  console.log('[MediaMTX Popup] Media error, trying recovery...');
-                  hls.recoverMediaError();
-                  break;
-                default:
-                  // For other errors, show offline message immediately
-                  hls.destroy();
-                  const offlineId = playerId.replace('popup-player-', 'popup-offline-');
-                  const offlineMsg = document.getElementById(offlineId);
-                  if (videoPlayer) videoPlayer.style.display = 'none';
-                  if (thumb) thumb.style.display = 'none';
-                  if (offlineMsg) offlineMsg.style.display = 'flex';
-                  if (bufferingOverlay) bufferingOverlay.style.display = 'none';
-                  break;
-              }
-            }
-          });
-
-          videoPlayer.hlsInstance = hls;
-        } else if (videoPlayer.canPlayType('application/vnd.apple.mpegurl')) {
-          videoPlayer.src = hlsUrl;
-          videoPlayer.addEventListener('loadedmetadata', function() {
-            videoPlayer.play();
-            if (bufferingOverlay) bufferingOverlay.style.display = 'none';
-            videoPlayer.style.display = 'block';
-            videoPlayer.classList.remove('hidden-iframe');
-          });
-        } else {
-          console.error('[MediaMTX Popup] HLS not supported');
-          const offlineId = playerId.replace('popup-player-', 'popup-offline-');
-          const offlineMsg = document.getElementById(offlineId);
-          if (videoPlayer) videoPlayer.style.display = 'none';
-          if (thumb) thumb.style.display = 'none';
-          if (offlineMsg) offlineMsg.style.display = 'flex';
-          if (bufferingOverlay) bufferingOverlay.style.display = 'none';
-        }
       } catch (error) {
         console.error('[MediaMTX Popup] Error:', error);
         const offlineId = playerId.replace('popup-player-', 'popup-offline-');
