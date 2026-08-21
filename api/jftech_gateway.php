@@ -222,6 +222,28 @@ if ($action === 'get_live_stream') {
         }
     }
 
+    $requestedProto = trim($_POST['protocol'] ?? $_GET['protocol'] ?? 'hls-fmp4');
+
+    // Check high-speed cache (valid for 3 minutes)
+    $cacheDir = __DIR__ . '/../data';
+    if (!is_dir($cacheDir)) @mkdir($cacheDir, 0777, true);
+    $cacheFile = $cacheDir . '/jf_live_cache_' . md5($cleanSN . '_' . $channelIdx . '_' . $requestedProto) . '.json';
+    if (file_exists($cacheFile)) {
+        $cached = json_decode(@file_get_contents($cacheFile), true);
+        if ($cached && !empty($cached['hls_url']) && isset($cached['cached_at']) && (time() - $cached['cached_at']) < 180) {
+            echo json_encode([
+                'success' => true,
+                'source' => 'jftech_cloud_hls_cached',
+                'hls_url' => $cached['hls_url'],
+                'expireTime' => $cached['expireTime'] ?? null,
+                'sn' => $cleanSN,
+                'channel' => $channel,
+                'message' => 'Live stream HLS resmi aktif (instant high-speed cache)!'
+            ]);
+            exit;
+        }
+    }
+
     // 1. Get Device Access Token
     $deviceToken = getJFDeviceToken($cleanSN);
     
@@ -241,7 +263,6 @@ if ($action === 'get_live_stream') {
     }
 
     // 2. Request Live Stream HLS URL from JFTech Cloud OpenAPI V3
-    $requestedProto = trim($_POST['protocol'] ?? $_GET['protocol'] ?? 'hls-fmp4');
     $url = JF_BASE_URL . '/rtc/device/livestream/' . $deviceToken;
     $body = [
         'channel' => (string) $channelIdx,
@@ -267,6 +288,13 @@ if ($action === 'get_live_stream') {
     }
 
     if (isset($res['code']) && $res['code'] === 2000 && !empty($res['data']['url'])) {
+        // Cache active URL for fast concurrent viewer access
+        @file_put_contents($cacheFile, json_encode([
+            'hls_url' => $res['data']['url'],
+            'expireTime' => $res['data']['expireTime'] ?? null,
+            'cached_at' => time()
+        ]));
+
         echo json_encode([
             'success' => true,
             'source' => 'jftech_cloud_hls',

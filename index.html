@@ -9025,7 +9025,7 @@
                     <div>Memuat ulang...</div>
                   </div>
 
-                  <div class="thumbnail-overlay" id="thumb-${camera.id}" data-stream-path="${camera.streamPath}" data-connection-type="${camera.connection_type || 'rtsp'}" data-serial-number="${camera.serial_number || ''}" data-channel="${camera.channel || 1}">
+                  <div class="thumbnail-overlay" id="thumb-${camera.id}" onclick="playMediaMTXCCTV(this, 'player-${camera.id}', 'thumb-${camera.id}')" data-stream-path="${camera.streamPath}" data-connection-type="${camera.connection_type || 'rtsp'}" data-serial-number="${camera.serial_number || ''}" data-channel="${camera.channel || 1}">
                     <img src="${camera.thumbnail}?v=${Date.now()}" alt="Thumbnail CCTV ${camera.title}" loading="lazy" onerror="this.onerror=null;this.src='${ASSET_BASE}/image/thumbnail/default-thumbnail.png?v=' + Date.now()" />
                     <div class="loading-text">
                       <i class="fas fa-play-circle"></i> Klik untuk memuat video
