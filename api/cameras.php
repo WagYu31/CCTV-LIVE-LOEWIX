@@ -290,6 +290,13 @@ if ($action === 'delete') {
     exit;
 }
 
+if ($action === 'delete_all' || $action === 'clean_all') {
+    $db['cameras'] = [];
+    save_db_data($db);
+    echo json_encode(['success' => true, 'message' => 'Semua channel kamera berhasil dibersihkan dari database server!']);
+    exit;
+}
+
 if ($action === 'batch_delete') {
     $rawIds = $_POST['ids'] ?? [];
     if (is_string($rawIds)) {
