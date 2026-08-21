@@ -7776,6 +7776,12 @@
                 resetAutoRefreshState(playerId);
               });
 
+              hls.on(Hls.Events.FRAG_BUFFERED, function() {
+                if (videoPlayer.paused) {
+                  videoPlayer.play().catch(function() {});
+                }
+              });
+
               hls.on(Hls.Events.ERROR, function(event, data) {
                 console.warn('[Stream] HLS Event Error:', data.type, data.details, 'Fatal:', data.fatal);
                 if (data.fatal) {

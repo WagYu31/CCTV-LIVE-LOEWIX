@@ -20,8 +20,8 @@ const JF_BOID = '212A';
 const JF_APPKEY = '5ac06bd785bff5b4819a339f72a46c1a';
 const JF_APPSECRET = 'cd3fe772141447dba9e7b319f09acd37';
 const JF_MOVECARD = 2;
-const JF_ENDPOINT = 'api-as.jftechws.com';
-const JF_BASE_URL = 'https://api-as.jftechws.com/gwp/v3';
+const JF_ENDPOINT = 'api-cn.jftechws.com';
+const JF_BASE_URL = 'https://api-cn.jftechws.com/gwp/v3';
 
 /**
  * Generate 20-digit timestamp (7-digit counter + 13-digit timeMillis)
