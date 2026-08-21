@@ -9137,11 +9137,15 @@
                 if (loadInd) {
                   loadInd.style.display = 'none';
                 }
-                item.element.style.display = 'flex';
-                item.element.style.opacity = '1';
-                const loadingText = item.element.querySelector('.loading-text');
-                if (loadingText) {
-                  loadingText.innerHTML = '<i class="fas fa-play-circle"></i> Klik untuk memutar video';
+                const playerEl = document.getElementById('player-' + suffix);
+                const isPlaying = playerEl && !playerEl.paused && playerEl.currentTime > 0;
+                if (!isPlaying && playerEl && playerEl.style.display === 'none') {
+                  item.element.style.display = 'flex';
+                  item.element.style.opacity = '1';
+                  const loadingText = item.element.querySelector('.loading-text');
+                  if (loadingText) {
+                    loadingText.innerHTML = '<i class="fas fa-play-circle"></i> Klik untuk memutar video';
+                  }
                 }
               });
               console.log('[XMeye Snapshot] ✅ Loaded real-time CCTV snapshots for SN:', sn);
@@ -9515,11 +9519,6 @@
             const thumbId = playerId.replace('player-', 'thumb-');
             const thumb = document.getElementById(thumbId);
             if (thumb && typeof playMediaMTXCCTV === 'function') {
-              const connType = thumb.getAttribute('data-connection-type');
-              if (connType === 'xmeye_p2p') {
-                return; // Do NOT auto-resume XMeye streams via IntersectionObserver
-              }
-              // Extract streamPath from saved state or thumb element
               const streamPath = thumb.getAttribute('data-stream-path');
               if (streamPath) {
                 playMediaMTXCCTV(thumb, playerId, thumbId);
