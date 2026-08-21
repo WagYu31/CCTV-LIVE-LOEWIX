@@ -17,9 +17,9 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'OPTIONS') {
 // JFTech Official Open Platform Credentials (Loewix CCTV)
 const JF_UUID = '6583e8e82d362a5de618035a';
 const JF_BOID = '212A';
-const JF_APPKEY = '5de0b6544dc1b9c56385fb7f2867bc45';
-const JF_APPSECRET = 'e37c7fe1799a4c249ff0e1e4c715b43a';
-const JF_MOVECARD = 3;
+const JF_APPKEY = '5ac06bd785bff5b4819a339f72a46c1a';
+const JF_APPSECRET = 'cd3fe772141447dba9e7b319f09acd37';
+const JF_MOVECARD = 2;
 const JF_ENDPOINT = 'api-as.jftechws.com';
 const JF_BASE_URL = 'https://api-as.jftechws.com/gwp/v3';
 
