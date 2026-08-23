@@ -7853,8 +7853,22 @@
 
           if (connType === 'xmeye_p2p' || streamPath.startsWith('xmeye_')) {
             console.log('[MediaMTX Direct] Loading direct HLS stream for:', streamPath);
-            const directUrl = `${STREAM_BASE}/${streamPath}/index.m3u8`;
-            mountHLS(directUrl);
+            // Fetch fresh HLS URL from JFTech Cloud API
+            fetch(`api/jftech_gateway.php?action=get_live_stream&sn=${encodeURIComponent(sn)}&channel=${encodeURIComponent(channel)}`)
+              .then(r => r.json())
+              .then(data => {
+                if (data.success && data.hls_url) {
+                  console.log('[JFTech Cloud Live] Mount official HLS URL:', data.hls_url);
+                  mountHLS(data.hls_url);
+                } else {
+                  console.warn('[JFTech Cloud Live] Fallback to MediaMTX stream path:', data.message);
+                  mountHLS(`${STREAM_BASE}/${streamPath}/index.m3u8`);
+                }
+              })
+              .catch(err => {
+                console.error('[JFTech Cloud Live] Failed to fetch live stream:', err);
+                mountHLS(`${STREAM_BASE}/${streamPath}/index.m3u8`);
+              });
             return;
           }
 
