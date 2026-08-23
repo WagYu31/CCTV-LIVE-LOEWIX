@@ -42,7 +42,7 @@ if ($action === 'public_list' || $action === 'list') {
                 
                 require_once __DIR__ . '/jftech_gateway.php';
                 if (function_exists('getJFTechLiveStreamUrl')) {
-                    $liveHls = getJFTechLiveStreamUrl($sn, $ch, 'hls-ts', $cam['stream_quality'] ?? 'sub', $cam['device_user'] ?? 'admin', $cam['device_pass'] ?? '');
+                    $liveHls = getJFTechLiveStreamUrl($sn, $ch, 'hls-fmp4', $cam['stream_quality'] ?? 'sub', $cam['device_user'] ?? 'admin', $cam['device_pass'] ?? '');
                     if ($liveHls) {
                         $cam['hls_url'] = $liveHls;
                         $cam['streamPath'] = $liveHls;
