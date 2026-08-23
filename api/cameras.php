@@ -35,11 +35,20 @@ if ($action === 'public_list' || $action === 'list') {
                 $cam['hls_url'] = str_replace('http://', 'https://', $cam['hls_url']);
             }
 
-            // Automatically attach real-time snapshot URL for XMeye cameras
+            // Automatically attach real-time snapshot and live HLS stream URL for XMeye cameras
             if (($cam['connection_type'] ?? '') === 'xmeye_p2p' && !empty($cam['serial_number'])) {
                 $sn = strtolower(preg_replace('/[^a-zA-Z0-9]/', '', $cam['serial_number']));
                 $ch = (int)($cam['channel'] ?? 1);
                 
+                require_once __DIR__ . '/jftech_gateway.php';
+                if (function_exists('getJFTechLiveStreamUrl')) {
+                    $liveHls = getJFTechLiveStreamUrl($sn, $ch, 'hls-fmp4', $cam['stream_quality'] ?? 'sub', $cam['device_user'] ?? 'admin', $cam['device_pass'] ?? '');
+                    if ($liveHls) {
+                        $cam['hls_url'] = $liveHls;
+                        $cam['streamPath'] = $liveHls;
+                    }
+                }
+
                 if (!array_key_exists($sn, $snSnapshotCache)) {
                     $cacheFile = sys_get_temp_dir() . '/jftech_snapshots_' . $sn . '.json';
                     if (file_exists($cacheFile)) {

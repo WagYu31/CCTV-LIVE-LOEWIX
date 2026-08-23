@@ -84,7 +84,6 @@ function callJFTechV3($url, $payload = []) {
     
     $response = curl_exec($ch);
     $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    curl_close($ch);
     
     if (!$response) {
         return ['code' => 5000, 'msg' => 'Gagal terhubung ke JFTech Cloud Gateway. (HTTP ' . $httpCode . ')'];
@@ -193,21 +192,26 @@ if ($action === 'parse_qr') {
     exit;
 }
 
-if ($action === 'get_live_stream') {
-    $sn = trim($_POST['sn'] ?? $_GET['sn'] ?? '');
-    $channel = (int)($_POST['channel'] ?? $_GET['channel'] ?? 1);
-    $streamType = trim($_POST['stream'] ?? $_GET['stream'] ?? 'sub');
-    $deviceUser = trim($_POST['device_user'] ?? $_GET['device_user'] ?? 'admin');
-    $devicePass = trim($_POST['device_pass'] ?? $_GET['device_pass'] ?? '');
-
-    if (empty($sn)) {
-        echo json_encode(['success' => false, 'message' => 'Serial Number wajib diisi.']);
-        exit;
-    }
-
+/**
+ * Global helper function to resolve live stream HLS URL with high-speed caching
+ */
+function getJFTechLiveStreamUrl($sn, $channel = 1, $protocol = 'hls-fmp4', $streamType = 'sub', $deviceUser = 'admin', $devicePass = '') {
     $cleanSN = strtolower(preg_replace('/[^a-zA-Z0-9]/', '', $sn));
-    $channelIdx = max(0, $channel - 1);
+    if (empty($cleanSN)) return null;
+
+    $channelIdx = max(0, (int)$channel - 1);
     $streamIdx = ($streamType === 'main' || $streamType === '0') ? '0' : '1';
+
+    $cacheDir = __DIR__ . '/../data';
+    if (!is_dir($cacheDir)) @mkdir($cacheDir, 0777, true);
+    $cacheFile = $cacheDir . '/jf_live_cache_' . md5($cleanSN . '_' . $channelIdx . '_' . $protocol) . '.json';
+
+    if (file_exists($cacheFile)) {
+        $cached = json_decode(@file_get_contents($cacheFile), true);
+        if ($cached && !empty($cached['hls_url']) && isset($cached['cached_at']) && (time() - $cached['cached_at']) < 180) {
+            return $cached['hls_url'];
+        }
+    }
 
     if (empty($devicePass)) {
         if (file_exists(__DIR__ . '/../config/db.php')) {
@@ -222,84 +226,63 @@ if ($action === 'get_live_stream') {
         }
     }
 
-    $requestedProto = trim($_POST['protocol'] ?? $_GET['protocol'] ?? 'hls-fmp4');
-
-    // Check high-speed cache (valid for 3 minutes)
-    $cacheDir = __DIR__ . '/../data';
-    if (!is_dir($cacheDir)) @mkdir($cacheDir, 0777, true);
-    $cacheFile = $cacheDir . '/jf_live_cache_' . md5($cleanSN . '_' . $channelIdx . '_' . $requestedProto) . '.json';
-    if (file_exists($cacheFile)) {
-        $cached = json_decode(@file_get_contents($cacheFile), true);
-        if ($cached && !empty($cached['hls_url']) && isset($cached['cached_at']) && (time() - $cached['cached_at']) < 180) {
-            echo json_encode([
-                'success' => true,
-                'source' => 'jftech_cloud_hls_cached',
-                'hls_url' => $cached['hls_url'],
-                'expireTime' => $cached['expireTime'] ?? null,
-                'sn' => $cleanSN,
-                'channel' => $channel,
-                'message' => 'Live stream HLS resmi aktif (instant high-speed cache)!'
-            ]);
-            exit;
-        }
-    }
-
-    // 1. Get Device Access Token
     $deviceToken = getJFDeviceToken($cleanSN);
-    
-    if (!$deviceToken) {
-        // Return structured stream fallback if token request fails
-        $streamPath = "xmeye_{$cleanSN}_ch{$channel}";
-        echo json_encode([
-            'success' => false,
-            'source' => 'token_error',
-            'streamPath' => $streamPath,
-            'hls_url' => "https://stream.loewixcctv.com/{$streamPath}/index.m3u8",
-            'sn' => $cleanSN,
-            'channel' => $channel,
-            'message' => 'Gagal mendapatkan token perangkat dari Cloud JFTech.'
-        ]);
-        exit;
-    }
+    if (!$deviceToken) return null;
 
-    // 2. Request Live Stream HLS URL from JFTech Cloud OpenAPI V3
     $url = JF_BASE_URL . '/rtc/device/livestream/' . $deviceToken;
     $body = [
         'channel' => (string) $channelIdx,
         'stream' => (string) $streamIdx,
-        'protocol' => $requestedProto,
+        'protocol' => $protocol,
         'username' => $deviceUser ?: 'admin',
         'password' => $devicePass
     ];
 
     $res = callJFTechV3($url, $body);
 
-    // Auto-fallback for password mismatches
     if (isset($res['data']['Ret']) && $res['data']['Ret'] === 106) {
-        // Try empty password
         if ($body['password'] !== '') {
             $body['password'] = '';
             $res = callJFTechV3($url, $body);
         } else {
-            // Try LoewixL12
             $body['password'] = 'LoewixL12';
             $res = callJFTechV3($url, $body);
         }
     }
 
     if (isset($res['code']) && $res['code'] === 2000 && !empty($res['data']['url'])) {
-        // Cache active URL for fast concurrent viewer access
         @file_put_contents($cacheFile, json_encode([
             'hls_url' => $res['data']['url'],
             'expireTime' => $res['data']['expireTime'] ?? null,
             'cached_at' => time()
         ]));
+        return $res['data']['url'];
+    }
 
+    return null;
+}
+
+if ($action === 'get_live_stream') {
+    $sn = trim($_POST['sn'] ?? $_GET['sn'] ?? '');
+    $channel = (int)($_POST['channel'] ?? $_GET['channel'] ?? 1);
+    $streamType = trim($_POST['stream'] ?? $_GET['stream'] ?? 'sub');
+    $deviceUser = trim($_POST['device_user'] ?? $_GET['device_user'] ?? 'admin');
+    $devicePass = trim($_POST['device_pass'] ?? $_GET['device_pass'] ?? '');
+    $requestedProto = trim($_POST['protocol'] ?? $_GET['protocol'] ?? 'hls-fmp4');
+
+    if (empty($sn)) {
+        echo json_encode(['success' => false, 'message' => 'Serial Number wajib diisi.']);
+        exit;
+    }
+
+    $cleanSN = strtolower(preg_replace('/[^a-zA-Z0-9]/', '', $sn));
+    $liveHlsUrl = getJFTechLiveStreamUrl($cleanSN, $channel, $requestedProto, $streamType, $deviceUser, $devicePass);
+
+    if ($liveHlsUrl) {
         echo json_encode([
             'success' => true,
             'source' => 'jftech_cloud_hls',
-            'hls_url' => $res['data']['url'],
-            'expireTime' => $res['data']['expireTime'] ?? null,
+            'hls_url' => $liveHlsUrl,
             'sn' => $cleanSN,
             'channel' => $channel,
             'message' => 'Live stream HLS resmi berhasil diperoleh dari JFTech Cloud!'
@@ -307,17 +290,15 @@ if ($action === 'get_live_stream') {
         exit;
     }
 
-    // Return error or fallback
     $streamPath = "xmeye_{$cleanSN}_ch{$channel}";
     echo json_encode([
         'success' => false,
-        'source' => 'xmeye_p2p_stream',
+        'source' => 'stream_fallback',
         'streamPath' => $streamPath,
         'hls_url' => "https://stream.loewixcctv.com/{$streamPath}/index.m3u8",
         'sn' => $cleanSN,
         'channel' => $channel,
-        'cloud_api_status' => $res['msg'] ?? 'Gagal membuat URL livestream',
-        'message' => $res['msg'] ?? 'Gagal membuat URL livestream'
+        'message' => 'Gagal mendapatkan live stream dari JFTech Cloud.'
     ]);
     exit;
 }

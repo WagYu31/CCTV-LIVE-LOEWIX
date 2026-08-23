@@ -7627,6 +7627,11 @@
       // Set load start timestamp for performance monitoring
       if (player) {
         player.setAttribute('data-load-start', Date.now());
+      if (thumb) {
+        const loadingText = thumb.querySelector('.loading-text');
+        if (loadingText) {
+          loadingText.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menghubungkan...';
+        }
       }
 
       try {
@@ -9660,7 +9665,10 @@
         }
         ['cctv-container', 'pasar-horas-container', 'terminal-tanjung-pinggir-container'].forEach(function(cid) {
           const node = document.getElementById(cid);
-          if (node) node.addEventListener('click', onGridThumbClick);
+          if (node) {
+            node.addEventListener('click', onGridThumbClick);
+            node.addEventListener('touchend', onGridThumbClick, { passive: false });
+          }
         });
       })();
 
