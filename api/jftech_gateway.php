@@ -204,17 +204,6 @@ function getJFTechLiveStreamUrl($sn, $channel = 1, $protocol = 'hls-ts', $stream
     $channelIdx = max(0, (int)$channel - 1);
     $streamIdx = ($streamType === 'main' || $streamType === '0') ? '0' : '1';
 
-    $cacheDir = __DIR__ . '/../data';
-    if (!is_dir($cacheDir)) @mkdir($cacheDir, 0777, true);
-    $cacheFile = $cacheDir . '/jf_live_cache_' . md5($cleanSN . '_' . $channelIdx . '_' . $protocol) . '.json';
-
-    if (!$forceRefresh && file_exists($cacheFile)) {
-        $cached = json_decode(@file_get_contents($cacheFile), true);
-        if ($cached && !empty($cached['hls_url']) && isset($cached['cached_at']) && (time() - $cached['cached_at']) < 30) {
-            return $cached['hls_url'];
-        }
-    }
-
     if (empty($devicePass)) {
         if (file_exists(__DIR__ . '/../config/db.php')) {
             require_once __DIR__ . '/../config/db.php';
@@ -253,11 +242,6 @@ function getJFTechLiveStreamUrl($sn, $channel = 1, $protocol = 'hls-ts', $stream
     }
 
     if (isset($res['code']) && $res['code'] === 2000 && !empty($res['data']['url'])) {
-        @file_put_contents($cacheFile, json_encode([
-            'hls_url' => $res['data']['url'],
-            'expireTime' => $res['data']['expireTime'] ?? null,
-            'cached_at' => time()
-        ]));
         return $res['data']['url'];
     }
 
