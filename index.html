@@ -7783,10 +7783,29 @@
               });
 
               hls.on(Hls.Events.FRAG_BUFFERED, function() {
+                if (thumb) {
+                  thumb.style.display = 'none';
+                  thumb.style.opacity = '0';
+                }
+                if (bufferingOverlay) {
+                  bufferingOverlay.style.display = 'none';
+                  bufferingOverlay.style.opacity = '0';
+                }
                 if (videoPlayer.paused) {
                   videoPlayer.play().catch(function() {});
                 }
               });
+
+              videoPlayer.onloadeddata = function() {
+                if (thumb) {
+                  thumb.style.display = 'none';
+                  thumb.style.opacity = '0';
+                }
+                if (bufferingOverlay) {
+                  bufferingOverlay.style.display = 'none';
+                  bufferingOverlay.style.opacity = '0';
+                }
+              };
 
               hls.on(Hls.Events.ERROR, function(event, data) {
                 console.warn('[Stream] HLS Event Error:', data.type, data.details, 'Fatal:', data.fatal);
