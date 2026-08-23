@@ -7627,6 +7627,7 @@
       // Set load start timestamp for performance monitoring
       if (player) {
         player.setAttribute('data-load-start', Date.now());
+      }
       if (thumb) {
         const loadingText = thumb.querySelector('.loading-text');
         if (loadingText) {
