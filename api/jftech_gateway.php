@@ -5,10 +5,12 @@
  * PT. LOEWIX INDONESIA
  */
 
-header('Content-Type: application/json');
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With');
+if (!headers_sent()) {
+    header('Content-Type: application/json');
+    header('Access-Control-Allow-Origin: *');
+    header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
+    header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With');
+}
 
 if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'OPTIONS') {
     exit(0);
@@ -401,13 +403,15 @@ if ($action === 'get_all_snapshots') {
     exit;
 }
 
-// Default response: Return Gateway Status
-echo json_encode([
-    'success' => true,
-    'gateway' => 'JFTech Open Platform Cloud Gateway V3',
-    'status' => 'ONLINE',
-    'region' => 'Asia (api-as.jftechws.com)',
-    'uuid' => JF_UUID,
-    'app_key' => substr(JF_APPKEY, 0, 8) . '****',
-    'timestamp' => time()
-]);
+// Default response: Return Gateway Status (only when accessed directly)
+if (basename($_SERVER['SCRIPT_FILENAME'] ?? '') === 'jftech_gateway.php' || basename($_SERVER['PHP_SELF'] ?? '') === 'jftech_gateway.php') {
+    echo json_encode([
+        'success' => true,
+        'gateway' => 'JFTech Open Platform Cloud Gateway V3',
+        'status' => 'ONLINE',
+        'region' => 'Asia (api-as.jftechws.com)',
+        'uuid' => JF_UUID,
+        'app_key' => substr(JF_APPKEY, 0, 8) . '****',
+        'timestamp' => time()
+    ]);
+}
