@@ -197,7 +197,7 @@ if ($action === 'parse_qr') {
 /**
  * Global helper function to resolve live stream HLS URL with high-speed caching
  */
-function getJFTechLiveStreamUrl($sn, $channel = 1, $protocol = 'hls-fmp4', $streamType = 'sub', $deviceUser = 'admin', $devicePass = '') {
+function getJFTechLiveStreamUrl($sn, $channel = 1, $protocol = 'hls-ts', $streamType = 'sub', $deviceUser = 'admin', $devicePass = '', $forceRefresh = false) {
     $cleanSN = strtolower(preg_replace('/[^a-zA-Z0-9]/', '', $sn));
     if (empty($cleanSN)) return null;
 
@@ -208,9 +208,9 @@ function getJFTechLiveStreamUrl($sn, $channel = 1, $protocol = 'hls-fmp4', $stre
     if (!is_dir($cacheDir)) @mkdir($cacheDir, 0777, true);
     $cacheFile = $cacheDir . '/jf_live_cache_' . md5($cleanSN . '_' . $channelIdx . '_' . $protocol) . '.json';
 
-    if (file_exists($cacheFile)) {
+    if (!$forceRefresh && file_exists($cacheFile)) {
         $cached = json_decode(@file_get_contents($cacheFile), true);
-        if ($cached && !empty($cached['hls_url']) && isset($cached['cached_at']) && (time() - $cached['cached_at']) < 180) {
+        if ($cached && !empty($cached['hls_url']) && isset($cached['cached_at']) && (time() - $cached['cached_at']) < 30) {
             return $cached['hls_url'];
         }
     }
@@ -270,7 +270,8 @@ if ($action === 'get_live_stream') {
     $streamType = trim($_POST['stream'] ?? $_GET['stream'] ?? 'sub');
     $deviceUser = trim($_POST['device_user'] ?? $_GET['device_user'] ?? 'admin');
     $devicePass = trim($_POST['device_pass'] ?? $_GET['device_pass'] ?? '');
-    $requestedProto = trim($_POST['protocol'] ?? $_GET['protocol'] ?? 'hls-fmp4');
+    $requestedProto = trim($_POST['protocol'] ?? $_GET['protocol'] ?? 'hls-ts');
+    $force = !empty($_POST['force'] ?? $_GET['force'] ?? false);
 
     if (empty($sn)) {
         echo json_encode(['success' => false, 'message' => 'Serial Number wajib diisi.']);
@@ -278,7 +279,7 @@ if ($action === 'get_live_stream') {
     }
 
     $cleanSN = strtolower(preg_replace('/[^a-zA-Z0-9]/', '', $sn));
-    $liveHlsUrl = getJFTechLiveStreamUrl($cleanSN, $channel, $requestedProto, $streamType, $deviceUser, $devicePass);
+    $liveHlsUrl = getJFTechLiveStreamUrl($cleanSN, $channel, $requestedProto, $streamType, $deviceUser, $devicePass, $force);
 
     if ($liveHlsUrl) {
         echo json_encode([
