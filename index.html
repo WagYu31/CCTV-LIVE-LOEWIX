@@ -4064,12 +4064,12 @@
     .stage-3d-hero-container {
       position: relative;
       width: 100%;
-      height: 160px;
-      background: radial-gradient(circle at 50% 50%, rgba(14, 33, 74, 0.75) 0%, rgba(5, 12, 28, 0.85) 100%);
-      border: 1px solid rgba(56, 189, 248, 0.28);
+      min-height: 168px;
+      background: radial-gradient(circle at 35% 50%, rgba(14, 38, 88, 0.78) 0%, rgba(4, 10, 24, 0.88) 100%);
+      border: 1px solid rgba(56, 189, 248, 0.3);
       border-radius: 20px;
       margin-bottom: 20px;
-      padding: 12px 20px;
+      padding: 14px 22px;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -4081,15 +4081,15 @@
     }
 
     .stage-3d-hero-container:hover {
-      border-color: rgba(56, 189, 248, 0.55);
-      box-shadow: 0 25px 60px -10px rgba(0, 210, 255, 0.25), inset 0 0 45px rgba(0, 210, 255, 0.12);
+      border-color: rgba(56, 189, 248, 0.6);
+      box-shadow: 0 25px 60px -10px rgba(0, 210, 255, 0.28), inset 0 0 45px rgba(0, 210, 255, 0.14);
     }
 
-    /* 3D Holographic Floating CCTV Lens Card */
+    /* 3D Holographic Floating CCTV Fleet Viewport */
     .cctv-3d-viewport {
       position: relative;
-      width: 150px;
-      height: 140px;
+      width: 180px;
+      height: 145px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -4098,29 +4098,28 @@
     }
 
     .cctv-3d-img {
-      width: 130px;
-      height: 130px;
-      object-fit: cover;
-      border-radius: 16px;
-      filter: drop-shadow(0 0 22px rgba(0, 210, 255, 0.75));
+      width: 175px;
+      height: 135px;
+      object-fit: contain;
+      filter: drop-shadow(0 12px 24px rgba(0, 210, 255, 0.55));
       animation: floatLevitate 5s ease-in-out infinite;
       transition: transform 0.2s ease-out;
       transform-style: preserve-3d;
     }
 
     @keyframes floatLevitate {
-      0%, 100% { transform: translateY(0) rotateZ(0deg); }
-      50% { transform: translateY(-8px) rotateZ(1.5deg); }
+      0%, 100% { transform: translateY(0) scale(1); }
+      50% { transform: translateY(-7px) scale(1.02); }
     }
 
     .hologram-hud-reticle {
       position: absolute;
-      width: 140px;
-      height: 140px;
-      border: 1px dashed rgba(56, 189, 248, 0.45);
+      width: 155px;
+      height: 155px;
+      border: 1px dashed rgba(56, 189, 248, 0.35);
       border-radius: 50%;
       pointer-events: none;
-      animation: rotateHud 18s linear infinite;
+      animation: rotateHud 20s linear infinite;
     }
 
     @keyframes rotateHud {
@@ -4621,20 +4620,20 @@
         <div class="stage-3d-hero-container" id="stage3dHeroBox">
           <div class="cctv-3d-viewport">
             <div class="hologram-hud-reticle"></div>
-            <img src="assets/image/cctv-3d-model.jpg" alt="3D Holographic Loewix AI Camera" class="cctv-3d-img" id="cctv3dModelImg">
+            <img src="assets/image/loewix_hero_cctv_camera.png" alt="Loewix Enterprise CCTV Hardware Fleet" class="cctv-3d-img" id="cctv3dModelImg">
           </div>
           <div class="cctv-3d-info-side">
             <div class="cctv-3d-headline">
-              <span>LOEWIX AI VISION PTZ-4K</span>
-              <span class="cctv-3d-badge-pulse"><i class="fas fa-satellite-dish mr-1"></i> ACTIVE</span>
+              <span>LOEWIX ENTERPRISE CCTV FLEET</span>
+              <span class="cctv-3d-badge-pulse"><i class="fas fa-satellite-dish mr-1"></i> SMART AI</span>
             </div>
             <p class="cctv-3d-sub">
-              Sistem analitik cerdas generasi terbaru dengan pelacakan target otomatis dan pemrosesan neural edge real-time.
+              Ekosistem kamera pengawasan cerdas Loewix dengan sensor optik Sony STARVIS™, resolusi 4K Ultra HD, dan sertifikasi anti-cuaca IP67.
             </p>
             <div class="cctv-3d-telemetry-row">
-              <span><i class="fas fa-bolt text-warning"></i> 60 FPS 4K</span>
-              <span><i class="fas fa-shield-alt text-info"></i> AES-256</span>
-              <span><i class="fas fa-compass text-success"></i> 360° PTZ</span>
+              <span><i class="fas fa-bolt text-warning"></i> 4K UHD</span>
+              <span><i class="fas fa-shield-alt text-info"></i> IP67 Weatherproof</span>
+              <span><i class="fas fa-eye text-success"></i> Night Color</span>
             </div>
           </div>
         </div>
