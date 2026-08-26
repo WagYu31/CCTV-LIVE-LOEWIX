@@ -3908,7 +3908,7 @@
       box-shadow: 0 0 12px rgba(0, 210, 255, 0.3) !important;
     }
 
-    /* ===== ULTRA-CLEAN UNIFIED ENTERPRISE LOEWIX LOGIN GATE ===== */
+    /* ===== TASTE-SKILL x SOFT-SKILL: LUXURY ENTERPRISE LOEWIX PORTAL ===== */
     #loewix-login-gate {
       position: fixed;
       top: 0;
@@ -3920,221 +3920,425 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      background: radial-gradient(circle at 50% 12%, #0e1d3e 0%, #060b17 50%, #020409 100%);
+      background: #030712;
       z-index: 999999;
-      font-family: 'Outfit', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      color: #ffffff;
+      font-family: 'Plus Jakarta Sans', 'Outfit', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      color: #f8fafc;
       margin: 0;
-      padding: 24px 20px;
+      padding: 30px 20px;
       overflow-y: auto;
+      perspective: 1000px;
     }
 
-    .unified-login-wrapper {
-      position: relative;
-      width: 100%;
-      max-width: 440px;
-      margin: auto;
-      z-index: 10;
-      animation: authCardIn 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-
-    @keyframes authCardIn {
-      from { opacity: 0; transform: translateY(20px) scale(0.98); }
-      to { opacity: 1; transform: translateY(0) scale(1); }
-    }
-
-    .unified-glow-orb {
-      position: absolute;
-      width: 550px;
-      height: 550px;
-      border-radius: 50%;
-      background: radial-gradient(circle, rgba(0, 210, 255, 0.12) 0%, rgba(0, 102, 255, 0) 70%);
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      filter: blur(85px);
-      pointer-events: none;
-    }
-
-    .unified-login-card {
-      background: rgba(10, 18, 38, 0.82);
-      backdrop-filter: blur(35px);
-      -webkit-backdrop-filter: blur(35px);
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      border-radius: 26px;
-      padding: 38px 36px;
-      box-shadow: 0 30px 75px -15px rgba(0, 0, 0, 0.85), 0 0 35px rgba(0, 210, 255, 0.08);
-      position: relative;
-      overflow: hidden;
-    }
-
-    .unified-card-aura {
+    /* Ambient Spatial Backdrops */
+    .gate-ambient-radial {
       position: absolute;
       top: 0;
       left: 0;
       right: 0;
+      bottom: 0;
+      background: radial-gradient(ellipse at 50% -10%, #0c2356 0%, #06122d 45%, #030712 100%);
+      pointer-events: none;
+    }
+
+    .gate-ambient-glow-cyan {
+      position: absolute;
+      width: 650px;
+      height: 650px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(0, 210, 255, 0.16) 0%, rgba(2, 132, 199, 0.05) 50%, transparent 70%);
+      top: -120px;
+      left: 50%;
+      transform: translateX(-50%);
+      filter: blur(100px);
+      pointer-events: none;
+      animation: pulseAura 8s ease-in-out infinite alternate;
+    }
+
+    .gate-ambient-glow-indigo {
+      position: absolute;
+      width: 500px;
+      height: 500px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(99, 102, 241, 0.12) 0%, transparent 70%);
+      bottom: -100px;
+      right: 15%;
+      filter: blur(90px);
+      pointer-events: none;
+    }
+
+    @keyframes pulseAura {
+      0% { opacity: 0.7; transform: translateX(-50%) scale(0.95); }
+      100% { opacity: 1; transform: translateX(-50%) scale(1.08); }
+    }
+
+    .gate-grid-matrix {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-image: 
+        radial-gradient(rgba(56, 189, 248, 0.12) 1px, transparent 1px);
+      background-size: 32px 32px;
+      pointer-events: none;
+      mask-image: radial-gradient(circle at 50% 45%, black 30%, transparent 80%);
+      -webkit-mask-image: radial-gradient(circle at 50% 45%, black 30%, transparent 80%);
+    }
+
+    /* Floating Ambient System Badges (Atmospheric Depth) */
+    .gate-corner-badge-left {
+      position: absolute;
+      top: 28px;
+      left: 36px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 11.5px;
+      color: #64748b;
+      letter-spacing: 0.5px;
+      font-weight: 600;
+      z-index: 10;
+    }
+
+    .gate-corner-badge-right {
+      position: absolute;
+      top: 28px;
+      right: 36px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      background: rgba(16, 185, 129, 0.08);
+      border: 1px solid rgba(16, 185, 129, 0.25);
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 700;
+      color: #34d399;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      z-index: 10;
+    }
+
+    .live-status-ping {
+      width: 7px;
+      height: 7px;
+      background-color: #10b981;
+      border-radius: 50%;
+      box-shadow: 0 0 10px #10b981;
+      animation: statusPing 1.8s infinite;
+    }
+
+    @keyframes statusPing {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(1.35); }
+    }
+
+    /* The Main Luxury Card Container */
+    .gate-card-wrapper {
+      position: relative;
+      width: 100%;
+      max-width: 460px;
+      margin: auto;
+      z-index: 20;
+      animation: gateCardSlideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes gateCardSlideUp {
+      from { opacity: 0; transform: translateY(28px) scale(0.97); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .gate-card-surface {
+      background: rgba(10, 18, 38, 0.72);
+      backdrop-filter: blur(40px) saturate(190%);
+      -webkit-backdrop-filter: blur(40px) saturate(190%);
+      border: 1px solid rgba(56, 189, 248, 0.18);
+      border-radius: 28px;
+      padding: 44px 40px;
+      box-shadow: 
+        0 35px 80px -15px rgba(0, 0, 0, 0.9),
+        0 0 50px -10px rgba(0, 210, 255, 0.12),
+        inset 0 1px 1px rgba(255, 255, 255, 0.2);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .gate-card-top-beam {
+      position: absolute;
+      top: 0;
+      left: 15%;
+      right: 15%;
       height: 2px;
-      background: linear-gradient(90deg, transparent, #00d2ff, #0066ff, transparent);
+      background: linear-gradient(90deg, transparent, #00d2ff, #38bdf8, transparent);
+      box-shadow: 0 0 18px #00d2ff;
     }
 
-    .unified-auth-header {
+    /* Brand & Heading */
+    .gate-card-header {
       text-align: center;
-      margin-bottom: 28px;
+      margin-bottom: 30px;
     }
 
-    .unified-auth-logo {
-      height: 42px;
+    .gate-brand-logo {
+      height: 44px;
       object-fit: contain;
-      filter: drop-shadow(0 4px 16px rgba(0, 210, 255, 0.4));
-      margin-bottom: 18px;
+      filter: drop-shadow(0 4px 18px rgba(0, 210, 255, 0.45));
+      margin-bottom: 20px;
+      transition: transform 0.3s ease;
     }
 
-    .unified-auth-title {
-      font-size: 24px;
+    .gate-brand-logo:hover {
+      transform: scale(1.03);
+    }
+
+    .gate-system-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 4px 12px;
+      background: rgba(56, 189, 248, 0.1);
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      border-radius: 20px;
+      font-size: 10.5px;
       font-weight: 800;
-      color: #ffffff;
-      margin-bottom: 6px;
-      letter-spacing: -0.3px;
+      color: #38bdf8;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 12px;
     }
 
-    .unified-auth-subtitle {
+    .gate-card-title {
+      font-size: 25px;
+      font-weight: 800;
+      letter-spacing: -0.4px;
+      margin-bottom: 6px;
+      background: linear-gradient(135deg, #ffffff 40%, #cbd5e1 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .gate-card-desc {
       font-size: 13.5px;
       color: #94a3b8;
       line-height: 1.5;
       margin-bottom: 0;
     }
 
-    .unified-form-group {
+    /* Modern Tactile Inputs */
+    .gate-field-group {
       margin-bottom: 20px;
+      text-align: left;
     }
 
-    .unified-form-label {
+    .gate-field-label {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-size: 12.5px;
-      font-weight: 600;
-      color: #cbd5e1;
+      font-size: 11.5px;
+      font-weight: 700;
+      color: #94a3b8;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
       margin-bottom: 8px;
     }
 
-    .unified-input-wrapper {
+    .gate-field-wrapper {
       position: relative;
       width: 100%;
     }
 
-    .unified-input-wrapper i.prefix-icon {
+    .gate-field-icon {
       position: absolute;
-      left: 16px;
+      left: 18px;
       top: 50%;
       transform: translateY(-50%);
-      color: #38bdf8;
-      font-size: 14.5px;
+      color: #64748b;
+      font-size: 15px;
       pointer-events: none;
-      transition: color 0.2s ease;
+      transition: all 0.25s ease;
     }
 
-    .unified-form-input {
+    .gate-field-input {
       width: 100% !important;
-      height: 48px !important;
-      background: rgba(255, 255, 255, 0.05) !important;
-      border: 1px solid rgba(255, 255, 255, 0.13) !important;
-      border-radius: 12px !important;
+      height: 52px !important;
+      background: rgba(255, 255, 255, 0.04) !important;
+      border: 1px solid rgba(255, 255, 255, 0.12) !important;
+      border-radius: 14px !important;
       color: #ffffff !important;
-      padding-left: 46px !important;
-      padding-right: 46px !important;
-      font-size: 14px !important;
-      transition: all 0.25s ease !important;
+      padding-left: 48px !important;
+      padding-right: 48px !important;
+      font-size: 14.5px !important;
+      font-weight: 500 !important;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
       outline: none !important;
-      box-shadow: none !important;
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2) !important;
     }
 
-    .unified-form-input:focus {
-      background: rgba(255, 255, 255, 0.09) !important;
+    .gate-field-input:focus {
+      background: rgba(255, 255, 255, 0.08) !important;
       border-color: #00d2ff !important;
-      box-shadow: 0 0 16px rgba(0, 210, 255, 0.25) !important;
+      box-shadow: 
+        0 0 0 3px rgba(0, 210, 255, 0.15),
+        0 0 24px rgba(0, 210, 255, 0.25),
+        inset 0 1px 2px rgba(0,0,0,0.3) !important;
     }
 
-    .unified-form-input:focus + i.prefix-icon {
+    .gate-field-input:focus ~ .gate-field-icon {
       color: #00d2ff;
+      transform: translateY(-50%) scale(1.1);
     }
 
-    .btn-unified-pwd-toggle {
+    .gate-pwd-toggle-btn {
       position: absolute;
       right: 14px;
       top: 50%;
       transform: translateY(-50%);
       color: #64748b;
       cursor: pointer;
-      font-size: 14.5px;
-      padding: 6px;
+      font-size: 15px;
+      padding: 8px;
       transition: color 0.2s ease;
       background: transparent;
       border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
-    .btn-unified-pwd-toggle:hover {
+    .gate-pwd-toggle-btn:hover {
       color: #38bdf8;
     }
 
-    .btn-unified-submit {
+    /* Form Meta Options (Remember & Help) */
+    .gate-options-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: -4px;
+      margin-bottom: 22px;
+      font-size: 12.5px;
+      color: #94a3b8;
+    }
+
+    .gate-custom-checkbox {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .gate-custom-checkbox input {
+      accent-color: #0284c7;
+      cursor: pointer;
+      width: 15px;
+      height: 15px;
+    }
+
+    .gate-forgot-link {
+      color: #38bdf8;
+      text-decoration: none;
+      font-weight: 600;
+      transition: all 0.2s ease;
+    }
+
+    .gate-forgot-link:hover {
+      color: #7dd3fc;
+      text-decoration: underline;
+    }
+
+    /* Elite Shimmer CTA Button */
+    .gate-submit-btn {
       width: 100%;
-      height: 50px;
-      background: linear-gradient(135deg, #00d2ff 0%, #0066ff 100%);
+      height: 52px;
+      background: linear-gradient(135deg, #00d2ff 0%, #0284c7 45%, #2563eb 100%);
       border: none;
       border-radius: 14px;
       color: #ffffff;
       font-weight: 800;
-      font-size: 14.5px;
-      letter-spacing: 0.5px;
-      box-shadow: 0 10px 25px rgba(0, 102, 255, 0.45);
+      font-size: 15px;
+      letter-spacing: 0.6px;
+      text-transform: uppercase;
+      box-shadow: 0 12px 30px rgba(2, 132, 199, 0.45);
       cursor: pointer;
       transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 10px;
-      margin-top: 24px;
       position: relative;
       overflow: hidden;
     }
 
-    .btn-unified-submit::before {
+    .gate-submit-btn::before {
       content: '';
       position: absolute;
       top: 0; left: -100%;
       width: 100%;
       height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.25), transparent);
-      transition: all 0.5s ease;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+      transition: all 0.6s ease;
     }
 
-    .btn-unified-submit:hover {
+    .gate-submit-btn:hover {
       transform: translateY(-2px);
-      box-shadow: 0 14px 32px rgba(0, 102, 255, 0.65);
+      box-shadow: 0 16px 36px rgba(2, 132, 199, 0.65);
       color: #ffffff;
     }
 
-    .btn-unified-submit:hover::before {
+    .gate-submit-btn:hover::before {
       left: 100%;
     }
 
-    .btn-unified-submit:active {
+    .gate-submit-btn:active {
       transform: translateY(0);
     }
 
-    .unified-card-footer {
-      text-align: center;
-      margin-top: 24px;
-      padding-top: 18px;
+    .gate-submit-btn i {
+      transition: transform 0.25s ease;
+    }
+
+    .gate-submit-btn:hover i {
+      transform: translateX(4px);
+    }
+
+    /* Trust & Security Micro Badges */
+    .gate-security-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 18px;
+      margin-top: 26px;
+      padding-top: 20px;
       border-top: 1px solid rgba(255, 255, 255, 0.08);
-      font-size: 11.5px;
+      font-size: 11px;
       color: #64748b;
     }
 
-    @media (max-width: 480px) {
-      .unified-login-card {
-        padding: 30px 22px;
+    .gate-sec-item {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .gate-copyright-text {
+      text-align: center;
+      margin-top: 14px;
+      font-size: 11px;
+      color: #475569;
+    }
+
+    /* Mobile Responsive Adaptation */
+    @media (max-width: 600px) {
+      .gate-card-surface {
+        padding: 34px 24px;
+        border-radius: 22px;
+      }
+      .gate-corner-badge-left,
+      .gate-corner-badge-right {
+        display: none;
+      }
+      .gate-security-row {
+        flex-direction: column;
+        gap: 8px;
       }
     }
 
@@ -4153,6 +4357,11 @@
 
   <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin>
+
+  <!-- Google Fonts: Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
   <!-- Leaflet CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
@@ -4189,62 +4398,105 @@
   <noscript><img height="1" width="1" style="display:none"
       src="https://www.facebook.com/tr?id=1234567890123456&ev=PageView&noscript=1" /></noscript>
 
-  <!-- ===== UNIFIED ENTERPRISE LOEWIX LOGIN GATE ===== -->
+  <!-- ===== TASTE-SKILL x SOFT-SKILL: LUXURY ENTERPRISE LOEWIX PORTAL ===== -->
   <div id="loewix-login-gate" style="display: flex;">
-    <div class="unified-glow-orb"></div>
+    
+    <!-- Atmospheric Visual Backdrops -->
+    <div class="gate-ambient-radial"></div>
+    <div class="gate-ambient-glow-cyan"></div>
+    <div class="gate-ambient-glow-indigo"></div>
+    <div class="gate-grid-matrix"></div>
 
-    <div class="unified-login-wrapper">
-      <div class="unified-login-card">
-        <div class="unified-card-aura"></div>
+    <!-- Top Corner System Telemetry -->
+    <div class="gate-corner-badge-left">
+      <i class="fas fa-satellite-dish text-info"></i>
+      <span>LOEWIX CLOUD SURVEILLANCE • GLOBAL NODE ID-01</span>
+    </div>
+    <div class="gate-corner-badge-right">
+      <span class="live-status-ping"></span>
+      <span>SYSTEM OPERATIONAL</span>
+    </div>
 
-        <!-- Header: Logo & Branding -->
-        <div class="unified-auth-header">
-          <img src="assets/image/logo-loewix-white.png" alt="Loewix CCTV" class="unified-auth-logo">
-          <h1 class="unified-auth-title">Masuk ke Portal</h1>
-          <p class="unified-auth-subtitle">Akses platform pengawasan CCTV dan analitik cerdas.</p>
+    <!-- Centered Masterpiece Auth Card -->
+    <div class="gate-card-wrapper">
+      <div class="gate-card-surface">
+        <div class="gate-card-top-beam"></div>
+
+        <!-- Header: Logo, Badge & Headings -->
+        <div class="gate-card-header">
+          <img src="assets/image/logo-loewix-white.png" alt="Loewix CCTV" class="gate-brand-logo">
+          <div>
+            <div class="gate-system-pill">
+              <i class="fas fa-shield-halved mr-1"></i> ENTERPRISE SECURITY PORTAL
+            </div>
+          </div>
+          <h1 class="gate-card-title">Selamat Datang</h1>
+          <p class="gate-card-desc">Masukkan kredensial akun untuk mengakses sistem pemantauan.</p>
         </div>
 
-        <!-- Single Universal Form -->
+        <!-- Universal Single Form -->
         <form id="formGateLogin" onsubmit="submitGateLogin(event)">
-          <div class="unified-form-group">
-            <label class="unified-form-label" for="gate-login-email">
-              <span>Email Akun</span>
+          
+          <!-- Email Input -->
+          <div class="gate-field-group">
+            <label class="gate-field-label" for="gate-login-email">
+              <span><i class="fas fa-id-card text-info mr-1"></i> Email Bisnis</span>
+              <span style="font-size: 10px; color: #64748b;">Enterprise Account</span>
             </label>
-            <div class="unified-input-wrapper">
-              <i class="fas fa-envelope prefix-icon"></i>
-              <input type="email" id="gate-login-email" class="unified-form-input" placeholder="nama@perusahaan.com" required autocomplete="email">
+            <div class="gate-field-wrapper">
+              <input type="email" id="gate-login-email" class="gate-field-input" placeholder="nama@perusahaan.com" required autocomplete="email" autofocus>
+              <i class="fas fa-envelope gate-field-icon"></i>
             </div>
           </div>
 
-          <div class="unified-form-group">
-            <div class="unified-form-label">
-              <label for="gate-login-password" style="margin: 0;">Kata Sandi</label>
-              <span style="font-size: 11px; color: #38bdf8; cursor: pointer;" onclick="alert('Silakan hubungi IT Administrator atau Customer Support di support@loewixcctv.com untuk bantuan pemulihan kata sandi.')">Lupa sandi?</span>
+          <!-- Password Input -->
+          <div class="gate-field-group">
+            <div class="gate-field-label">
+              <span><i class="fas fa-lock text-info mr-1"></i> Kata Sandi</span>
+              <a href="javascript:void(0)" class="gate-forgot-link" onclick="alert('Silakan hubungi IT Administrator atau Customer Support di support@loewixcctv.com untuk bantuan pemulihan kata sandi.')">Lupa sandi?</a>
             </div>
-            <div class="unified-input-wrapper">
-              <i class="fas fa-lock prefix-icon"></i>
-              <input type="password" id="gate-login-password" class="unified-form-input" placeholder="Masukkan kata sandi" required autocomplete="current-password">
-              <button type="button" class="btn-unified-pwd-toggle" onclick="toggleGatePasswordVisibility()" title="Lihat / Sembunyikan Password">
+            <div class="gate-field-wrapper">
+              <input type="password" id="gate-login-password" class="gate-field-input" placeholder="Masukkan kata sandi Anda" required autocomplete="current-password">
+              <i class="fas fa-key gate-field-icon"></i>
+              <button type="button" class="gate-pwd-toggle-btn" onclick="toggleGatePasswordVisibility()" title="Lihat / Sembunyikan Password">
                 <i class="fas fa-eye" id="gate-toggle-pwd"></i>
               </button>
             </div>
           </div>
 
-          <button type="submit" id="btn-gate-submit" class="btn-unified-submit">
+          <!-- Remember Me Checkbox -->
+          <div class="gate-options-row">
+            <label class="gate-custom-checkbox">
+              <input type="checkbox" id="remember-session" checked>
+              <span>Ingat sesi di perangkat ini</span>
+            </label>
+          </div>
+
+          <!-- Submit CTA Button -->
+          <button type="submit" id="btn-gate-submit" class="gate-submit-btn">
             <span>MASUK KE SISTEM</span>
             <i class="fas fa-arrow-right"></i>
           </button>
         </form>
 
-        <!-- Trust & Security Footer -->
-        <div class="unified-card-footer">
-          <div style="display: flex; align-items: center; justify-content: center; gap: 6px; margin-bottom: 4px;">
+        <!-- Security & Compliance Badges -->
+        <div class="gate-security-row">
+          <div class="gate-sec-item">
+            <i class="fas fa-lock text-success"></i>
+            <span>TLS 1.3 256-Bit</span>
+          </div>
+          <div class="gate-sec-item">
             <i class="fas fa-shield-alt text-info"></i>
-            <span>Koneksi Aman Terenkripsi 256-Bit SSL/TLS</span>
+            <span>ISO 27001</span>
           </div>
-          <div style="font-size: 10.5px; opacity: 0.7;">
-            &copy; 2026 PT. Loewix Indonesia Mandiri. All rights reserved.
+          <div class="gate-sec-item">
+            <i class="fas fa-bolt text-warning"></i>
+            <span>Low-Latency WebRTC</span>
           </div>
+        </div>
+
+        <div class="gate-copyright-text">
+          &copy; 2026 PT. Loewix Indonesia Mandiri. All rights reserved.
         </div>
 
       </div>
