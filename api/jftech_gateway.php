@@ -197,7 +197,7 @@ if ($action === 'parse_qr') {
 /**
  * Global helper function to resolve live stream HLS URL with high-speed caching
  */
-function getJFTechLiveStreamUrl($sn, $channel = 1, $protocol = 'hls-ts', $streamType = 'sub', $deviceUser = 'admin', $devicePass = '', $forceRefresh = false) {
+function getJFTechLiveStreamUrl($sn, $channel = 1, $protocol = 'hls-fmp4', $streamType = 'sub', $deviceUser = 'admin', $devicePass = '', $forceRefresh = false) {
     $cleanSN = strtolower(preg_replace('/[^a-zA-Z0-9]/', '', $sn));
     if (empty($cleanSN)) return null;
 
@@ -270,7 +270,7 @@ if ($action === 'get_live_stream') {
     $streamType = trim($_POST['stream'] ?? $_GET['stream'] ?? 'sub');
     $deviceUser = trim($_POST['device_user'] ?? $_GET['device_user'] ?? 'admin');
     $devicePass = trim($_POST['device_pass'] ?? $_GET['device_pass'] ?? '');
-    $requestedProto = trim($_POST['protocol'] ?? $_GET['protocol'] ?? 'hls-ts');
+    $requestedProto = trim($_POST['protocol'] ?? $_GET['protocol'] ?? 'hls-fmp4');
     $force = !empty($_POST['force'] ?? $_GET['force'] ?? false);
 
     if (empty($sn)) {

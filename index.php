@@ -7806,22 +7806,14 @@
                 }
               });
 
-              hls.loadSource(targetUrl);
-              hls.attachMedia(videoPlayer);
-
-              hls.on(Hls.Events.MANIFEST_PARSED, function() {
-                const loadStartTime = videoPlayer.getAttribute('data-load-start');
-                const startTime = loadStartTime ? parseInt(loadStartTime) : Date.now();
-                const loadTime = Date.now() - startTime;
-                console.log('[Stream] Manifest parsed, starting playback in ' + loadTime + 'ms');
-
-                if (bufferingOverlay) {
-                  bufferingOverlay.style.display = 'none';
-                  bufferingOverlay.style.opacity = '0';
-                }
+              function revealLiveVideo() {
                 if (thumb) {
                   thumb.style.display = 'none';
                   thumb.style.opacity = '0';
+                }
+                if (bufferingOverlay) {
+                  bufferingOverlay.style.display = 'none';
+                  bufferingOverlay.style.opacity = '0';
                 }
                 if (card) {
                   card.classList.add('stream-active');
@@ -7829,18 +7821,31 @@
                 }
                 videoPlayer.style.display = 'block';
                 videoPlayer.classList.remove('hidden-iframe');
+              }
+
+              hls.on(Hls.Events.MANIFEST_PARSED, function() {
+                const loadStartTime = videoPlayer.getAttribute('data-load-start');
+                const startTime = loadStartTime ? parseInt(loadStartTime) : Date.now();
+                const loadTime = Date.now() - startTime;
+                console.log('[Stream] Manifest parsed in ' + loadTime + 'ms');
 
                 videoPlayer.muted = true;
-                videoPlayer.play().catch(function(e) {
-                  console.log('[Stream] Autoplay retry muted:', e);
-                  videoPlayer.play().catch(function() {});
-                });
+                videoPlayer.play().catch(function() {});
 
                 activePlayers.add(playerId);
                 const offlineId = 'offline-' + thumbId.split('-')[1];
                 enableAutoRefreshForPlayer(playerId, 'mediamtx', streamPath, thumbId, offlineId);
                 resetAutoRefreshState(playerId);
               });
+
+              videoPlayer.onplaying = revealLiveVideo;
+              videoPlayer.onloadeddata = revealLiveVideo;
+              videoPlayer.ontimeupdate = function() {
+                if (videoPlayer.currentTime > 0) {
+                  revealLiveVideo();
+                }
+              };
+              hls.on(Hls.Events.FRAG_BUFFERED, revealLiveVideo);
 
               // Auto-recover from stalls smoothly
               hls.on(Hls.Events.BUFFER_STALLED, function() {
@@ -7854,31 +7859,6 @@
                   videoPlayer.play().catch(function() {});
                 }
               });
-
-              hls.on(Hls.Events.FRAG_BUFFERED, function() {
-                if (thumb) {
-                  thumb.style.display = 'none';
-                  thumb.style.opacity = '0';
-                }
-                if (bufferingOverlay) {
-                  bufferingOverlay.style.display = 'none';
-                  bufferingOverlay.style.opacity = '0';
-                }
-                if (videoPlayer.paused) {
-                  videoPlayer.play().catch(function() {});
-                }
-              });
-
-              videoPlayer.onloadeddata = function() {
-                if (thumb) {
-                  thumb.style.display = 'none';
-                  thumb.style.opacity = '0';
-                }
-                if (bufferingOverlay) {
-                  bufferingOverlay.style.display = 'none';
-                  bufferingOverlay.style.opacity = '0';
-                }
-              };
 
               hls.on(Hls.Events.ERROR, function(event, data) {
                 console.warn('[Stream] HLS Event Error:', data.type, data.details, 'Fatal:', data.fatal);
@@ -7895,27 +7875,41 @@
                     default:
                       console.error('[Stream] Fatal unrecoverable error:', data.details);
                       hls.destroy();
+                      if (bufferingOverlay) bufferingOverlay.style.display = 'none';
                       showOfflineMessage(playerId, thumbId);
                       break;
                   }
+                }
+              });
+
+              videoPlayer.hlsInstance = hls;
+              videoPlayer.setAttribute('data-hls-loaded', 'true');
+              hls.loadSource(targetUrl);
+              hls.attachMedia(videoPlayer);
+            } else if (videoPlayer.canPlayType('application/vnd.apple.mpegurl')) {
+              // Safari iOS / Mobile native HLS
+              videoPlayer.src = targetUrl;
+              videoPlayer.addEventListener('loadedmetadata', function() {
+                videoPlayer.play().catch(e => {});
+                if (bufferingOverlay) bufferingOverlay.style.display = 'none';
+                if (thumb) thumb.style.display = 'none';
+                videoPlayer.style.display = 'block';
+                videoPlayer.classList.remove('hidden-iframe');
+                activePlayers.add(playerId);
+              });
+              videoPlayer.addEventListener('error', function() {
+                if (bufferingOverlay) bufferingOverlay.style.display = 'none';
+                if (thumb) {
+                  thumb.style.display = 'flex';
+                  thumb.style.opacity = '1';
+                  const loadingText = thumb.querySelector('.loading-text');
+                  if (loadingText) loadingText.innerHTML = '<i class="fas fa-play-circle"></i> Klik untuk memutar';
                 }
               });
             } else {
               console.error('[Stream] HLS not supported in this browser');
               if (bufferingOverlay) bufferingOverlay.style.display = 'none';
               showOfflineMessage(playerId, thumbId);
-            }
-          }
-
-          const connType = element ? (element.getAttribute('data-connection-type') || '') : '';
-          let sn = element ? (element.getAttribute('data-serial-number') || '') : '';
-          let channel = element ? (element.getAttribute('data-channel') || 1) : 1;
-
-          if (streamPath.startsWith('xmeye_')) {
-            const parts = streamPath.split('_');
-            if (parts.length >= 3) {
-              sn = parts[1];
-              channel = parts[2].replace('ch', '') || 1;
             }
           }
 
@@ -7937,25 +7931,11 @@
                   element.setAttribute('data-stream-path', data.hls_url);
                   mountHLS(data.hls_url);
                 } else {
-                  console.warn('[Stream] Retrying connection automatically for camera:', playerId);
-                  setTimeout(() => {
-                    const retries = parseInt(element.getAttribute('data-auto-retry') || '0');
-                    if (retries < 3) {
-                      element.setAttribute('data-auto-retry', String(retries + 1));
-                      playMediaMTXCCTV(element, playerId, thumbId);
-                    }
-                  }, 1500);
+                  mountHLS(`${STREAM_BASE}/${streamPath}/index.m3u8`);
                 }
               })
               .catch(() => {
-                console.warn('[Stream] Retrying connection automatically on network fail:', playerId);
-                setTimeout(() => {
-                  const retries = parseInt(element.getAttribute('data-auto-retry') || '0');
-                  if (retries < 3) {
-                    element.setAttribute('data-auto-retry', String(retries + 1));
-                    playMediaMTXCCTV(element, playerId, thumbId);
-                  }
-                }, 1500);
+                mountHLS(`${STREAM_BASE}/${streamPath}/index.m3u8`);
               });
           } else if (streamPath.startsWith('http://') || streamPath.startsWith('https://')) {
             mountHLS(streamPath);
