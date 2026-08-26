@@ -619,12 +619,42 @@
       padding: 6px 8px !important;
       gap: 3px !important;
     }
+    .traffic-card.layout-dense .card-footer-top-row {
+      display: flex !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+      gap: 4px !important;
+    }
+    .traffic-card.layout-dense .card-location-title {
+      font-size: 11px !important;
+      font-weight: 600;
+      gap: 4px !important;
+      min-width: 0 !important;
+      flex: 1 1 auto !important;
+      max-width: calc(100% - 100px) !important;
+    }
     .traffic-card.layout-dense .card-location-title span {
       font-size: 11px !important;
       font-weight: 600;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .traffic-card.layout-dense .card-location-title i {
+      font-size: 11px !important;
     }
     .traffic-card.layout-dense .card-action-toolbar {
-      display: none !important;
+      display: flex !important;
+      align-items: center !important;
+      gap: 3px !important;
+      flex-shrink: 0 !important;
+    }
+    .traffic-card.layout-dense .card-action-toolbar .action-btn {
+      width: 22px !important;
+      height: 22px !important;
+      min-width: 22px !important;
+      font-size: 9px !important;
+      padding: 0 !important;
     }
     .traffic-card.layout-dense .traffic-card-status-bar {
       padding: 2px 4px !important;
