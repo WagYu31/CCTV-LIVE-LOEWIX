@@ -4068,76 +4068,98 @@
       max-width: 560px;
     }
 
-    /* Live Surveillance Preview Monitor */
-    .stage-monitor-card {
-      background: rgba(8, 16, 38, 0.85);
-      border: 1px solid rgba(56, 189, 248, 0.28);
-      border-radius: 18px;
-      padding: 16px 20px;
+    /* 4 Enterprise Capabilities Bento Grid (Taste-Skill) */
+    .stage-features-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
       margin-bottom: 20px;
-      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6), inset 0 0 25px rgba(0, 210, 255, 0.05);
+    }
+
+    .stage-feature-card {
+      background: rgba(10, 20, 46, 0.65);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(56, 189, 248, 0.16);
+      border-radius: 16px;
+      padding: 16px 18px;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
       position: relative;
       overflow: hidden;
     }
 
-    .stage-monitor-top {
+    .stage-feature-card:hover {
+      transform: translateY(-3px);
+      background: rgba(12, 25, 58, 0.85);
+      border-color: rgba(56, 189, 248, 0.45);
+      box-shadow: 0 12px 30px -8px rgba(0, 210, 255, 0.2);
+    }
+
+    .feature-card-top {
       display: flex;
-      justify-content: space-between;
       align-items: center;
-      font-size: 11.5px;
-      font-weight: 700;
-      color: #cbd5e1;
-      margin-bottom: 12px;
-    }
-
-    .stage-stream-frame {
-      position: relative;
-      height: 135px;
-      border-radius: 12px;
-      overflow: hidden;
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      margin-bottom: 14px;
-      background: #020612;
-    }
-
-    .stage-stream-frame img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      opacity: 0.85;
-    }
-
-    .stage-stream-overlay {
-      position: absolute;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: linear-gradient(180deg, rgba(0,0,0,0.35) 0%, transparent 50%, rgba(0,0,0,0.75) 100%);
-      display: flex;
-      flex-direction: column;
       justify-content: space-between;
-      padding: 10px 14px;
+      margin-bottom: 10px;
     }
 
-    .stage-chips-row {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    .stage-chip {
-      flex: 1;
-      min-width: 110px;
-      background: rgba(255, 255, 255, 0.04);
-      border: 1px solid rgba(255, 255, 255, 0.08);
+    .feature-icon-pill {
+      width: 36px;
+      height: 36px;
       border-radius: 10px;
-      padding: 8px 12px;
-      font-size: 11px;
-      color: #cbd5e1;
       display: flex;
       align-items: center;
-      gap: 8px;
+      justify-content: center;
+      font-size: 15px;
     }
 
-    .stage-chip i { color: #38bdf8; font-size: 13px; }
+    .feature-icon-cyan {
+      background: rgba(0, 210, 255, 0.12);
+      color: #00d2ff;
+      border: 1px solid rgba(0, 210, 255, 0.25);
+    }
+
+    .feature-icon-green {
+      background: rgba(16, 185, 129, 0.12);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.25);
+    }
+
+    .feature-icon-purple {
+      background: rgba(168, 85, 247, 0.12);
+      color: #c084fc;
+      border: 1px solid rgba(168, 85, 247, 0.25);
+    }
+
+    .feature-icon-amber {
+      background: rgba(245, 158, 11, 0.12);
+      color: #fbbf24;
+      border: 1px solid rgba(245, 158, 11, 0.25);
+    }
+
+    .feature-micro-badge {
+      font-size: 10px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.05);
+      color: #94a3b8;
+      letter-spacing: 0.4px;
+    }
+
+    .feature-card-title {
+      font-size: 13.5px;
+      font-weight: 800;
+      color: #ffffff;
+      margin-bottom: 4px;
+      letter-spacing: -0.2px;
+    }
+
+    .feature-card-desc {
+      font-size: 11.5px;
+      color: #94a3b8;
+      line-height: 1.45;
+      margin-bottom: 0;
+    }
 
     .stage-footer-bar {
       position: relative;
@@ -4465,37 +4487,54 @@
           Akses jaringan live streaming CCTV multi-saluran dengan enkripsi 256-bit tingkat enterprise, transmisi ultra low-latency H.265/WebRTC, dan manajemen hak akses terpusat.
         </p>
 
-        <!-- Command Video Monitor HUD -->
-        <div class="stage-monitor-card">
-          <div class="stage-monitor-top">
-            <span><i class="fas fa-satellite-dish text-info mr-1"></i> LIVE RTSP/HLS FEED</span>
-            <span class="text-success"><i class="fas fa-check-circle mr-1"></i> 1080P HD • 30 FPS</span>
-          </div>
-          <div class="stage-stream-frame">
-            <img src="assets/image/banner/banner-pelintas.jpeg" alt="CAM 01 Feed" onerror="this.src='assets/image/cctv.png'">
-            <div class="stage-stream-overlay">
-              <div style="display: flex; justify-content: space-between; font-size: 10px; font-weight: 800; color: #38bdf8;">
-                <span style="background: rgba(0,0,0,0.65); padding: 2px 6px; border-radius: 4px;">● CH-01 [PEMATANGSIANTAR CENTRAL]</span>
-                <span style="background: rgba(239,68,68,0.7); color: #fff; padding: 2px 6px; border-radius: 4px;">REC</span>
+        <!-- 4 Enterprise Capabilities Bento Grid -->
+        <div class="stage-features-grid">
+          <!-- Card 1: Low Latency -->
+          <div class="stage-feature-card">
+            <div class="feature-card-top">
+              <div class="feature-icon-pill feature-icon-cyan">
+                <i class="fas fa-bolt"></i>
               </div>
-              <div style="font-size: 9.5px; color: #cbd5e1; font-family: monospace;">
-                BITRATE: 4.2 MBPS • CODEC: H.264/AAC • BUFFER: 0.12s
-              </div>
+              <span class="feature-micro-badge">&lt; 120ms WebRTC</span>
             </div>
+            <div class="feature-card-title">Streaming Ultra Cepat</div>
+            <p class="feature-card-desc">Transmisi live video instan tanpa jeda dengan protokol WebRTC &amp; HLS teroptimasi.</p>
           </div>
-          <div class="stage-chips-row">
-            <div class="stage-chip">
-              <i class="fas fa-bolt"></i>
-              <span>Latensi: <strong>&lt; 120ms</strong></span>
+
+          <!-- Card 2: Military Grade Security -->
+          <div class="stage-feature-card">
+            <div class="feature-card-top">
+              <div class="feature-icon-pill feature-icon-green">
+                <i class="fas fa-shield-halved"></i>
+              </div>
+              <span class="feature-micro-badge">TLS 1.3 256-Bit</span>
             </div>
-            <div class="stage-chip">
-              <i class="fas fa-lock"></i>
-              <span>Enkripsi: <strong>AES-256 TLS</strong></span>
+            <div class="feature-card-title">Enkripsi End-to-End</div>
+            <p class="feature-card-desc">Keamanan data setara standar perbankan dengan sertifikasi ISO 27001.</p>
+          </div>
+
+          <!-- Card 3: AI Vision -->
+          <div class="stage-feature-card">
+            <div class="feature-card-top">
+              <div class="feature-icon-pill feature-icon-purple">
+                <i class="fas fa-brain"></i>
+              </div>
+              <span class="feature-micro-badge">AI Vision Engine</span>
             </div>
-            <div class="stage-chip">
-              <i class="fas fa-layer-group"></i>
-              <span>Grid: <strong>4 - 128 CH</strong></span>
+            <div class="feature-card-title">Deteksi Cerdas &amp; AI</div>
+            <p class="feature-card-desc">Pengenalan gerak manusia, pelat nomor kendaraan, dan notifikasi anomali.</p>
+          </div>
+
+          <!-- Card 4: Multi-Branch Fleet -->
+          <div class="stage-feature-card">
+            <div class="feature-card-top">
+              <div class="feature-icon-pill feature-icon-amber">
+                <i class="fas fa-network-wired"></i>
+              </div>
+              <span class="feature-micro-badge">128+ Channels</span>
             </div>
+            <div class="feature-card-title">Pusat Kendali Terpadu</div>
+            <p class="feature-card-desc">Manajemen ratusan titik lokasi kamera dalam satu portal terpusat.</p>
           </div>
         </div>
       </div>
