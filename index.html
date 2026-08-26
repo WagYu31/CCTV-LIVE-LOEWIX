@@ -3902,87 +3902,344 @@
       box-shadow: 0 0 12px rgba(0, 210, 255, 0.3) !important;
     }
 
-    /* ===== FULLSCREEN LOEWIX ENTERPRISE LOGIN GATE ===== */
+    /* ===== TASTE-SKILL ENTERPRISE LOEWIX COMMAND CENTER LOGIN GATE ===== */
     #loewix-login-gate {
       min-height: 100vh;
       width: 100%;
       display: flex;
       align-items: center;
       justify-content: center;
-      background: radial-gradient(circle at 50% 20%, #0d1e48 0%, #060b1c 65%, #020612 100%);
+      background: radial-gradient(circle at 50% 10%, #0c1c3d 0%, #060b18 55%, #02040a 100%);
       position: fixed;
       top: 0;
       left: 0;
       right: 0;
       bottom: 0;
       overflow-y: auto;
-      padding: 24px;
+      padding: 30px 20px;
       z-index: 99999;
+      font-family: 'Outfit', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      color: #ffffff;
     }
 
-    .login-grid-bg {
+    .login-mesh-bg {
       position: absolute;
       top: 0; left: 0; right: 0; bottom: 0;
       background-image: 
-        linear-gradient(rgba(56, 189, 248, 0.05) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(56, 189, 248, 0.05) 1px, transparent 1px);
-      background-size: 36px 36px;
+        radial-gradient(rgba(56, 189, 248, 0.12) 1px, transparent 1px),
+        linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+      background-size: 32px 32px, 64px 64px, 64px 64px;
       pointer-events: none;
+      opacity: 0.7;
     }
 
-    .login-glow-orb {
+    .login-glow-circle-1 {
       position: absolute;
-      width: 600px;
-      height: 600px;
+      width: 550px;
+      height: 550px;
       border-radius: 50%;
-      background: radial-gradient(circle, rgba(0, 210, 255, 0.15) 0%, rgba(0, 102, 255, 0) 70%);
-      top: -150px;
-      left: 50%;
-      transform: translateX(-50%);
+      background: radial-gradient(circle, rgba(0, 210, 255, 0.16) 0%, rgba(0, 102, 255, 0) 70%);
+      top: -120px;
+      left: 10%;
       pointer-events: none;
-      filter: blur(50px);
+      filter: blur(60px);
+      animation: glowFloat 12s ease-in-out infinite alternate;
     }
 
-    .login-card-container {
+    .login-glow-circle-2 {
+      position: absolute;
+      width: 500px;
+      height: 500px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(99, 102, 241, 0.14) 0%, rgba(59, 130, 246, 0) 70%);
+      bottom: -100px;
+      right: 10%;
+      pointer-events: none;
+      filter: blur(60px);
+      animation: glowFloat 10s ease-in-out infinite alternate-reverse;
+    }
+
+    @keyframes glowFloat {
+      0% { transform: translate(0, 0) scale(1); }
+      100% { transform: translate(30px, 40px) scale(1.08); }
+    }
+
+    .login-enterprise-wrapper {
       position: relative;
       z-index: 10;
       width: 100%;
-      max-width: 440px;
-      background: rgba(13, 25, 54, 0.88);
-      backdrop-filter: blur(25px);
-      -webkit-backdrop-filter: blur(25px);
-      border: 1px solid rgba(56, 189, 248, 0.3);
-      border-radius: 24px;
-      padding: 36px 30px;
-      box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.8), 0 0 35px rgba(0, 210, 255, 0.15);
-      animation: loginCardFadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+      max-width: 1060px;
+      display: grid;
+      grid-template-columns: 1.15fr 0.95fr;
+      background: rgba(11, 22, 48, 0.75);
+      backdrop-filter: blur(30px);
+      -webkit-backdrop-filter: blur(30px);
+      border: 1px solid rgba(56, 189, 248, 0.22);
+      border-radius: 28px;
+      box-shadow: 0 35px 80px -20px rgba(0, 0, 0, 0.9), 0 0 45px rgba(0, 210, 255, 0.12);
+      overflow: hidden;
+      animation: loginAppear 0.6s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
-    @keyframes loginCardFadeIn {
-      from { opacity: 0; transform: translateY(20px) scale(0.96); }
+    @keyframes loginAppear {
+      from { opacity: 0; transform: translateY(24px) scale(0.97); }
       to { opacity: 1; transform: translateY(0) scale(1); }
     }
 
-    .login-input-group {
+    /* Left Showcase Panel */
+    .login-showcase-panel {
+      padding: 44px 40px;
+      background: linear-gradient(145deg, rgba(15, 29, 64, 0.7) 0%, rgba(7, 14, 34, 0.85) 100%);
+      border-right: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
       position: relative;
-      margin-bottom: 18px;
+      overflow: hidden;
     }
 
-    .login-input-group label {
-      font-size: 12px;
+    .login-showcase-panel::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(56, 189, 248, 0.6), transparent);
+    }
+
+    .showcase-brand-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+    }
+
+    .showcase-brand-header img {
+      height: 38px;
+      object-fit: contain;
+      filter: drop-shadow(0 2px 10px rgba(0, 210, 255, 0.4));
+    }
+
+    .showcase-live-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 5px 12px;
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.35);
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 700;
+      color: #34d399;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    .showcase-live-dot {
+      width: 7px;
+      height: 7px;
+      background-color: #10b981;
+      border-radius: 50%;
+      box-shadow: 0 0 8px #10b981;
+      animation: pulseDot 1.5s infinite;
+    }
+
+    @keyframes pulseDot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(1.3); }
+    }
+
+    .showcase-title {
+      font-size: 26px;
+      font-weight: 800;
+      line-height: 1.3;
+      margin-bottom: 12px;
+      background: linear-gradient(135deg, #ffffff 30%, #38bdf8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: -0.3px;
+    }
+
+    .showcase-desc {
+      font-size: 13.5px;
       color: #94a3b8;
-      font-weight: 600;
-      margin-bottom: 8px;
-      display: block;
+      line-height: 1.6;
+      margin-bottom: 24px;
+    }
+
+    /* Simulated CCTV Command Frame */
+    .cctv-preview-card {
+      position: relative;
+      background: rgba(6, 12, 28, 0.85);
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 24px;
+      box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.6), 0 10px 25px rgba(0, 0, 0, 0.4);
+    }
+
+    .cctv-preview-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+
+    .cctv-mini-cam {
+      position: relative;
+      aspect-ratio: 16/9;
+      background: #020612;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .cctv-mini-cam img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0.7;
+    }
+
+    .cctv-cam-tag {
+      position: absolute;
+      top: 4px;
+      left: 5px;
+      font-size: 8px;
+      font-weight: 800;
+      color: #38bdf8;
+      background: rgba(0, 0, 0, 0.7);
+      padding: 2px 5px;
+      border-radius: 4px;
       letter-spacing: 0.3px;
     }
 
-    .login-input-wrapper {
+    .cctv-rec-dot {
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      width: 5px;
+      height: 5px;
+      background: #ef4444;
+      border-radius: 50%;
+      box-shadow: 0 0 6px #ef4444;
+    }
+
+    .showcase-features-list {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .showcase-feature-item {
+      flex: 1;
+      min-width: 120px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      padding: 10px 12px;
+    }
+
+    .showcase-feature-item i {
+      font-size: 14px;
+      color: #38bdf8;
+      margin-bottom: 5px;
+      display: block;
+    }
+
+    .showcase-feature-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: #f1f5f9;
+      margin-bottom: 2px;
+    }
+
+    .showcase-feature-sub {
+      font-size: 10px;
+      color: #64748b;
+    }
+
+    .showcase-footer {
+      font-size: 11px;
+      color: #64748b;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 15px;
+      padding-top: 14px;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    /* Right Form Panel */
+    .login-form-panel {
+      padding: 44px 38px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      background: rgba(13, 25, 54, 0.85);
+      position: relative;
+    }
+
+    .form-role-tabs {
+      display: flex;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 14px;
+      padding: 4px;
+      margin-bottom: 22px;
+      gap: 4px;
+    }
+
+    .form-role-tab {
+      flex: 1;
+      padding: 9px 12px;
+      border-radius: 10px;
+      border: none;
+      background: transparent;
+      color: #94a3b8;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .form-role-tab.active {
+      background: linear-gradient(135deg, rgba(0, 210, 255, 0.25) 0%, rgba(0, 102, 255, 0.35) 100%);
+      border: 1px solid rgba(56, 189, 248, 0.5);
+      color: #ffffff;
+      box-shadow: 0 4px 12px rgba(0, 102, 255, 0.3);
+    }
+
+    .form-role-tab:hover:not(.active) {
+      color: #ffffff;
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .form-group-custom {
+      margin-bottom: 18px;
+    }
+
+    .form-label-custom {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      font-weight: 600;
+      color: #94a3b8;
+      margin-bottom: 7px;
+    }
+
+    .form-input-container {
       position: relative;
       width: 100%;
     }
 
-    .login-input-wrapper i.input-icon {
+    .form-input-icon {
       position: absolute;
       left: 15px;
       top: 50%;
@@ -3990,91 +4247,172 @@
       color: #38bdf8;
       font-size: 14px;
       pointer-events: none;
-      z-index: 5;
+      transition: color 0.2s ease;
     }
 
-    .login-input-wrapper input {
+    .form-input-field {
       width: 100% !important;
       height: 46px !important;
-      background: rgba(255, 255, 255, 0.07) !important;
-      border: 1px solid rgba(255, 255, 255, 0.18) !important;
+      background: rgba(255, 255, 255, 0.05) !important;
+      border: 1px solid rgba(255, 255, 255, 0.14) !important;
       border-radius: 12px !important;
       color: #ffffff !important;
       padding-left: 42px !important;
       padding-right: 44px !important;
-      font-size: 14px !important;
-      transition: all 0.25s ease;
+      font-size: 13.5px !important;
+      transition: all 0.25s ease !important;
       outline: none !important;
       box-shadow: none !important;
-      display: block !important;
     }
 
-    .login-input-wrapper input:focus {
-      background: rgba(255, 255, 255, 0.12) !important;
+    .form-input-field:focus {
+      background: rgba(255, 255, 255, 0.09) !important;
       border-color: #00d2ff !important;
-      box-shadow: 0 0 15px rgba(0, 210, 255, 0.3) !important;
+      box-shadow: 0 0 16px rgba(0, 210, 255, 0.25) !important;
     }
 
-    .login-eye-btn {
+    .btn-password-toggle {
       position: absolute;
       right: 14px;
       top: 50%;
       transform: translateY(-50%);
-      color: #94a3b8;
+      color: #64748b;
       cursor: pointer;
       font-size: 14px;
       padding: 6px;
-      z-index: 5;
-      transition: color 0.2s;
+      transition: color 0.2s ease;
     }
-    .login-eye-btn:hover { color: #00d2ff; }
 
-    .login-btn-submit {
+    .btn-password-toggle:hover {
+      color: #38bdf8;
+    }
+
+    /* Quick Fill Demo Pills */
+    .demo-accounts-pill-container {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+
+    .demo-account-pill {
+      flex: 1;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      padding: 8px 10px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      text-align: left;
+    }
+
+    .demo-account-pill:hover {
+      background: rgba(56, 189, 248, 0.12);
+      border-color: rgba(56, 189, 248, 0.4);
+      transform: translateY(-1px);
+    }
+
+    .demo-account-pill.active-pill {
+      background: rgba(56, 189, 248, 0.18);
+      border-color: #38bdf8;
+    }
+
+    .demo-pill-avatar {
+      width: 26px;
+      height: 26px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      background: rgba(255, 255, 255, 0.08);
+      flex-shrink: 0;
+    }
+
+    .demo-pill-role {
+      font-size: 11px;
+      font-weight: 700;
+      color: #f1f5f9;
+      line-height: 1.2;
+    }
+
+    .demo-pill-email {
+      font-size: 9.5px;
+      color: #94a3b8;
+      line-height: 1.2;
+    }
+
+    /* Submit CTA */
+    .btn-gate-submit-main {
       width: 100%;
-      height: 46px;
+      height: 48px;
       background: linear-gradient(135deg, #00d2ff 0%, #0066ff 100%);
       border: none;
-      border-radius: 12px;
+      border-radius: 14px;
       color: #ffffff;
       font-weight: 800;
       font-size: 13.5px;
       letter-spacing: 0.8px;
       text-transform: uppercase;
-      box-shadow: 0 8px 25px rgba(0, 102, 255, 0.45);
+      box-shadow: 0 10px 25px rgba(0, 102, 255, 0.4);
       cursor: pointer;
-      transition: all 0.3s ease;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 8px;
-      outline: none;
+      gap: 9px;
+      position: relative;
+      overflow: hidden;
     }
-    .login-btn-submit:hover {
+
+    .btn-gate-submit-main::before {
+      content: '';
+      position: absolute;
+      top: 0; left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.25), transparent);
+      transition: all 0.5s ease;
+    }
+
+    .btn-gate-submit-main:hover {
       transform: translateY(-2px);
-      box-shadow: 0 12px 30px rgba(0, 102, 255, 0.6);
+      box-shadow: 0 14px 32px rgba(0, 102, 255, 0.6);
       color: #ffffff;
     }
-    .login-btn-submit:active { transform: translateY(0); }
 
-    .quick-demo-btn {
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      border-radius: 8px;
-      padding: 7px 12px;
-      color: #94a3b8;
-      font-size: 11px;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      text-align: left;
-      width: 100%;
+    .btn-gate-submit-main:hover::before {
+      left: 100%;
+    }
+
+    .btn-gate-submit-main:active {
+      transform: translateY(0);
+    }
+
+    /* Form Footer */
+    .form-footer-meta {
       display: flex;
       align-items: center;
       justify-content: space-between;
+      margin-top: 20px;
+      font-size: 11px;
+      color: #64748b;
     }
-    .quick-demo-btn:hover {
-      background: rgba(56, 189, 248, 0.15);
-      border-color: rgba(56, 189, 248, 0.4);
-      color: #38bdf8;
+
+    /* Responsive */
+    @media (max-width: 900px) {
+      .login-enterprise-wrapper {
+        grid-template-columns: 1fr;
+        max-width: 460px;
+      }
+      .login-showcase-panel {
+        display: none;
+      }
+      .login-form-panel {
+        padding: 36px 24px;
+      }
     }
 
     /* ===== END VIDEO RENDERING OPTIMIZATION ===== */
@@ -4128,59 +4466,164 @@
   <noscript><img height="1" width="1" style="display:none"
       src="https://www.facebook.com/tr?id=1234567890123456&ev=PageView&noscript=1" /></noscript>
 
-  <!-- ===== FULLSCREEN LOEWIX ENTERPRISE LOGIN GATE ===== -->
+  <!-- ===== TASTE-SKILL ENTERPRISE LOEWIX COMMAND CENTER LOGIN GATE ===== -->
   <div id="loewix-login-gate" style="display: flex;">
-    <div class="login-grid-bg"></div>
-    <div class="login-glow-orb"></div>
-    <div class="login-card-container">
-      <div class="text-center mb-4">
-        <img src="assets/image/logo-loewix-white.png" alt="Loewix CCTV" style="height: 44px; max-width: 170px; object-fit: contain; margin-bottom: 12px; filter: drop-shadow(0 4px 15px rgba(0,210,255,0.4));">
-        <h2 style="color: #ffffff; font-weight: 800; font-size: 19px; letter-spacing: 0.5px; margin-bottom: 6px;">LOEWIX ENTERPRISE</h2>
-        <p style="color: #94a3b8; font-size: 13px; line-height: 1.5; margin-bottom: 0;">Silakan login untuk mengakses live surveillance grid CCTV</p>
+    <div class="login-mesh-bg"></div>
+    <div class="login-glow-circle-1"></div>
+    <div class="login-glow-circle-2"></div>
+    
+    <div class="login-enterprise-wrapper">
+      <!-- LEFT: Live Surveillance Intelligence Showcase -->
+      <div class="login-showcase-panel">
+        <div>
+          <div class="showcase-brand-header">
+            <img src="assets/image/logo-loewix-white.png" alt="Loewix CCTV">
+            <div class="showcase-live-badge">
+              <span class="showcase-live-dot"></span> SOC v4.8 ONLINE
+            </div>
+          </div>
+
+          <h1 class="showcase-title">
+            Enterprise Video Surveillance &amp; AI Telemetry
+          </h1>
+          <p class="showcase-desc">
+            Platform pengawasan CCTV terpadu dengan enkripsi tingkat militer, latensi rendah RTSP/WebRTC, dan analisis cerdas multi-saluran.
+          </p>
+
+          <!-- CCTV Command Grid Monitor Simulation -->
+          <div class="cctv-preview-card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-size: 11px; color: #94a3b8; font-weight: 600;">
+              <span><i class="fas fa-video text-info mr-1"></i> LIVE MONITORING MATRIX</span>
+              <span class="text-success"><i class="fas fa-signal mr-1"></i> 128 CH SYNCED</span>
+            </div>
+            <div class="cctv-preview-grid">
+              <div class="cctv-mini-cam">
+                <img src="assets/image/banner/banner-pelintas.jpeg" alt="CAM 01" onerror="this.src='assets/image/logo-loewix.png'">
+                <span class="cctv-cam-tag">CAM-01</span>
+                <span class="cctv-rec-dot"></span>
+              </div>
+              <div class="cctv-mini-cam">
+                <img src="assets/image/cctv.png" alt="CAM 02" onerror="this.src='assets/image/logo-loewix.png'">
+                <span class="cctv-cam-tag">CAM-02</span>
+                <span class="cctv-rec-dot"></span>
+              </div>
+              <div class="cctv-mini-cam">
+                <div style="font-size: 10px; color: #38bdf8; text-align: center; font-weight: 700; padding: 4px;">
+                  <i class="fas fa-radar fa-spin mb-1"></i><br>AI SCAN
+                </div>
+                <span class="cctv-cam-tag">AUTO</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Feature Highlights Grid -->
+          <div class="showcase-features-list">
+            <div class="showcase-feature-item">
+              <i class="fas fa-bolt"></i>
+              <div class="showcase-feature-title">Ultra Low-Latency</div>
+              <div class="showcase-feature-sub">&lt; 180ms HLS / WebRTC</div>
+            </div>
+            <div class="showcase-feature-item">
+              <i class="fas fa-shield-alt"></i>
+              <div class="showcase-feature-title">256-Bit TLS Security</div>
+              <div class="showcase-feature-sub">End-to-end encrypted</div>
+            </div>
+            <div class="showcase-feature-item">
+              <i class="fas fa-microchip"></i>
+              <div class="showcase-feature-title">Adaptive Stream</div>
+              <div class="showcase-feature-sub">Multi-grid 4 to 128 CH</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="showcase-footer">
+          <span><i class="fas fa-building mr-1"></i> PT. Loewix Indonesia Security Ops</span>
+          <span><i class="fas fa-check-circle text-info mr-1"></i> ISO 27001 Compliant</span>
+        </div>
       </div>
 
-      <form id="formGateLogin" onsubmit="submitGateLogin(event)">
-        <div class="login-input-group">
-          <label><i class="fas fa-envelope text-info mr-1"></i> Email Akun:</label>
-          <div class="login-input-wrapper">
-            <i class="fas fa-envelope input-icon"></i>
-            <input type="email" id="gate-login-email" placeholder="admin@loewixcctv.com" required autocomplete="email">
-          </div>
+      <!-- RIGHT: Refined Glassmorphic Authentication Panel -->
+      <div class="login-form-panel">
+        <div style="margin-bottom: 24px;">
+          <h2 style="font-size: 20px; font-weight: 800; color: #ffffff; margin-bottom: 6px; letter-spacing: -0.2px;">
+            Masuk ke Portal
+          </h2>
+          <p style="font-size: 13px; color: #94a3b8; margin-bottom: 0;">
+            Akses live video streams dan kontrol kamera Loewix Anda.
+          </p>
         </div>
 
-        <div class="login-input-group mb-3">
-          <label><i class="fas fa-key text-info mr-1"></i> Password:</label>
-          <div class="login-input-wrapper">
-            <i class="fas fa-lock input-icon"></i>
-            <input type="password" id="gate-login-password" placeholder="••••••••" required autocomplete="current-password">
-            <i class="fas fa-eye login-eye-btn" id="gate-toggle-pwd" onclick="toggleGatePasswordVisibility()" title="Tampilkan / Sembunyikan Password"></i>
-          </div>
+        <!-- Role Selector Switcher -->
+        <div class="form-role-tabs">
+          <button type="button" class="form-role-tab active" id="tab-role-superadmin" onclick="switchLoginRole('admin@loewixcctv.com', 'admin123', this)">
+            <i class="fas fa-user-shield"></i> <span>Super Admin</span>
+          </button>
+          <button type="button" class="form-role-tab" id="tab-role-customer" onclick="switchLoginRole('customer@jayasentosa.com', 'customer123', this)">
+            <i class="fas fa-building"></i> <span>Customer</span>
+          </button>
         </div>
 
-        <div class="p-3 rounded mb-4" style="background: rgba(56, 189, 248, 0.08); border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 12px;">
-          <div style="font-size: 11px; font-weight: 700; color: #38bdf8; margin-bottom: 8px; display: flex; align-items: center; gap: 5px;">
-            <i class="fas fa-bolt"></i> AKUN AKSES DEMO:
+        <form id="formGateLogin" onsubmit="submitGateLogin(event)">
+          <div class="form-group-custom">
+            <div class="form-label-custom">
+              <span><i class="fas fa-envelope text-info mr-1"></i> Email Akun</span>
+              <span style="font-size: 10.5px; color: #64748b;">Enterprise ID</span>
+            </div>
+            <div class="form-input-container">
+              <input type="email" id="gate-login-email" class="form-input-field" placeholder="name@enterprise.com" value="admin@loewixcctv.com" required autocomplete="email">
+              <i class="fas fa-at form-input-icon"></i>
+            </div>
           </div>
-          <div style="display: flex; flex-direction: column; gap: 6px;">
-            <button type="button" class="quick-demo-btn" onclick="fillGateDemo('admin@loewixcctv.com', 'admin123')">
-              <span>🛡️ <strong>Super Admin</strong></span>
-              <span style="opacity: 0.8; font-size: 10px;">admin@loewixcctv.com</span>
-            </button>
-            <button type="button" class="quick-demo-btn" onclick="fillGateDemo('customer@jayasentosa.com', 'customer123')">
-              <span>🏢 <strong>Customer</strong></span>
-              <span style="opacity: 0.8; font-size: 10px;">customer@jayasentosa.com</span>
-            </button>
+
+          <div class="form-group-custom">
+            <div class="form-label-custom">
+              <span><i class="fas fa-lock text-info mr-1"></i> Kata Sandi</span>
+              <span style="font-size: 10.5px; color: #38bdf8; cursor: pointer;" onclick="alert('Silakan hubungi administrator IT atau Loewix Customer Support di support@loewixcctv.com untuk reset password.')">Lupa sandi?</span>
+            </div>
+            <div class="form-input-container">
+              <input type="password" id="gate-login-password" class="form-input-field" placeholder="••••••••" value="admin123" required autocomplete="current-password">
+              <i class="fas fa-key form-input-icon"></i>
+              <i class="fas fa-eye btn-password-toggle" id="gate-toggle-pwd" onclick="toggleGatePasswordVisibility()" title="Lihat / Sembunyikan Password"></i>
+            </div>
           </div>
-        </div>
 
-        <button type="submit" id="btn-gate-submit" class="login-btn-submit">
-          <i class="fas fa-sign-in-alt"></i> MASUK KE SISTEM
-        </button>
+          <!-- Quick Demo Access Pills -->
+          <div style="margin-bottom: 18px;">
+            <div style="font-size: 11px; font-weight: 700; color: #94a3b8; margin-bottom: 8px; display: flex; align-items: center; gap: 5px;">
+              <i class="fas fa-bolt text-warning"></i> PILIH AKUN DEMO INSTAN:
+            </div>
+            <div class="demo-accounts-pill-container">
+              <div class="demo-account-pill active-pill" id="pill-admin" onclick="switchLoginRole('admin@loewixcctv.com', 'admin123', document.getElementById('tab-role-superadmin'))">
+                <div class="demo-pill-avatar" style="background: rgba(234, 179, 8, 0.15); color: #eab308;">
+                  <i class="fas fa-shield-alt"></i>
+                </div>
+                <div>
+                  <div class="demo-pill-role">Super Admin</div>
+                  <div class="demo-pill-email">admin@loewixcctv.com</div>
+                </div>
+              </div>
+              <div class="demo-account-pill" id="pill-customer" onclick="switchLoginRole('customer@jayasentosa.com', 'customer123', document.getElementById('tab-role-customer'))">
+                <div class="demo-pill-avatar" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8;">
+                  <i class="fas fa-building"></i>
+                </div>
+                <div>
+                  <div class="demo-pill-role">PT. Jaya Sentosa</div>
+                  <div class="demo-pill-email">customer@jayasentosa.com</div>
+                </div>
+              </div>
+            </div>
+          </div>
 
-        <div class="text-center mt-3" style="font-size: 11px; color: #64748b; display: flex; align-items: center; justify-content: center; gap: 6px;">
-          <i class="fas fa-shield-alt text-success"></i> 256-Bit Encrypted Secure Live Stream
-        </div>
-      </form>
+          <button type="submit" id="btn-gate-submit" class="btn-gate-submit-main">
+            <i class="fas fa-sign-in-alt"></i> <span>MASUK KE SISTEM MONITORING</span>
+          </button>
+
+          <div class="form-footer-meta">
+            <span><i class="fas fa-shield-check text-success mr-1"></i> TLS 1.3 High Encryption</span>
+            <span><i class="fas fa-server text-info mr-1"></i> Gateway ID: ID-JKT-01</span>
+          </div>
+        </form>
+      </div>
     </div>
   </div>
 
@@ -12755,10 +13198,33 @@
       $('#modalQuotaExceeded').modal('show');
     }
 
+    function switchLoginRole(email, pwd, tabElem) {
+      const emailInput = document.getElementById('gate-login-email');
+      const pwdInput = document.getElementById('gate-login-password');
+      if (emailInput) emailInput.value = email;
+      if (pwdInput) pwdInput.value = pwd;
+
+      // Update tabs UI
+      document.querySelectorAll('.form-role-tab').forEach(t => t.classList.remove('active'));
+      if (tabElem) tabElem.classList.add('active');
+
+      // Update pills UI
+      const pillAdmin = document.getElementById('pill-admin');
+      const pillCustomer = document.getElementById('pill-customer');
+      if (email.includes('admin')) {
+        if (pillAdmin) pillAdmin.classList.add('active-pill');
+        if (pillCustomer) pillCustomer.classList.remove('active-pill');
+      } else {
+        if (pillCustomer) pillCustomer.classList.add('active-pill');
+        if (pillAdmin) pillAdmin.classList.remove('active-pill');
+      }
+    }
+
     window.openLoginModal = openLoginModal;
     window.submitLogin = submitLogin;
     window.submitGateLogin = submitGateLogin;
     window.fillGateDemo = fillGateDemo;
+    window.switchLoginRole = switchLoginRole;
     window.toggleGatePasswordVisibility = toggleGatePasswordVisibility;
     window.showLoginGateView = showLoginGateView;
     window.showDashboardView = showDashboardView;
