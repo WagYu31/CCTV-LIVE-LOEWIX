@@ -7700,7 +7700,7 @@
           const video = document.createElement('video');
           video.id = playerId;
           video.className = 'hls-video-player';
-          video.controls = true;
+          video.controls = false;
           video.autoplay = true;
           video.muted = true;
           video.playsInline = true;
@@ -7708,7 +7708,7 @@
           video.setAttribute('playsinline', 'true');
           video.setAttribute('webkit-playsinline', 'true');
           video.setAttribute('x-webkit-airplay', 'allow');
-          video.setAttribute('preload', 'auto'); // CHANGED to 'auto' for instant playback
+          video.setAttribute('preload', 'auto');
           video.setAttribute('autoplay', '');
           video.setAttribute('muted', '');
           video.muted = true; // Force muted for autoplay
@@ -7727,7 +7727,7 @@
           const video = document.createElement('video');
           video.id = playerId;
           video.className = player.className || 'hls-video-player';
-          video.controls = true;
+          video.controls = false;
           video.autoplay = true;
           video.muted = true;
           video.playsInline = true;
@@ -7735,7 +7735,7 @@
           video.setAttribute('playsinline', 'true');
           video.setAttribute('webkit-playsinline', 'true');
           video.setAttribute('x-webkit-airplay', 'allow');
-          video.setAttribute('preload', 'auto'); // CHANGED to 'auto' for instant playback
+          video.setAttribute('preload', 'auto');
           video.setAttribute('autoplay', '');
           video.setAttribute('muted', '');
           video.muted = true; // Force muted for autoplay
@@ -7749,6 +7749,7 @@
 
         // Ensure video element has all cross-platform attributes
         if (videoPlayer && videoPlayer.tagName === 'VIDEO') {
+          videoPlayer.controls = false;
           if (!videoPlayer.hasAttribute('playsinline')) {
             videoPlayer.setAttribute('playsinline', 'true');
           }
@@ -7758,7 +7759,6 @@
           if (!videoPlayer.hasAttribute('x-webkit-airplay')) {
             videoPlayer.setAttribute('x-webkit-airplay', 'allow');
           }
-          // CHANGED to 'auto' for instant playback - preload video immediately
           if (!videoPlayer.hasAttribute('preload') || videoPlayer.getAttribute('preload') === 'metadata') {
             videoPlayer.setAttribute('preload', 'auto');
           }
@@ -7773,16 +7773,16 @@
               // ===== ANTI-BUFFERING & ULTRA-STABLE STREAM CONFIGURATION =====
               const hls = new Hls({
                 enableWorker: true,
-                lowLatencyMode: true,
-                liveSyncDurationCount: 3,        // Maintain healthy 3-segment cushion to prevent buffer starvation
-                liveMaxLatencyDurationCount: 7,  // Keep real-time sync without falling too far behind
-                maxBufferLength: 4,              // Target 4s forward buffer
-                maxMaxBufferLength: 8,           // Max 8s forward buffer per camera
-                maxBufferSize: 8 * 1024 * 1024,  // 8MB RAM per stream to prevent memory exhaustion in multi-grid
-                backBufferLength: 0,             // Immediately purge played frames from RAM
-                maxFragLoadingTimeMs: 15000,     // 15s timeout for P2P segments before retrying
+                lowLatencyMode: false,
+                liveSyncDurationCount: 3,
+                liveMaxLatencyDurationCount: 8,
+                maxBufferLength: 4,
+                maxMaxBufferLength: 8,
+                maxBufferSize: 4 * 1024 * 1024,
+                backBufferLength: 0,
+                maxFragLoadingTimeMs: 20000,
                 maxLoadingDelay: 0,
-                manifestLoadingTimeOut: 12000,
+                manifestLoadingTimeOut: 15000,
                 manifestLoadingMaxRetry: 10,
                 manifestLoadingRetryDelay: 1000,
                 levelLoadingMaxRetry: 6,
@@ -7793,7 +7793,7 @@
                 abrBandWidthFactor: 0.8,
                 abrBandWidthUpFactor: 0.5,
                 enableSoftwareAES: false,
-                maxBufferHole: 0.5,              // Seamlessly jump across micro PTS/DTS encoder gaps
+                maxBufferHole: 0.5,
                 highBufferWatchdogPeriod: 2,
                 nudgeOffset: 0.1,
                 nudgeMaxRetry: 5,
@@ -9737,7 +9737,7 @@
           if (typeof playMediaMTXCCTV === 'function' && thumb) {
             playMediaMTXCCTV(thumb, playerId, thumb.id);
           }
-        }, index * 200);
+        }, index * 350);
       });
     }
 
