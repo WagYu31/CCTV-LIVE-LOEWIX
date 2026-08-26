@@ -202,10 +202,11 @@ function getJFTechLiveStreamUrl($sn, $channel = 1, $protocol = 'hls-fmp4', $stre
     if (empty($cleanSN)) return null;
 
     $channelIdx = max(0, (int)$channel - 1);
-    $streamIdx = ($streamType === 'main' || $streamType === '0') ? '0' : '1';
+    // Always force sub-stream ("1") for web grid playback to guarantee universal H.264 decoding
+    $streamIdx = '1';
 
     // Check fast local file cache first (instant 0.01ms response)
-    $cacheKey = md5("{$cleanSN}_{$channelIdx}_{$streamIdx}");
+    $cacheKey = md5("{$cleanSN}_{$channelIdx}_v3");
     $cacheFile = sys_get_temp_dir() . "/jf_stream_{$cacheKey}.json";
 
     if (!$forceRefresh && file_exists($cacheFile)) {

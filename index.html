@@ -7855,23 +7855,57 @@
                 }
               });
 
+              let netErrorCount = 0;
+              let mediaErrorCount = 0;
+
               hls.on(Hls.Events.ERROR, function(event, data) {
                 console.warn('[Stream] HLS Event Error:', data.type, data.details, 'Fatal:', data.fatal);
                 if (data.fatal) {
                   switch(data.type) {
                     case Hls.ErrorTypes.NETWORK_ERROR:
-                      console.log('[Stream] Fatal network error encountered, trying to recover...');
-                      setTimeout(() => hls.startLoad(), 1000);
+                      netErrorCount++;
+                      if (netErrorCount <= 3) {
+                        console.log('[Stream] Recovering network error (attempt ' + netErrorCount + ')...');
+                        setTimeout(() => hls.startLoad(), 1500);
+                      } else {
+                        console.error('[Stream] Network error exceeded retry limit.');
+                        hls.destroy();
+                        if (bufferingOverlay) bufferingOverlay.style.display = 'none';
+                        if (thumb) {
+                          thumb.style.display = 'flex';
+                          thumb.style.opacity = '1';
+                          const loadingText = thumb.querySelector('.loading-text');
+                          if (loadingText) loadingText.innerHTML = '<i class="fas fa-play-circle"></i> Klik untuk memutar';
+                        }
+                      }
                       break;
                     case Hls.ErrorTypes.MEDIA_ERROR:
-                      console.log('[Stream] Fatal media error encountered, trying to recover...');
-                      hls.recoverMediaError();
+                      mediaErrorCount++;
+                      if (mediaErrorCount <= 2) {
+                        console.log('[Stream] Recovering media error (attempt ' + mediaErrorCount + ')...');
+                        hls.recoverMediaError();
+                      } else {
+                        console.error('[Stream] Media error unrecoverable.');
+                        hls.destroy();
+                        if (bufferingOverlay) bufferingOverlay.style.display = 'none';
+                        if (thumb) {
+                          thumb.style.display = 'flex';
+                          thumb.style.opacity = '1';
+                          const loadingText = thumb.querySelector('.loading-text');
+                          if (loadingText) loadingText.innerHTML = '<i class="fas fa-play-circle"></i> Klik untuk memutar';
+                        }
+                      }
                       break;
                     default:
                       console.error('[Stream] Fatal unrecoverable error:', data.details);
                       hls.destroy();
                       if (bufferingOverlay) bufferingOverlay.style.display = 'none';
-                      showOfflineMessage(playerId, thumbId);
+                      if (thumb) {
+                        thumb.style.display = 'flex';
+                        thumb.style.opacity = '1';
+                        const loadingText = thumb.querySelector('.loading-text');
+                        if (loadingText) loadingText.innerHTML = '<i class="fas fa-play-circle"></i> Klik untuk memutar';
+                      }
                       break;
                   }
                 }
