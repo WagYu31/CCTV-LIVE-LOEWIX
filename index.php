@@ -3525,16 +3525,14 @@
   <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/hls.js@1.5.17/dist/hls.min.js" crossorigin>
 
   <!-- Load HLS.js with specific version for stability and performance -->
-  <!-- Version 1.5.17 = Latest stable with excellent performance -->
   <script
-    src="https://cdn.jsdelivr.net/npm/hls.js@1.5.17/dist/hls.min.js"
-    crossorigin="anonymous"
-    defer>
+    src="https://cdn.jsdelivr.net/npm/hls.js@1.5.20/dist/hls.min.js"
+    crossorigin="anonymous">
   </script>
 
   <!-- Fallback to older version if latest fails -->
   <script>
-    window.Hls || document.write('<script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.0/dist/hls.min.js"><\/script>');
+    window.Hls || document.write('<script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.17/dist/hls.min.js"><\/script>');
   </script>
   <!-- ===== END OPTIMIZED HLS.js LOADING ===== -->
 </head>
@@ -7792,12 +7790,12 @@
                 abrEwmaDefaultEstimate: 1000000,
                 abrBandWidthFactor: 0.8,
                 abrBandWidthUpFactor: 0.5,
-                enableSoftwareAES: false,
+                enableSoftwareAES: true,
                 maxBufferHole: 0.5,
                 highBufferWatchdogPeriod: 2,
                 nudgeOffset: 0.1,
                 nudgeMaxRetry: 5,
-                progressive: true,
+                progressive: false,
                 xhrSetup: function(xhr, url) {
                   try {
                     xhr.setRequestHeader('Bypass-Tunnel-Reminder', 'true');
