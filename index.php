@@ -4060,36 +4060,35 @@
       max-width: 560px;
     }
 
-    /* ===== 3D HOLOGRAPHIC SURVEILLANCE SHOWCASE CONTAINER ===== */
-    .stage-3d-hero-container {
+    /* ===== CINEMATIC ENTERPRISE HARDWARE SHOWCASE ===== */
+    .stage-hardware-hero {
       position: relative;
       width: 100%;
       min-height: 168px;
-      background: radial-gradient(circle at 35% 50%, rgba(14, 38, 88, 0.78) 0%, rgba(4, 10, 24, 0.88) 100%);
-      border: 1px solid rgba(56, 189, 248, 0.3);
+      background: linear-gradient(135deg, rgba(14, 35, 80, 0.75) 0%, rgba(5, 13, 30, 0.88) 100%);
+      border: 1px solid rgba(56, 189, 248, 0.24);
       border-radius: 20px;
       margin-bottom: 20px;
-      padding: 14px 22px;
+      padding: 16px 22px;
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      gap: 22px;
       overflow: hidden;
-      box-shadow: 0 20px 45px rgba(0, 0, 0, 0.6), inset 0 0 35px rgba(0, 210, 255, 0.08);
+      box-shadow: 0 20px 45px rgba(0, 0, 0, 0.55), inset 0 0 35px rgba(0, 210, 255, 0.06);
       perspective: 800px;
       transform-style: preserve-3d;
-      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
-    .stage-3d-hero-container:hover {
-      border-color: rgba(56, 189, 248, 0.6);
-      box-shadow: 0 25px 60px -10px rgba(0, 210, 255, 0.28), inset 0 0 45px rgba(0, 210, 255, 0.14);
+    .stage-hardware-hero:hover {
+      border-color: rgba(56, 189, 248, 0.55);
+      box-shadow: 0 25px 55px -10px rgba(0, 210, 255, 0.25), inset 0 0 45px rgba(0, 210, 255, 0.12);
     }
 
-    /* 3D Holographic Floating CCTV Fleet Viewport */
-    .cctv-3d-viewport {
+    .hardware-stage-visual {
       position: relative;
-      width: 180px;
-      height: 145px;
+      width: 200px;
+      height: 155px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -4097,89 +4096,117 @@
       transform-style: preserve-3d;
     }
 
-    .cctv-3d-img {
+    .hardware-pedestal-platform {
+      position: absolute;
+      bottom: 6px;
       width: 175px;
-      height: 135px;
+      height: 38px;
+      border-radius: 50%;
+      background: radial-gradient(ellipse at center, rgba(0, 210, 255, 0.5) 0%, rgba(2, 132, 199, 0.15) 55%, transparent 75%);
+      box-shadow: 0 0 30px rgba(0, 210, 255, 0.55);
+      border: 1px solid rgba(0, 210, 255, 0.3);
+      pointer-events: none;
+    }
+
+    .hardware-camera-img {
+      width: 195px;
+      height: 145px;
       object-fit: contain;
-      filter: drop-shadow(0 12px 24px rgba(0, 210, 255, 0.55));
-      animation: floatLevitate 5s ease-in-out infinite;
+      position: relative;
+      z-index: 2;
+      filter: drop-shadow(0 14px 28px rgba(0, 210, 255, 0.5));
+      animation: floatHardwareLevitate 5s ease-in-out infinite;
       transition: transform 0.2s ease-out;
       transform-style: preserve-3d;
     }
 
-    @keyframes floatLevitate {
+    @keyframes floatHardwareLevitate {
       0%, 100% { transform: translateY(0) scale(1); }
       50% { transform: translateY(-7px) scale(1.02); }
     }
 
-    .hologram-hud-reticle {
-      position: absolute;
-      width: 155px;
-      height: 155px;
-      border: 1px dashed rgba(56, 189, 248, 0.35);
-      border-radius: 50%;
-      pointer-events: none;
-      animation: rotateHud 20s linear infinite;
-    }
-
-    @keyframes rotateHud {
-      from { transform: rotate(0deg); }
-      to { transform: rotate(360deg); }
-    }
-
-    .cctv-3d-info-side {
+    .hardware-stage-content {
       flex: 1;
-      padding-left: 20px;
       display: flex;
       flex-direction: column;
       justify-content: center;
       z-index: 5;
     }
 
-    .cctv-3d-headline {
+    .hardware-badge-row {
       display: flex;
       align-items: center;
       gap: 8px;
-      font-size: 13.5px;
-      font-weight: 800;
-      color: #ffffff;
       margin-bottom: 6px;
+      flex-wrap: wrap;
     }
 
-    .cctv-3d-badge-pulse {
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      padding: 3px 8px;
-      background: rgba(0, 210, 255, 0.15);
-      border: 1px solid rgba(0, 210, 255, 0.35);
-      border-radius: 6px;
-      font-size: 9.5px;
+    .hardware-badge-main {
+      font-size: 10px;
       font-weight: 800;
-      color: #38bdf8;
       letter-spacing: 0.8px;
+      color: #38bdf8;
+      background: rgba(56, 189, 248, 0.12);
+      border: 1px solid rgba(56, 189, 248, 0.28);
+      padding: 3px 8px;
+      border-radius: 6px;
       text-transform: uppercase;
     }
 
-    .cctv-3d-sub {
+    .hardware-badge-ai {
+      font-size: 10px;
+      font-weight: 800;
+      color: #34d399;
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      padding: 3px 8px;
+      border-radius: 6px;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .hardware-badge-ai .pulse-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #10b981;
+      box-shadow: 0 0 8px #10b981;
+      animation: pulseStageDot 1.4s infinite;
+    }
+
+    .hardware-title {
+      font-size: 14.5px;
+      font-weight: 800;
+      color: #ffffff;
+      margin-bottom: 4px;
+      letter-spacing: -0.2px;
+    }
+
+    .hardware-desc {
       font-size: 11.5px;
       color: #94a3b8;
-      line-height: 1.45;
-      margin-bottom: 8px;
+      line-height: 1.5;
+      margin-bottom: 10px;
     }
 
-    .cctv-3d-telemetry-row {
+    .hardware-specs-pills {
       display: flex;
-      gap: 12px;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .spec-pill {
       font-size: 10.5px;
+      font-weight: 700;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 3px 9px;
+      border-radius: 6px;
       color: #cbd5e1;
-      font-family: monospace;
-    }
-
-    .cctv-3d-telemetry-row span {
-      display: flex;
+      display: inline-flex;
       align-items: center;
-      gap: 4px;
+      gap: 5px;
     }
 
     /* 4 Enterprise Capabilities Bento Grid (Taste-Skill 3D Tilt) */
@@ -4616,24 +4643,25 @@
           Akses jaringan live streaming CCTV multi-saluran dengan enkripsi 256-bit tingkat enterprise, transmisi ultra low-latency H.265/WebRTC, dan manajemen hak akses terpusat.
         </p>
 
-        <!-- 3D Holographic AI Camera Centerpiece -->
-        <div class="stage-3d-hero-container" id="stage3dHeroBox">
-          <div class="cctv-3d-viewport">
-            <div class="hologram-hud-reticle"></div>
-            <img src="assets/image/loewix_hero_cctv_camera.png" alt="Loewix Enterprise CCTV Hardware Fleet" class="cctv-3d-img" id="cctv3dModelImg">
+        <!-- 3D Cinematic Hardware Showcase -->
+        <div class="stage-hardware-hero" id="stage3dHeroBox">
+          <div class="hardware-stage-visual">
+            <div class="hardware-pedestal-platform"></div>
+            <img src="assets/image/loewix_hero_cctv_camera.png" alt="Loewix Enterprise CCTV Hardware Fleet" class="hardware-camera-img" id="cctv3dModelImg">
           </div>
-          <div class="cctv-3d-info-side">
-            <div class="cctv-3d-headline">
-              <span>LOEWIX ENTERPRISE CCTV FLEET</span>
-              <span class="cctv-3d-badge-pulse"><i class="fas fa-satellite-dish mr-1"></i> SMART AI</span>
+          <div class="hardware-stage-content">
+            <div class="hardware-badge-row">
+              <span class="hardware-badge-main"><i class="fas fa-shield-alt mr-1"></i> HARDWARE FLEET</span>
+              <span class="hardware-badge-ai"><span class="pulse-dot"></span> SMART AI 4K</span>
             </div>
-            <p class="cctv-3d-sub">
-              Ekosistem kamera pengawasan cerdas Loewix dengan sensor optik Sony STARVIS™, resolusi 4K Ultra HD, dan sertifikasi anti-cuaca IP67.
+            <div class="hardware-title">Ekosistem Pengawasan Presisi Loewix</div>
+            <p class="hardware-desc">
+              Sensor optik Sony STARVIS™ Ultra HD, Starlight Color Night Vision, dan housing aluminium IP67 anti-cuaca.
             </p>
-            <div class="cctv-3d-telemetry-row">
-              <span><i class="fas fa-bolt text-warning"></i> 4K UHD</span>
-              <span><i class="fas fa-shield-alt text-info"></i> IP67 Weatherproof</span>
-              <span><i class="fas fa-eye text-success"></i> Night Color</span>
+            <div class="hardware-specs-pills">
+              <span class="spec-pill"><i class="fas fa-bolt text-warning"></i> 4K UHD</span>
+              <span class="spec-pill"><i class="fas fa-shield-alt text-info"></i> IP67 Weatherproof</span>
+              <span class="spec-pill"><i class="fas fa-eye text-success"></i> Night Vision</span>
             </div>
           </div>
         </div>
