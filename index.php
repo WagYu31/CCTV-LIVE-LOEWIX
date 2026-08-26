@@ -7934,13 +7934,28 @@
               .then(data => {
                 if (data.success && data.hls_url) {
                   element.setAttribute('data-hls-url', data.hls_url);
+                  element.setAttribute('data-stream-path', data.hls_url);
                   mountHLS(data.hls_url);
                 } else {
-                  mountHLS(`${STREAM_BASE}/${streamPath}/index.m3u8`);
+                  console.warn('[Stream] Retrying connection automatically for camera:', playerId);
+                  setTimeout(() => {
+                    const retries = parseInt(element.getAttribute('data-auto-retry') || '0');
+                    if (retries < 3) {
+                      element.setAttribute('data-auto-retry', String(retries + 1));
+                      playMediaMTXCCTV(element, playerId, thumbId);
+                    }
+                  }, 1500);
                 }
               })
               .catch(() => {
-                mountHLS(`${STREAM_BASE}/${streamPath}/index.m3u8`);
+                console.warn('[Stream] Retrying connection automatically on network fail:', playerId);
+                setTimeout(() => {
+                  const retries = parseInt(element.getAttribute('data-auto-retry') || '0');
+                  if (retries < 3) {
+                    element.setAttribute('data-auto-retry', String(retries + 1));
+                    playMediaMTXCCTV(element, playerId, thumbId);
+                  }
+                }, 1500);
               });
           } else if (streamPath.startsWith('http://') || streamPath.startsWith('https://')) {
             mountHLS(streamPath);

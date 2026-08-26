@@ -205,7 +205,7 @@ function getJFTechLiveStreamUrl($sn, $channel = 1, $protocol = 'hls-ts', $stream
     $streamIdx = ($streamType === 'main' || $streamType === '0') ? '0' : '1';
 
     // Check fast local file cache first (instant 0.01ms response)
-    $cacheKey = md5("{$cleanSN}_{$channelIdx}_{$streamIdx}_{$protocol}");
+    $cacheKey = md5("{$cleanSN}_{$channelIdx}_{$streamIdx}");
     $cacheFile = sys_get_temp_dir() . "/jf_stream_{$cacheKey}.json";
 
     if (!$forceRefresh && file_exists($cacheFile)) {
@@ -270,7 +270,7 @@ if ($action === 'get_live_stream') {
     $streamType = trim($_POST['stream'] ?? $_GET['stream'] ?? 'sub');
     $deviceUser = trim($_POST['device_user'] ?? $_GET['device_user'] ?? 'admin');
     $devicePass = trim($_POST['device_pass'] ?? $_GET['device_pass'] ?? '');
-    $requestedProto = trim($_POST['protocol'] ?? $_GET['protocol'] ?? 'hls-fmp4');
+    $requestedProto = trim($_POST['protocol'] ?? $_GET['protocol'] ?? 'hls-ts');
     $force = !empty($_POST['force'] ?? $_GET['force'] ?? false);
 
     if (empty($sn)) {
