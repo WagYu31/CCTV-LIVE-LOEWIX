@@ -7919,7 +7919,30 @@
             }
           }
 
-          if (streamPath.startsWith('http://') || streamPath.startsWith('https://')) {
+          const directHls = element.getAttribute('data-hls-url') || (streamPath.startsWith('http') ? streamPath : '');
+          const connType = element.getAttribute('data-connection-type') || '';
+          const sn = element.getAttribute('data-serial-number') || '';
+          const ch = element.getAttribute('data-channel') || 1;
+
+          if (directHls && (directHls.startsWith('http://') || directHls.startsWith('https://'))) {
+            // Direct ultra-fast mount (0 delay, like Yamaha DDS)
+            mountHLS(directHls);
+          } else if (connType === 'xmeye_p2p' || streamPath.startsWith('xmeye_')) {
+            const cleanSn = sn || (streamPath.match(/^xmeye_([a-fA-F0-9]+)/) ? streamPath.match(/^xmeye_([a-fA-F0-9]+)/)[1] : '');
+            fetch(`api/jftech_gateway.php?action=get_live_stream&sn=${encodeURIComponent(cleanSn)}&channel=${encodeURIComponent(ch)}`)
+              .then(r => r.json())
+              .then(data => {
+                if (data.success && data.hls_url) {
+                  element.setAttribute('data-hls-url', data.hls_url);
+                  mountHLS(data.hls_url);
+                } else {
+                  mountHLS(`${STREAM_BASE}/${streamPath}/index.m3u8`);
+                }
+              })
+              .catch(() => {
+                mountHLS(`${STREAM_BASE}/${streamPath}/index.m3u8`);
+              });
+          } else if (streamPath.startsWith('http://') || streamPath.startsWith('https://')) {
             mountHLS(streamPath);
           } else if (streamPath.startsWith('rtsp://')) {
             console.warn('[MediaMTX] Direct RTSP URL detected:', streamPath);
@@ -7932,7 +7955,6 @@
             }
             return;
           } else {
-            // Direct ultra-fast low-latency stream from Loewix MediaMTX server
             mountHLS(`${STREAM_BASE}/${streamPath}/index.m3u8`);
           }
 
@@ -8574,6 +8596,22 @@
 
         if (streamPath.startsWith('http://') || streamPath.startsWith('https://')) {
           mountPopupHLS(streamPath);
+        } else if (streamPath.startsWith('xmeye_')) {
+          const match = streamPath.match(/^xmeye_([a-fA-F0-9]+)(?:_ch(\d+))?/i);
+          const sn = match ? match[1] : '';
+          const ch = match ? (match[2] || 1) : 1;
+          fetch(`api/jftech_gateway.php?action=get_live_stream&sn=${encodeURIComponent(sn)}&channel=${encodeURIComponent(ch)}`)
+            .then(r => r.json())
+            .then(data => {
+              if (data.success && data.hls_url) {
+                mountPopupHLS(data.hls_url);
+              } else {
+                mountPopupHLS(`${STREAM_BASE}/${streamPath}/index.m3u8`);
+              }
+            })
+            .catch(() => {
+              mountPopupHLS(`${STREAM_BASE}/${streamPath}/index.m3u8`);
+            });
         } else {
           mountPopupHLS(`${STREAM_BASE}/${streamPath}/index.m3u8`);
         }
@@ -9099,7 +9137,7 @@
                     <div>Memuat ulang...</div>
                   </div>
 
-                  <div class="thumbnail-overlay" id="thumb-${camera.id}" onclick="playMediaMTXCCTV(this, 'player-${camera.id}', 'thumb-${camera.id}')" data-stream-path="${camera.streamPath}" data-connection-type="${camera.connection_type || 'rtsp'}" data-serial-number="${camera.serial_number || ''}" data-channel="${camera.channel || 1}">
+                  <div class="thumbnail-overlay" id="thumb-${camera.id}" onclick="playMediaMTXCCTV(this, 'player-${camera.id}', 'thumb-${camera.id}')" data-stream-path="${camera.streamPath || camera.hls_url || ''}" data-hls-url="${camera.hls_url || ''}" data-connection-type="${camera.connection_type || 'rtsp'}" data-serial-number="${camera.serial_number || ''}" data-channel="${camera.channel || 1}">
                     <img src="${camera.thumbnail}?v=${Date.now()}" alt="Thumbnail CCTV ${camera.title}" loading="lazy" onerror="this.onerror=null;this.src='${ASSET_BASE}/image/thumbnail/default-thumbnail.png?v=' + Date.now()" />
                     <div class="loading-text">
                       <i class="fas fa-play-circle"></i> Klik untuk memuat video

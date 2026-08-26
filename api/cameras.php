@@ -68,10 +68,22 @@ if ($action === 'public_list' || $action === 'list') {
                 $cam['hls_url'] = str_replace('http://', 'https://', $cam['hls_url']);
             }
 
-            // Automatically attach real-time cached snapshot for XMeye cameras if available
+            // Automatically attach real-time cached snapshot and stream URL for XMeye cameras
             if (($cam['connection_type'] ?? '') === 'xmeye_p2p' && !empty($cam['serial_number'])) {
                 $sn = strtolower(preg_replace('/[^a-zA-Z0-9]/', '', $cam['serial_number']));
                 $ch = (int)($cam['channel'] ?? 1);
+                $chIdx = max(0, $ch - 1);
+
+                // Attach cached live stream HLS URL if available (zero-delay instant start)
+                $cacheKey = md5("{$sn}_{$chIdx}_1_hls-ts");
+                $streamCacheFile = sys_get_temp_dir() . "/jf_stream_{$cacheKey}.json";
+                if (file_exists($streamCacheFile)) {
+                    $cachedStream = json_decode(@file_get_contents($streamCacheFile), true);
+                    if ($cachedStream && !empty($cachedStream['url']) && ($cachedStream['expires_at'] ?? 0) > time()) {
+                        $cam['hls_url'] = $cachedStream['url'];
+                        $cam['streamPath'] = $cachedStream['url'];
+                    }
+                }
 
                 if (!array_key_exists($sn, $snSnapshotCache)) {
                     $cacheFile = sys_get_temp_dir() . '/jftech_snapshots_' . $sn . '.json';
