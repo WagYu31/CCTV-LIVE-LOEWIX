@@ -9702,19 +9702,6 @@
               <div class="traffic-card ${isDense ? 'layout-dense' : ''}" id="card-${camera.id}">
                 <!-- Pure 100% Unobstructed Video Stream Canvas -->
                 <div class="traffic-card-iframe">
-                  <!-- XMeye VMS Cell OSD Header -->
-                  <div class="vms-osd-topbar">
-                    <div class="vms-osd-left" title="${camera.title}">
-                      <i class="fas fa-video vms-osd-cam-icon"></i>
-                      <span class="vms-osd-title">${camera.title}</span>
-                    </div>
-                    <div class="vms-osd-right">
-                      <span class="vms-osd-badge">Auto</span>
-                      <button class="vms-osd-btn" onclick="event.stopPropagation(); focusCameraSingle(${camera.id})" title="Tampilan Penuh 1 Layar"><i class="fas fa-expand"></i></button>
-                      <button class="vms-osd-btn" onclick="event.stopPropagation(); ${reloadFunction}" title="Refresh Stream"><i class="fas fa-sync-alt"></i></button>
-                    </div>
-                  </div>
-
                   <div class="loading-indicator" id="loading-${camera.id}">
                     <i class="fas fa-spinner fa-spin fa-3x mb-2"></i>
                     <div>Memuat ulang...</div>
