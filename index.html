@@ -3902,6 +3902,181 @@
       box-shadow: 0 0 12px rgba(0, 210, 255, 0.3) !important;
     }
 
+    /* ===== FULLSCREEN LOEWIX ENTERPRISE LOGIN GATE ===== */
+    #loewix-login-gate {
+      min-height: 100vh;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(circle at 50% 20%, #0d1e48 0%, #060b1c 65%, #020612 100%);
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      overflow-y: auto;
+      padding: 24px;
+      z-index: 99999;
+    }
+
+    .login-grid-bg {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-image: 
+        linear-gradient(rgba(56, 189, 248, 0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(56, 189, 248, 0.05) 1px, transparent 1px);
+      background-size: 36px 36px;
+      pointer-events: none;
+    }
+
+    .login-glow-orb {
+      position: absolute;
+      width: 600px;
+      height: 600px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(0, 210, 255, 0.15) 0%, rgba(0, 102, 255, 0) 70%);
+      top: -150px;
+      left: 50%;
+      transform: translateX(-50%);
+      pointer-events: none;
+      filter: blur(50px);
+    }
+
+    .login-card-container {
+      position: relative;
+      z-index: 10;
+      width: 100%;
+      max-width: 440px;
+      background: rgba(13, 25, 54, 0.88);
+      backdrop-filter: blur(25px);
+      -webkit-backdrop-filter: blur(25px);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      border-radius: 24px;
+      padding: 36px 30px;
+      box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.8), 0 0 35px rgba(0, 210, 255, 0.15);
+      animation: loginCardFadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes loginCardFadeIn {
+      from { opacity: 0; transform: translateY(20px) scale(0.96); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .login-input-group {
+      position: relative;
+      margin-bottom: 18px;
+    }
+
+    .login-input-group label {
+      font-size: 12px;
+      color: #94a3b8;
+      font-weight: 600;
+      margin-bottom: 8px;
+      display: block;
+      letter-spacing: 0.3px;
+    }
+
+    .login-input-wrapper {
+      position: relative;
+      width: 100%;
+    }
+
+    .login-input-wrapper i.input-icon {
+      position: absolute;
+      left: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #38bdf8;
+      font-size: 14px;
+      pointer-events: none;
+      z-index: 5;
+    }
+
+    .login-input-wrapper input {
+      width: 100% !important;
+      height: 46px !important;
+      background: rgba(255, 255, 255, 0.07) !important;
+      border: 1px solid rgba(255, 255, 255, 0.18) !important;
+      border-radius: 12px !important;
+      color: #ffffff !important;
+      padding-left: 42px !important;
+      padding-right: 44px !important;
+      font-size: 14px !important;
+      transition: all 0.25s ease;
+      outline: none !important;
+      box-shadow: none !important;
+      display: block !important;
+    }
+
+    .login-input-wrapper input:focus {
+      background: rgba(255, 255, 255, 0.12) !important;
+      border-color: #00d2ff !important;
+      box-shadow: 0 0 15px rgba(0, 210, 255, 0.3) !important;
+    }
+
+    .login-eye-btn {
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #94a3b8;
+      cursor: pointer;
+      font-size: 14px;
+      padding: 6px;
+      z-index: 5;
+      transition: color 0.2s;
+    }
+    .login-eye-btn:hover { color: #00d2ff; }
+
+    .login-btn-submit {
+      width: 100%;
+      height: 46px;
+      background: linear-gradient(135deg, #00d2ff 0%, #0066ff 100%);
+      border: none;
+      border-radius: 12px;
+      color: #ffffff;
+      font-weight: 800;
+      font-size: 13.5px;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      box-shadow: 0 8px 25px rgba(0, 102, 255, 0.45);
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      outline: none;
+    }
+    .login-btn-submit:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 30px rgba(0, 102, 255, 0.6);
+      color: #ffffff;
+    }
+    .login-btn-submit:active { transform: translateY(0); }
+
+    .quick-demo-btn {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 8px;
+      padding: 7px 12px;
+      color: #94a3b8;
+      font-size: 11px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-align: left;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .quick-demo-btn:hover {
+      background: rgba(56, 189, 248, 0.15);
+      border-color: rgba(56, 189, 248, 0.4);
+      color: #38bdf8;
+    }
+
     /* ===== END VIDEO RENDERING OPTIMIZATION ===== */
   </style>
 
@@ -3952,6 +4127,65 @@
   <!-- Facebook Pixel (noscript) -->
   <noscript><img height="1" width="1" style="display:none"
       src="https://www.facebook.com/tr?id=1234567890123456&ev=PageView&noscript=1" /></noscript>
+
+  <!-- ===== FULLSCREEN LOEWIX ENTERPRISE LOGIN GATE ===== -->
+  <div id="loewix-login-gate" style="display: flex;">
+    <div class="login-grid-bg"></div>
+    <div class="login-glow-orb"></div>
+    <div class="login-card-container">
+      <div class="text-center mb-4">
+        <img src="assets/image/logo-loewix-white.png" alt="Loewix CCTV" style="height: 44px; max-width: 170px; object-fit: contain; margin-bottom: 12px; filter: drop-shadow(0 4px 15px rgba(0,210,255,0.4));">
+        <h2 style="color: #ffffff; font-weight: 800; font-size: 19px; letter-spacing: 0.5px; margin-bottom: 6px;">LOEWIX ENTERPRISE</h2>
+        <p style="color: #94a3b8; font-size: 13px; line-height: 1.5; margin-bottom: 0;">Silakan login untuk mengakses live surveillance grid CCTV</p>
+      </div>
+
+      <form id="formGateLogin" onsubmit="submitGateLogin(event)">
+        <div class="login-input-group">
+          <label><i class="fas fa-envelope text-info mr-1"></i> Email Akun:</label>
+          <div class="login-input-wrapper">
+            <i class="fas fa-envelope input-icon"></i>
+            <input type="email" id="gate-login-email" placeholder="admin@loewixcctv.com" required autocomplete="email">
+          </div>
+        </div>
+
+        <div class="login-input-group mb-3">
+          <label><i class="fas fa-key text-info mr-1"></i> Password:</label>
+          <div class="login-input-wrapper">
+            <i class="fas fa-lock input-icon"></i>
+            <input type="password" id="gate-login-password" placeholder="••••••••" required autocomplete="current-password">
+            <i class="fas fa-eye login-eye-btn" id="gate-toggle-pwd" onclick="toggleGatePasswordVisibility()" title="Tampilkan / Sembunyikan Password"></i>
+          </div>
+        </div>
+
+        <div class="p-3 rounded mb-4" style="background: rgba(56, 189, 248, 0.08); border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 12px;">
+          <div style="font-size: 11px; font-weight: 700; color: #38bdf8; margin-bottom: 8px; display: flex; align-items: center; gap: 5px;">
+            <i class="fas fa-bolt"></i> AKUN AKSES DEMO:
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 6px;">
+            <button type="button" class="quick-demo-btn" onclick="fillGateDemo('admin@loewixcctv.com', 'admin123')">
+              <span>🛡️ <strong>Super Admin</strong></span>
+              <span style="opacity: 0.8; font-size: 10px;">admin@loewixcctv.com</span>
+            </button>
+            <button type="button" class="quick-demo-btn" onclick="fillGateDemo('customer@jayasentosa.com', 'customer123')">
+              <span>🏢 <strong>Customer</strong></span>
+              <span style="opacity: 0.8; font-size: 10px;">customer@jayasentosa.com</span>
+            </button>
+          </div>
+        </div>
+
+        <button type="submit" id="btn-gate-submit" class="login-btn-submit">
+          <i class="fas fa-sign-in-alt"></i> MASUK KE SISTEM
+        </button>
+
+        <div class="text-center mt-3" style="font-size: 11px; color: #64748b; display: flex; align-items: center; justify-content: center; gap: 6px;">
+          <i class="fas fa-shield-alt text-success"></i> 256-Bit Encrypted Secure Live Stream
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===== MAIN DASHBOARD APPLICATION WRAPPER ===== -->
+  <div id="main-app-content" style="display: none;">
 
   <!-- Floating Taste-Skill Glassmorphism Header Bar -->
   <div class="header-floating-wrapper" style="position: fixed; top: 15px; left: 0; right: 0; z-index: 1040; pointer-events: none;">
@@ -12163,8 +12397,10 @@
         }
       });
 
-      // Show welcome modal
-      showWelcomeModal();
+      // Show welcome modal only if logged in
+      if (currentUser || localStorage.getItem('loewix_user')) {
+        showWelcomeModal();
+      }
 
       // Close on ESC key
       document.addEventListener('keydown', function(e) {
@@ -12282,17 +12518,28 @@
     </div>
   </div>
 
+  </div> <!-- ===== END MAIN DASHBOARD APPLICATION WRAPPER ===== -->
+
   <script>
     // Authentication & Quota Engine JavaScript Handlers
     document.addEventListener('DOMContentLoaded', () => {
-      checkUserSession();
+      checkInitialAuthState();
     });
 
-    function checkUserSession() {
-      if (currentUser) {
-        renderUserSessionUI(currentUser);
+    function checkInitialAuthState() {
+      // 1. Instant check from localStorage
+      const stored = localStorage.getItem('loewix_user');
+      if (stored) {
+        try {
+          const user = JSON.parse(stored);
+          if (user && user.id) {
+            currentUser = user;
+            showDashboardView(user);
+          }
+        } catch(e) {}
       }
 
+      // 2. Authoritative check from server session
       fetch('api/auth.php?action=check_session')
         .then(res => res.json())
         .then(data => {
@@ -12300,36 +12547,132 @@
           if (data.logged_in && data.user) {
             currentUser = data.user;
             localStorage.setItem('loewix_user', JSON.stringify(data.user));
-            renderUserSessionUI(currentUser);
-            syncCustomLocalStorageCameras();
+            showDashboardView(data.user);
           } else {
-            checkLocalStorageSession();
+            if (!currentUser) {
+              showLoginGateView();
+            }
           }
         })
         .catch(err => {
           authCheckComplete = true;
-          checkLocalStorageSession();
+          if (!currentUser) {
+            showLoginGateView();
+          }
         });
     }
 
-    function checkLocalStorageSession() {
-      authCheckComplete = true;
-      const stored = localStorage.getItem('loewix_user');
-      if (stored) {
-        try {
-          const user = JSON.parse(stored);
-          if (user && user.id) {
-            currentUser = user;
-            renderUserSessionUI(user);
-            syncCustomLocalStorageCameras();
-            return;
-          }
-        } catch(e) {}
+    function showDashboardView(user) {
+      const gate = document.getElementById('loewix-login-gate');
+      const content = document.getElementById('main-app-content');
+      if (gate) gate.style.display = 'none';
+      if (content) content.style.display = 'block';
+
+      renderUserSessionUI(user);
+      syncCustomLocalStorageCameras();
+      if (typeof generateCCTVHTML === 'function') {
+        generateCCTVHTML(typeof currentGlobalCity !== 'undefined' ? currentGlobalCity : 'all');
       }
+    }
+
+    function showLoginGateView() {
+      const gate = document.getElementById('loewix-login-gate');
+      const content = document.getElementById('main-app-content');
+      if (gate) gate.style.display = 'flex';
+      if (content) content.style.display = 'none';
+
       currentUser = null;
       renderUserSessionUI(null);
-      mediamtxData.length = 0;
-      if (typeof generateCCTVHTML === 'function') generateCCTVHTML(currentGlobalCity);
+    }
+
+    function submitGateLogin(e) {
+      if (e) e.preventDefault();
+      const email = document.getElementById('gate-login-email').value.trim();
+      const password = document.getElementById('gate-login-password').value.trim();
+      const btn = document.getElementById('btn-gate-submit');
+
+      if (!email || !password) {
+        alert('Email dan Password wajib diisi!');
+        return;
+      }
+
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> MEMVERIFIKASI...';
+      }
+
+      const formData = new FormData();
+      formData.append('action', 'login');
+      formData.append('email', email);
+      formData.append('password', password);
+
+      fetch('api/auth.php', {
+        method: 'POST',
+        body: formData
+      })
+      .then(res => res.json())
+      .then(res => {
+        if (res.success) {
+          currentUser = res.user;
+          localStorage.setItem('loewix_user', JSON.stringify(res.user));
+          if (res.user && res.user.role === 'super_admin') {
+            window.location.href = 'admin/index.html';
+          } else {
+            showDashboardView(res.user);
+          }
+        } else {
+          alert(res.message || 'Email atau Password salah!');
+          if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-sign-in-alt"></i> MASUK KE SISTEM';
+          }
+        }
+      })
+      .catch(err => {
+        // Fallback for static hosting
+        if (email === 'admin@loewixcctv.com' && password === 'admin123') {
+          const user = { id: 1, name: 'Super Admin Loewix', email: email, role: 'super_admin', cctv_quota: 9999, cctv_used: 0 };
+          currentUser = user;
+          localStorage.setItem('loewix_user', JSON.stringify(user));
+          window.location.href = 'admin/index.html';
+        } else if (email === 'customer@jayasentosa.com' && password === 'customer123') {
+          const user = { id: 2, name: 'PT. Jaya Sentosa Enterprise', email: email, role: 'customer', cctv_quota: 10, cctv_used: 0 };
+          currentUser = user;
+          localStorage.setItem('loewix_user', JSON.stringify(user));
+          showDashboardView(user);
+        } else {
+          alert('Email atau Password salah!');
+          if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-sign-in-alt"></i> MASUK KE SISTEM';
+          }
+        }
+      });
+    }
+
+    function fillGateDemo(email, pwd) {
+      const emailInput = document.getElementById('gate-login-email');
+      const pwdInput = document.getElementById('gate-login-password');
+      if (emailInput) emailInput.value = email;
+      if (pwdInput) pwdInput.value = pwd;
+    }
+
+    function toggleGatePasswordVisibility() {
+      const pwdInput = document.getElementById('gate-login-password');
+      const eyeIcon = document.getElementById('gate-toggle-pwd');
+      if (!pwdInput || !eyeIcon) return;
+
+      if (pwdInput.type === 'password') {
+        pwdInput.type = 'text';
+        eyeIcon.classList.remove('fa-eye');
+        eyeIcon.classList.add('fa-eye-slash');
+        eyeIcon.style.color = '#00d2ff';
+      } else {
+        pwdInput.type = 'password';
+        eyeIcon.classList.remove('fa-eye-slash');
+        eyeIcon.classList.add('fa-eye');
+        eyeIcon.style.color = '#94a3b8';
+      }
     }
 
     function renderUserSessionUI(user) {
@@ -12362,7 +12705,7 @@
         }
       } else {
         userArea.innerHTML = `
-          <button class="btn btn-sm" onclick="openLoginModal()" style="background: linear-gradient(135deg, #00d2ff, #0066ff); border: none; font-weight: 700; border-radius: 25px; padding: 7px 20px; color: #fff; box-shadow: 0 4px 15px rgba(0, 102, 255, 0.4); text-transform: uppercase; font-size: 12px; letter-spacing: 0.5px; white-space: nowrap;">
+          <button class="btn btn-sm" onclick="showLoginGateView()" style="background: linear-gradient(135deg, #00d2ff, #0066ff); border: none; font-weight: 700; border-radius: 25px; padding: 7px 20px; color: #fff; box-shadow: 0 4px 15px rgba(0, 102, 255, 0.4); text-transform: uppercase; font-size: 12px; letter-spacing: 0.5px; white-space: nowrap;">
             <i class="fas fa-sign-in-alt mr-1"></i> LOGIN
           </button>
         `;
@@ -12370,66 +12713,11 @@
     }
 
     function openLoginModal() {
-      $('#modalLogin').modal('show');
+      showLoginGateView();
     }
 
     function submitLogin(e) {
-      if (e) e.preventDefault();
-      const email = document.getElementById('login-email').value.trim();
-      const password = document.getElementById('login-password').value.trim();
-
-      if (!email || !password) {
-        alert('Email dan Password wajib diisi!');
-        return;
-      }
-
-      const formData = new FormData();
-      formData.append('action', 'login');
-      formData.append('email', email);
-      formData.append('password', password);
-
-      fetch('api/auth.php', {
-        method: 'POST',
-        body: formData
-      })
-      .then(res => res.json())
-      .then(res => {
-        if (res.success) {
-          alert(res.message);
-          $('#modalLogin').modal('hide');
-          currentUser = res.user;
-          localStorage.setItem('loewix_user', JSON.stringify(res.user));
-          renderUserSessionUI(res.user);
-          if (res.user && res.user.role === 'super_admin') {
-            window.location.href = 'admin/index.html';
-          } else {
-            syncCustomLocalStorageCameras();
-          }
-        } else {
-          alert(res.message || 'Email atau Password salah!');
-        }
-      })
-      .catch(err => {
-        // Fallback for Vercel static serverless hosting
-        if (email === 'admin@loewixcctv.com' && password === 'admin123') {
-          const user = { id: 1, name: 'Super Admin Loewix', email: email, role: 'super_admin', cctv_quota: 9999, cctv_used: 0 };
-          currentUser = user;
-          localStorage.setItem('loewix_user', JSON.stringify(user));
-          alert('Login Super Admin Berhasil!');
-          $('#modalLogin').modal('hide');
-          window.location.href = 'admin/index.html';
-        } else if (email === 'customer@jayasentosa.com' && password === 'customer123') {
-          const user = { id: 2, name: 'PT. Jaya Sentosa Enterprise', email: email, role: 'customer', cctv_quota: 10, cctv_used: 0 };
-          currentUser = user;
-          localStorage.setItem('loewix_user', JSON.stringify(user));
-          alert('Login Customer Berhasil!');
-          $('#modalLogin').modal('hide');
-          renderUserSessionUI(user);
-          syncCustomLocalStorageCameras();
-        } else {
-          alert('Email atau Password salah!');
-        }
-      });
+      submitGateLogin(e);
     }
 
     function logoutUser(e) {
@@ -12449,10 +12737,7 @@
       authCheckComplete = true;
       mediamtxData.length = 0;
       
-      renderUserSessionUI(null);
-      if (typeof generateCCTVHTML === 'function') {
-        generateCCTVHTML(typeof currentGlobalCity !== 'undefined' ? currentGlobalCity : 'all');
-      }
+      showLoginGateView();
 
       fetch('api/auth.php?action=logout')
         .catch(() => {})
@@ -12462,21 +12747,7 @@
     }
 
     function togglePasswordVisibility() {
-      const pwdInput = document.getElementById('login-password');
-      const eyeIcon = document.getElementById('toggle-password-icon');
-      if (!pwdInput || !eyeIcon) return;
-
-      if (pwdInput.type === 'password') {
-        pwdInput.type = 'text';
-        eyeIcon.classList.remove('fa-eye');
-        eyeIcon.classList.add('fa-eye-slash');
-        eyeIcon.style.color = '#00d2ff';
-      } else {
-        pwdInput.type = 'password';
-        eyeIcon.classList.remove('fa-eye-slash');
-        eyeIcon.classList.add('fa-eye');
-        eyeIcon.style.color = '#94a3b8';
-      }
+      toggleGatePasswordVisibility();
     }
 
     function showQuotaAlert(msg) {
@@ -12486,6 +12757,11 @@
 
     window.openLoginModal = openLoginModal;
     window.submitLogin = submitLogin;
+    window.submitGateLogin = submitGateLogin;
+    window.fillGateDemo = fillGateDemo;
+    window.toggleGatePasswordVisibility = toggleGatePasswordVisibility;
+    window.showLoginGateView = showLoginGateView;
+    window.showDashboardView = showDashboardView;
     window.logoutUser = logoutUser;
     window.togglePasswordVisibility = togglePasswordVisibility;
   </script>
