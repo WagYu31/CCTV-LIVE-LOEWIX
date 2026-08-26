@@ -4315,10 +4315,33 @@
     };
 
     const STREAM_BASE = 'https://stream.loewixcctv.com';
-    let currentUser = null;
+    let currentUser = (function() {
+      try {
+        const stored = localStorage.getItem('loewix_user');
+        return stored ? JSON.parse(stored) : null;
+      } catch (e) {
+        return null;
+      }
+    })();
+    let authCheckComplete = !!currentUser;
 
     // ===== DATA KAMERA (100% DISINKRONKAN DENGAN DATABASE ADMIN LOEWIX) =====
     const mediamtxData = [];
+
+    // Load instantly from cached cameras if user is already logged in
+    (function loadInitialCachedCameras() {
+      if (currentUser && currentUser.id) {
+        try {
+          const cached = sessionStorage.getItem(`loewix_cached_cameras_${currentUser.id}`);
+          if (cached) {
+            const list = JSON.parse(cached);
+            if (Array.isArray(list) && list.length > 0) {
+              list.forEach(c => mediamtxData.push(c));
+            }
+          }
+        } catch(e) {}
+      }
+    })();
 
     // Auto-sync cameras strictly from backend Database API
     function syncCustomLocalStorageCameras() {
@@ -4429,6 +4452,12 @@
                   thumbnail: c.thumbnail || (ASSET_BASE + '/image/logo-loewix.png')
                 });
               });
+
+              if (currentUser && currentUser.id) {
+                try {
+                  sessionStorage.setItem(`loewix_cached_cameras_${currentUser.id}`, JSON.stringify(mediamtxData));
+                } catch(e) {}
+              }
 
               if (typeof generateCCTVHTML === 'function') generateCCTVHTML(typeof currentGlobalCity !== 'undefined' ? currentGlobalCity : 'all');
               if (typeof initCCTVMap === 'function') initCCTVMap();
@@ -9029,6 +9058,15 @@
 
       // Check authentication status - cameras require login
       if (!currentUser) {
+        if (!authCheckComplete) {
+          cctvContainer.innerHTML = `
+            <div class="col-12 text-center py-5 my-2 wow fadeInUp" style="background: rgba(13, 24, 54, 0.75); border: 1px solid rgba(0, 210, 255, 0.25); border-radius: 24px; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); box-shadow: 0 20px 45px rgba(0, 0, 0, 0.5); padding: 50px 24px;">
+              <div class="spinner-border mb-3" style="width: 3rem; height: 3rem; color: #00d2ff;" role="status"></div>
+              <h4 class="text-white font-weight-bold mb-2">Memeriksa Hak Akses...</h4>
+              <p class="text-muted mb-0" style="font-size: 13px;">Menghubungkan ke server autentikasi Loewix</p>
+            </div>`;
+          return;
+        }
         cctvContainer.innerHTML = `
           <div class="col-12 text-center py-5 my-2 wow fadeInUp" style="background: rgba(13, 24, 54, 0.75); border: 1px solid rgba(0, 210, 255, 0.25); border-radius: 24px; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); box-shadow: 0 20px 45px rgba(0, 0, 0, 0.5); padding: 60px 24px;">
             <div class="mb-4">
@@ -11675,9 +11713,14 @@
     });
 
     function checkUserSession() {
+      if (currentUser) {
+        renderUserSessionUI(currentUser);
+      }
+
       fetch('api/auth.php?action=check_session')
         .then(res => res.json())
         .then(data => {
+          authCheckComplete = true;
           if (data.logged_in && data.user) {
             currentUser = data.user;
             localStorage.setItem('loewix_user', JSON.stringify(data.user));
@@ -11688,11 +11731,13 @@
           }
         })
         .catch(err => {
+          authCheckComplete = true;
           checkLocalStorageSession();
         });
     }
 
     function checkLocalStorageSession() {
+      authCheckComplete = true;
       const stored = localStorage.getItem('loewix_user');
       if (stored) {
         try {
