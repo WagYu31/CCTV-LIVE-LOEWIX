@@ -3908,7 +3908,7 @@
       box-shadow: 0 0 12px rgba(0, 210, 255, 0.3) !important;
     }
 
-    /* ===== CONCEPT 3: APPLE / TESLA DIGITAL ACCESS KEYCARD GATE ===== */
+    /* ===== ULTRA-CLEAN UNIFIED ENTERPRISE LOEWIX LOGIN GATE ===== */
     #loewix-login-gate {
       position: fixed;
       top: 0;
@@ -3920,293 +3920,125 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      background: radial-gradient(circle at 50% 15%, #0f1f42 0%, #070d1c 50%, #02050c 100%);
+      background: radial-gradient(circle at 50% 12%, #0e1d3e 0%, #060b17 50%, #020409 100%);
       z-index: 999999;
       font-family: 'Outfit', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       color: #ffffff;
       margin: 0;
-      padding: 30px 20px;
+      padding: 24px 20px;
       overflow-y: auto;
     }
 
-    .keycard-portal-wrapper {
+    .unified-login-wrapper {
       position: relative;
       width: 100%;
-      max-width: 680px;
+      max-width: 440px;
       margin: auto;
-      text-align: center;
-      animation: keycardEnter 0.5s cubic-bezier(0.16, 1, 0.3, 1);
       z-index: 10;
+      animation: authCardIn 0.5s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
-    @keyframes keycardEnter {
-      from { opacity: 0; transform: translateY(22px) scale(0.97); }
+    @keyframes authCardIn {
+      from { opacity: 0; transform: translateY(20px) scale(0.98); }
       to { opacity: 1; transform: translateY(0) scale(1); }
     }
 
-    .keycard-glow-bg {
+    .unified-glow-orb {
       position: absolute;
-      width: 650px;
-      height: 650px;
+      width: 550px;
+      height: 550px;
       border-radius: 50%;
-      background: radial-gradient(circle, rgba(0, 210, 255, 0.14) 0%, transparent 70%);
-      top: 40%;
+      background: radial-gradient(circle, rgba(0, 210, 255, 0.12) 0%, rgba(0, 102, 255, 0) 70%);
+      top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      filter: blur(90px);
+      filter: blur(85px);
       pointer-events: none;
     }
 
-    .keycard-header-logo {
-      height: 44px;
-      object-fit: contain;
-      filter: drop-shadow(0 4px 18px rgba(0, 210, 255, 0.4));
-      margin-bottom: 12px;
-    }
-
-    .keycard-status-pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 7px;
-      padding: 5px 14px;
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.14);
-      border-radius: 20px;
-      font-size: 11px;
-      font-weight: 700;
-      color: #94a3b8;
-      letter-spacing: 0.8px;
-      text-transform: uppercase;
-      margin-bottom: 14px;
-    }
-
-    .keycard-status-dot {
-      width: 7px;
-      height: 7px;
-      background-color: #10b981;
-      border-radius: 50%;
-      box-shadow: 0 0 8px #10b981;
-      animation: pulseKeyDot 1.5s infinite;
-    }
-
-    @keyframes pulseKeyDot {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.4; transform: scale(1.3); }
-    }
-
-    .keycard-main-title {
-      font-size: 26px;
-      font-weight: 800;
-      color: #ffffff;
-      margin-bottom: 6px;
-      letter-spacing: -0.4px;
-    }
-
-    .keycard-sub-title {
-      font-size: 13.5px;
-      color: #94a3b8;
-      margin-bottom: 24px;
-    }
-
-    /* Two Digital Keycards */
-    .keycards-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 16px;
-      margin-bottom: 22px;
-    }
-
-    .keycard-card {
+    .unified-login-card {
+      background: rgba(10, 18, 38, 0.82);
+      backdrop-filter: blur(35px);
+      -webkit-backdrop-filter: blur(35px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 26px;
+      padding: 38px 36px;
+      box-shadow: 0 30px 75px -15px rgba(0, 0, 0, 0.85), 0 0 35px rgba(0, 210, 255, 0.08);
       position: relative;
-      border-radius: 20px;
-      padding: 22px;
-      text-align: left;
-      cursor: pointer;
-      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
       overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      height: 175px;
-      border: 1.5px solid rgba(255, 255, 255, 0.12);
-      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
     }
 
-    .keycard-card::before {
-      content: '';
+    .unified-card-aura {
       position: absolute;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background-image: 
-        radial-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px);
-      background-size: 14px 14px;
-      opacity: 0.5;
-      pointer-events: none;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, #00d2ff, #0066ff, transparent);
     }
 
-    /* Admin Gold Keycard */
-    .keycard-gold {
-      background: linear-gradient(140deg, #1f1a12 0%, #2c2211 45%, #14110b 100%);
+    .unified-auth-header {
+      text-align: center;
+      margin-bottom: 28px;
     }
 
-    .keycard-gold:hover,
-    .keycard-gold.active {
-      border-color: #f59e0b;
-      box-shadow: 0 0 30px rgba(245, 158, 11, 0.35), 0 15px 35px rgba(0, 0, 0, 0.7);
-      transform: translateY(-4px) scale(1.02);
-    }
-
-    /* Customer Cyan Keycard */
-    .keycard-blue {
-      background: linear-gradient(140deg, #0a1830 0%, #0e2752 45%, #061021 100%);
-    }
-
-    .keycard-blue:hover,
-    .keycard-blue.active {
-      border-color: #38bdf8;
-      box-shadow: 0 0 30px rgba(56, 189, 248, 0.35), 0 15px 35px rgba(0, 0, 0, 0.7);
-      transform: translateY(-4px) scale(1.02);
-    }
-
-    .card-top-info {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      position: relative;
-      z-index: 2;
-    }
-
-    .card-emv-chip {
-      width: 34px;
-      height: 25px;
-      border-radius: 6px;
-      border: 1px solid rgba(255, 255, 255, 0.3);
-      background: linear-gradient(135deg, #ffd700 0%, #b8860b 100%);
-      box-shadow: inset 0 0 5px rgba(0,0,0,0.6);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .keycard-blue .card-emv-chip {
-      background: linear-gradient(135deg, #7dd3fc 0%, #0284c7 100%);
-    }
-
-    .card-chip-line {
-      width: 100%;
-      height: 1px;
-      background: rgba(0, 0, 0, 0.4);
-    }
-
-    .card-badge-status {
-      font-size: 10px;
-      font-weight: 800;
-      padding: 4px 10px;
-      border-radius: 12px;
-      letter-spacing: 0.6px;
-      text-transform: uppercase;
-    }
-
-    .keycard-gold .card-badge-status {
-      background: rgba(245, 158, 11, 0.18);
-      color: #fbbf24;
-      border: 1px solid rgba(245, 158, 11, 0.4);
-    }
-
-    .keycard-blue .card-badge-status {
-      background: rgba(56, 189, 248, 0.18);
-      color: #38bdf8;
-      border: 1px solid rgba(56, 189, 248, 0.4);
-    }
-
-    .card-bottom-info {
-      position: relative;
-      z-index: 2;
-    }
-
-    .card-role-tier {
-      font-size: 10.5px;
-      font-weight: 800;
-      letter-spacing: 1.5px;
-      text-transform: uppercase;
-      margin-bottom: 2px;
-    }
-
-    .keycard-gold .card-role-tier { color: #f59e0b; }
-    .keycard-blue .card-role-tier { color: #38bdf8; }
-
-    .card-holder-title {
-      font-size: 16px;
-      font-weight: 800;
-      color: #ffffff;
-      margin-bottom: 2px;
-    }
-
-    .card-number-id {
-      font-size: 11.5px;
-      color: #94a3b8;
-      font-family: 'Courier New', Courier, monospace;
-      letter-spacing: 1px;
-    }
-
-    /* Keycard Form Dock */
-    .keycard-form-dock {
-      background: rgba(10, 18, 38, 0.85);
-      backdrop-filter: blur(30px);
-      -webkit-backdrop-filter: blur(30px);
-      border: 1px solid rgba(255, 255, 255, 0.14);
-      border-radius: 22px;
-      padding: 28px 30px;
-      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.7);
-      text-align: left;
-    }
-
-    .keycard-active-indicator {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 10px 14px;
-      background: rgba(255, 255, 255, 0.04);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 12px;
-      margin-bottom: 20px;
-      font-size: 12px;
-      font-weight: 700;
-    }
-
-    .form-group-keycard {
+    .unified-auth-logo {
+      height: 42px;
+      object-fit: contain;
+      filter: drop-shadow(0 4px 16px rgba(0, 210, 255, 0.4));
       margin-bottom: 18px;
     }
 
-    .form-label-keycard {
+    .unified-auth-title {
+      font-size: 24px;
+      font-weight: 800;
+      color: #ffffff;
+      margin-bottom: 6px;
+      letter-spacing: -0.3px;
+    }
+
+    .unified-auth-subtitle {
+      font-size: 13.5px;
+      color: #94a3b8;
+      line-height: 1.5;
+      margin-bottom: 0;
+    }
+
+    .unified-form-group {
+      margin-bottom: 20px;
+    }
+
+    .unified-form-label {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-size: 12px;
+      font-size: 12.5px;
       font-weight: 600;
-      color: #94a3b8;
-      margin-bottom: 7px;
+      color: #cbd5e1;
+      margin-bottom: 8px;
     }
 
-    .form-input-box {
+    .unified-input-wrapper {
       position: relative;
       width: 100%;
     }
 
-    .form-input-box i.input-icon {
+    .unified-input-wrapper i.prefix-icon {
       position: absolute;
       left: 16px;
       top: 50%;
       transform: translateY(-50%);
       color: #38bdf8;
-      font-size: 15px;
+      font-size: 14.5px;
       pointer-events: none;
+      transition: color 0.2s ease;
     }
 
-    .form-input-keycard {
+    .unified-form-input {
       width: 100% !important;
       height: 48px !important;
-      background: rgba(255, 255, 255, 0.06) !important;
-      border: 1px solid rgba(255, 255, 255, 0.15) !important;
+      background: rgba(255, 255, 255, 0.05) !important;
+      border: 1px solid rgba(255, 255, 255, 0.13) !important;
       border-radius: 12px !important;
       color: #ffffff !important;
       padding-left: 46px !important;
@@ -4217,29 +4049,35 @@
       box-shadow: none !important;
     }
 
-    .form-input-keycard:focus {
-      background: rgba(255, 255, 255, 0.1) !important;
+    .unified-form-input:focus {
+      background: rgba(255, 255, 255, 0.09) !important;
       border-color: #00d2ff !important;
-      box-shadow: 0 0 16px rgba(0, 210, 255, 0.3) !important;
+      box-shadow: 0 0 16px rgba(0, 210, 255, 0.25) !important;
     }
 
-    .btn-keycard-pwd-toggle {
+    .unified-form-input:focus + i.prefix-icon {
+      color: #00d2ff;
+    }
+
+    .btn-unified-pwd-toggle {
       position: absolute;
       right: 14px;
       top: 50%;
       transform: translateY(-50%);
       color: #64748b;
       cursor: pointer;
-      font-size: 14px;
+      font-size: 14.5px;
       padding: 6px;
       transition: color 0.2s ease;
+      background: transparent;
+      border: none;
     }
 
-    .btn-keycard-pwd-toggle:hover {
+    .btn-unified-pwd-toggle:hover {
       color: #38bdf8;
     }
 
-    .btn-keycard-unlock {
+    .btn-unified-submit {
       width: 100%;
       height: 50px;
       background: linear-gradient(135deg, #00d2ff 0%, #0066ff 100%);
@@ -4247,22 +4085,21 @@
       border-radius: 14px;
       color: #ffffff;
       font-weight: 800;
-      font-size: 14px;
-      letter-spacing: 0.8px;
-      text-transform: uppercase;
-      box-shadow: 0 10px 28px rgba(0, 102, 255, 0.45);
+      font-size: 14.5px;
+      letter-spacing: 0.5px;
+      box-shadow: 0 10px 25px rgba(0, 102, 255, 0.45);
       cursor: pointer;
       transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 10px;
-      margin-top: 10px;
+      margin-top: 24px;
       position: relative;
       overflow: hidden;
     }
 
-    .btn-keycard-unlock::before {
+    .btn-unified-submit::before {
       content: '';
       position: absolute;
       top: 0; left: -100%;
@@ -4272,34 +4109,32 @@
       transition: all 0.5s ease;
     }
 
-    .btn-keycard-unlock:hover {
+    .btn-unified-submit:hover {
       transform: translateY(-2px);
-      box-shadow: 0 14px 34px rgba(0, 102, 255, 0.65);
+      box-shadow: 0 14px 32px rgba(0, 102, 255, 0.65);
       color: #ffffff;
     }
 
-    .btn-keycard-unlock:hover::before {
+    .btn-unified-submit:hover::before {
       left: 100%;
     }
 
-    .keycard-dock-footer {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-top: 18px;
-      font-size: 11px;
+    .btn-unified-submit:active {
+      transform: translateY(0);
+    }
+
+    .unified-card-footer {
+      text-align: center;
+      margin-top: 24px;
+      padding-top: 18px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      font-size: 11.5px;
       color: #64748b;
     }
 
-    @media (max-width: 600px) {
-      .keycards-grid {
-        grid-template-columns: 1fr;
-      }
-      .keycard-card {
-        height: 145px;
-      }
-      .keycard-form-dock {
-        padding: 22px 18px;
+    @media (max-width: 480px) {
+      .unified-login-card {
+        padding: 30px 22px;
       }
     }
 
@@ -4354,107 +4189,65 @@
   <noscript><img height="1" width="1" style="display:none"
       src="https://www.facebook.com/tr?id=1234567890123456&ev=PageView&noscript=1" /></noscript>
 
-  <!-- ===== CONCEPT 3: APPLE / TESLA DIGITAL ACCESS KEYCARD GATE ===== -->
+  <!-- ===== UNIFIED ENTERPRISE LOEWIX LOGIN GATE ===== -->
   <div id="loewix-login-gate" style="display: flex;">
-    <div class="keycard-glow-bg"></div>
+    <div class="unified-glow-orb"></div>
 
-    <div class="keycard-portal-wrapper">
-      
-      <!-- Brand Header -->
-      <div>
-        <img src="assets/image/logo-loewix-white.png" alt="Loewix CCTV" class="keycard-header-logo">
-        <div>
-          <div class="keycard-status-pill">
-            <span class="keycard-status-dot"></span> SMART ACCESS PROTOCOL v4.8
-          </div>
-        </div>
-        <h1 class="keycard-main-title">Pilih Kartu Akses Digital Anda</h1>
-        <p class="keycard-sub-title">Ketuk salah satu Security Keycard di bawah untuk otentikasi instan ke dalam sistem.</p>
-      </div>
+    <div class="unified-login-wrapper">
+      <div class="unified-login-card">
+        <div class="unified-card-aura"></div>
 
-      <!-- Two Digital Keycards Grid -->
-      <div class="keycards-grid">
-        
-        <!-- Keycard 1: Super Admin (Gold Titanium) -->
-        <div class="keycard-card keycard-gold active" id="keycard-admin" onclick="selectDigitalKeycard('admin@loewixcctv.com', 'admin123', 'admin')">
-          <div class="card-top-info">
-            <div class="card-emv-chip">
-              <div class="card-chip-line"></div>
-            </div>
-            <div class="card-badge-status">
-              <i class="fas fa-shield-alt mr-1"></i> MASTER KEY
-            </div>
-          </div>
-          <div class="card-bottom-info">
-            <div class="card-role-tier">LEVEL 01 • UNRESTRICTED</div>
-            <div class="card-holder-title">Super Admin</div>
-            <div class="card-number-id">LX-9908-ADMIN</div>
-          </div>
+        <!-- Header: Logo & Branding -->
+        <div class="unified-auth-header">
+          <img src="assets/image/logo-loewix-white.png" alt="Loewix CCTV" class="unified-auth-logo">
+          <h1 class="unified-auth-title">Masuk ke Portal</h1>
+          <p class="unified-auth-subtitle">Akses platform pengawasan CCTV dan analitik cerdas.</p>
         </div>
 
-        <!-- Keycard 2: Customer Enterprise (Sapphire Blue) -->
-        <div class="keycard-card keycard-blue" id="keycard-customer" onclick="selectDigitalKeycard('customer@jayasentosa.com', 'customer123', 'customer')">
-          <div class="card-top-info">
-            <div class="card-emv-chip">
-              <div class="card-chip-line"></div>
-            </div>
-            <div class="card-badge-status">
-              <i class="fas fa-building mr-1"></i> ENTERPRISE
-            </div>
-          </div>
-          <div class="card-bottom-info">
-            <div class="card-role-tier">CLIENT TIER • 10 CHANNELS</div>
-            <div class="card-holder-title">PT. Jaya Sentosa</div>
-            <div class="card-number-id">LX-2041-CLIENT</div>
-          </div>
-        </div>
-
-      </div>
-
-      <!-- Docked Authorization Form -->
-      <div class="keycard-form-dock">
-        <div class="keycard-active-indicator" id="keycard-indicator">
-          <span style="color: #fbbf24;" id="keycard-indicator-text">
-            <i class="fas fa-check-circle mr-1"></i> KARTU AKTIF: SUPER ADMIN (MASTER ACCESS)
-          </span>
-          <span style="color: #64748b; font-size: 11px;">1-KLIK READY</span>
-        </div>
-
+        <!-- Single Universal Form -->
         <form id="formGateLogin" onsubmit="submitGateLogin(event)">
-          <div class="form-group-keycard">
-            <div class="form-label-keycard">
-              <span><i class="fas fa-id-badge text-info mr-1"></i> Email Kunci Akses</span>
-              <span style="font-size: 10.5px; color: #64748b;">Enterprise Security ID</span>
-            </div>
-            <div class="form-input-box">
-              <input type="email" id="gate-login-email" class="form-input-keycard" placeholder="name@company.com" value="admin@loewixcctv.com" required autocomplete="email">
-              <i class="fas fa-at input-icon"></i>
-            </div>
-          </div>
-
-          <div class="form-group-keycard">
-            <div class="form-label-keycard">
-              <span><i class="fas fa-key text-info mr-1"></i> Kode Sandi Otorisasi</span>
-              <span style="font-size: 11px; color: #38bdf8; cursor: pointer;" onclick="alert('Silakan hubungi IT Administrator atau Support di support@loewixcctv.com untuk bantuan akses.')">Lupa sandi?</span>
-            </div>
-            <div class="form-input-box">
-              <input type="password" id="gate-login-password" class="form-input-keycard" placeholder="••••••••" value="admin123" required autocomplete="current-password">
-              <i class="fas fa-lock input-icon"></i>
-              <i class="fas fa-eye btn-keycard-pwd-toggle" id="gate-toggle-pwd" onclick="toggleGatePasswordVisibility()" title="Lihat / Sembunyikan Password"></i>
+          <div class="unified-form-group">
+            <label class="unified-form-label" for="gate-login-email">
+              <span>Email Akun</span>
+            </label>
+            <div class="unified-input-wrapper">
+              <i class="fas fa-envelope prefix-icon"></i>
+              <input type="email" id="gate-login-email" class="unified-form-input" placeholder="nama@perusahaan.com" required autocomplete="email">
             </div>
           </div>
 
-          <button type="submit" id="btn-gate-submit" class="btn-keycard-unlock">
-            <i class="fas fa-fingerprint"></i> <span>OTORISASI &amp; BUKA PORTAL</span>
+          <div class="unified-form-group">
+            <div class="unified-form-label">
+              <label for="gate-login-password" style="margin: 0;">Kata Sandi</label>
+              <span style="font-size: 11px; color: #38bdf8; cursor: pointer;" onclick="alert('Silakan hubungi IT Administrator atau Customer Support di support@loewixcctv.com untuk bantuan pemulihan kata sandi.')">Lupa sandi?</span>
+            </div>
+            <div class="unified-input-wrapper">
+              <i class="fas fa-lock prefix-icon"></i>
+              <input type="password" id="gate-login-password" class="unified-form-input" placeholder="Masukkan kata sandi" required autocomplete="current-password">
+              <button type="button" class="btn-unified-pwd-toggle" onclick="toggleGatePasswordVisibility()" title="Lihat / Sembunyikan Password">
+                <i class="fas fa-eye" id="gate-toggle-pwd"></i>
+              </button>
+            </div>
+          </div>
+
+          <button type="submit" id="btn-gate-submit" class="btn-unified-submit">
+            <span>MASUK KE SISTEM</span>
+            <i class="fas fa-arrow-right"></i>
           </button>
-
-          <div class="keycard-dock-footer">
-            <span><i class="fas fa-lock text-success mr-1"></i> Hardware Security EAL6+ Certified</span>
-            <span><i class="fas fa-server text-info mr-1"></i> Gateway Node: ID-JKT-01</span>
-          </div>
         </form>
-      </div>
 
+        <!-- Trust & Security Footer -->
+        <div class="unified-card-footer">
+          <div style="display: flex; align-items: center; justify-content: center; gap: 6px; margin-bottom: 4px;">
+            <i class="fas fa-shield-alt text-info"></i>
+            <span>Koneksi Aman Terenkripsi 256-Bit SSL/TLS</span>
+          </div>
+          <div style="font-size: 10.5px; opacity: 0.7;">
+            &copy; 2026 PT. Loewix Indonesia Mandiri. All rights reserved.
+          </div>
+        </div>
+
+      </div>
     </div>
   </div>
 
