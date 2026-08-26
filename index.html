@@ -631,7 +631,7 @@
       gap: 4px !important;
       min-width: 0 !important;
       flex: 1 1 auto !important;
-      max-width: calc(100% - 100px) !important;
+      max-width: calc(100% - 55px) !important;
     }
     .traffic-card.layout-dense .card-location-title span {
       font-size: 11px !important;
@@ -1010,7 +1010,7 @@
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      max-width: 65%;
+      max-width: calc(100% - 75px);
     }
 
     body.dark-mode .card-location-title {
@@ -9772,12 +9772,6 @@
                       <span>${camera.title}</span>
                     </div>
                     <div class="card-action-toolbar">
-                      <button class="action-btn ${favoriteClass}" onclick="event.stopPropagation(); toggleFavorite(${camera.id}, '${camera.title.replace(/'/g, "\\'")}')" title="${isFavorite ? 'Hapus dari Favorit' : 'Tambah ke Favorit'}">
-                        <i class="${favoriteIcon} fa-star"></i>
-                      </button>
-                      <button class="action-btn" onclick="event.stopPropagation(); shareCCTV(${camera.id}, '${camera.title.replace(/'/g, "\\'")}')" title="Bagikan CCTV">
-                        <i class="fas fa-share-alt"></i>
-                      </button>
                       <button class="action-btn" onclick="event.stopPropagation(); focusCameraSingle(${camera.id})" title="Tampilan Penuh 1 Layar">
                         <i class="fas fa-expand"></i>
                       </button>
