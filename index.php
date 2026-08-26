@@ -9753,6 +9753,9 @@
                       <button class="action-btn" onclick="event.stopPropagation(); shareCCTV(${camera.id}, '${camera.title.replace(/'/g, "\\'")}')" title="Bagikan CCTV">
                         <i class="fas fa-share-alt"></i>
                       </button>
+                      <button class="action-btn" onclick="event.stopPropagation(); focusCameraSingle(${camera.id})" title="Tampilan Penuh 1 Layar">
+                        <i class="fas fa-expand"></i>
+                      </button>
                       <button class="action-btn" onclick="event.stopPropagation(); ${reloadFunction}" title="Refresh Stream">
                         <i class="fas fa-sync-alt"></i>
                       </button>
@@ -9763,6 +9766,7 @@
                       <span style="display: inline-flex; align-items: center; gap: 5px; color: #10b981; font-weight: 800; margin-right: 6px;">
                         <span style="width: 7px; height: 7px; background-color: #10b981; border-radius: 50%; display: inline-block; box-shadow: 0 0 6px #10b981;"></span> LIVE
                       </span>
+                      <span style="background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.35); font-size: 9px; font-weight: 800; padding: 1px 5px; border-radius: 4px; margin-right: 6px; letter-spacing: 0.3px;">AUTO</span>
                       ${camera.connection_type === 'xmeye_p2p' ? `<span style="color: #38bdf8; font-weight: 700;">• XMEYE P2P (CH ${camera.channel || 1})</span>` : `• RTSP • CAM-${String(camera.id).padStart(2, '0')}`}
                     </div>
                     <div class="card-meta-ai" style="font-weight: 700; font-size: 10px; display: inline-flex; align-items: center; gap: 4px;">
