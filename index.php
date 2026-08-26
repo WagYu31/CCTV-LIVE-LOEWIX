@@ -7919,27 +7919,6 @@
             }
           }
 
-          if (connType === 'xmeye_p2p' || streamPath.startsWith('xmeye_')) {
-            console.log('[MediaMTX Direct] Loading direct HLS stream for:', streamPath);
-            // Fetch fresh HLS URL from JFTech Cloud API
-            fetch(`api/jftech_gateway.php?action=get_live_stream&sn=${encodeURIComponent(sn)}&channel=${encodeURIComponent(channel)}`)
-              .then(r => r.json())
-              .then(data => {
-                if (data.success && data.hls_url) {
-                  console.log('[JFTech Cloud Live] Mount official HLS URL:', data.hls_url);
-                  mountHLS(data.hls_url);
-                } else {
-                  console.warn('[JFTech Cloud Live] Fallback to MediaMTX stream path:', data.message);
-                  mountHLS(`${STREAM_BASE}/${streamPath}/index.m3u8`);
-                }
-              })
-              .catch(err => {
-                console.error('[JFTech Cloud Live] Failed to fetch live stream:', err);
-                mountHLS(`${STREAM_BASE}/${streamPath}/index.m3u8`);
-              });
-            return;
-          }
-
           if (streamPath.startsWith('http://') || streamPath.startsWith('https://')) {
             mountHLS(streamPath);
           } else if (streamPath.startsWith('rtsp://')) {
@@ -7947,36 +7926,13 @@
             if (thumb) {
               const loadingText = thumb.querySelector('.loading-text');
               if (loadingText) {
-                loadingText.innerHTML = '<i class="fas fa-exclamation-triangle text-warning"></i> RTSP Direct URL perlu MediaMTX / IPCamLive!';
+                loadingText.innerHTML = '<i class="fas fa-exclamation-triangle text-warning"></i> RTSP Direct URL perlu MediaMTX!';
                 loadingText.style.opacity = '1';
               }
             }
-            alert('⚠️ Browser Web HTML5 tidak mendukung protokol "rtsp://" secara langsung.\n\nAgar RTSP dapat diputar di web:\n1. Masukkan RTSP di server MediaMTX / IPCamLive kamu.\n2. Atau gunakan URL HLS HTTP/HTTPS (.m3u8).\n3. Atau isi dengan Stream Path (contoh: cam_bali_1).');
             return;
-          } else if (streamPath.startsWith('xmeye_')) {
-            const match = streamPath.match(/^xmeye_([a-fA-F0-9]+)(?:_ch(\d+))?/i);
-            if (match) {
-              const sn = match[1];
-              const ch = match[2] || 1;
-              fetch(`api/jftech_gateway.php?action=get_live_stream&sn=${encodeURIComponent(sn)}&channel=${encodeURIComponent(ch)}`)
-                .then(r => r.json())
-                .then(data => {
-                  if (data.success && data.hls_url) {
-                    console.log('[JFTech Cloud Live] Mount official HLS URL:', data.hls_url);
-                    mountHLS(data.hls_url);
-                  } else {
-                    console.warn('[JFTech Cloud Live] Fallback to MediaMTX stream path:', data.message);
-                    mountHLS(`${STREAM_BASE}/${streamPath}/index.m3u8`);
-                  }
-                })
-                .catch(err => {
-                  console.error('[JFTech Cloud Live] Failed to fetch live stream:', err);
-                  mountHLS(`${STREAM_BASE}/${streamPath}/index.m3u8`);
-                });
-            } else {
-              mountHLS(`${STREAM_BASE}/${streamPath}/index.m3u8`);
-            }
           } else {
+            // Direct ultra-fast low-latency stream from Loewix MediaMTX server
             mountHLS(`${STREAM_BASE}/${streamPath}/index.m3u8`);
           }
 
@@ -8618,26 +8574,6 @@
 
         if (streamPath.startsWith('http://') || streamPath.startsWith('https://')) {
           mountPopupHLS(streamPath);
-        } else if (streamPath.startsWith('xmeye_')) {
-          const match = streamPath.match(/^xmeye_([a-fA-F0-9]+)(?:_ch(\d+))?/i);
-          if (match) {
-            const sn = match[1];
-            const ch = match[2] || 1;
-            fetch(`api/jftech_gateway.php?action=get_live_stream&sn=${encodeURIComponent(sn)}&channel=${encodeURIComponent(ch)}`)
-              .then(r => r.json())
-              .then(data => {
-                if (data.success && data.hls_url) {
-                  mountPopupHLS(data.hls_url);
-                } else {
-                  mountPopupHLS(`${STREAM_BASE}/${streamPath}/index.m3u8`);
-                }
-              })
-              .catch(() => {
-                mountPopupHLS(`${STREAM_BASE}/${streamPath}/index.m3u8`);
-              });
-          } else {
-            mountPopupHLS(`${STREAM_BASE}/${streamPath}/index.m3u8`);
-          }
         } else {
           mountPopupHLS(`${STREAM_BASE}/${streamPath}/index.m3u8`);
         }
