@@ -555,53 +555,60 @@
       animation: livePulse 1.5s infinite;
     }
 
-    /* ===== ENTERPRISE CCTV MULTI-GRID MATRIX STYLES (4, 8, 16, 32, 64, 128) ===== */
-    .col-cctv-32 {
+    /* ===== ENTERPRISE DVR / NVR CCTV VIEW MATRIX STYLES ===== */
+    .col-cctv-25 {
+      flex: 0 0 20%;
+      max-width: 20%;
+      padding-left: 5px;
+      padding-right: 5px;
+    }
+    .col-cctv-36 {
       flex: 0 0 16.666667%;
       max-width: 16.666667%;
-      padding-left: 6px;
-      padding-right: 6px;
+      padding-left: 4px;
+      padding-right: 4px;
     }
     .col-cctv-64 {
       flex: 0 0 12.5%;
       max-width: 12.5%;
-      padding-left: 4px;
-      padding-right: 4px;
+      padding-left: 3px;
+      padding-right: 3px;
     }
     .col-cctv-128 {
       flex: 0 0 8.333333%;
       max-width: 8.333333%;
-      padding-left: 3px;
-      padding-right: 3px;
+      padding-left: 2px;
+      padding-right: 2px;
     }
 
     @media (max-width: 1400px) {
-      .col-cctv-32 { flex: 0 0 20%; max-width: 20%; }
+      .col-cctv-25 { flex: 0 0 25%; max-width: 25%; }
+      .col-cctv-36 { flex: 0 0 20%; max-width: 20%; }
       .col-cctv-64 { flex: 0 0 16.666667%; max-width: 16.666667%; }
       .col-cctv-128 { flex: 0 0 12.5%; max-width: 12.5%; }
     }
 
     @media (max-width: 1200px) {
-      .col-cctv-32 { flex: 0 0 25%; max-width: 25%; }
+      .col-cctv-25 { flex: 0 0 33.333333%; max-width: 33.333333%; }
+      .col-cctv-36 { flex: 0 0 25%; max-width: 25%; }
       .col-cctv-64 { flex: 0 0 20%; max-width: 20%; }
       .col-cctv-128 { flex: 0 0 16.666667%; max-width: 16.666667%; }
     }
 
     @media (max-width: 992px) {
-      .col-cctv-32 { flex: 0 0 33.333333%; max-width: 33.333333%; }
-      .col-cctv-64 { flex: 0 0 25%; max-width: 25%; }
-      .col-cctv-128 { flex: 0 0 20%; max-width: 20%; }
+      .col-cctv-25, .col-cctv-36 { flex: 0 0 50%; max-width: 50%; }
+      .col-cctv-64, .col-cctv-128 { flex: 0 0 25%; max-width: 25%; }
     }
 
     @media (max-width: 768px) {
-      .col-cctv-32, .col-cctv-64, .col-cctv-128 { flex: 0 0 50%; max-width: 50%; }
+      .col-cctv-25, .col-cctv-36, .col-cctv-64, .col-cctv-128 { flex: 0 0 50%; max-width: 50%; }
     }
 
     @media (max-width: 576px) {
-      .col-cctv-32, .col-cctv-64, .col-cctv-128 { flex: 0 0 100%; max-width: 100%; }
+      .col-cctv-25, .col-cctv-36, .col-cctv-64, .col-cctv-128 { flex: 0 0 100%; max-width: 100%; }
     }
 
-    /* Dense Matrix Card Styles for 32, 64, 128 Layouts */
+    /* Dense Matrix Card Styles for 25, 36, 64, 128 Layouts */
     .traffic-card.layout-dense {
       border-radius: 8px !important;
     }
@@ -3967,13 +3974,17 @@
           <div class="filter-group">
             <label style="color: #60a5fa;"><i class="fas fa-th"></i> Layout:</label>
             <select class="filter-select" id="filter-grid" onchange="changeGridLayout(this.value)" style="background: rgba(255,255,255,0.1); color: #fff; border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; padding: 6px 12px; font-weight: 600;">
-              <option value="1" style="color: #111;">📺 1 Layar</option>
-              <option value="4" style="color: #111;">🎛️ 4 Layar (2x2)</option>
-              <option value="8" style="color: #111;">🖥️ 8 Layar (4x2)</option>
-              <option value="16" style="color: #111;">📊 16 Layar (4x4)</option>
-              <option value="32" style="color: #111;">⚡ 32 Layar Matrix</option>
-              <option value="64" style="color: #111;">🌐 64 Layar Matrix</option>
-              <option value="128" style="color: #111;">🚀 128 Layar Matrix</option>
+              <option value="1" style="color: #111;">⬜ View 1</option>
+              <option value="2" style="color: #111;">◫ View 2</option>
+              <option value="4" style="color: #111;">田 View 4</option>
+              <option value="6" style="color: #111;">⊞ View 6</option>
+              <option value="8" style="color: #111;">▥ View 8</option>
+              <option value="9" style="color: #111;">▦ View 9</option>
+              <option value="16" style="color: #111;">🔢 View 16</option>
+              <option value="25" style="color: #111;">🎛️ View 25</option>
+              <option value="36" style="color: #111;">📊 View 36</option>
+              <option value="64" style="color: #111;">🌐 View 64</option>
+              <option value="128" style="color: #111;">🚀 View 128</option>
             </select>
           </div>
           <div id="active-filters" style="display: flex; gap: 5px; flex-wrap: wrap;"></div>
@@ -9212,32 +9223,39 @@
       row.className = 'row wow fadeInUp';
       cctvContainer.appendChild(row);
 
-      // Determine Grid Matrix Layout Class
-      let colClass = 'col-lg-6 col-md-6 col-12 mb-4'; // default 4 layar (2x2)
+      // Determine Grid Matrix Layout Class matching DVR/NVR template
+      let colClass = 'col-lg-6 col-md-6 col-12 mb-4'; // default View 4 (2x2)
       let isDense = false;
       const layoutNum = parseInt(currentGridLayout || '4');
 
       if (layoutNum === 1) {
-        colClass = 'col-lg-12 col-md-12 col-12 mb-4';
+        colClass = 'col-lg-12 col-md-12 col-12 mb-4'; // View 1
       } else if (layoutNum === 2) {
-        colClass = 'col-lg-6 col-md-6 col-12 mb-4';
-      } else if (layoutNum === 3) {
-        colClass = 'col-lg-4 col-md-6 col-12 mb-4';
+        colClass = 'col-lg-6 col-md-6 col-12 mb-4';   // View 2
       } else if (layoutNum === 4) {
-        colClass = 'col-lg-6 col-md-6 col-12 mb-4'; // 4 Layar (2x2)
+        colClass = 'col-lg-6 col-md-6 col-12 mb-4';   // View 4 (2x2)
+      } else if (layoutNum === 6) {
+        colClass = 'col-lg-4 col-md-6 col-12 mb-4';   // View 6 (3x2)
       } else if (layoutNum === 8) {
-        colClass = 'col-xl-3 col-lg-3 col-md-4 col-sm-6 col-12 mb-3'; // 8 Layar (4x2)
+        colClass = 'col-xl-3 col-lg-3 col-md-4 col-sm-6 col-12 mb-3'; // View 8 (4x2)
+      } else if (layoutNum === 9) {
+        colClass = 'col-lg-4 col-md-6 col-12 mb-3';   // View 9 (3x3)
       } else if (layoutNum === 16) {
-        colClass = 'col-xl-3 col-lg-3 col-md-4 col-sm-6 col-12 mb-3'; // 16 Layar (4x4)
-      } else if (layoutNum === 32) {
-        colClass = 'col-cctv-32 mb-2'; // 32 Layar Matrix
+        colClass = 'col-xl-3 col-lg-3 col-md-4 col-sm-6 col-12 mb-3'; // View 16 (4x4)
+      } else if (layoutNum === 25) {
+        colClass = 'col-cctv-25 mb-2'; // View 25 (5x5)
+        isDense = true;
+      } else if (layoutNum === 36) {
+        colClass = 'col-cctv-36 mb-2'; // View 36 (6x6)
         isDense = true;
       } else if (layoutNum === 64) {
-        colClass = 'col-cctv-64 mb-2'; // 64 Layar Matrix
+        colClass = 'col-cctv-64 mb-2'; // View 64 (8x8)
         isDense = true;
       } else if (layoutNum === 128) {
-        colClass = 'col-cctv-128 mb-2'; // 128 Layar Matrix
+        colClass = 'col-cctv-128 mb-2'; // View 128 Matrix
         isDense = true;
+      } else {
+        colClass = 'col-lg-6 col-md-6 col-12 mb-4';
       }
 
       mainCameras.forEach(camera => {
