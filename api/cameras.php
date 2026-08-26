@@ -20,8 +20,41 @@ $db = get_db_data();
 $action = $_GET['action'] ?? $_POST['action'] ?? 'public_list';
 
 if ($action === 'public_list' || $action === 'list') {
+    // If not logged in via session, check if valid user_id is provided
+    if (!$user && !empty($_GET['user_id'])) {
+        $checkId = (int)$_GET['user_id'];
+        foreach ($db['users'] as $u) {
+            if ((int)$u['id'] === $checkId && ($u['status'] ?? 'active') === 'active') {
+                $user = [
+                    'id' => $u['id'],
+                    'name' => $u['name'],
+                    'email' => $u['email'],
+                    'role' => $u['role'],
+                    'cctv_quota' => $u['cctv_quota'] ?? 10,
+                    'city' => $u['city'] ?? 'all'
+                ];
+                break;
+            }
+        }
+    }
+
+    // Require login - unauthenticated users receive 0 cameras
+    if (!$user) {
+        echo json_encode([
+            'success' => false,
+            'logged_in' => false,
+            'message' => 'Autentikasi login diperlukan untuk melihat siaran kamera CCTV.',
+            'cameras' => [],
+            'total' => 0
+        ]);
+        exit;
+    }
+
     $cityFilter = $_GET['city'] ?? 'all';
-    $userIdFilter = isset($_GET['user_id']) ? (int)$_GET['user_id'] : null;
+    $userIdFilter = ($user['role'] === 'super_admin') 
+        ? (isset($_GET['user_id']) ? (int)$_GET['user_id'] : null) 
+        : (int)$user['id']; // Customers can ONLY view their own cameras
+
     $userCameras = [];
     $snSnapshotCache = [];
 
@@ -69,6 +102,8 @@ if ($action === 'public_list' || $action === 'list') {
 
     echo json_encode([
         'success' => true,
+        'logged_in' => true,
+        'user' => $user,
         'cameras' => $userCameras,
         'total' => count($userCameras)
     ]);

@@ -4315,6 +4315,7 @@
     };
 
     const STREAM_BASE = 'https://stream.loewixcctv.com';
+    let currentUser = null;
 
     // ===== DATA KAMERA (100% DISINKRONKAN DENGAN DATABASE ADMIN LOEWIX) =====
     const mediamtxData = [];
@@ -4391,8 +4392,15 @@
           })
           .catch(() => {});
 
-        // 2. Sync Cameras from Database API
-        const apiTarget = 'api/cameras.php?action=public_list';
+        // 2. Sync Cameras from Database API (Requires authentication)
+        if (!currentUser) {
+          mediamtxData.length = 0;
+          if (typeof generateCCTVHTML === 'function') generateCCTVHTML(typeof currentGlobalCity !== 'undefined' ? currentGlobalCity : 'all');
+          return;
+        }
+
+        const userIdParam = (currentUser && currentUser.id) ? `&user_id=${currentUser.id}` : '';
+        const apiTarget = `api/cameras.php?action=public_list${userIdParam}`;
         fetch(apiTarget)
           .then(res => res.json())
           .then(data => {
@@ -4424,6 +4432,12 @@
 
               if (typeof generateCCTVHTML === 'function') generateCCTVHTML(typeof currentGlobalCity !== 'undefined' ? currentGlobalCity : 'all');
               if (typeof initCCTVMap === 'function') initCCTVMap();
+              if (typeof autoPlayCCTVStreams === 'function') {
+                setTimeout(autoPlayCCTVStreams, 300);
+              }
+            } else if (data && !data.logged_in) {
+              mediamtxData.length = 0;
+              if (typeof generateCCTVHTML === 'function') generateCCTVHTML(typeof currentGlobalCity !== 'undefined' ? currentGlobalCity : 'all');
             }
           }).catch(e => {});
       } catch(globalErr) {}
@@ -9000,6 +9014,26 @@
 
       cctvContainer.innerHTML = '';
 
+      // Check authentication status - cameras require login
+      if (!currentUser) {
+        cctvContainer.innerHTML = `
+          <div class="col-12 text-center py-5 my-2 wow fadeInUp" style="background: rgba(13, 24, 54, 0.75); border: 1px solid rgba(0, 210, 255, 0.25); border-radius: 24px; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); box-shadow: 0 20px 45px rgba(0, 0, 0, 0.5); padding: 60px 24px;">
+            <div class="mb-4">
+              <div style="width: 86px; height: 86px; margin: 0 auto; background: radial-gradient(circle, rgba(0, 210, 255, 0.22) 0%, rgba(0, 102, 255, 0.05) 70%); border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 1.5px solid rgba(0, 210, 255, 0.45); box-shadow: 0 0 28px rgba(0, 210, 255, 0.28);">
+                <i class="fas fa-lock fa-2x" style="color: #00d2ff;"></i>
+              </div>
+            </div>
+            <h3 class="text-white font-weight-bold mb-2" style="font-size: 22px; letter-spacing: 0.5px;">Akses Siaran CCTV Terproteksi</h3>
+            <p class="text-muted mx-auto mb-4" style="max-width: 520px; font-size: 14px; line-height: 1.6; color: #94a3b8 !important;">
+              Siaran langsung kamera CCTV memerlukan autentikasi login. Silakan login ke akun Loewix Anda untuk melihat dan memantau live streaming kamera CCTV enterprise Anda.
+            </p>
+            <button class="btn" onclick="openLoginModal()" style="background: linear-gradient(135deg, #00d2ff, #0066ff); border: none; font-weight: 700; border-radius: 30px; padding: 12px 36px; color: #fff; box-shadow: 0 6px 20px rgba(0, 102, 255, 0.45); font-size: 13px; letter-spacing: 0.8px; text-transform: uppercase;">
+              <i class="fas fa-sign-in-alt mr-2"></i> LOGIN UNTUK MELIHAT CCTV
+            </button>
+          </div>`;
+        return;
+      }
+
       // Filter kamera berdasarkan city & bukan section pasar-horas
       const selectedCity = (filterCity || 'all').toLowerCase();
       let mainCameras = mediamtxData.filter(cam => {
@@ -9013,7 +9047,7 @@
           <div class="col-12 text-center py-5">
             <i class="fas fa-video-slash fa-3x mb-3 text-muted"></i>
             <h5 class="text-white">Belum Ada Kamera CCTV di Wilayah Ini</h5>
-            <p class="text-muted">Pilih wilayah lain atau tambahkan kamera di mediamtxData</p>
+            <p class="text-muted">Tidak ada kamera aktif untuk akun Anda di wilayah ini.</p>
           </div>`;
         return;
       }
@@ -9638,6 +9672,7 @@
 
     // ===== AUTOPLAY LIVE CCTV STREAMS =====
     function autoPlayCCTVStreams() {
+      if (!currentUser) return; // Do not autoplay when unauthenticated
       console.log('[AutoPlay] Starting active CCTV video streams...');
       const thumbnails = document.querySelectorAll('.thumbnail-overlay[data-stream-path]');
 
@@ -11630,8 +11665,11 @@
       fetch('api/auth.php?action=check_session')
         .then(res => res.json())
         .then(data => {
-          if (data.logged_in) {
-            renderUserSessionUI(data.user);
+          if (data.logged_in && data.user) {
+            currentUser = data.user;
+            localStorage.setItem('loewix_user', JSON.stringify(data.user));
+            renderUserSessionUI(currentUser);
+            syncCustomLocalStorageCameras();
           } else {
             checkLocalStorageSession();
           }
@@ -11646,11 +11684,18 @@
       if (stored) {
         try {
           const user = JSON.parse(stored);
-          renderUserSessionUI(user);
-          return;
+          if (user && user.id) {
+            currentUser = user;
+            renderUserSessionUI(user);
+            syncCustomLocalStorageCameras();
+            return;
+          }
         } catch(e) {}
       }
+      currentUser = null;
       renderUserSessionUI(null);
+      mediamtxData.length = 0;
+      if (typeof generateCCTVHTML === 'function') generateCCTVHTML(currentGlobalCity);
     }
 
     function renderUserSessionUI(user) {
@@ -11711,32 +11756,38 @@
       })
       .then(res => res.json())
       .then(res => {
-        alert(res.message);
         if (res.success) {
+          alert(res.message);
           $('#modalLogin').modal('hide');
-          checkUserSession();
+          currentUser = res.user;
+          localStorage.setItem('loewix_user', JSON.stringify(res.user));
+          renderUserSessionUI(res.user);
           if (res.user && res.user.role === 'super_admin') {
             window.location.href = 'admin/index.html';
           } else {
-            generateCCTVHTML(currentGlobalCity);
+            syncCustomLocalStorageCameras();
           }
+        } else {
+          alert(res.message || 'Email atau Password salah!');
         }
       })
       .catch(err => {
         // Fallback for Vercel static serverless hosting
         if (email === 'admin@loewixcctv.com' && password === 'admin123') {
           const user = { id: 1, name: 'Super Admin Loewix', email: email, role: 'super_admin', cctv_quota: 9999, cctv_used: 0 };
+          currentUser = user;
           localStorage.setItem('loewix_user', JSON.stringify(user));
           alert('Login Super Admin Berhasil!');
           $('#modalLogin').modal('hide');
           window.location.href = 'admin/index.html';
         } else if (email === 'customer@jayasentosa.com' && password === 'customer123') {
           const user = { id: 2, name: 'PT. Jaya Sentosa Enterprise', email: email, role: 'customer', cctv_quota: 10, cctv_used: 0 };
+          currentUser = user;
           localStorage.setItem('loewix_user', JSON.stringify(user));
-          alert('Login Customer Berhasil! Kuota 10 CCTV Aktif.');
+          alert('Login Customer Berhasil!');
           $('#modalLogin').modal('hide');
-          checkUserSession();
-          generateCCTVHTML(currentGlobalCity);
+          renderUserSessionUI(user);
+          syncCustomLocalStorageCameras();
         } else {
           alert('Email atau Password salah!');
         }
@@ -11745,8 +11796,10 @@
 
     function logoutUser() {
       localStorage.removeItem('loewix_user');
+      currentUser = null;
+      mediamtxData.length = 0;
       fetch('api/auth.php?action=logout').finally(() => {
-        checkLocalStorageSession();
+        renderUserSessionUI(null);
         generateCCTVHTML(currentGlobalCity);
       });
     }
