@@ -4336,6 +4336,9 @@
             const list = JSON.parse(cached);
             if (Array.isArray(list) && list.length > 0) {
               list.forEach(c => mediamtxData.push(c));
+              currentUser.cctv_used = list.length;
+              localStorage.setItem('loewix_user', JSON.stringify(currentUser));
+              if (typeof renderUserSessionUI === 'function') renderUserSessionUI(currentUser);
             }
           }
         } catch(e) {}
@@ -4451,6 +4454,13 @@
                   thumbnail: c.thumbnail || (ASSET_BASE + '/image/logo-loewix.png')
                 });
               });
+
+              if (currentUser) {
+                currentUser.cctv_used = mediamtxData.length;
+                if (data.user && data.user.cctv_quota) currentUser.cctv_quota = data.user.cctv_quota;
+                localStorage.setItem('loewix_user', JSON.stringify(currentUser));
+                if (typeof renderUserSessionUI === 'function') renderUserSessionUI(currentUser);
+              }
 
               if (currentUser && currentUser.id) {
                 try {
@@ -11747,6 +11757,10 @@
       if (!userArea) return;
 
       if (user) {
+        const usedCount = (user && typeof user.cctv_used === 'number' && user.cctv_used > 0) 
+          ? user.cctv_used 
+          : (Array.isArray(mediamtxData) && mediamtxData.length > 0 ? mediamtxData.length : (user.cctv_used || 0));
+
         if (user.role === 'super_admin') {
           userArea.innerHTML = `
             <a href="admin/index.html" class="btn btn-sm btn-outline-warning font-weight-bold d-inline-flex align-items-center" style="border-radius: 20px; font-size: 11px; white-space: nowrap; padding: 5px 12px; gap: 5px;" title="Buka Super Admin Control Center">
@@ -11759,7 +11773,7 @@
         } else {
           userArea.innerHTML = `
             <div class="badge badge-info p-2 d-inline-flex align-items-center" style="border-radius: 20px; font-size: 11px; background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.3); color: #38bdf8; white-space: nowrap; gap: 5px;" title="Kuota Live Stream Customer">
-              <i class="fas fa-layer-group"></i> <span>KUOTA: ${user.cctv_used || 0} / ${user.cctv_quota || 10} CCTV</span>
+              <i class="fas fa-layer-group"></i> <span>KUOTA: ${usedCount} / ${user.cctv_quota || 20} CCTV</span>
             </div>
             <button class="btn btn-sm btn-danger d-inline-flex align-items-center justify-content-center" onclick="logoutUser(event)" style="border-radius: 50%; width: 32px; height: 32px; padding: 0; background: rgba(239, 68, 68, 0.2); border: 1px solid rgba(239, 68, 68, 0.4); color: #ef4444;" title="Logout Akun">
               <i class="fas fa-sign-out-alt" style="font-size: 13px;"></i>

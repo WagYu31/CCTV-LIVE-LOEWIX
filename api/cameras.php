@@ -91,6 +91,8 @@ if ($action === 'public_list' || $action === 'list') {
         }
     }
 
+    $user['cctv_used'] = count($userCameras);
+
     echo json_encode([
         'success' => true,
         'logged_in' => true,

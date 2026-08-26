@@ -46,12 +46,21 @@ if ($action === 'login') {
         exit;
     }
 
+    // Count active cameras for this user
+    $usedCount = 0;
+    foreach ($db['cameras'] as $cam) {
+        if ($foundUser['role'] === 'super_admin' || (int)($cam['user_id'] ?? 0) === (int)$foundUser['id']) {
+            $usedCount++;
+        }
+    }
+
     // Set Session
     $_SESSION['user_id'] = $foundUser['id'];
     $_SESSION['user_name'] = $foundUser['name'];
     $_SESSION['user_email'] = $foundUser['email'];
     $_SESSION['user_role'] = $foundUser['role'];
     $_SESSION['cctv_quota'] = $foundUser['cctv_quota'];
+    $_SESSION['cctv_used'] = $usedCount;
     $_SESSION['user_city'] = $foundUser['city'];
 
     echo json_encode([
@@ -63,6 +72,7 @@ if ($action === 'login') {
             'email' => $foundUser['email'],
             'role' => $foundUser['role'],
             'cctv_quota' => $foundUser['cctv_quota'],
+            'cctv_used' => $usedCount,
             'city' => $foundUser['city']
         ]
     ]);
