@@ -610,60 +610,74 @@
 
     /* Dense Matrix Card Styles for 25, 36, 64, 128 Layouts */
     .traffic-card.layout-dense {
-      border-radius: 8px !important;
+      border-radius: 6px !important;
     }
     .traffic-card.layout-dense .traffic-card-iframe {
-      border-radius: 8px 8px 0 0 !important;
+      border-radius: 6px 6px 0 0 !important;
     }
     .traffic-card.layout-dense .traffic-card-content {
-      padding: 6px 8px !important;
-      gap: 3px !important;
+      padding: 4px 6px !important;
+      gap: 2px !important;
     }
     .traffic-card.layout-dense .card-footer-top-row {
       display: flex !important;
       align-items: center !important;
       justify-content: space-between !important;
-      gap: 4px !important;
+      gap: 3px !important;
     }
     .traffic-card.layout-dense .card-location-title {
-      font-size: 11px !important;
-      font-weight: 600;
-      gap: 4px !important;
+      font-size: 10px !important;
+      font-weight: 600 !important;
+      gap: 3px !important;
       min-width: 0 !important;
       flex: 1 1 auto !important;
-      max-width: calc(100% - 55px) !important;
+      max-width: calc(100% - 46px) !important;
+      line-height: 1.1 !important;
     }
     .traffic-card.layout-dense .card-location-title span {
-      font-size: 11px !important;
-      font-weight: 600;
+      font-size: 10px !important;
+      font-weight: 600 !important;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
     }
     .traffic-card.layout-dense .card-location-title i {
-      font-size: 11px !important;
+      font-size: 9px !important;
     }
     .traffic-card.layout-dense .card-action-toolbar {
       display: flex !important;
       align-items: center !important;
-      gap: 3px !important;
+      gap: 2px !important;
       flex-shrink: 0 !important;
     }
     .traffic-card.layout-dense .card-action-toolbar .action-btn {
-      width: 22px !important;
-      height: 22px !important;
-      min-width: 22px !important;
-      font-size: 9px !important;
+      width: 19px !important;
+      height: 19px !important;
+      min-width: 19px !important;
+      font-size: 8px !important;
       padding: 0 !important;
     }
+    .traffic-card.layout-dense .card-footer-meta-row {
+      font-size: 8px !important;
+      padding-top: 1px !important;
+      gap: 3px !important;
+    }
+    .traffic-card.layout-dense .card-meta-code {
+      font-size: 8px !important;
+      gap: 2px !important;
+    }
+    .traffic-card.layout-dense .card-meta-ai {
+      font-size: 8px !important;
+      gap: 2px !important;
+    }
     .traffic-card.layout-dense .traffic-card-status-bar {
-      padding: 2px 4px !important;
-      font-size: 9px !important;
+      padding: 1px 3px !important;
+      font-size: 8px !important;
     }
     .traffic-card.layout-dense .traffic-status-badge,
     .traffic-card.layout-dense .ai-badge {
-      font-size: 8px !important;
-      padding: 2px 4px !important;
+      font-size: 7.5px !important;
+      padding: 1px 3px !important;
     }
 
     /* ===== XMEYE VMS CONTROL DOCK & SIDEBAR STYLING ===== */
@@ -980,12 +994,12 @@
 
     /* Card Footer Command Center Panel */
     .traffic-card-content {
-      padding: 14px 16px;
+      padding: 6px 10px !important;
       background: #ffffff;
       border-top: 1px solid #f1f5f9;
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 3px;
     }
 
     body.dark-mode .traffic-card-content {
@@ -997,20 +1011,21 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 10px;
+      gap: 6px;
     }
 
     .card-location-title {
-      font-size: 15px;
+      font-size: 13px;
       font-weight: 700;
       color: #0f172a;
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      max-width: calc(100% - 75px);
+      max-width: calc(100% - 60px);
+      line-height: 1.2;
     }
 
     body.dark-mode .card-location-title {
@@ -1019,7 +1034,7 @@
 
     .card-location-title i {
       color: #0284c7;
-      font-size: 14px;
+      font-size: 12px;
       flex-shrink: 0;
     }
 
@@ -1030,21 +1045,24 @@
     .card-action-toolbar {
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 4px;
+      flex-shrink: 0;
     }
 
     .card-action-toolbar .action-btn {
       background: #f1f5f9;
       color: #475569;
       border: 1px solid #cbd5e1;
-      width: 32px;
-      height: 32px;
+      width: 24px;
+      height: 24px;
+      min-width: 24px;
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
-      font-size: 12px;
+      font-size: 10px;
+      padding: 0;
       transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
@@ -1059,14 +1077,14 @@
       color: #ffffff;
       border-color: #0284c7;
       transform: scale(1.1);
-      box-shadow: 0 0 12px rgba(2, 132, 199, 0.4);
+      box-shadow: 0 0 10px rgba(2, 132, 199, 0.4);
     }
 
     body.dark-mode .card-action-toolbar .action-btn:hover {
       background: #38bdf8;
       color: #0f172a;
       border-color: #38bdf8;
-      box-shadow: 0 0 12px rgba(56, 189, 248, 0.5);
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.5);
     }
 
     .card-action-toolbar .action-btn.active {
@@ -1085,10 +1103,14 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      font-size: 11px;
+      font-size: 9.5px;
       font-weight: 600;
       color: #64748b;
-      padding-top: 4px;
+      padding-top: 1px;
+      gap: 4px;
+      white-space: nowrap;
+      overflow: hidden;
+      line-height: 1.2;
     }
 
     body.dark-mode .card-footer-meta-row {
@@ -1098,7 +1120,15 @@
     .card-meta-code {
       color: #0284c7;
       font-weight: 700;
-      letter-spacing: 0.5px;
+      letter-spacing: 0.3px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      min-width: 0;
+      font-size: 9.5px;
     }
 
     body.dark-mode .card-meta-code {
@@ -1107,63 +1137,17 @@
 
     .card-meta-ai {
       color: #0284c7;
+      font-weight: 700;
+      font-size: 9px;
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      flex-shrink: 0;
+      white-space: nowrap;
     }
 
     body.dark-mode .card-meta-ai {
       color: #38bdf8;
-    }
-
-    /* Card Footer Content */
-    .traffic-card-content {
-      padding: 16px 20px;
-      background: #ffffff;
-      border-top: 1px solid rgba(0, 0, 0, 0.04);
-    }
-
-    body.dark-mode .traffic-card-content {
-      background: #1e293b;
-      border-top: 1px solid rgba(255, 255, 255, 0.06);
-    }
-
-    .card-footer-flex {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      width: 100%;
-    }
-
-    .card-location {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      color: #1f2937;
-      font-weight: 600;
-      font-size: 14px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      max-width: 75%;
-    }
-
-    body.dark-mode .card-location {
-      color: #f3f4f6;
-    }
-
-    .card-location i {
-      color: #6b7280;
-      font-size: 14px;
-    }
-
-    .card-cam-code {
-      font-size: 12px;
-      font-weight: 700;
-      color: #6b7280;
-      letter-spacing: 0.5px;
-      text-transform: uppercase;
-    }
-
-    body.dark-mode .card-cam-code {
-      color: #9ca3af;
     }
 
     .thumbnail-overlay {
@@ -9787,14 +9771,14 @@
                   </div>
                   <div class="card-footer-meta-row">
                     <div class="card-meta-code">
-                      <span style="display: inline-flex; align-items: center; gap: 5px; color: #10b981; font-weight: 800; margin-right: 6px;">
-                        <span style="width: 7px; height: 7px; background-color: #10b981; border-radius: 50%; display: inline-block; box-shadow: 0 0 6px #10b981;"></span> LIVE
+                      <span style="display: inline-flex; align-items: center; gap: 4px; color: #10b981; font-weight: 800; margin-right: 4px;">
+                        <span style="width: 6px; height: 6px; background-color: #10b981; border-radius: 50%; display: inline-block; box-shadow: 0 0 5px #10b981;"></span> LIVE
                       </span>
-                      <span style="background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.35); font-size: 9px; font-weight: 800; padding: 1px 5px; border-radius: 4px; margin-right: 6px; letter-spacing: 0.3px;">AUTO</span>
-                      ${camera.connection_type === 'xmeye_p2p' ? `<span style="color: #38bdf8; font-weight: 700;">• XMEYE P2P (CH ${camera.channel || 1})</span>` : `• RTSP • CAM-${String(camera.id).padStart(2, '0')}`}
+                      <span style="background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.35); font-size: 8.5px; font-weight: 800; padding: 0 4px; border-radius: 3px; margin-right: 4px; letter-spacing: 0.2px;">AUTO</span>
+                      ${camera.connection_type === 'xmeye_p2p' ? `<span style="color: #38bdf8; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">• XMEYE P2P (CH ${camera.channel || 1})</span>` : `<span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">• RTSP • CAM-${String(camera.id).padStart(2, '0')}</span>`}
                     </div>
-                    <div class="card-meta-ai" style="font-weight: 700; font-size: 10px; display: inline-flex; align-items: center; gap: 4px;">
-                      <i class="fas fa-microchip" style="color: #d97706;"></i> AI ANALYTICS
+                    <div class="card-meta-ai">
+                      <i class="fas fa-microchip" style="color: #d97706; font-size: 8.5px;"></i> AI ANALYTICS
                     </div>
                   </div>
                 </div>
