@@ -7770,41 +7770,40 @@
             console.log('[MediaMTX/JFTech] Loading HLS URL:', targetUrl);
 
             if (typeof Hls !== 'undefined' && Hls.isSupported()) {
-              // ===== INSTANT PLAYBACK OPTIMIZATION CONFIGURATION =====
+              // ===== ANTI-BUFFERING & ULTRA-STABLE STREAM CONFIGURATION =====
               const hls = new Hls({
-                debug: false,
                 enableWorker: true,
-                xhrSetup: function(xhr, url) {
-                  try {
-                    xhr.setRequestHeader('Bypass-Tunnel-Reminder', 'true');
-                    xhr.setRequestHeader('ngrok-skip-browser-warning', 'true');
-                  } catch (e) {}
-                },
-
-                // ===== INSTANT PLAYBACK OPTIMIZATION =====
                 lowLatencyMode: true,
-                maxBufferLength: 3,
-                maxMaxBufferLength: 10,
-                maxBufferSize: 10 * 1000 * 1000,
-                backBufferLength: 30,
+                liveSyncDurationCount: 3,        // Maintain healthy 3-segment cushion to prevent buffer starvation
+                liveMaxLatencyDurationCount: 7,  // Keep real-time sync without falling too far behind
+                maxBufferLength: 4,              // Target 4s forward buffer
+                maxMaxBufferLength: 8,           // Max 8s forward buffer per camera
+                maxBufferSize: 8 * 1024 * 1024,  // 8MB RAM per stream to prevent memory exhaustion in multi-grid
+                backBufferLength: 0,             // Immediately purge played frames from RAM
+                maxFragLoadingTimeMs: 15000,     // 15s timeout for P2P segments before retrying
                 maxLoadingDelay: 0,
-                maxFragLoadingTimeMs: 6000,
-                manifestLoadingTimeOut: 8000,
+                manifestLoadingTimeOut: 12000,
                 manifestLoadingMaxRetry: 10,
-                manifestLoadingRetryDelay: 800,
-                levelLoadingMaxRetry: 5,
-                fragLoadingMaxRetry: 5,
+                manifestLoadingRetryDelay: 1000,
+                levelLoadingMaxRetry: 6,
+                fragLoadingMaxRetry: 6,
                 startLevel: 0,
                 capLevelToPlayerSize: true,
                 abrEwmaDefaultEstimate: 1000000,
                 abrBandWidthFactor: 0.8,
                 abrBandWidthUpFactor: 0.5,
                 enableSoftwareAES: false,
-                maxBufferHole: 0.3,
-                highBufferWatchdogPeriod: 1,
-                nudgeOffset: 0.05,
-                nudgeMaxRetry: 2,
-                progressive: true
+                maxBufferHole: 0.5,              // Seamlessly jump across micro PTS/DTS encoder gaps
+                highBufferWatchdogPeriod: 2,
+                nudgeOffset: 0.1,
+                nudgeMaxRetry: 5,
+                progressive: true,
+                xhrSetup: function(xhr, url) {
+                  try {
+                    xhr.setRequestHeader('Bypass-Tunnel-Reminder', 'true');
+                    xhr.setRequestHeader('ngrok-skip-browser-warning', 'true');
+                  } catch (e) {}
+                }
               });
 
               hls.loadSource(targetUrl);
@@ -7831,11 +7830,29 @@
                 videoPlayer.style.display = 'block';
                 videoPlayer.classList.remove('hidden-iframe');
 
+                videoPlayer.muted = true;
                 videoPlayer.play().catch(function(e) {
-                  console.log('[Stream] Autoplay prevented, retrying muted:', e);
-                  videoPlayer.muted = true;
+                  console.log('[Stream] Autoplay retry muted:', e);
                   videoPlayer.play().catch(function() {});
                 });
+
+                activePlayers.add(playerId);
+                const offlineId = 'offline-' + thumbId.split('-')[1];
+                enableAutoRefreshForPlayer(playerId, 'mediamtx', streamPath, thumbId, offlineId);
+                resetAutoRefreshState(playerId);
+              });
+
+              // Auto-recover from stalls smoothly
+              hls.on(Hls.Events.BUFFER_STALLED, function() {
+                if (videoPlayer.buffered.length > 0) {
+                  const end = videoPlayer.buffered.end(videoPlayer.buffered.length - 1);
+                  if (Math.abs(videoPlayer.currentTime - end) > 0.5) {
+                    videoPlayer.currentTime = end - 0.2;
+                  }
+                }
+                if (videoPlayer.paused) {
+                  videoPlayer.play().catch(function() {});
+                }
               });
 
               hls.on(Hls.Events.FRAG_BUFFERED, function() {
@@ -7869,7 +7886,7 @@
                   switch(data.type) {
                     case Hls.ErrorTypes.NETWORK_ERROR:
                       console.log('[Stream] Fatal network error encountered, trying to recover...');
-                      hls.startLoad();
+                      setTimeout(() => hls.startLoad(), 1000);
                       break;
                     case Hls.ErrorTypes.MEDIA_ERROR:
                       console.log('[Stream] Fatal media error encountered, trying to recover...');
@@ -7878,7 +7895,6 @@
                     default:
                       console.error('[Stream] Fatal unrecoverable error:', data.details);
                       hls.destroy();
-                      if (bufferingOverlay) bufferingOverlay.style.display = 'none';
                       showOfflineMessage(playerId, thumbId);
                       break;
                   }
@@ -8525,27 +8541,29 @@
               debug: false,
               enableWorker: true,
               lowLatencyMode: true,
-              maxBufferLength: 3,
-              maxMaxBufferLength: 10,
-              maxBufferSize: 10 * 1000 * 1000,
-              backBufferLength: 30,
+              liveSyncDurationCount: 3,
+              liveMaxLatencyDurationCount: 7,
+              maxBufferLength: 6,
+              maxMaxBufferLength: 12,
+              maxBufferSize: 16 * 1024 * 1024,
+              backBufferLength: 0,
               maxLoadingDelay: 0,
-              maxFragLoadingTimeMs: 4000,
-              manifestLoadingTimeOut: 8000,
-              manifestLoadingMaxRetry: 5,
-              manifestLoadingRetryDelay: 500,
-              levelLoadingMaxRetry: 3,
-              fragLoadingMaxRetry: 3,
+              maxFragLoadingTimeMs: 15000,
+              manifestLoadingTimeOut: 12000,
+              manifestLoadingMaxRetry: 10,
+              manifestLoadingRetryDelay: 1000,
+              levelLoadingMaxRetry: 6,
+              fragLoadingMaxRetry: 6,
               startLevel: 0,
               capLevelToPlayerSize: true,
               abrEwmaDefaultEstimate: 1000000,
               abrBandWidthFactor: 0.8,
               abrBandWidthUpFactor: 0.5,
               enableSoftwareAES: false,
-              maxBufferHole: 0.3,
-              highBufferWatchdogPeriod: 1,
-              nudgeOffset: 0.05,
-              nudgeMaxRetry: 2,
+              maxBufferHole: 0.5,
+              highBufferWatchdogPeriod: 2,
+              nudgeOffset: 0.1,
+              nudgeMaxRetry: 5,
               progressive: true
             });
 
@@ -9745,7 +9763,7 @@
           if (typeof playMediaMTXCCTV === 'function' && thumb) {
             playMediaMTXCCTV(thumb, playerId, thumb.id);
           }
-        }, index * 80);
+        }, index * 200);
       });
     }
 
