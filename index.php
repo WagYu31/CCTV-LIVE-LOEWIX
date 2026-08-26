@@ -636,6 +636,318 @@
       padding: 2px 4px !important;
     }
 
+    /* ===== XMEYE VMS CONTROL DOCK & SIDEBAR STYLING ===== */
+    .vms-dock-wrapper {
+      position: sticky;
+      bottom: 24px;
+      left: 0;
+      width: 100%;
+      z-index: 1000;
+      display: flex;
+      justify-content: center;
+      margin-top: 24px;
+      pointer-events: none;
+    }
+
+    .vms-control-dock {
+      pointer-events: auto;
+      background: rgba(15, 23, 42, 0.94);
+      border: 1px solid rgba(56, 189, 248, 0.35);
+      border-radius: 40px;
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      padding: 8px 18px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.7), 0 0 25px rgba(0, 102, 255, 0.25);
+    }
+
+    .vms-dock-left, .vms-dock-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .vms-stat-item {
+      font-size: 11px;
+      color: #94a3b8;
+      font-family: monospace;
+      white-space: nowrap;
+    }
+    .vms-stat-val {
+      font-weight: 700;
+    }
+
+    .vms-dock-center {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      background: rgba(30, 41, 59, 0.85);
+      padding: 4px 8px;
+      border-radius: 30px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      overflow-x: auto;
+      max-width: 75vw;
+    }
+
+    .vms-layout-btn {
+      background: transparent;
+      border: 1px solid transparent;
+      color: #94a3b8;
+      width: 38px;
+      height: 34px;
+      border-radius: 8px;
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      line-height: 1;
+      padding: 0;
+      flex-shrink: 0;
+    }
+
+    .vms-layout-btn i {
+      font-size: 12px;
+      margin-bottom: 2px;
+    }
+
+    .vms-layout-btn span {
+      font-size: 10px;
+    }
+
+    .vms-layout-btn:hover {
+      background: rgba(255, 255, 255, 0.12);
+      color: #fff;
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .vms-layout-btn.active {
+      background: linear-gradient(135deg, #00d2ff, #0066ff) !important;
+      color: #ffffff !important;
+      box-shadow: 0 0 15px rgba(0, 210, 255, 0.5);
+      border-color: transparent !important;
+    }
+
+    .vms-badge-icon {
+      font-size: 11px !important;
+      font-weight: 800;
+      border: 1px solid currentColor;
+      border-radius: 4px;
+      padding: 2px 4px;
+      display: inline-block;
+    }
+
+    .vms-tool-btn {
+      background: rgba(30, 41, 59, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #38bdf8;
+      border-radius: 20px;
+      padding: 7px 14px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+
+    .vms-tool-btn:hover {
+      background: #38bdf8;
+      color: #0f172a;
+    }
+
+    /* VMS Cell OSD Header */
+    .vms-osd-topbar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 28px;
+      background: linear-gradient(180deg, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 70%, transparent 100%);
+      z-index: 15;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 10px;
+      pointer-events: auto;
+    }
+
+    .vms-osd-left {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: #fff;
+      font-size: 11px;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 60%;
+    }
+
+    .vms-osd-cam-icon {
+      color: #38bdf8;
+      font-size: 10px;
+    }
+
+    .vms-osd-title {
+      color: #e2e8f0;
+      letter-spacing: 0.3px;
+    }
+
+    .vms-osd-right {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .vms-osd-badge {
+      background: rgba(32, 191, 107, 0.25);
+      color: #20bf6b;
+      border: 1px solid rgba(32, 191, 107, 0.5);
+      font-size: 9px;
+      font-weight: 800;
+      padding: 1px 6px;
+      border-radius: 4px;
+      text-transform: uppercase;
+    }
+
+    .vms-osd-btn {
+      background: transparent;
+      border: none;
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 11px;
+      padding: 2px 4px;
+      cursor: pointer;
+      transition: color 0.15s;
+    }
+    .vms-osd-btn:hover {
+      color: #38bdf8;
+    }
+
+    /* VMS Device Tree Sidebar */
+    .vms-device-sidebar {
+      position: fixed;
+      top: 90px;
+      right: -360px;
+      width: 330px;
+      height: calc(100vh - 120px);
+      background: rgba(15, 23, 42, 0.95);
+      border: 1px solid rgba(56, 189, 248, 0.35);
+      border-radius: 16px;
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      box-shadow: -15px 0 35px rgba(0, 0, 0, 0.6);
+      z-index: 10000;
+      transition: right 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .vms-device-sidebar.open {
+      right: 20px;
+    }
+
+    .vms-sidebar-header {
+      padding: 14px 18px;
+      background: #0f172a;
+      border-bottom: 1px solid #1e293b;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: #fff;
+    }
+
+    .vms-sidebar-header h6 {
+      margin: 0;
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+
+    .vms-close-btn {
+      background: transparent;
+      border: none;
+      color: #94a3b8;
+      font-size: 20px;
+      cursor: pointer;
+      line-height: 1;
+    }
+
+    .vms-sidebar-search {
+      padding: 10px 14px;
+      background: #1e293b;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .vms-sidebar-search input {
+      width: 100%;
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      padding: 6px 12px;
+      color: #fff;
+      font-size: 12px;
+      outline: none;
+    }
+
+    .vms-device-tree {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px;
+    }
+
+    .vms-tree-group {
+      margin-bottom: 10px;
+    }
+
+    .vms-group-header {
+      font-size: 12px;
+      font-weight: 700;
+      color: #38bdf8;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 8px;
+      background: rgba(56, 189, 248, 0.1);
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .vms-cam-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 12px;
+      color: #cbd5e1;
+      font-size: 12px;
+      cursor: pointer;
+      border-radius: 4px;
+      transition: background 0.15s;
+    }
+
+    .vms-cam-item:hover {
+      background: rgba(255, 255, 255, 0.08);
+      color: #fff;
+    }
+
+    .vms-cam-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #20bf6b;
+      box-shadow: 0 0 6px #20bf6b;
+      flex-shrink: 0;
+    }
+
     /* Card Footer Command Center Panel */
     .traffic-card-content {
       padding: 14px 16px;
@@ -4038,6 +4350,51 @@
 
         <!-- Dynamic CCTV Content Container -->
         <div id="cctv-container"></div>
+
+        <!-- ===== XMEYE VMS FLOATING CONTROL DOCK ===== -->
+        <div class="vms-dock-wrapper">
+          <div class="vms-control-dock" id="vms-control-dock">
+            <div class="vms-dock-left">
+              <div class="vms-stat-item"><span class="vms-stat-label">Loewix VMS:</span> <span class="vms-stat-val text-success">ONLINE</span></div>
+              <div class="vms-stat-item d-none d-lg-block"><span class="vms-stat-label">Engine:</span> <span class="vms-stat-val text-info">H.264 P2P</span></div>
+            </div>
+
+            <div class="vms-dock-center">
+              <button class="vms-layout-btn" onclick="changeGridLayout(1)" data-layout="1" title="View 1 (1 Layar)"><i class="far fa-square"></i><span>1</span></button>
+              <button class="vms-layout-btn" onclick="changeGridLayout(2)" data-layout="2" title="View 2 (2 Layar)"><i class="fas fa-columns"></i><span>2</span></button>
+              <button class="vms-layout-btn" onclick="changeGridLayout(4)" data-layout="4" title="View 4 (2x2 Layar)"><i class="fas fa-th-large"></i><span>4</span></button>
+              <button class="vms-layout-btn" onclick="changeGridLayout(6)" data-layout="6" title="View 6 (3x2 Layar)"><i class="fas fa-th"></i><span>6</span></button>
+              <button class="vms-layout-btn" onclick="changeGridLayout(8)" data-layout="8" title="View 8 (4x2 Layar)"><i class="fas fa-border-all"></i><span>8</span></button>
+              <button class="vms-layout-btn" onclick="changeGridLayout(9)" data-layout="9" title="View 9 (3x3 Layar)"><i class="fas fa-grip-horizontal"></i><span>9</span></button>
+              <button class="vms-layout-btn" onclick="changeGridLayout(16)" data-layout="16" title="View 16 (4x4 Layar)"><span class="vms-badge-icon">16</span></button>
+              <button class="vms-layout-btn" onclick="changeGridLayout(25)" data-layout="25" title="View 25 (5x5 Layar)"><span class="vms-badge-icon">25</span></button>
+              <button class="vms-layout-btn" onclick="changeGridLayout(36)" data-layout="36" title="View 36 (6x6 Layar)"><span class="vms-badge-icon">36</span></button>
+              <button class="vms-layout-btn" onclick="changeGridLayout(64)" data-layout="64" title="View 64 (8x8 Layar)"><span class="vms-badge-icon">64</span></button>
+              <button class="vms-layout-btn" onclick="changeGridLayout(128)" data-layout="128" title="View 128 Matrix"><span class="vms-badge-icon">128</span></button>
+              <button class="vms-layout-btn vms-fs-btn" onclick="toggleVMSFullscreen()" title="Fullscreen Matrix"><i class="fas fa-expand"></i></button>
+            </div>
+
+            <div class="vms-dock-right">
+              <button class="vms-tool-btn" onclick="toggleVMSDeviceSidebar()" title="Buka Daftar Kamera (Devices)">
+                <i class="fas fa-video"></i> <span class="d-none d-md-inline">Devices</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== XMEYE VMS DEVICE TREE SIDEBAR ===== -->
+        <div class="vms-device-sidebar" id="vms-device-sidebar">
+          <div class="vms-sidebar-header">
+            <h6><i class="fas fa-server text-info mr-2"></i> Devices & Channels</h6>
+            <button class="vms-close-btn" onclick="toggleVMSDeviceSidebar()">&times;</button>
+          </div>
+          <div class="vms-sidebar-search">
+            <input type="text" id="vms-device-search" placeholder="Cari nama kamera / channel..." onkeyup="filterVMSDevices(this.value)">
+          </div>
+          <div class="vms-device-tree" id="vms-device-tree-list">
+            <!-- Dynamic VMS Device Tree -->
+          </div>
+        </div>
       </div>
     </div>
   </section>
@@ -9036,10 +9393,90 @@
     let currentGlobalCity = 'all';
     let currentGridLayout = parseInt(localStorage.getItem('loewix_grid_layout') || '4');
 
+    function syncVMSDockActive(val) {
+      const btns = document.querySelectorAll('.vms-layout-btn');
+      btns.forEach(btn => {
+        if (btn.getAttribute('data-layout') === String(val)) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+        }
+      });
+      const gridSelect = document.getElementById('filter-grid');
+      if (gridSelect) gridSelect.value = String(val);
+    }
+
     function changeGridLayout(val) {
       currentGridLayout = parseInt(val);
       localStorage.setItem('loewix_grid_layout', val);
+      syncVMSDockActive(val);
       generateCCTVHTML(currentGlobalCity);
+    }
+
+    function toggleVMSDeviceSidebar() {
+      const sidebar = document.getElementById('vms-device-sidebar');
+      if (!sidebar) return;
+      sidebar.classList.toggle('open');
+      if (sidebar.classList.contains('open')) {
+        renderVMSDeviceTree();
+      }
+    }
+
+    function renderVMSDeviceTree() {
+      const container = document.getElementById('vms-device-tree-list');
+      if (!container || !mediamtxData) return;
+
+      const activeCams = mediamtxData.filter(c => !c.section);
+      let html = `
+        <div class="vms-tree-group">
+          <div class="vms-group-header" onclick="this.nextElementSibling.classList.toggle('d-none')">
+            <i class="fas fa-folder-open"></i> Default Group (${activeCams.length})
+          </div>
+          <div class="vms-group-content mt-1">`;
+
+      activeCams.forEach(cam => {
+        html += `
+          <div class="vms-cam-item" onclick="focusCameraSingle(${cam.id})">
+            <span class="vms-cam-dot"></span>
+            <i class="fas fa-video text-muted" style="font-size:10px;"></i>
+            <span class="text-truncate" style="max-width: 210px;">${cam.title}</span>
+          </div>`;
+      });
+
+      html += `</div></div>`;
+      container.innerHTML = html;
+    }
+
+    function filterVMSDevices(query) {
+      const q = (query || '').toLowerCase();
+      const items = document.querySelectorAll('.vms-cam-item');
+      items.forEach(item => {
+        if (item.textContent.toLowerCase().includes(q)) {
+          item.style.display = 'flex';
+        } else {
+          item.style.display = 'none';
+        }
+      });
+    }
+
+    function toggleVMSFullscreen() {
+      const cctvSection = document.getElementById('cctv-container');
+      if (!cctvSection) return;
+      if (!document.fullscreenElement) {
+        cctvSection.requestFullscreen().catch(() => {});
+      } else {
+        document.exitFullscreen().catch(() => {});
+      }
+    }
+
+    function focusCameraSingle(id) {
+      changeGridLayout(1);
+      setTimeout(() => {
+        const card = document.getElementById('card-' + id);
+        if (card) {
+          card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 100);
     }
 
     function changeGlobalCity(cityId) {
@@ -9270,6 +9707,19 @@
               <div class="traffic-card ${isDense ? 'layout-dense' : ''}" id="card-${camera.id}">
                 <!-- Pure 100% Unobstructed Video Stream Canvas -->
                 <div class="traffic-card-iframe">
+                  <!-- XMeye VMS Cell OSD Header -->
+                  <div class="vms-osd-topbar">
+                    <div class="vms-osd-left" title="${camera.title}">
+                      <i class="fas fa-video vms-osd-cam-icon"></i>
+                      <span class="vms-osd-title">${camera.title}</span>
+                    </div>
+                    <div class="vms-osd-right">
+                      <span class="vms-osd-badge">Auto</span>
+                      <button class="vms-osd-btn" onclick="event.stopPropagation(); focusCameraSingle(${camera.id})" title="Tampilan Penuh 1 Layar"><i class="fas fa-expand"></i></button>
+                      <button class="vms-osd-btn" onclick="event.stopPropagation(); ${reloadFunction}" title="Refresh Stream"><i class="fas fa-sync-alt"></i></button>
+                    </div>
+                  </div>
+
                   <div class="loading-indicator" id="loading-${camera.id}">
                     <i class="fas fa-spinner fa-spin fa-3x mb-2"></i>
                     <div>Memuat ulang...</div>
@@ -9882,10 +10332,7 @@
     // ===== MODIFIKASI: Update DOMContentLoaded =====
     document.addEventListener('DOMContentLoaded', function() {
       preloadStreamingResources();
-      const gridSelect = document.getElementById('filter-grid');
-      if (gridSelect) {
-        gridSelect.value = currentGridLayout;
-      }
+      syncVMSDockActive(currentGridLayout);
       generateCCTVHTML();
       generateTerminalTanjungPinggirHTML(); // ===== TAMBAHAN: Panggil fungsi Terminal Tanjung Pinggir =====
       generatePasarHorasHTML(); // ===== TAMBAHAN: Panggil fungsi Pasar Horas =====
