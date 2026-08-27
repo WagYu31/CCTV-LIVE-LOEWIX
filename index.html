@@ -5275,7 +5275,7 @@
             <select class="filter-select" id="filter-grid" onchange="changeGridLayout(this.value)" style="background: rgba(255,255,255,0.1); color: #fff; border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; padding: 6px 12px; font-weight: 600;">
               <option value="1" style="color: #111;">⬜ View 1</option>
               <option value="2" style="color: #111;">◫ View 2</option>
-              <option value="4" style="color: #111;">田 View 4</option>
+              <option value="4" selected style="color: #111;">田 View 4</option>
               <option value="6" style="color: #111;">⊞ View 6</option>
               <option value="8" style="color: #111;">▥ View 8</option>
               <option value="9" style="color: #111;">▦ View 9</option>
