@@ -983,6 +983,13 @@
       color: #fff;
     }
 
+    .vms-cam-item.active {
+      background: rgba(56, 189, 248, 0.25) !important;
+      color: #38bdf8 !important;
+      font-weight: 700;
+      border: 1px solid rgba(56, 189, 248, 0.45);
+    }
+
     .vms-cam-dot {
       width: 7px;
       height: 7px;
@@ -10443,6 +10450,7 @@
 
     let currentGlobalCity = 'all';
     let currentGridLayout = parseInt(localStorage.getItem('loewix_grid_layout') || '4');
+    let selectedSingleCameraId = null;
 
     function syncVMSDockActive(val) {
       const btns = document.querySelectorAll('.vms-layout-btn');
@@ -10458,7 +10466,11 @@
     }
 
     function changeGridLayout(val) {
-      currentGridLayout = parseInt(val);
+      const layoutNum = parseInt(val);
+      if (layoutNum !== 1) {
+        selectedSingleCameraId = null;
+      }
+      currentGridLayout = layoutNum;
       localStorage.setItem('loewix_grid_layout', val);
       syncVMSDockActive(val);
       generateCCTVHTML(currentGlobalCity);
@@ -10486,8 +10498,9 @@
           <div class="vms-group-content mt-1">`;
 
       activeCams.forEach(cam => {
+        const isActive = (selectedSingleCameraId === cam.id) ? 'active' : '';
         html += `
-          <div class="vms-cam-item" onclick="focusCameraSingle(${cam.id})">
+          <div class="vms-cam-item ${isActive}" onclick="focusCameraSingle(${cam.id})">
             <span class="vms-cam-dot"></span>
             <i class="fas fa-video text-muted" style="font-size:10px;"></i>
             <span class="text-truncate" style="max-width: 210px;">${cam.title}</span>
@@ -10590,13 +10603,31 @@
     document.addEventListener('MSFullscreenChange', handleFullscreenUIChange);
 
     function focusCameraSingle(id) {
+      selectedSingleCameraId = parseInt(id);
+
+      // Tutup sidebar jika terbuka
+      const sidebar = document.getElementById('vms-device-sidebar');
+      if (sidebar && sidebar.classList.contains('open')) {
+        sidebar.classList.remove('open');
+      }
+
+      // Ubah layout ke View 1 (Single camera view)
       changeGridLayout(1);
-      setTimeout(() => {
-        const card = document.getElementById('card-' + id);
-        if (card) {
-          card.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
-      }, 100);
+
+      // Scroll ke posisi kamera
+      const card = document.getElementById('card-' + id);
+      if (card) {
+        card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+
+      // Pastikan stream langsung berjalan
+      const thumb = document.getElementById('thumb-' + id);
+      if (thumb && thumb.style.display !== 'none' && typeof playMediaMTXCCTV === 'function') {
+        playMediaMTXCCTV(thumb, 'player-' + id, 'thumb-' + id);
+      }
+
+      // Langsung buka layar penuh (Fullscreen)
+      toggleCameraFullscreen(id);
     }
 
     function changeGlobalCity(cityId) {
@@ -10766,6 +10797,16 @@
         return (cam.city || '').toLowerCase() === selectedCity;
       });
 
+      const layoutNum = parseInt(currentGridLayout || '4');
+
+      // Jika dalam mode View 1 dan ada kamera tunggal yang dipilih dari sidebar
+      if (layoutNum === 1 && selectedSingleCameraId) {
+        const singleFound = mainCameras.filter(cam => cam.id === parseInt(selectedSingleCameraId));
+        if (singleFound.length > 0) {
+          mainCameras = singleFound;
+        }
+      }
+
       if (mainCameras.length === 0) {
         if (!apiSyncDone) {
           cctvContainer.innerHTML = `
@@ -10788,6 +10829,23 @@
       const row = document.createElement('div');
       row.className = 'row';
       cctvContainer.appendChild(row);
+
+      // Banner info kamera tunggal saat mode View 1
+      if (layoutNum === 1 && selectedSingleCameraId && mainCameras.length === 1) {
+        const topBanner = document.createElement('div');
+        topBanner.className = 'col-12 mb-3 d-flex flex-wrap justify-content-between align-items-center p-2 px-3 rounded';
+        topBanner.style.background = 'rgba(15, 23, 42, 0.85)';
+        topBanner.style.border = '1px solid rgba(56, 189, 248, 0.35)';
+        topBanner.innerHTML = `
+          <div class="text-white small d-flex align-items-center">
+            <span class="vms-cam-dot mr-2"></span> Menampilkan Kamera Tunggal: <strong class="text-info ml-1">${mainCameras[0].title}</strong>
+          </div>
+          <button class="btn btn-sm btn-outline-info rounded-pill px-3 py-1 mt-1 mt-md-0" onclick="selectedSingleCameraId = null; changeGridLayout(4);" style="font-size: 11px; font-weight: 700;">
+            <i class="fas fa-th-large mr-1"></i> Tampilkan Semua Kamera
+          </button>
+        `;
+        row.appendChild(topBanner);
+      }
 
       // Determine Grid Matrix Layout Class matching DVR/NVR template
       let colClass = 'col-lg-6 col-md-6 col-12 mb-4'; // default View 4 (2x2)
