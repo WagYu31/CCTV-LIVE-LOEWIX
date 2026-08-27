@@ -1099,6 +1099,83 @@
       border-color: rgba(245, 158, 11, 0.4);
     }
 
+    /* HD / SD Stream Quality Toggle Button */
+    .card-action-toolbar .action-btn.quality-toggle-btn {
+      width: auto;
+      min-width: 27px;
+      height: 24px;
+      padding: 0 5px;
+      border-radius: 12px;
+      font-size: 9.5px;
+      font-weight: 800;
+      letter-spacing: 0.4px;
+      font-family: inherit;
+      line-height: 1;
+    }
+
+    .card-action-toolbar .action-btn.quality-toggle-btn.is-hd {
+      background: rgba(16, 185, 129, 0.12);
+      color: #059669;
+      border-color: rgba(16, 185, 129, 0.4);
+      box-shadow: 0 0 6px rgba(16, 185, 129, 0.25);
+    }
+
+    body.dark-mode .card-action-toolbar .action-btn.quality-toggle-btn.is-hd {
+      background: rgba(16, 185, 129, 0.22);
+      color: #34d399;
+      border-color: rgba(52, 211, 153, 0.5);
+      box-shadow: 0 0 8px rgba(16, 185, 129, 0.4);
+    }
+
+    .card-action-toolbar .action-btn.quality-toggle-btn.is-sd {
+      background: rgba(2, 132, 199, 0.08);
+      color: #0284c7;
+      border-color: rgba(2, 132, 199, 0.3);
+    }
+
+    body.dark-mode .card-action-toolbar .action-btn.quality-toggle-btn.is-sd {
+      background: rgba(56, 189, 248, 0.15);
+      color: #38bdf8;
+      border-color: rgba(56, 189, 248, 0.35);
+    }
+
+    .traffic-card.layout-dense .card-action-toolbar .action-btn.quality-toggle-btn {
+      height: 18px;
+      min-width: 22px;
+      padding: 0 3px;
+      font-size: 7.5px;
+      border-radius: 9px;
+    }
+
+    .vms-quality-pill {
+      background: rgba(56, 189, 248, 0.15);
+      color: #38bdf8;
+      border: 1px solid rgba(56, 189, 248, 0.35);
+      border-radius: 6px;
+      padding: 1px 7px;
+      font-size: 10.5px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      transition: all 0.2s ease;
+      line-height: 1.4;
+    }
+
+    .vms-quality-pill.is-hd {
+      background: rgba(16, 185, 129, 0.2);
+      color: #34d399;
+      border-color: rgba(52, 211, 153, 0.5);
+      box-shadow: 0 0 8px rgba(16, 185, 129, 0.35);
+    }
+
+    .vms-quality-pill:hover {
+      transform: scale(1.05);
+      border-color: #38bdf8;
+    }
+
     .card-footer-meta-row {
       display: flex;
       align-items: center;
@@ -5215,6 +5292,12 @@
             <div class="vms-dock-left">
               <div class="vms-stat-item"><span class="vms-stat-label">Loewix VMS:</span> <span class="vms-stat-val text-success">ONLINE</span></div>
               <div class="vms-stat-item d-none d-lg-block"><span class="vms-stat-label">Engine:</span> <span class="vms-stat-val text-info">H.264 P2P</span></div>
+              <div class="vms-stat-item">
+                <span class="vms-stat-label">Kualitas:</span>
+                <button id="global-quality-btn" class="vms-quality-pill is-sd" onclick="toggleGlobalStreamQuality()" title="Ganti Kualitas Semua CCTV (SD / HD)">
+                  <span id="global-quality-text">SD</span>
+                </button>
+              </div>
             </div>
 
             <div class="vms-dock-center">
@@ -9248,17 +9331,16 @@
             }
           }
 
-          const directHls = element.getAttribute('data-hls-url') || (streamPath.startsWith('http') ? streamPath : '');
           const connType = element.getAttribute('data-connection-type') || '';
           const sn = element.getAttribute('data-serial-number') || '';
           const ch = element.getAttribute('data-channel') || 1;
+          const currentQuality = element.getAttribute('data-stream-quality') || globalStreamQuality || 'sd';
+          const streamIdx = currentQuality === 'hd' ? '0' : '1';
+          const directHls = element.getAttribute('data-hls-url') || (streamPath.startsWith('http') ? streamPath : '');
 
-          if (directHls && (directHls.startsWith('http://') || directHls.startsWith('https://'))) {
-            // Direct ultra-fast mount (0 delay, like Yamaha DDS)
-            mountHLS(directHls);
-          } else if (connType === 'xmeye_p2p' || streamPath.startsWith('xmeye_')) {
+          if (connType === 'xmeye_p2p' || streamPath.startsWith('xmeye_')) {
             const cleanSn = sn || (streamPath.match(/^xmeye_([a-fA-F0-9]+)/) ? streamPath.match(/^xmeye_([a-fA-F0-9]+)/)[1] : '');
-            fetch(`api/jftech_gateway.php?action=get_live_stream&sn=${encodeURIComponent(cleanSn)}&channel=${encodeURIComponent(ch)}`)
+            fetch(`api/jftech_gateway.php?action=get_live_stream&sn=${encodeURIComponent(cleanSn)}&channel=${encodeURIComponent(ch)}&stream=${streamIdx}`)
               .then(r => r.json())
               .then(data => {
                 if (data.success && data.hls_url) {
@@ -9272,6 +9354,9 @@
               .catch(() => {
                 mountHLS(`${STREAM_BASE}/${streamPath}/index.m3u8`);
               });
+          } else if (directHls && (directHls.startsWith('http://') || directHls.startsWith('https://'))) {
+            // Direct ultra-fast mount (0 delay, like Yamaha DDS)
+            mountHLS(directHls);
           } else if (streamPath.startsWith('http://') || streamPath.startsWith('https://')) {
             mountHLS(streamPath);
           } else if (streamPath.startsWith('rtsp://')) {
@@ -9347,6 +9432,97 @@
       }, 1500);
     }
     // ===== END MEDIAMTX FUNCTIONS =====
+
+    // ===== LOEWIX HD / SD STREAM QUALITY ENGINE =====
+    const cameraQualityMap = new Map();
+    let globalStreamQuality = 'sd';
+
+    function toggleCameraQuality(cameraId) {
+      const currentQ = cameraQualityMap.get(cameraId) || globalStreamQuality || 'sd';
+      const newQ = currentQ === 'sd' ? 'hd' : 'sd';
+      setCameraQuality(cameraId, newQ);
+    }
+
+    function setCameraQuality(cameraId, quality) {
+      const q = quality === 'hd' ? 'hd' : 'sd';
+      cameraQualityMap.set(cameraId, q);
+
+      // Update button UI
+      const btn = document.getElementById(`quality-btn-${cameraId}`);
+      if (btn) {
+        btn.textContent = q.toUpperCase();
+        btn.className = `action-btn quality-toggle-btn is-${q}`;
+        btn.title = `Kualitas: ${q.toUpperCase()} (Klik untuk ubah ke ${q === 'hd' ? 'SD' : 'HD'})`;
+      }
+
+      const thumb = document.getElementById(`thumb-${cameraId}`);
+      const player = document.getElementById(`player-${cameraId}`);
+      const buffering = document.getElementById(`buffering-${cameraId}`);
+
+      if (!thumb) return;
+
+      thumb.setAttribute('data-stream-quality', q);
+
+      // Show buffering indicator while switching stream
+      if (buffering) {
+        buffering.style.display = 'flex';
+        buffering.style.opacity = '1';
+      }
+
+      const connType = thumb.getAttribute('data-connection-type') || '';
+      const sn = thumb.getAttribute('data-serial-number') || '';
+      const ch = thumb.getAttribute('data-channel') || 1;
+      const streamIdx = q === 'hd' ? '0' : '1';
+
+      if (connType === 'xmeye_p2p' || (thumb.getAttribute('data-stream-path') || '').startsWith('xmeye_')) {
+        const cleanSn = sn || ((thumb.getAttribute('data-stream-path') || '').match(/^xmeye_([a-fA-F0-9]+)/) ? (thumb.getAttribute('data-stream-path') || '').match(/^xmeye_([a-fA-F0-9]+)/)[1] : '');
+        fetch(`api/jftech_gateway.php?action=get_live_stream&sn=${encodeURIComponent(cleanSn)}&channel=${encodeURIComponent(ch)}&stream=${streamIdx}&force=1`)
+          .then(r => r.json())
+          .then(data => {
+            if (data.success && data.hls_url) {
+              thumb.setAttribute('data-hls-url', data.hls_url);
+              thumb.setAttribute('data-stream-path', data.hls_url);
+            }
+            if (typeof playMediaMTXCCTV === 'function') {
+              playMediaMTXCCTV(thumb, `player-${cameraId}`, `thumb-${cameraId}`);
+            }
+          })
+          .catch(e => {
+            console.error('[Quality Switch] Error switching stream quality:', e);
+            if (typeof playMediaMTXCCTV === 'function') {
+              playMediaMTXCCTV(thumb, `player-${cameraId}`, `thumb-${cameraId}`);
+            }
+          });
+      } else {
+        let streamPath = thumb.getAttribute('data-stream-path') || '';
+        if (streamPath.includes('stream=0') || streamPath.includes('stream=1')) {
+          streamPath = streamPath.replace(/stream=[01]/, `stream=${streamIdx}`);
+          thumb.setAttribute('data-stream-path', streamPath);
+        }
+        if (typeof playMediaMTXCCTV === 'function') {
+          playMediaMTXCCTV(thumb, `player-${cameraId}`, `thumb-${cameraId}`);
+        }
+      }
+    }
+
+    function toggleGlobalStreamQuality() {
+      globalStreamQuality = globalStreamQuality === 'sd' ? 'hd' : 'sd';
+      const textEl = document.getElementById('global-quality-text');
+      const btnEl = document.getElementById('global-quality-btn');
+      if (textEl) textEl.textContent = globalStreamQuality.toUpperCase();
+      if (btnEl) {
+        btnEl.className = `vms-quality-pill is-${globalStreamQuality}`;
+      }
+
+      // Apply to all rendered camera cards
+      const thumbs = document.querySelectorAll('.thumbnail-overlay[id^="thumb-"]');
+      thumbs.forEach(thumb => {
+        const cid = thumb.id.replace('thumb-', '');
+        if (cid) {
+          setCameraQuality(cid, globalStreamQuality);
+        }
+      });
+    }
 
     // Function to change streaming quality
     function changeStreamQuality(button, playerId, streamId) {
@@ -10570,7 +10746,7 @@
                     <div>Memuat ulang...</div>
                   </div>
 
-                  <div class="thumbnail-overlay" id="thumb-${camera.id}" onclick="playMediaMTXCCTV(this, 'player-${camera.id}', 'thumb-${camera.id}')" data-stream-path="${camera.streamPath || camera.hls_url || ''}" data-hls-url="${camera.hls_url || ''}" data-connection-type="${camera.connection_type || 'rtsp'}" data-serial-number="${camera.serial_number || ''}" data-channel="${camera.channel || 1}">
+                  <div class="thumbnail-overlay" id="thumb-${camera.id}" onclick="playMediaMTXCCTV(this, 'player-${camera.id}', 'thumb-${camera.id}')" data-stream-path="${camera.streamPath || camera.hls_url || ''}" data-hls-url="${camera.hls_url || ''}" data-connection-type="${camera.connection_type || 'rtsp'}" data-serial-number="${camera.serial_number || ''}" data-channel="${camera.channel || 1}" data-stream-quality="${cameraQualityMap.get(camera.id) || globalStreamQuality || 'sd'}">
                     <img src="${camera.thumbnail}?v=${Date.now()}" alt="Thumbnail CCTV ${camera.title}" loading="lazy" onerror="this.onerror=null;this.src='${ASSET_BASE}/image/thumbnail/default-thumbnail.png?v=' + Date.now()" />
                     <div class="loading-text">
                       <i class="fas fa-play-circle"></i> Klik untuk memuat video
@@ -10605,6 +10781,9 @@
                       <span>${camera.title}</span>
                     </div>
                     <div class="card-action-toolbar">
+                      <button class="action-btn quality-toggle-btn ${(cameraQualityMap.get(camera.id) || globalStreamQuality) === 'hd' ? 'is-hd' : 'is-sd'}" id="quality-btn-${camera.id}" onclick="event.stopPropagation(); toggleCameraQuality(${camera.id})" title="Ganti Kualitas (${(cameraQualityMap.get(camera.id) || globalStreamQuality) === 'hd' ? 'HD (High Def)' : 'SD (Standard Def)'})">
+                        ${((cameraQualityMap.get(camera.id) || globalStreamQuality) === 'hd') ? 'HD' : 'SD'}
+                      </button>
                       <button class="action-btn" onclick="event.stopPropagation(); focusCameraSingle(${camera.id})" title="Tampilan Penuh 1 Layar">
                         <i class="fas fa-expand"></i>
                       </button>

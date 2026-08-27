@@ -75,8 +75,12 @@ if ($action === 'public_list' || $action === 'list') {
                 $chIdx = max(0, $ch - 1);
 
                 // Attach cached live stream HLS URL if available (zero-delay instant start)
-                $cacheKey = md5("{$sn}_{$chIdx}_v3");
+                $cacheKey = md5("{$sn}_{$chIdx}_stream1_v3");
                 $streamCacheFile = sys_get_temp_dir() . "/jf_stream_{$cacheKey}.json";
+                if (!file_exists($streamCacheFile)) {
+                    $legacyKey = md5("{$sn}_{$chIdx}_v3");
+                    $streamCacheFile = sys_get_temp_dir() . "/jf_stream_{$legacyKey}.json";
+                }
                 if (file_exists($streamCacheFile)) {
                     $cachedStream = json_decode(@file_get_contents($streamCacheFile), true);
                     if ($cachedStream && !empty($cachedStream['url']) && ($cachedStream['expires_at'] ?? 0) > time()) {

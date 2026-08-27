@@ -202,12 +202,20 @@ function getJFTechLiveStreamUrl($sn, $channel = 1, $protocol = 'hls-fmp4', $stre
     if (empty($cleanSN)) return null;
 
     $channelIdx = max(0, (int)$channel - 1);
-    // Always force sub-stream ("1") for web grid playback to guarantee universal H.264 decoding
-    $streamIdx = '1';
+    // Stream selection: '0' = Main stream (HD / High Definition), '1' = Sub stream (SD / Standard Definition)
+    $streamIdx = in_array(strtolower((string)$streamType), ['main', 'hd', '0'], true) ? '0' : '1';
 
     // Check fast local file cache first (instant 0.01ms response)
-    $cacheKey = md5("{$cleanSN}_{$channelIdx}_v3");
+    $cacheKey = md5("{$cleanSN}_{$channelIdx}_stream{$streamIdx}_v3");
     $cacheFile = sys_get_temp_dir() . "/jf_stream_{$cacheKey}.json";
+
+    // Backward compatibility fallback for legacy stream1 cache
+    if (!$forceRefresh && !file_exists($cacheFile) && $streamIdx === '1') {
+        $legacyCacheFile = sys_get_temp_dir() . "/jf_stream_" . md5("{$cleanSN}_{$channelIdx}_v3") . ".json";
+        if (file_exists($legacyCacheFile)) {
+            $cacheFile = $legacyCacheFile;
+        }
+    }
 
     if (!$forceRefresh && file_exists($cacheFile)) {
         $cached = json_decode(@file_get_contents($cacheFile), true);
