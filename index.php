@@ -9154,28 +9154,28 @@
             console.log('[MediaMTX/JFTech] Loading HLS URL:', targetUrl);
 
             if (typeof Hls !== 'undefined' && Hls.isSupported()) {
-              // ===== ANTI-BUFFERING & ULTRA-STABLE STREAM CONFIGURATION =====
+              // ===== ANTI-BUFFERING & ULTRA-LEAN LOW-BANDWIDTH STREAM CONFIGURATION =====
               const hls = new Hls({
                 enableWorker: true,
                 lowLatencyMode: false,
-                liveSyncDurationCount: 3,
-                liveMaxLatencyDurationCount: 8,
-                maxBufferLength: 4,
-                maxMaxBufferLength: 8,
-                maxBufferSize: 4 * 1024 * 1024,
+                liveSyncDurationCount: 2,
+                liveMaxLatencyDurationCount: 6,
+                maxBufferLength: 2,
+                maxMaxBufferLength: 4,
+                maxBufferSize: 1.5 * 1024 * 1024,
                 backBufferLength: 0,
-                maxFragLoadingTimeMs: 20000,
+                maxFragLoadingTimeMs: 15000,
                 maxLoadingDelay: 0,
-                manifestLoadingTimeOut: 15000,
-                manifestLoadingMaxRetry: 10,
+                manifestLoadingTimeOut: 12000,
+                manifestLoadingMaxRetry: 8,
                 manifestLoadingRetryDelay: 1000,
-                levelLoadingMaxRetry: 6,
-                fragLoadingMaxRetry: 6,
+                levelLoadingMaxRetry: 5,
+                fragLoadingMaxRetry: 5,
                 startLevel: 0,
                 capLevelToPlayerSize: true,
-                abrEwmaDefaultEstimate: 1000000,
-                abrBandWidthFactor: 0.8,
-                abrBandWidthUpFactor: 0.5,
+                abrEwmaDefaultEstimate: 500000,
+                abrBandWidthFactor: 0.7,
+                abrBandWidthUpFactor: 0.4,
                 enableSoftwareAES: true,
                 maxBufferHole: 0.5,
                 highBufferWatchdogPeriod: 2,
@@ -11141,8 +11141,8 @@
         this.observer = new IntersectionObserver((entries) => {
           entries.forEach(entry => {
             const card = entry.target;
-            const iframe = card.querySelector('iframe[id^="player-"]');
-            const playerId = iframe ? iframe.id : null;
+            const playerEl = card.querySelector('video[id^="player-"], iframe[id^="player-"]');
+            const playerId = playerEl ? playerEl.id : null;
 
             if (playerId) {
               if (entry.isIntersecting) {
@@ -11153,7 +11153,7 @@
             }
           });
         }, {
-          rootMargin: '300px', // Start suspending 300px setelah keluar viewport
+          rootMargin: '120px', // Suspend stream 120px setelah keluar viewport
           threshold: 0
         });
 
@@ -11163,7 +11163,7 @@
             this.observer.observe(card);
           });
           console.log('[Performance] Stream suspension manager initialized');
-        }, 2000);
+        }, 1500);
       }
 
       suspendStream(playerId, card) {
@@ -11186,10 +11186,9 @@
 
         // Check jika stream sedang aktif (baru dimainkan user) - jangan suspend untuk beberapa detik
         if (typeof activePlayers !== 'undefined' && activePlayers.has(playerId)) {
-          // Delay suspend untuk stream yang baru dimainkan (10 detik grace period)
           const playTime = player.getAttribute('data-play-time');
-          if (playTime && (Date.now() - parseInt(playTime)) < 10000) {
-            return; // Don't suspend streams yang baru dimainkan (< 10 detik)
+          if (playTime && (Date.now() - parseInt(playTime)) < 6000) {
+            return; // Don't suspend streams yang baru dimainkan (< 6 detik)
           }
         }
 
@@ -11198,7 +11197,7 @@
         if (cardElement) {
           const bufferingOverlay = cardElement.querySelector('.buffering-overlay');
           if (bufferingOverlay && window.getComputedStyle(bufferingOverlay).display !== 'none') {
-            return; // Don't suspend streams yang sedang loading
+            return;
           }
         }
 
@@ -11210,7 +11209,7 @@
           tagName: player.tagName
         });
 
-        // Suspend - destroy HLS instance if exists (for video elements)
+        // Suspend - destroy HLS instance to immediately stop fetching chunks and saving network bandwidth
         if (player.tagName === 'VIDEO' && player.hlsInstance) {
           player.hlsInstance.destroy();
           player.hlsInstance = null;
@@ -11220,50 +11219,43 @@
         player.src = '';
         player.style.display = 'none';
 
-        // Show thumbnail instead jika ada
+        // Show thumbnail instead
         const thumbId = playerId.replace('player-', 'thumb-');
         const thumb = document.getElementById(thumbId);
         if (thumb) {
           thumb.style.display = 'flex';
+          thumb.style.opacity = '1';
         }
       }
 
       resumeStream(playerId, card) {
         if (!this.suspendedStreams.has(playerId)) {
-          return; // Tidak ada stream yang di-suspend untuk resume
+          return;
         }
 
         const state = this.suspendedStreams.get(playerId);
         const player = document.getElementById(playerId);
 
         if (player && state && state.src) {
-          // For video elements with HLS, we need to reload via playMediaMTXCCTV
           if (state.tagName === 'VIDEO') {
-            // Video element - need to reload via MediaMTX function
             const thumbId = playerId.replace('player-', 'thumb-');
             const thumb = document.getElementById(thumbId);
             if (thumb && typeof playMediaMTXCCTV === 'function') {
-              const streamPath = thumb.getAttribute('data-stream-path');
-              if (streamPath) {
-                playMediaMTXCCTV(thumb, playerId, thumbId);
-              }
+              playMediaMTXCCTV(thumb, playerId, thumbId);
             }
           } else {
-            // Iframe - restore src directly
             player.setAttribute('data-play-time', Date.now().toString());
             player.src = state.src;
             player.style.display = state.display || 'block';
           }
           this.suspendedStreams.delete(playerId);
 
-          // Hide thumbnail
           const thumbId = playerId.replace('player-', 'thumb-');
           const thumb = document.getElementById(thumbId);
           if (thumb && player.style.display !== 'none') {
             thumb.style.display = 'none';
           }
 
-          // Re-add ke activePlayers jika perlu
           if (typeof activePlayers !== 'undefined') {
             activePlayers.add(playerId);
           }
@@ -11274,76 +11266,30 @@
     // Initialize Stream Suspension Manager
     let streamSuspensionManager = null;
 
-    // ===== END PERFORMANCE OPTIMIZATIONS =====
-
-    // ===== PERFORMANCE MONITORING =====
-    // Track loading performance untuk debugging
-    let performanceMetrics = {
-      loads: [],
-      avgLoadTime: 0
-    };
-    // ===== END PERFORMANCE MONITORING =====
-
-    // ===== HOVER PRELOAD untuk Super Instant Playback =====
-    // Preload manifest saat user hover - video langsung jalan saat klik!
-    function setupHoverPreload() {
-      console.log('[Hover Preload] Setting up hover preload for instant playback...');
-
-      let activePreloads = new Set();
-      const MAX_PRELOADS = 5; // Limit concurrent preloads
-
-      document.querySelectorAll('.thumbnail-overlay[data-stream-path]').forEach(thumb => {
-        let preloadTimeout;
-        let preloadLink;
-
-        thumb.addEventListener('mouseenter', function() {
-          const streamPath = this.getAttribute('data-stream-path');
-          if (!streamPath || activePreloads.has(streamPath)) return;
-
-          // Delay preload 300ms - only if user pauses on thumbnail
-          preloadTimeout = setTimeout(() => {
-            if (activePreloads.size >= MAX_PRELOADS) return;
-
-            const hlsUrl = `${STREAM_BASE}/${streamPath}/index.m3u8?cookieCheck=1`;
-
-            // Create prefetch link
-            preloadLink = document.createElement('link');
-            preloadLink.rel = 'prefetch';
-            preloadLink.href = hlsUrl;
-            preloadLink.as = 'fetch';
-            preloadLink.setAttribute('data-stream', streamPath);
-            document.head.appendChild(preloadLink);
-
-            activePreloads.add(streamPath);
-            console.log('[Hover Preload] ⚡ Prefetched:', streamPath);
-          }, 300);
-        });
-
-        thumb.addEventListener('mouseleave', function() {
-          clearTimeout(preloadTimeout);
-        });
-      });
-
-      console.log('[Hover Preload] ✅ Enabled for', document.querySelectorAll('.thumbnail-overlay[data-stream-path]').length, 'cameras');
-    }
-    // ===== END HOVER PRELOAD =====
-
     // ===== AUTOPLAY LIVE CCTV STREAMS =====
     function autoPlayCCTVStreams() {
       if (!currentUser) return; // Do not autoplay when unauthenticated
-      console.log('[AutoPlay] Starting active CCTV video streams...');
+      console.log('[AutoPlay] Starting active CCTV video streams with viewport optimization...');
       const thumbnails = document.querySelectorAll('.thumbnail-overlay[data-stream-path]');
 
-      thumbnails.forEach(function(thumb, index) {
+      let playIndex = 0;
+      thumbnails.forEach(function(thumb) {
         if (!thumb || !thumb.id || thumb.id.indexOf('thumb-') !== 0) return;
         const suffix = thumb.id.slice('thumb-'.length);
         const playerId = 'player-' + suffix;
 
-        setTimeout(function() {
-          if (typeof playMediaMTXCCTV === 'function' && thumb) {
-            playMediaMTXCCTV(thumb, playerId, thumb.id);
-          }
-        }, index * 350);
+        // Check if element is roughly within visible viewport
+        const rect = thumb.getBoundingClientRect();
+        const isInViewport = rect.top < (window.innerHeight + 250) && rect.bottom > -100;
+
+        if (isInViewport) {
+          setTimeout(function() {
+            if (typeof playMediaMTXCCTV === 'function' && thumb) {
+              playMediaMTXCCTV(thumb, playerId, thumb.id);
+            }
+          }, playIndex * 280);
+          playIndex++;
+        }
       });
     }
 
