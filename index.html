@@ -5894,8 +5894,11 @@
                   connection_type: c.connection_type || 'rtsp',
                   serial_number: c.serial_number || '',
                   channel: c.channel || 1,
-                  streamPath: c.streamPath,
-                  streamId: c.streamPath,
+                  device_user: c.device_user || 'admin',
+                  device_pass: c.device_pass || '',
+                  streamPath: c.streamPath || c.hls_url,
+                  streamId: c.streamPath || c.hls_url,
+                  hls_url: c.hls_url || c.streamPath || '',
                   coordinates: coords,
                   lat: coords[0],
                   lng: coords[1],
@@ -9350,13 +9353,18 @@
           const connType = element.getAttribute('data-connection-type') || '';
           const sn = element.getAttribute('data-serial-number') || '';
           const ch = element.getAttribute('data-channel') || 1;
+          const devUser = element.getAttribute('data-device-user') || '';
+          const devPass = element.getAttribute('data-device-pass') || '';
           const currentQuality = element.getAttribute('data-stream-quality') || globalStreamQuality || 'sd';
           const streamIdx = currentQuality === 'hd' ? '0' : '1';
           const directHls = element.getAttribute('data-hls-url') || (streamPath.startsWith('http') ? streamPath : '');
 
-          if (connType === 'xmeye_p2p' || streamPath.startsWith('xmeye_')) {
+          if (directHls && (directHls.startsWith('http://') || directHls.startsWith('https://')) && !directHls.includes('stream.loewixcctv.com/xmeye_')) {
+            // Direct ultra-fast mount (0 delay, like Yamaha DDS & pre-resolved JFTech HLS)
+            mountHLS(directHls);
+          } else if (connType === 'xmeye_p2p' || streamPath.startsWith('xmeye_')) {
             const cleanSn = sn || (streamPath.match(/^xmeye_([a-fA-F0-9]+)/) ? streamPath.match(/^xmeye_([a-fA-F0-9]+)/)[1] : '');
-            fetch(`api/jftech_gateway.php?action=get_live_stream&sn=${encodeURIComponent(cleanSn)}&channel=${encodeURIComponent(ch)}&stream=${streamIdx}`)
+            fetch(`api/jftech_gateway.php?action=get_live_stream&sn=${encodeURIComponent(cleanSn)}&channel=${encodeURIComponent(ch)}&stream=${streamIdx}&device_user=${encodeURIComponent(devUser)}&device_pass=${encodeURIComponent(devPass)}`)
               .then(r => r.json())
               .then(data => {
                 if (data.success && data.hls_url) {
@@ -9370,9 +9378,6 @@
               .catch(() => {
                 mountHLS(`${STREAM_BASE}/${streamPath}/index.m3u8`);
               });
-          } else if (directHls && (directHls.startsWith('http://') || directHls.startsWith('https://'))) {
-            // Direct ultra-fast mount (0 delay, like Yamaha DDS)
-            mountHLS(directHls);
           } else if (streamPath.startsWith('http://') || streamPath.startsWith('https://')) {
             mountHLS(streamPath);
           } else if (streamPath.startsWith('rtsp://')) {
@@ -10893,7 +10898,7 @@
                     <div>Memuat ulang...</div>
                   </div>
 
-                  <div class="thumbnail-overlay" id="thumb-${camera.id}" onclick="playMediaMTXCCTV(this, 'player-${camera.id}', 'thumb-${camera.id}')" data-stream-path="${camera.streamPath || camera.hls_url || ''}" data-hls-url="${camera.hls_url || ''}" data-connection-type="${camera.connection_type || 'rtsp'}" data-serial-number="${camera.serial_number || ''}" data-channel="${camera.channel || 1}" data-stream-quality="${cameraQualityMap.get(camera.id) || globalStreamQuality || 'sd'}">
+                  <div class="thumbnail-overlay" id="thumb-${camera.id}" onclick="playMediaMTXCCTV(this, 'player-${camera.id}', 'thumb-${camera.id}')" data-stream-path="${camera.streamPath || camera.hls_url || ''}" data-hls-url="${camera.hls_url || ''}" data-connection-type="${camera.connection_type || 'rtsp'}" data-serial-number="${camera.serial_number || ''}" data-channel="${camera.channel || 1}" data-device-user="${camera.device_user || 'admin'}" data-device-pass="${camera.device_pass || ''}" data-stream-quality="${cameraQualityMap.get(camera.id) || globalStreamQuality || 'sd'}">
                     <img src="${camera.thumbnail}?v=${Date.now()}" alt="Thumbnail CCTV ${camera.title}" loading="lazy" onerror="this.onerror=null;this.src='${ASSET_BASE}/image/thumbnail/default-thumbnail.png?v=' + Date.now()" />
                     <div class="loading-text">
                       <i class="fas fa-play-circle"></i> Klik untuk memuat video

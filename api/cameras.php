@@ -89,6 +89,18 @@ if ($action === 'public_list' || $action === 'list') {
                     }
                 }
 
+                // If stream is not resolved yet, fetch and cache it now
+                if (empty($cam['hls_url']) || strpos($cam['hls_url'], 'bcloud365.net') === false) {
+                    if (file_exists(__DIR__ . '/jftech_gateway.php')) {
+                        require_once __DIR__ . '/jftech_gateway.php';
+                        $resolvedUrl = getJFTechLiveStreamUrl($sn, $ch, 'hls-fmp4', $cam['stream_quality'] ?? 'sub', $cam['device_user'] ?? 'admin', $cam['device_pass'] ?? '');
+                        if ($resolvedUrl) {
+                            $cam['hls_url'] = $resolvedUrl;
+                            $cam['streamPath'] = $resolvedUrl;
+                        }
+                    }
+                }
+
                 if (!array_key_exists($sn, $snSnapshotCache)) {
                     $cacheFile = sys_get_temp_dir() . '/jftech_snapshots_' . $sn . '.json';
                     if (file_exists($cacheFile)) {

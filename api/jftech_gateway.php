@@ -224,15 +224,18 @@ function getJFTechLiveStreamUrl($sn, $channel = 1, $protocol = 'hls-fmp4', $stre
         }
     }
 
-    if (empty($devicePass)) {
-        if (file_exists(__DIR__ . '/../config/db.php')) {
-            require_once __DIR__ . '/../config/db.php';
-            $dbData = get_db_data();
-            foreach (($dbData['cameras'] ?? []) as $cam) {
-                if (isset($cam['serial_number']) && strtolower($cam['serial_number']) === $cleanSN && isset($cam['device_pass'])) {
-                    $devicePass = $cam['device_pass'];
-                    break;
+    if (file_exists(__DIR__ . '/../config/db.php')) {
+        require_once __DIR__ . '/../config/db.php';
+        $dbData = get_db_data();
+        foreach (($dbData['cameras'] ?? []) as $cam) {
+            if (isset($cam['serial_number']) && strtolower($cam['serial_number']) === $cleanSN) {
+                if (!empty($cam['device_user']) && (empty($deviceUser) || $deviceUser === 'admin')) {
+                    $deviceUser = $cam['device_user'];
                 }
+                if (!empty($cam['device_pass']) && empty($devicePass)) {
+                    $devicePass = $cam['device_pass'];
+                }
+                break;
             }
         }
     }
