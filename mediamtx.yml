@@ -1,6 +1,10 @@
-# MediaMTX Configuration for Loewix CCTV Live Streaming
+# MediaMTX Configuration for Loewix CCTV Live Streaming (H.264 & H.265 / HEVC Engine)
 hlsAlwaysRemux: true
 hlsAllowOrigins: ['*']
+hlsVariant: fmp4
+hlsSegmentCount: 3
+hlsSegmentDuration: 1s
+hlsPartDuration: 200ms
 
 paths:
   # ==========================================

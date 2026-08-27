@@ -7,6 +7,12 @@ rtsp:
 webrtc:
   listen: ":1889"
 
+ffmpeg:
+  bin: ffmpeg
+  h264: "-c:v libx264 -preset ultrafast -tune zerolatency -profile:v baseline -level 3.1 -pix_fmt yuv420p"
+  h265: "-c:v libx265 -preset ultrafast -tune zerolatency -pix_fmt yuv420p"
+  copy: "-c:v copy -c:a copy"
+
 streams:
   # ==========================================
   # EXISTING RTSP CAMERAS (TESS, JAKARTA, BALI)
