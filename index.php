@@ -6615,10 +6615,6 @@
       }
     ];
 
-        address: 'Jl. Tarutung No.10, Kristen, Kec. Siantar Bar., Kota Pematang Siantar, Sumatera Utara 21118',
-      },
-    ];
-
     // Stream Quality Configuration
     const streamQualityLevels = {
       auto: {
