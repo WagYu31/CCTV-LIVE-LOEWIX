@@ -6312,7 +6312,8 @@
     ];
 
     // Terminal / Kamera Tambahan (Live Demo Stream)
-    const terminalTanjungPinggirData = [{
+    const terminalTanjungPinggirData = [
+      {
         id: 201,
         title: 'Terminal Tanjung Pinggir 1',
         streamPath: 'jalan_sutomo_polres_siantar',
@@ -6333,319 +6334,278 @@
     ];
     // ===== AKHIR TERMINAL =====
 
-    // WiFi Location Data - Updated 2025
-    // Format koordinat: latitude dan longitude dalam format desimal standar
-    // Data source: Dinas Komunikasi dan Informatika Kota Pematangsiantar
-    const wifiLocations = [{
-        name: 'Rumah Dinas Wali Kota',
-        lat: 2.95064791,
-        lng: 99.05990923,
-        address: 'Pematang Siantar, Teladan, Kec. Siantar Bar., Kota Pematang Siantar, Sumatera Utara 21144',
+    // WiFi Location Data - DKI Jakarta Public Internet (JakWifi)
+    const wifiLocations = [
+      // Jakarta Pusat
+      {
+        name: 'BALAI KOTA DKI JAKARTA',
+        lat: -6.180512,
+        lng: 106.828415,
+        status: 'Aktif',
+        address: 'Jl. Medan Merdeka Selatan No.8-9, Gambir, Jakarta Pusat'
       },
       {
-        name: 'Rumah Dinas Wakil Wali Kota',
-        lat: 2.95675167,
-        lng: 99.04992010,
-        address: 'Jl. KH. Ahmad Dahlan 90, Bukit Sofa, Kec. Siantar Sitalasari, Kota Pematang Siantar, Sumatera Utara 21111',
+        name: 'MONUMEN NASIONAL (MONAS)',
+        lat: -6.175392,
+        lng: 106.827153,
+        status: 'Aktif',
+        address: 'Kawasan Monas, Gambir, Jakarta Pusat'
       },
       {
-        name: 'RSUD (Ruang TU)',
-        lat: 2.95643223,
-        lng: 99.06956604,
-        address: 'Pematang Siantar, Simalungun, Kec. Siantar Sel., Kota Pematang Siantar, Sumatera Utara',
+        name: 'BUNDARAN HI & HALTE TOSARI',
+        lat: -6.195028,
+        lng: 106.823014,
+        status: 'Aktif',
+        address: 'Jl. M.H. Thamrin, Menteng, Jakarta Pusat'
       },
       {
-        name: 'Kecamatan Siantar Barat',
-        lat: 2.95005560,
-        lng: 99.04741193,
-        address: 'Jl. Bangau No.1, RW.samapi, Sipinggol-Pinggol, Kec. Siantar Bar., Kota Pematang Siantar, Sumatera Utara 21114',
+        name: 'TAMAN SUROPATI',
+        lat: -6.199421,
+        lng: 106.832612,
+        status: 'Aktif',
+        address: 'Jl. Taman Suropati No.5, Menteng, Jakarta Pusat'
       },
       {
-        name: 'Kecamatan Siantar Timur',
-        lat: 2.95500259,
-        lng: 99.08056111,
-        address: 'Pematang Siantar, Tomuan, Kec. Siantar Tim., Kota Pematang Siantar, Sumatera Utara',
+        name: 'TAMAN MENTENG',
+        lat: -6.196345,
+        lng: 106.829432,
+        status: 'Aktif',
+        address: 'Jl. HOS. Cokroaminoto, Menteng, Jakarta Pusat'
       },
       {
-        name: 'Kecamatan Siantar Utara',
-        lat: 2.96759832,
-        lng: 99.06665982,
-        address: 'Jl. Keselamatan 11-25, Suka Dame, Siantar Utara, Pematang Siantar City, North Sumatra 21143',
+        name: 'TAMAN ISMAIL MARZUKI (TIM) & PERPUS JAKARTA',
+        lat: -6.189531,
+        lng: 106.838542,
+        status: 'Aktif',
+        address: 'Jl. Cikini Raya No.73, Menteng, Jakarta Pusat'
       },
       {
-        name: 'Kecamatan Siantar Selatan',
-        lat: 2.94523578,
-        lng: 99.06645512,
-        address: 'Jl. Pahae No.36, Toba, Kec. Siantar Sel., Kota Pematang Siantar, Sumatera Utara 21118',
+        name: 'TAMAN LAPANGAN BANTENG',
+        lat: -6.170642,
+        lng: 106.835123,
+        status: 'Aktif',
+        address: 'Pasar Baru, Sawah Besar, Jakarta Pusat'
       },
       {
-        name: 'Kecamatan Siantar Sitalasari',
-        lat: 2.96471268,
-        lng: 99.04923558,
-        address: 'Jl. Sisingamangaraja, Bukit Sofa, Kec. Siantar Sitalasari, Kota Pematang Siantar, Sumatera Utara 21139',
+        name: 'PERPUSTAKAAN NASIONAL RI (PERPUSNAS)',
+        lat: -6.181245,
+        lng: 106.826734,
+        status: 'Aktif',
+        address: 'Jl. Medan Merdeka Selatan No.11, Gambir, Jakarta Pusat'
       },
       {
-        name: 'Kecamatan Siantar Marimbun',
-        lat: 2.92983450,
-        lng: 99.05940049,
-        address: 'Jl. Bahkora II, Marihat Jaya, Kec. Siantar Marimbun, Kota Pematang Siantar, Sumatera Utara 21123',
+        name: 'KAWASAN KULINER SABANG',
+        lat: -6.186512,
+        lng: 106.824215,
+        status: 'Aktif',
+        address: 'Jl. H. Agus Salim, Kebon Sirih, Menteng, Jakarta Pusat'
       },
       {
-        name: 'Kecamatan Siantar Marihat',
-        lat: 2.94579285,
-        lng: 99.06838650,
-        address: 'Jl. Pisang, Sukamaju, Kec. Siantar Marihat, Kota Pematang Siantar, Sumatera Utara 21121',
+        name: 'KANTOR WALIKOTA JAKARTA PUSAT',
+        lat: -6.179812,
+        lng: 106.814234,
+        status: 'Aktif',
+        address: 'Jl. Tanah Abang I No.1, Petojo Selatan, Gambir, Jakarta Pusat'
       },
       {
-        name: 'Kecamatan Siantar Martoba',
-        lat: 2.98535134,
-        lng: 99.06448414,
-        address: 'Jl. Pendeta J.Wismar Saragih, Tj. Pinggir, Kec. Siantar Martoba, Kota Pematang Siantar, Sumatera Utara 21143',
+        name: 'GELORA BUNG KARNO (GBK SENAYAN)',
+        lat: -6.218542,
+        lng: 106.801823,
+        status: 'Aktif',
+        address: 'Jl. Pintu Satu Senayan, Gelora, Tanah Abang, Jakarta Pusat'
       },
       {
-        name: 'Rumah Kemasan Dinas KUKM',
-        lat: 2.95648689,
-        lng: 99.05543516,
-        address: 'Jl. Regu No. 7 Kel Bukit Sofa Kec. Siantar Sitalasari Kota Pematangsiantar',
+        name: 'STASIUN MRT DUKUH ATAS BNI',
+        lat: -6.200834,
+        lng: 106.822812,
+        status: 'Aktif',
+        address: 'Kawasan Transit Terpadu Dukuh Atas, Jakarta Pusat'
+      },
+
+      // Jakarta Selatan
+      {
+        name: 'TEBET ECO PARK',
+        lat: -6.236712,
+        lng: 106.853345,
+        status: 'Aktif',
+        address: 'Jl. Tebet Barat Raya, Tebet Barat, Jakarta Selatan'
       },
       {
-        name: 'Rumah Dinas Wali Kota (Pendopo II)',
-        lat: 2.95049392,
-        lng: 99.05954702,
-        address: 'Pematang Siantar, Teladan, Kec. Siantar Bar., Kota Pematang Siantar, Sumatera Utara 21144',
+        name: 'BLOK M HUB & TAMAN LITERASI CH. TIAHAHU',
+        lat: -6.244312,
+        lng: 106.797934,
+        status: 'Aktif',
+        address: 'Jl. Sisingamangaraja, Melawai, Kebayoran Baru, Jakarta Selatan'
       },
       {
-        name: 'Ruang Serbaguna',
-        lat: 2.95600277,
-        lng: 99.06133892,
-        address: 'Jl. Sutomo III, Proklamasi, Kec. Siantar Bar., Kota Pematang Siantar, Sumatera Utara 21144',
+        name: 'KAWASAN TRANSIT CSW - ASEAN',
+        lat: -6.239245,
+        lng: 106.798512,
+        status: 'Aktif',
+        address: 'Jl. Kyai Maja, Kramat Pela, Kebayoran Baru, Jakarta Selatan'
       },
       {
-        name: 'Ruang Data',
-        lat: 2.95636923,
-        lng: 99.06158861,
-        address: 'Jl. Merdeka, Proklamasi, Kec. Siantar Bar., Kota Pematang Siantar, Sumatera Utara 21144',
+        name: 'KAWASAN SCBD SUDIRMAN HUB',
+        lat: -6.225034,
+        lng: 106.808023,
+        status: 'Aktif',
+        address: 'Jl. Jend. Sudirman Kav. 52-53, Senayan, Jakarta Selatan'
       },
       {
-        name: 'Lapangan Adam Malik (1)',
-        lat: 2.95570062,
-        lng: 99.05926052,
-        address: 'Proklamasi, Kec. Siantar Bar., Kota Pematang Siantar, Sumatera Utara 21143',
+        name: 'TAMAN AYODYA & BARITO',
+        lat: -6.245812,
+        lng: 106.794423,
+        status: 'Aktif',
+        address: 'Jl. Lamandau III, Kramat Pela, Kebayoran Baru, Jakarta Selatan'
       },
       {
-        name: 'Lapangan Adam Malik (2)',
-        lat: 2.95570062,
-        lng: 99.05926052,
-        address: 'Proklamasi, Kec. Siantar Bar., Kota Pematang Siantar, Sumatera Utara 21143',
+        name: 'TAMAN LANGSAT',
+        lat: -6.243512,
+        lng: 106.792534,
+        status: 'Aktif',
+        address: 'Jl. Barito, Kramat Pela, Kebayoran Baru, Jakarta Selatan'
       },
       {
-        name: 'Dinas Kominfo Lt.2',
-        lat: 2.95777771,
-        lng: 99.06166212,
-        address: 'Jl. W. R. Supratman No.4, Proklamasi, Kec. Siantar Bar., Kota Pematang Siantar, Sumatera Utara 21145',
+        name: 'HUTAN KOTA GBK',
+        lat: -6.222412,
+        lng: 106.806234,
+        status: 'Aktif',
+        address: 'Jl. Jenderal Sudirman, Senayan, Kebayoran Baru, Jakarta Selatan'
       },
       {
-        name: 'Lapangan Merdeka (1)',
-        lat: 2.95719800,
-        lng: 99.06104007,
-        address: 'Proklamasi, Kec. Siantar Bar., Kota Pematang Siantar, Sumatera Utara',
+        name: 'TAMAN MATARAM',
+        lat: -6.233512,
+        lng: 106.802534,
+        status: 'Aktif',
+        address: 'Jl. Mataram No.1, Selong, Kebayoran Baru, Jakarta Selatan'
       },
       {
-        name: 'Lapangan Merdeka (2)',
-        lat: 2.95719800,
-        lng: 99.06104007,
-        address: 'Proklamasi, Kec. Siantar Bar., Kota Pematang Siantar, Sumatera Utara',
+        name: 'KANTOR WALIKOTA JAKARTA SELATAN',
+        lat: -6.262512,
+        lng: 106.810534,
+        status: 'Aktif',
+        address: 'Jl. Prapanca Raya No.9, Petogogan, Kebayoran Baru, Jakarta Selatan'
       },
       {
-        name: 'Lapangan Merdeka (3)',
-        lat: 2.95719800,
-        lng: 99.06104007,
-        address: 'Proklamasi, Kec. Siantar Bar., Kota Pematang Siantar, Sumatera Utara',
+        name: 'TAMAN MARGASATWA RAGUNAN',
+        lat: -6.312412,
+        lng: 106.820123,
+        status: 'Aktif',
+        address: 'Jl. Harsono RM No.1, Ragunan, Pasar Minggu, Jakarta Selatan'
+      },
+
+      // Jakarta Barat
+      {
+        name: 'KOTA TUA & TAMAN FATAHILLAH',
+        lat: -6.135212,
+        lng: 106.813345,
+        status: 'Aktif',
+        address: 'Kawasan Kota Tua, Pinangsia, Taman Sari, Jakarta Barat'
       },
       {
-        name: 'Mall Pelayanan Publik Ramayana (1)',
-        lat: 2.96031210,
-        lng: 99.07384784,
-        address: 'Jl. Sutomo, Pahlawan, Kec. Siantar Tim., Kota Pematang Siantar, Sumatera Utara 21136',
+        name: 'TAMAN CATTLEYA TOMANG',
+        lat: -6.182412,
+        lng: 106.791534,
+        status: 'Aktif',
+        address: 'Jl. Letjen S. Parman, Kemanggisan, Palmerah, Jakarta Barat'
       },
       {
-        name: 'Mall Pelayanan Publik Ramayana (2)',
-        lat: 2.96031210,
-        lng: 99.07384784,
-        address: 'Jl. Sutomo, Pahlawan, Kec. Siantar Tim., Kota Pematang Siantar, Sumatera Utara 21136',
+        name: 'KANTOR WALIKOTA JAKARTA BARAT',
+        lat: -6.168212,
+        lng: 106.750534,
+        status: 'Aktif',
+        address: 'Jl. Raya Kembangan No.2, Kembangan Selatan, Jakarta Barat'
       },
       {
-        name: 'Taman Beo (1)',
-        lat: 2.94433584,
-        lng: 99.04154687,
-        address: 'Jl. Sisingamangaraja, Setia Negara, Kec. Siantar Sitalasari, Kota Pematang Siantar, Sumatera Utara 21139',
+        name: 'HUTAN KOTA SRENGSENG',
+        lat: -6.208512,
+        lng: 106.762134,
+        status: 'Aktif',
+        address: 'Jl. H. Kelik, Srengseng, Kembangan, Jakarta Barat'
       },
       {
-        name: 'Taman Beo (2)',
-        lat: 2.94433584,
-        lng: 99.04154687,
-        address: 'Jl. Sisingamangaraja, Setia Negara, Kec. Siantar Sitalasari, Kota Pematang Siantar, Sumatera Utara 21139',
+        name: 'TAMAN JALUR HIJAU KOSAMBI',
+        lat: -6.175612,
+        lng: 106.718534,
+        status: 'Aktif',
+        address: 'Duri Kosambi, Cengkareng, Jakarta Barat'
+      },
+
+      // Jakarta Utara
+      {
+        name: 'TAMAN IMPIAN JAYA ANCOL & PANTAI KARNAVAL',
+        lat: -6.124512,
+        lng: 106.843234,
+        status: 'Aktif',
+        address: 'Jl. Lodan Timur No.7, Ancol, Pademangan, Jakarta Utara'
       },
       {
-        name: 'USI (Gerbang)',
-        lat: 2.96233333,
-        lng: 99.04733351,
-        address: 'Pematang Siantar, Bukit Sofa, Kec. Siantar Sitalasari, Kota Pematang Siantar, Sumatera Utara 21139',
+        name: 'DANAU SUNTER (SUNTER HUB)',
+        lat: -6.143212,
+        lng: 106.872034,
+        status: 'Aktif',
+        address: 'Jl. Danau Sunter Selatan, Tanjung Priok, Jakarta Utara'
       },
       {
-        name: 'USI (Lapangan Bola)',
-        lat: 2.96226597,
-        lng: 99.04566701,
-        address: 'Pematang Siantar, Bah Kapul, Kec. Siantar Sitalasari, Kota Pematang Siantar, Sumatera Utara 21139',
+        name: 'KANTOR WALIKOTA JAKARTA UTARA',
+        lat: -6.121512,
+        lng: 106.892034,
+        status: 'Aktif',
+        address: 'Jl. Laksamana Yos Sudarso No.27-29, Kebon Bawang, Jakarta Utara'
       },
       {
-        name: 'Dekranasda',
-        lat: 2.95725459,
-        lng: 99.06199533,
-        address: 'Jl. Merdeka No.3, Proklamasi, Kec. Siantar Bar., Kota Pematang Siantar, Sumatera Utara',
+        name: 'TAMAN WADUK PLUIT',
+        lat: -6.120512,
+        lng: 106.797234,
+        status: 'Aktif',
+        address: 'Jl. Pluit Timur Raya No.12, Penjaringan, Jakarta Utara'
       },
       {
-        name: 'Kantor Pramuka',
-        lat: 2.97394008,
-        lng: 99.07093801,
-        address: 'Jl. Meranti, Kahean, Kec. Siantar Utara, Kota Pematang Siantar, Sumatera Utara',
+        name: 'KAWASAN KULINER & TAMAN PIK',
+        lat: -6.111812,
+        lng: 106.738534,
+        status: 'Aktif',
+        address: 'Pantai Indah Kapuk, Kamal Muara, Penjaringan, Jakarta Utara'
+      },
+
+      // Jakarta Timur
+      {
+        name: 'TAMAN MINI INDONESIA INDAH (TMII)',
+        lat: -6.302412,
+        lng: 106.895234,
+        status: 'Aktif',
+        address: 'Jl. Raya Taman Mini, Ceger, Cipayung, Jakarta Timur'
       },
       {
-        name: 'Kantor Bawaslu',
-        lat: 2.95168450,
-        lng: 99.05311881,
-        address: 'Jl. Raya No.29, Simarito, Kec. Siantar Bar., Kota Pematang Siantar, Sumatera Utara 21112',
+        name: 'KANTOR WALIKOTA JAKARTA TIMUR',
+        lat: -6.216312,
+        lng: 106.904834,
+        status: 'Aktif',
+        address: 'Jl. Dr. Sumarno, Penggilingan, Cakung, Jakarta Timur'
       },
       {
-        name: 'Kantor Ephorus GKPS',
-        lat: 2.97314287,
-        lng: 99.05388837,
-        address: 'Kantor Pusat GKPS, Bane, Kec. Siantar Utara, Kota Pematang Siantar, Sumatera Utara 21143',
+        name: 'TAMAN WADUK RIA RIO',
+        lat: -6.175212,
+        lng: 106.878534,
+        status: 'Aktif',
+        address: 'Jl. Pulo Mas Utara, Kayu Putih, Pulo Gadung, Jakarta Timur'
       },
       {
-        name: 'HKBP Jalan Gereja',
-        lat: 2.94944682,
-        lng: 99.06159191,
-        address: 'Pematang Siantar, Kristen, Kec. Siantar Sel., Kota Pematang Siantar, Sumatera Utara',
+        name: 'BUMI PERKEMAHAN CIBUBUR (BUPERTA)',
+        lat: -6.368512,
+        lng: 106.897534,
+        status: 'Aktif',
+        address: 'Pondok Ranggon, Cipayung, Jakarta Timur'
       },
       {
-        name: 'Univ. Nommensen (1)',
-        lat: 2.96125998,
-        lng: 99.07956946,
-        address: 'Pematang Siantar, Siopat Suhu, Kec. Siantar Tim., Kota Pematang Siantar, Sumatera Utara',
-      },
-      {
-        name: 'Univ. Nommensen (2)',
-        lat: 2.96127779,
-        lng: 99.07952715,
-        address: 'Pematang Siantar, Siopat Suhu, Kec. Siantar Tim., Kota Pematang Siantar, Sumatera Utara',
-      },
-      {
-        name: 'MUI',
-        lat: 2.95809029,
-        lng: 99.05803810,
-        address: 'Pematang Siantar, Banjar, Kec. Siantar Bar., Kota Pematang Siantar, Sumatera Utara 21143',
-      },
-      {
-        name: 'Muhammadiyah',
-        lat: 2.96490508,
-        lng: 99.07511163,
-        address: 'Jl. Ahmad Yani No.37, Asuhan, Kec. Siantar Tim., Kota Pematang Siantar, Sumatera Utara',
-      },
-      {
-        name: 'Panti Asuhan ELIM',
-        lat: 2.97403507,
-        lng: 99.07658646,
-        address: 'Pematang Siantar, Asuhan, Kec. Siantar Tim., Kota Pematang Siantar, Sumatera Utara 21137',
-      },
-      {
-        name: 'Mesjid Raya',
-        lat: 2.95409941,
-        lng: 99.05726958,
-        address: 'Jl. Masjid No.2, Timbang Galung, Kec. Siantar Bar., Kota Pematang Siantar, Sumatera Utara 21143',
-      },
-      {
-        name: 'Kantor Wali Kota (lt 1)',
-        lat: 2.95654382,
-        lng: 99.06171608,
-        address: 'Jl. Merdeka, Proklamasi, Kec. Siantar Bar., Kota Pematang Siantar, Sumatera Utara 21144',
-      },
-      {
-        name: 'Pesantren Darusalam',
-        lat: 2.99093463,
-        lng: 99.07375010,
-        address: 'Pematang Siantar, Pd. Sayur, Kec. Siantar Martoba, Kota Pematang Siantar, Sumatera Utara 21137',
-      },
-      {
-        name: 'Dinas Dukcapil-1',
-        lat: 2.94599684,
-        lng: 99.06870322,
-        address: 'Jl. Pisang, Sukamaju, Kec. Siantar Marihat, Kota Pematang Siantar, Sumatera Utara 21121',
-      },
-      {
-        name: 'Dinas Dukcapil-2',
-        lat: 2.94599684,
-        lng: 99.06870322,
-        address: 'Jl. Pisang, Sukamaju, Kec. Siantar Marihat, Kota Pematang Siantar, Sumatera Utara 21121',
-      },
-      {
-        name: 'Diskominfo (Media Center)',
-        lat: 2.95820564,
-        lng: 99.06973778,
-        address: 'Pematang Siantar, Simalungun, Kec. Siantar Sel., Kota Pematang Siantar, Sumatera Utara',
-      },
-      {
-        name: 'RSUD (Ruang Pendaftaran Pasien)',
-        lat: 2.95820564,
-        lng: 99.06973778,
-        address: 'Pematang Siantar, Simalungun, Kec. Siantar Sel., Kota Pematang Siantar, Sumatera Utara',
-      },
-      {
-        name: 'RSUD (Poliklinik)',
-        lat: 2.95820564,
-        lng: 99.06973778,
-        address: 'Pematang Siantar, Simalungun, Kec. Siantar Sel., Kota Pematang Siantar, Sumatera Utara',
-      },
-      {
-        name: 'BPKPD (Kantor Pelayanan PBB)',
-        lat: 2.95656465,
-        lng: 99.06229304,
-        address: 'Jl. Merdeka No.6, Proklamasi, Kec. Siantar Bar., Kota Pematang Siantar, Sumatera Utara',
-      },
-      {
-        name: 'Satpol PP',
-        lat: 2.95496130,
-        lng: 99.05968084,
-        address: 'Pematang Siantar, Proklamasi, Kec. Siantar Bar., Kota Pematang Siantar, Sumatera Utara',
-      },
-      {
-        name: 'DPRD Sekwan',
-        lat: 2.95518437,
-        lng: 99.06007740,
-        address: 'Pematang Siantar, Proklamasi, Kec. Siantar Bar., Kota Pematang Siantar, Sumatera Utara',
-      },
-      {
-        name: 'Tugu Sangnawaluh',
-        lat: 2.96064691,
-        lng: 99.07418229,
-        address: 'Jl. Sangnawaluh, Pahlawan, Kec. Siantar Tim., Kota Pematang Siantar, Sumatera Utara 21136',
-      },
-      {
-        name: 'Taman Simpang 2',
-        lat: 2.93177053,
-        lng: 99.04609683,
-        address: 'Jl. Saribu Dolok, Nagahuta Tim., Kec. Siantar Marimbun, Kota Pematang Siantar, Sumatera Utara 21126',
-      },
-      {
-        name: 'STT GPDI',
-        lat: 2.96206406,
-        lng: 99.08109008,
-        address: 'Jl. Sangnawaluh, Siopat Suhu, Siantar Timur, Pematang Siantar City, North Sumatra 21139',
-      },
-      {
-        name: 'Dinas Pemadaman Kebakaran dan Penyelamatan',
-        lat: 2.95227658,
-        lng: 99.06273569,
+        name: 'TAMAN APUNG JAKARTA TIMUR',
+        lat: -6.311212,
+        lng: 106.885634,
+        status: 'Aktif',
+        address: 'Kelapa Dua Wetan, Ciracas, Jakarta Timur'
+      }
+    ];
+
         address: 'Jl. Tarutung No.10, Kristen, Kec. Siantar Bar., Kota Pematang Siantar, Sumatera Utara 21118',
       },
     ];
@@ -10402,15 +10362,15 @@
           mapWifi.remove();
         }
 
-        const siantarCoords = [2.9568, 99.0619];
+        const jakartaCoords = [-6.1950, 106.8230];
 
         mapWifi = L.map('mapid', {
           zoomControl: false,
           attributionControl: true,
-        }).setView(siantarCoords, 14);
+        }).setView(jakartaCoords, 12);
 
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-          attribution: 'Map data © Diskominfo Kota Pematangsiantar',
+          attribution: 'Map data © Jakarta Smart City | JakWifi | © OpenStreetMap contributors',
           maxZoom: 19,
         }).addTo(mapWifi);
 
