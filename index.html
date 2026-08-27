@@ -5343,7 +5343,7 @@
           <div class="vms-control-dock" id="vms-control-dock">
             <div class="vms-dock-left">
               <div class="vms-stat-item"><span class="vms-stat-label">Loewix VMS:</span> <span class="vms-stat-val text-success">ONLINE</span></div>
-              <div class="vms-stat-item d-none d-lg-block"><span class="vms-stat-label">Engine:</span> <span class="vms-stat-val text-info">H.264 P2P</span></div>
+              <div class="vms-stat-item d-none d-lg-block"><span class="vms-stat-label">Engine:</span> <span class="vms-stat-val text-info">H.265 HEVC</span></div>
               <div class="vms-stat-item">
                 <span class="vms-stat-label">Kualitas:</span>
                 <button id="global-quality-btn" class="vms-quality-pill is-sd" onclick="toggleGlobalStreamQuality()" title="Ganti Kualitas Semua CCTV (SD / HD)">
