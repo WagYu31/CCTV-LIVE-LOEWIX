@@ -5491,9 +5491,9 @@
                   class="weight-footer-item-content weight-footer-item-link">
                   <ul class="list-unstyled mb-0 social-icon-list">
                     <li
-                      class="weight-footer-item2-content col-lg-11 pl-0 pr-0" style="color: rgba(255,255,255,0.8); font-size: 0.9rem;">
+                      class="weight-footer-item2-content col-lg-11 pl-0 pr-0" style="color: rgba(255,255,255,0.8); font-size: 0.9rem; line-height: 1.5;">
                       📍 LOEWIX Security Systems Tower<br>
-                      Jl. W. R. Supratman No.4, Pematangsiantar, Sumatera Utara 21145
+                      Komplek, Jl. Ruko Toho Pantai Indah Blok L No. 8, RT.1/RW.3, Kapuk, Kecamatan Penjaringan, Jkt Utara, Daerah Khusus Ibukota Jakarta 14470
                     </li>
 
                     <li style="margin-top: 12px;"></li>
