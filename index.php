@@ -5759,6 +5759,7 @@
       }
     })();
     let authCheckComplete = !!currentUser;
+    let apiSyncDone = false;
 
     // ===== DATA KAMERA (100% DISINKRONKAN DENGAN DATABASE ADMIN LOEWIX) =====
     const mediamtxData = [];
@@ -5869,12 +5870,13 @@
         fetch(apiTarget)
           .then(res => res.json())
           .then(data => {
+            apiSyncDone = true;
             if (data && data.success && Array.isArray(data.cameras)) {
               mediamtxData.length = 0;
 
               data.cameras.forEach(c => {
                 let safeId = parseInt(c.id);
-                const city = (c.city || 'siantar').toLowerCase();
+                const city = (c.city || 'all').toLowerCase();
                 const defaultCenter = CITY_CONFIG[city] ? CITY_CONFIG[city].center : [2.9568, 99.0619];
                 let coords = extractSafeLatLng(c) || defaultCenter;
 
@@ -5917,7 +5919,10 @@
               mediamtxData.length = 0;
               if (typeof generateCCTVHTML === 'function') generateCCTVHTML(typeof currentGlobalCity !== 'undefined' ? currentGlobalCity : 'all');
             }
-          }).catch(e => {});
+          }).catch(e => {
+            apiSyncDone = true;
+            if (typeof generateCCTVHTML === 'function') generateCCTVHTML(typeof currentGlobalCity !== 'undefined' ? currentGlobalCity : 'all');
+          });
       } catch(globalErr) {}
     }
     syncCustomLocalStorageCameras();
@@ -10766,6 +10771,15 @@
       });
 
       if (mainCameras.length === 0) {
+        if (!apiSyncDone) {
+          cctvContainer.innerHTML = `
+            <div class="col-12 text-center py-5">
+              <div class="spinner-border mb-3" style="width: 3rem; height: 3rem; color: #00d2ff;" role="status"></div>
+              <h5 class="text-white font-weight-bold mb-2">Memuat Kamera CCTV Live...</h5>
+              <p class="text-muted mb-0" style="font-size: 13px;">Menyinkronkan siaran kamera dari cloud server...</p>
+            </div>`;
+          return;
+        }
         cctvContainer.innerHTML = `
           <div class="col-12 text-center py-5">
             <i class="fas fa-video-slash fa-3x mb-3 text-muted"></i>
@@ -10776,7 +10790,7 @@
       }
 
       const row = document.createElement('div');
-      row.className = 'row wow fadeInUp';
+      row.className = 'row';
       cctvContainer.appendChild(row);
 
       // Determine Grid Matrix Layout Class matching DVR/NVR template
@@ -13388,12 +13402,16 @@
     }
 
     function showDashboardView(user) {
+      if (user) {
+        currentUser = user;
+        authCheckComplete = true;
+      }
       const gate = document.getElementById('loewix-login-gate');
       const content = document.getElementById('main-app-content');
       if (gate) gate.style.display = 'none';
       if (content) content.style.display = 'block';
 
-      renderUserSessionUI(user);
+      renderUserSessionUI(currentUser);
       syncCustomLocalStorageCameras();
       if (typeof generateCCTVHTML === 'function') {
         generateCCTVHTML(typeof currentGlobalCity !== 'undefined' ? currentGlobalCity : 'all');
