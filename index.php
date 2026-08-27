@@ -11429,7 +11429,7 @@
     // ===== AUTOPLAY LIVE CCTV STREAMS =====
     function autoPlayCCTVStreams() {
       if (!currentUser) return; // Do not autoplay when unauthenticated
-      console.log('[AutoPlay] Starting active CCTV video streams with viewport optimization...');
+      console.log('[AutoPlay] Starting active CCTV video streams for all grid cameras...');
       const thumbnails = document.querySelectorAll('.thumbnail-overlay[data-stream-path]');
 
       let playIndex = 0;
@@ -11437,19 +11437,15 @@
         if (!thumb || !thumb.id || thumb.id.indexOf('thumb-') !== 0) return;
         const suffix = thumb.id.slice('thumb-'.length);
         const playerId = 'player-' + suffix;
+        const player = document.getElementById(playerId);
+        if (player && player.getAttribute('data-hls-loaded') === 'true') return;
 
-        // Check if element is roughly within visible viewport
-        const rect = thumb.getBoundingClientRect();
-        const isInViewport = rect.top < (window.innerHeight + 250) && rect.bottom > -100;
-
-        if (isInViewport) {
-          setTimeout(function() {
-            if (typeof playMediaMTXCCTV === 'function' && thumb) {
-              playMediaMTXCCTV(thumb, playerId, thumb.id);
-            }
-          }, playIndex * 280);
-          playIndex++;
-        }
+        setTimeout(function() {
+          if (typeof playMediaMTXCCTV === 'function' && thumb) {
+            playMediaMTXCCTV(thumb, playerId, thumb.id);
+          }
+        }, playIndex * 180);
+        playIndex++;
       });
     }
 
