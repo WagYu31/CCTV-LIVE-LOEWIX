@@ -9081,8 +9081,34 @@
         return;
       }
 
-      // MediaMTX HLS mode - semua kamera pakai HLS via MediaMTX server
-
+      // Free any other active channel from the SAME serial number (to avoid JFTech Cloud connection limit -70122)
+      const currentSn = element.getAttribute('data-serial-number');
+      if (currentSn) {
+        const otherThumbs = document.querySelectorAll(`.thumbnail-overlay[data-serial-number="${currentSn}"]`);
+        otherThumbs.forEach(ot => {
+          if (ot.id !== thumbId) {
+            const otherSuffix = ot.id.replace('thumb-', '');
+            const otherPlayer = document.getElementById('player-' + otherSuffix);
+            if (otherPlayer && (otherPlayer.hlsInstance || otherPlayer.getAttribute('data-hls-loaded') === 'true')) {
+              try {
+                if (otherPlayer.hlsInstance) {
+                  otherPlayer.hlsInstance.destroy();
+                  otherPlayer.hlsInstance = null;
+                }
+                otherPlayer.removeAttribute('data-hls-loaded');
+                otherPlayer.pause();
+                otherPlayer.src = '';
+                otherPlayer.load();
+                otherPlayer.style.display = 'none';
+                ot.style.display = 'flex';
+                ot.style.opacity = '1';
+                const otLoading = ot.querySelector('.loading-text');
+                if (otLoading) otLoading.innerHTML = '<i class="fas fa-play-circle"></i> Klik untuk memutar video';
+              } catch(e) {}
+            }
+          }
+        });
+      }
 
       // Set load start timestamp for performance monitoring
       if (player) {
