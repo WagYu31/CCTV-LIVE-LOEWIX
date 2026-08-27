@@ -10612,7 +10612,10 @@
       }
 
       // Ubah layout ke View 1 (Single camera view)
-      changeGridLayout(1);
+      currentGridLayout = 1;
+      localStorage.setItem('loewix_grid_layout', '1');
+      syncVMSDockActive(1);
+      generateCCTVHTML(currentGlobalCity);
 
       // Scroll ke posisi kamera
       const card = document.getElementById('card-' + id);
@@ -10622,7 +10625,7 @@
 
       // Pastikan stream langsung berjalan
       const thumb = document.getElementById('thumb-' + id);
-      if (thumb && thumb.style.display !== 'none' && typeof playMediaMTXCCTV === 'function') {
+      if (thumb && typeof playMediaMTXCCTV === 'function') {
         playMediaMTXCCTV(thumb, 'player-' + id, 'thumb-' + id);
       }
 
@@ -10850,7 +10853,6 @@
       // Determine Grid Matrix Layout Class matching DVR/NVR template
       let colClass = 'col-lg-6 col-md-6 col-12 mb-4'; // default View 4 (2x2)
       let isDense = false;
-      const layoutNum = parseInt(currentGridLayout || '4');
 
       if (layoutNum === 1) {
         colClass = 'col-lg-12 col-md-12 col-12 mb-4'; // View 1
