@@ -4849,7 +4849,7 @@
 
       <!-- Footer Bar -->
       <div class="stage-footer-bar">
-        <span><i class="fas fa-building mr-1"></i> PT. Loewix Indonesia Mandiri • Security Ops</span>
+        <span><i class="far fa-copyright mr-1"></i> Copyright © Gravitti Technology 2026. All Rights Reserved.</span>
         <span><i class="fas fa-shield-alt text-info mr-1"></i> ISO 27001 Certified System</span>
       </div>
     </div>
