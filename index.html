@@ -4977,7 +4977,7 @@
                 CCTV Live
               </a>
             </li>
-            <li class="nav-item">
+            <li class="nav-item" style="display: none !important;">
               <a class="nav-link text-white d-flex align-items-center" href="#wifi" style="font-weight: 600; font-size: 14px; opacity: 0.85; gap: 6px; transition: all 0.2s;">
                 <i class="fas fa-wifi" style="color: #38bdf8; font-size: 14px;"></i>
                 WiFi Network
@@ -5061,8 +5061,8 @@
               </div>
             </div>
 
-            <!-- Loewix 3 Feature Cards Grid (Stitch Style) -->
-            <div class="row mt-5 pt-3">
+            <!-- Loewix 3 Feature Cards Grid (Stitch Style) [HIDDEN] -->
+            <div class="row mt-5 pt-3" style="display: none !important;">
               <div class="col-lg-4 col-md-4 col-12 mb-3">
                 <div style="background: rgba(255, 255, 255, 0.07); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 16px; padding: 22px 20px; backdrop-filter: blur(12px); transition: transform 0.3s ease, border-color 0.3s ease; height: 100%;" onmouseover="this.style.transform='translateY(-5px)'; this.style.borderColor='rgba(56, 189, 248, 0.5)';" onmouseout="this.style.transform='none'; this.style.borderColor='rgba(255, 255, 255, 0.15)';">
                   <div style="display: flex; align-items: center; gap: 14px; margin-bottom: 10px;">
@@ -5106,8 +5106,8 @@
     </div>
   </div>
 
-  <!--lokasi_map-section-->
-  <section id="peta">
+  <!--lokasi_map-section [HIDDEN]-->
+  <section id="peta" style="display: none !important;">
     <div class="form-main-con dots-left-img">
       <div class="container overlay-content">
         <div class="form-title-con text-center wow slideInLeft">
@@ -5171,8 +5171,8 @@
   </div>
   <!-- ===== END Advanced CCTV Search ===== -->
 
-  <!-- ===== NEW FEATURE: Statistics Cards ===== -->
-  <section class="statistics-section">
+  <!-- ===== NEW FEATURE: Statistics Cards [HIDDEN] ===== -->
+  <section class="statistics-section" style="display: none !important;">
     <div class="container">
       <div class="statistics-container">
         <div class="stat-card wow fadeInUp" data-wow-delay="0.1s">
@@ -5395,8 +5395,8 @@
 
 
 
-  <!--form-section-->
-  <section id="wifi">
+  <!--form-section [HIDDEN]-->
+  <section id="wifi" style="display: none !important;">
     <div class="form-main-con dots-left-img">
       <div class="container overlay-content">
         <div class="form-title-con text-center wow slideInLeft">

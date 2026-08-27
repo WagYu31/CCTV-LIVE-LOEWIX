@@ -338,7 +338,7 @@
                   CCTV
                 </a>
               </li>
-              <li class="nav-item">
+              <li class="nav-item" style="display: none !important;">
                 <a class="nav-link text-white p-0" href="index.php#wifi">
                   <img
                     src="assets/image/icon-wifi.svg"
