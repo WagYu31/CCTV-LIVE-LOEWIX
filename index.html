@@ -4992,8 +4992,8 @@
           </ul>
           <div class="d-flex align-items-center" style="gap: 10px;">
             <select id="city-selector-nav" class="form-control form-control-sm" style="background: rgba(255,255,255,0.12); color: white; border: 1px solid rgba(255,255,255,0.25); border-radius: 20px; padding: 5px 12px; font-weight: 600; cursor: pointer; width: auto; font-size: 13px; outline: none;" onchange="changeGlobalCity(this.value)">
-              <option value="all" style="color: #111;">🌐 Semua Wilayah</option>
-              <option value="siantar" selected style="color: #111;">📍 Pematangsiantar</option>
+              <option value="all" selected style="color: #111;">🌐 Semua Wilayah</option>
+              <option value="siantar" style="color: #111;">📍 Pematangsiantar</option>
               <option value="jakarta" style="color: #111;">📍 DKI Jakarta</option>
               <option value="medan" style="color: #111;">📍 Kota Medan</option>
               <option value="bandung" style="color: #111;">📍 Kota Bandung</option>
@@ -5238,8 +5238,8 @@
           <div class="filter-group" style="display: flex; align-items: center; gap: 8px;">
             <label style="color: #4cd137; font-weight: 600; margin: 0;"><i class="fas fa-map-marker-alt"></i> Wilayah / Kota:</label>
             <select class="filter-select" id="filter-city" style="background: rgba(255,255,255,0.1); color: #fff; border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; padding: 6px 12px; font-weight: 600;" onchange="changeGlobalCity(this.value)">
-              <option value="all" style="color: #111;">🌐 Semua Wilayah</option>
-              <option value="siantar" selected style="color: #111;">📍 Pematangsiantar</option>
+              <option value="all" selected style="color: #111;">🌐 Semua Wilayah</option>
+              <option value="siantar" style="color: #111;">📍 Pematangsiantar</option>
               <option value="jakarta" style="color: #111;">📍 DKI Jakarta</option>
               <option value="medan" style="color: #111;">📍 Kota Medan</option>
               <option value="bandung" style="color: #111;">📍 Kota Bandung</option>
@@ -5846,7 +5846,11 @@
                     html += `<option value="${c.id}" style="color:#000;">📍 ${c.name}</option>`;
                   });
                   sel.innerHTML = html;
-                  if (curVal && CITY_CONFIG[curVal]) sel.value = curVal;
+                  if (curVal === 'all' || (curVal && CITY_CONFIG[curVal])) {
+                    sel.value = curVal;
+                  } else {
+                    sel.value = 'all';
+                  }
                 }
               });
             }
