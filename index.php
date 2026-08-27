@@ -1176,6 +1176,58 @@
       border-color: #38bdf8;
     }
 
+    /* ===== FULLSCREEN MODE FOR INDIVIDUAL CCTV CARD ===== */
+    .traffic-card:fullscreen,
+    .traffic-card:-webkit-full-screen,
+    .traffic-card:-moz-full-screen {
+      width: 100vw !important;
+      height: 100vh !important;
+      max-width: 100vw !important;
+      max-height: 100vh !important;
+      background: #000000 !important;
+      border-radius: 0 !important;
+      border: none !important;
+      box-shadow: none !important;
+      display: flex !important;
+      flex-direction: column !important;
+      justify-content: space-between !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      z-index: 99999999 !important;
+    }
+
+    .traffic-card:fullscreen .traffic-card-iframe,
+    .traffic-card:-webkit-full-screen .traffic-card-iframe,
+    .traffic-card:-moz-full-screen .traffic-card-iframe {
+      width: 100% !important;
+      height: calc(100vh - 54px) !important;
+      flex: 1 !important;
+      position: relative !important;
+      background: #000000 !important;
+      border-radius: 0 !important;
+    }
+
+    .traffic-card:fullscreen .traffic-card-content,
+    .traffic-card:-webkit-full-screen .traffic-card-content,
+    .traffic-card:-moz-full-screen .traffic-card-content {
+      height: 54px !important;
+      background: rgba(8, 16, 36, 0.95) !important;
+      backdrop-filter: blur(12px) !important;
+      border-top: 1px solid rgba(255, 255, 255, 0.12) !important;
+      border-radius: 0 !important;
+      padding: 8px 24px !important;
+      z-index: 10 !important;
+    }
+
+    .traffic-card:fullscreen video,
+    .traffic-card:-webkit-full-screen video,
+    .traffic-card:-moz-full-screen video {
+      width: 100% !important;
+      height: 100% !important;
+      object-fit: contain !important;
+      background: #000000 !important;
+    }
+
     .card-footer-meta-row {
       display: flex;
       align-items: center;
@@ -10496,12 +10548,81 @@
     function toggleVMSFullscreen() {
       const cctvSection = document.getElementById('cctv-container');
       if (!cctvSection) return;
-      if (!document.fullscreenElement) {
-        cctvSection.requestFullscreen().catch(() => {});
+      if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+        if (cctvSection.requestFullscreen) {
+          cctvSection.requestFullscreen().catch(() => {});
+        } else if (cctvSection.webkitRequestFullscreen) {
+          cctvSection.webkitRequestFullscreen();
+        }
       } else {
-        document.exitFullscreen().catch(() => {});
+        if (document.exitFullscreen) {
+          document.exitFullscreen().catch(() => {});
+        } else if (document.webkitExitFullscreen) {
+          document.webkitExitFullscreen();
+        }
       }
     }
+
+    function toggleCameraFullscreen(id) {
+      const card = document.getElementById('card-' + id);
+      if (!card) return;
+
+      const player = document.getElementById('player-' + id);
+      const thumb = document.getElementById('thumb-' + id);
+
+      // Start stream if not already active
+      if (thumb && thumb.style.display !== 'none' && typeof playMediaMTXCCTV === 'function') {
+        playMediaMTXCCTV(thumb, 'player-' + id, 'thumb-' + id);
+      }
+
+      const isFs = !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement);
+
+      if (isFs) {
+        if (document.exitFullscreen) {
+          document.exitFullscreen().catch(() => {});
+        } else if (document.webkitExitFullscreen) {
+          document.webkitExitFullscreen();
+        } else if (document.mozCancelFullScreen) {
+          document.mozCancelFullScreen();
+        } else if (document.msExitFullscreen) {
+          document.msExitFullscreen();
+        }
+      } else {
+        const reqFs = card.requestFullscreen || card.webkitRequestFullscreen || card.mozRequestFullScreen || card.msRequestFullscreen;
+        if (reqFs) {
+          reqFs.call(card).catch(err => {
+            console.warn('[Fullscreen] Card fullscreen failed, falling back to video:', err);
+            if (player) {
+              if (player.webkitEnterFullscreen) {
+                player.webkitEnterFullscreen();
+              } else if (player.requestFullscreen) {
+                player.requestFullscreen().catch(() => {});
+              }
+            }
+          });
+        } else if (player && player.webkitEnterFullscreen) {
+          player.webkitEnterFullscreen();
+        }
+      }
+    }
+
+    // Sync fullscreen button icon across active cards
+    function handleFullscreenUIChange() {
+      const isFs = !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement);
+      const fsBtns = document.querySelectorAll('.card-action-toolbar .action-btn i.fa-expand, .card-action-toolbar .action-btn i.fa-compress');
+      fsBtns.forEach(icon => {
+        if (isFs) {
+          icon.className = 'fas fa-compress';
+        } else {
+          icon.className = 'fas fa-expand';
+        }
+      });
+    }
+
+    document.addEventListener('fullscreenchange', handleFullscreenUIChange);
+    document.addEventListener('webkitfullscreenchange', handleFullscreenUIChange);
+    document.addEventListener('mozfullscreenchange', handleFullscreenUIChange);
+    document.addEventListener('MSFullscreenChange', handleFullscreenUIChange);
 
     function focusCameraSingle(id) {
       changeGridLayout(1);
@@ -10784,7 +10905,7 @@
                       <button class="action-btn quality-toggle-btn ${(cameraQualityMap.get(camera.id) || globalStreamQuality) === 'hd' ? 'is-hd' : 'is-sd'}" id="quality-btn-${camera.id}" onclick="event.stopPropagation(); toggleCameraQuality(${camera.id})" title="Ganti Kualitas (${(cameraQualityMap.get(camera.id) || globalStreamQuality) === 'hd' ? 'HD (High Def)' : 'SD (Standard Def)'})">
                         ${((cameraQualityMap.get(camera.id) || globalStreamQuality) === 'hd') ? 'HD' : 'SD'}
                       </button>
-                      <button class="action-btn" onclick="event.stopPropagation(); focusCameraSingle(${camera.id})" title="Tampilan Penuh 1 Layar">
+                      <button class="action-btn" onclick="event.stopPropagation(); toggleCameraFullscreen(${camera.id})" title="Layar Penuh (Fullscreen)">
                         <i class="fas fa-expand"></i>
                       </button>
                       <button class="action-btn" onclick="event.stopPropagation(); ${reloadFunction}" title="Refresh Stream">
