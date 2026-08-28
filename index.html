@@ -592,56 +592,99 @@
     }
 
     /* ===== ENTERPRISE DVR / NVR CCTV VIEW MATRIX STYLES ===== */
-    .col-cctv-25 {
-      flex: 0 0 20%;
-      max-width: 20%;
+    .col-cctv-1 {
+      flex: 0 0 100%;
+      max-width: 100%;
+      padding-left: 8px;
+      padding-right: 8px;
+    }
+    .col-cctv-2 {
+      flex: 0 0 50%;
+      max-width: 50%;
+      padding-left: 8px;
+      padding-right: 8px;
+    }
+    .col-cctv-4 {
+      flex: 0 0 25%;
+      max-width: 25%;
+      padding-left: 6px;
+      padding-right: 6px;
+    }
+    .col-cctv-6 {
+      flex: 0 0 16.666667%;
+      max-width: 16.666667%;
       padding-left: 5px;
       padding-right: 5px;
     }
-    .col-cctv-36 {
-      flex: 0 0 16.666667%;
-      max-width: 16.666667%;
+    .col-cctv-8 {
+      flex: 0 0 12.5%;
+      max-width: 12.5%;
       padding-left: 4px;
       padding-right: 4px;
     }
-    .col-cctv-64 {
-      flex: 0 0 12.5%;
-      max-width: 12.5%;
+    .col-cctv-9 {
+      flex: 0 0 11.111111%;
+      max-width: 11.111111%;
       padding-left: 3px;
       padding-right: 3px;
     }
-    .col-cctv-128 {
-      flex: 0 0 8.333333%;
-      max-width: 8.333333%;
+    .col-cctv-16 {
+      flex: 0 0 6.25%;
+      max-width: 6.25%;
       padding-left: 2px;
       padding-right: 2px;
     }
-
-    @media (max-width: 1400px) {
-      .col-cctv-25 { flex: 0 0 25%; max-width: 25%; }
-      .col-cctv-36 { flex: 0 0 20%; max-width: 20%; }
-      .col-cctv-64 { flex: 0 0 16.666667%; max-width: 16.666667%; }
-      .col-cctv-128 { flex: 0 0 12.5%; max-width: 12.5%; }
+    .col-cctv-25 {
+      flex: 0 0 4%;
+      max-width: 4%;
+      padding-left: 2px;
+      padding-right: 2px;
+    }
+    .col-cctv-36 {
+      flex: 0 0 2.777778%;
+      max-width: 2.777778%;
+      padding-left: 1px;
+      padding-right: 1px;
+    }
+    .col-cctv-64 {
+      flex: 0 0 1.5625%;
+      max-width: 1.5625%;
+      padding-left: 1px;
+      padding-right: 1px;
+    }
+    .col-cctv-128 {
+      flex: 0 0 0.78125%;
+      max-width: 0.78125%;
+      padding-left: 1px;
+      padding-right: 1px;
     }
 
     @media (max-width: 1200px) {
-      .col-cctv-25 { flex: 0 0 33.333333%; max-width: 33.333333%; }
-      .col-cctv-36 { flex: 0 0 25%; max-width: 25%; }
-      .col-cctv-64 { flex: 0 0 20%; max-width: 20%; }
-      .col-cctv-128 { flex: 0 0 16.666667%; max-width: 16.666667%; }
+      .col-cctv-6 { flex: 0 0 33.333333%; max-width: 33.333333%; }
+      .col-cctv-8 { flex: 0 0 25%; max-width: 25%; }
+      .col-cctv-9 { flex: 0 0 33.333333%; max-width: 33.333333%; }
+      .col-cctv-16 { flex: 0 0 12.5%; max-width: 12.5%; }
+      .col-cctv-25, .col-cctv-36 { flex: 0 0 10%; max-width: 10%; }
+      .col-cctv-64, .col-cctv-128 { flex: 0 0 6.25%; max-width: 6.25%; }
     }
 
     @media (max-width: 992px) {
-      .col-cctv-25, .col-cctv-36 { flex: 0 0 50%; max-width: 50%; }
-      .col-cctv-64, .col-cctv-128 { flex: 0 0 25%; max-width: 25%; }
+      .col-cctv-2 { flex: 0 0 50%; max-width: 50%; }
+      .col-cctv-4 { flex: 0 0 50%; max-width: 50%; }
+      .col-cctv-6 { flex: 0 0 50%; max-width: 50%; }
+      .col-cctv-8 { flex: 0 0 33.333333%; max-width: 33.333333%; }
+      .col-cctv-9 { flex: 0 0 33.333333%; max-width: 33.333333%; }
+      .col-cctv-16 { flex: 0 0 25%; max-width: 25%; }
+      .col-cctv-25, .col-cctv-36, .col-cctv-64, .col-cctv-128 { flex: 0 0 20%; max-width: 20%; }
     }
 
     @media (max-width: 768px) {
-      .col-cctv-25, .col-cctv-36, .col-cctv-64, .col-cctv-128 { flex: 0 0 50%; max-width: 50%; }
+      .col-cctv-2, .col-cctv-4, .col-cctv-6, .col-cctv-8, .col-cctv-9 { flex: 0 0 50%; max-width: 50%; }
+      .col-cctv-16, .col-cctv-25, .col-cctv-36, .col-cctv-64, .col-cctv-128 { flex: 0 0 33.333333%; max-width: 33.333333%; }
     }
 
     @media (max-width: 576px) {
-      .col-cctv-25, .col-cctv-36, .col-cctv-64, .col-cctv-128 { flex: 0 0 100%; max-width: 100%; }
+      .col-cctv-1, .col-cctv-2, .col-cctv-4, .col-cctv-6, .col-cctv-8, .col-cctv-9, .col-cctv-16, .col-cctv-25, .col-cctv-36, .col-cctv-64, .col-cctv-128 { flex: 0 0 100%; max-width: 100%; }
     }
 
     /* Dense Matrix Card Styles for 25, 36, 64, 128 Layouts */
@@ -5631,7 +5674,7 @@
   <!-- CCTV Section -->
   <section id="cctv" style="padding-top: 95px;">
     <div class="Pricing-con dots-left-img">
-      <div class="container overlay-content">
+      <div class="container-fluid px-xl-5 px-lg-4 px-md-3 px-2 overlay-content">
         <!-- Pricing-title (Hidden per user request) -->
         <div class="Pricing-title text-center" style="display: none !important; margin-bottom: 25px;">
           <h5 style="color: #38bdf8; letter-spacing: 2px; text-transform: uppercase; font-weight: 700;">LOEWIX LIVE SURVEILLANCE GRID</h5>
@@ -11590,38 +11633,42 @@
         row.appendChild(topBanner);
       }
 
-      // Determine Grid Matrix Layout Class matching DVR/NVR template
-      let colClass = 'col-lg-6 col-md-6 col-12 mb-4'; // default View 4 (2x2)
+      // Determine Grid Matrix Layout Class matching exact number per row requested by user:
+      let colClass = 'col-cctv-4 mb-4'; // default View 4 (4 per baris)
       let isDense = false;
 
       if (layoutNum === 1) {
-        colClass = 'col-lg-12 col-md-12 col-12 mb-4'; // View 1
+        colClass = 'col-cctv-1 mb-4'; // 1 per baris
       } else if (layoutNum === 2) {
-        colClass = 'col-lg-6 col-md-6 col-12 mb-4';   // View 2
+        colClass = 'col-cctv-2 mb-4'; // 2 per baris
       } else if (layoutNum === 4) {
-        colClass = 'col-lg-6 col-md-6 col-12 mb-4';   // View 4 (2x2)
+        colClass = 'col-cctv-4 mb-4'; // 4 per baris
       } else if (layoutNum === 6) {
-        colClass = 'col-lg-4 col-md-6 col-12 mb-4';   // View 6 (3x2)
+        colClass = 'col-cctv-6 mb-3'; // 6 per baris
+        isDense = true;
       } else if (layoutNum === 8) {
-        colClass = 'col-xl-3 col-lg-3 col-md-4 col-sm-6 col-12 mb-3'; // View 8 (4x2)
+        colClass = 'col-cctv-8 mb-3'; // 8 per baris
+        isDense = true;
       } else if (layoutNum === 9) {
-        colClass = 'col-lg-4 col-md-6 col-12 mb-3';   // View 9 (3x3)
+        colClass = 'col-cctv-9 mb-3'; // 9 per baris
+        isDense = true;
       } else if (layoutNum === 16) {
-        colClass = 'col-xl-3 col-lg-3 col-md-4 col-sm-6 col-12 mb-3'; // View 16 (4x4)
+        colClass = 'col-cctv-16 mb-2'; // 16 per baris
+        isDense = true;
       } else if (layoutNum === 25) {
-        colClass = 'col-cctv-25 mb-2'; // View 25 (5x5)
+        colClass = 'col-cctv-25 mb-2'; // 25 per baris
         isDense = true;
       } else if (layoutNum === 36) {
-        colClass = 'col-cctv-36 mb-2'; // View 36 (6x6)
+        colClass = 'col-cctv-36 mb-2'; // 36 per baris
         isDense = true;
       } else if (layoutNum === 64) {
-        colClass = 'col-cctv-64 mb-2'; // View 64 (8x8)
+        colClass = 'col-cctv-64 mb-2'; // 64 per baris
         isDense = true;
       } else if (layoutNum === 128) {
-        colClass = 'col-cctv-128 mb-2'; // View 128 Matrix
+        colClass = 'col-cctv-128 mb-2'; // 128 per baris
         isDense = true;
       } else {
-        colClass = 'col-lg-6 col-md-6 col-12 mb-4';
+        colClass = 'col-cctv-4 mb-4';
       }
 
       mainCameras.forEach(camera => {
