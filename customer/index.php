@@ -1190,7 +1190,7 @@ $user = get_logged_in_user();
           <h5 class="modal-title font-weight-bold text-white" id="camModalTitle">
             <i class="fas fa-video text-info mr-2"></i> Tambah Kamera CCTV
           </h5>
-          <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close" onclick="$('#modalCamForm').modal('hide')">
+          <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close" onclick="closeModalHelper('modalCamForm')">
             <span aria-hidden="true">&times;</span>
           </button>
         </div>
@@ -1258,7 +1258,7 @@ $user = get_logged_in_user();
 
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-secondary btn-sm" onclick="$('#modalCamForm').modal('hide')">Batal</button>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="closeModalHelper('modalCamForm')">Batal</button>
             <button type="submit" class="btn btn-info btn-sm font-weight-bold px-3" style="background: #0284c7; border: none;">
               <i class="fas fa-save mr-1"></i> Simpan Kamera
             </button>
@@ -1303,7 +1303,7 @@ $user = get_logged_in_user();
           <h5 class="modal-title font-weight-bold text-white">
             <i class="fas fa-user-cog text-info mr-2"></i> Pengaturan Akun & Keamanan
           </h5>
-          <button type="button" class="close text-white" onclick="$('#modalProfile').modal('hide')">
+          <button type="button" class="close text-white" onclick="closeModalHelper('modalProfile')">
             <span aria-hidden="true">&times;</span>
           </button>
         </div>
@@ -1362,7 +1362,7 @@ $user = get_logged_in_user();
           <h5 class="modal-title font-weight-bold text-white">
             <i class="fas fa-rocket text-warning mr-2"></i> Upgrade Kuota CCTV Loewix
           </h5>
-          <button type="button" class="close text-white" onclick="$('#modalUpgradeQuota').modal('hide')">
+          <button type="button" class="close text-white" onclick="closeModalHelper('modalUpgradeQuota')">
             <span aria-hidden="true">&times;</span>
           </button>
         </div>
@@ -1385,12 +1385,47 @@ $user = get_logged_in_user();
   </div>
 
   <!-- Scripts -->
-  <script src="../assets/bootstarp/jquery.min.js"></script>
-  <script src="../assets/bootstarp/bootstrap.min.js"></script>
+  <script src="../assets/js/jquery-3.6.0.min.js"></script>
+  <script src="../assets/js/popper.min.js"></script>
+  <script src="../assets/js/bootstrap.min.js"></script>
   <script>
     let currentCustomer = null;
     let customerCameras = [];
     let hlsInstance = null;
+
+    // Modal Helper functions (safe for jQuery and Vanilla JS)
+    function openModalHelper(modalId) {
+      const modalEl = document.getElementById(modalId);
+      if (!modalEl) return;
+      if (window.$ && typeof $(modalEl).modal === 'function') {
+        $(modalEl).modal('show');
+      } else {
+        modalEl.classList.add('show');
+        modalEl.style.display = 'block';
+        document.body.classList.add('modal-open');
+        let backdrop = document.getElementById('custom-modal-backdrop');
+        if (!backdrop) {
+          backdrop = document.createElement('div');
+          backdrop.id = 'custom-modal-backdrop';
+          backdrop.className = 'modal-backdrop fade show';
+          document.body.appendChild(backdrop);
+        }
+      }
+    }
+
+    function closeModalHelper(modalId) {
+      const modalEl = document.getElementById(modalId);
+      if (!modalEl) return;
+      if (window.$ && typeof $(modalEl).modal === 'function') {
+        $(modalEl).modal('hide');
+      } else {
+        modalEl.classList.remove('show');
+        modalEl.style.display = 'none';
+        document.body.classList.remove('modal-open');
+        const backdrop = document.getElementById('custom-modal-backdrop');
+        if (backdrop) backdrop.remove();
+      }
+    }
 
     // Initialize Customer Dashboard
     document.addEventListener('DOMContentLoaded', () => {
@@ -1628,47 +1663,85 @@ $user = get_logged_in_user();
 
     function openAddCameraModal() {
       // Check quota limit
-      const quota = parseInt(currentCustomer.cctv_quota) || 20;
-      const used = customerCameras.length;
+      const quota = (currentCustomer && currentCustomer.cctv_quota) ? parseInt(currentCustomer.cctv_quota) : 20;
+      const used = (customerCameras && Array.isArray(customerCameras)) ? customerCameras.length : 0;
 
-      if (used >= quota && currentCustomer.role !== 'super_admin') {
+      if (used >= quota && (!currentCustomer || currentCustomer.role !== 'super_admin')) {
         alert(`Batas kuota Anda (${quota} Kamera) telah penuh! Silakan hapus kamera yang tidak terpakai atau ajukan upgrade kuota.`);
         openRequestUpgradeModal();
         return;
       }
 
-      document.getElementById('camModalTitle').innerHTML = '<i class="fas fa-plus-circle text-info mr-2"></i> Tambah Kamera CCTV Baru';
-      document.getElementById('cust-cam-id').value = '0';
-      document.getElementById('cust-cam-title').value = '';
-      document.getElementById('cust-cam-city').value = currentCustomer.city || 'siantar';
-      document.getElementById('cust-cam-conn-type').value = 'rtsp';
-      document.getElementById('cust-cam-hls').value = '';
-      document.getElementById('cust-cam-rtsp').value = '';
-      document.getElementById('cust-cam-sn').value = '';
-      document.getElementById('cust-cam-channel').value = '1';
-      document.getElementById('cust-cam-status').value = 'online';
+      const titleEl = document.getElementById('camModalTitle');
+      if (titleEl) titleEl.innerHTML = '<i class="fas fa-plus-circle text-info mr-2"></i> Tambah Kamera CCTV Baru';
+      
+      const idEl = document.getElementById('cust-cam-id');
+      if (idEl) idEl.value = '0';
+      
+      const titleInput = document.getElementById('cust-cam-title');
+      if (titleInput) titleInput.value = '';
+      
+      const cityInput = document.getElementById('cust-cam-city');
+      if (cityInput) cityInput.value = (currentCustomer && currentCustomer.city) ? currentCustomer.city : 'siantar';
+      
+      const connInput = document.getElementById('cust-cam-conn-type');
+      if (connInput) connInput.value = 'rtsp';
+      
+      const hlsInput = document.getElementById('cust-cam-hls');
+      if (hlsInput) hlsInput.value = '';
+      
+      const rtspInput = document.getElementById('cust-cam-rtsp');
+      if (rtspInput) rtspInput.value = '';
+      
+      const snInput = document.getElementById('cust-cam-sn');
+      if (snInput) snInput.value = '';
+      
+      const chInput = document.getElementById('cust-cam-channel');
+      if (chInput) chInput.value = '1';
+      
+      const statusInput = document.getElementById('cust-cam-status');
+      if (statusInput) statusInput.value = 'online';
 
       toggleConnFields();
-      $('#modalCamForm').modal('show');
+      openModalHelper('modalCamForm');
     }
 
     function openEditCameraModal(camId) {
-      const cam = customerCameras.find(c => c.id == camId);
+      const cam = (customerCameras && Array.isArray(customerCameras)) ? customerCameras.find(c => c.id == camId) : null;
       if (!cam) return;
 
-      document.getElementById('camModalTitle').innerHTML = '<i class="fas fa-cog text-info mr-2"></i> Edit Pengaturan Kamera';
-      document.getElementById('cust-cam-id').value = cam.id;
-      document.getElementById('cust-cam-title').value = cam.title || '';
-      document.getElementById('cust-cam-city').value = cam.city || 'siantar';
-      document.getElementById('cust-cam-conn-type').value = cam.connection_type || 'rtsp';
-      document.getElementById('cust-cam-hls').value = cam.hls_url || cam.streamPath || '';
-      document.getElementById('cust-cam-rtsp').value = cam.rtsp_url || '';
-      document.getElementById('cust-cam-sn').value = cam.serial_number || '';
-      document.getElementById('cust-cam-channel').value = cam.channel || 1;
-      document.getElementById('cust-cam-status').value = cam.status || 'online';
+      const titleEl = document.getElementById('camModalTitle');
+      if (titleEl) titleEl.innerHTML = '<i class="fas fa-cog text-info mr-2"></i> Edit Pengaturan Kamera';
+      
+      const idEl = document.getElementById('cust-cam-id');
+      if (idEl) idEl.value = cam.id;
+      
+      const titleInput = document.getElementById('cust-cam-title');
+      if (titleInput) titleInput.value = cam.title || '';
+      
+      const cityInput = document.getElementById('cust-cam-city');
+      if (cityInput) cityInput.value = cam.city || 'siantar';
+      
+      const connInput = document.getElementById('cust-cam-conn-type');
+      if (connInput) connInput.value = cam.connection_type || 'rtsp';
+      
+      const hlsInput = document.getElementById('cust-cam-hls');
+      if (hlsInput) hlsInput.value = cam.hls_url || cam.streamPath || '';
+      
+      const rtspInput = document.getElementById('cust-cam-rtsp');
+      if (rtspInput) rtspInput.value = cam.rtsp_url || '';
+      
+      const snInput = document.getElementById('cust-cam-sn');
+      if (snInput) snInput.value = cam.serial_number || '';
+      
+      const chInput = document.getElementById('cust-cam-channel');
+      if (chInput) chInput.value = cam.channel || 1;
+      
+      const statusInput = document.getElementById('cust-cam-status');
+      if (statusInput) statusInput.value = cam.status || 'online';
 
       toggleConnFields();
-      $('#modalCamForm').modal('show');
+      openModalHelper('modalCamForm');
     }
 
     async function submitCustomerCamera(e) {
@@ -1696,7 +1769,7 @@ $user = get_logged_in_user();
         const data = await res.json();
 
         if (data.success) {
-          $('#modalCamForm').modal('hide');
+          closeModalHelper('modalCamForm');
           loadCustomerCameras();
         } else {
           alert(data.message || 'Gagal menyimpan kamera.');
@@ -2151,7 +2224,7 @@ $user = get_logged_in_user();
         hlsInstance.destroy();
         hlsInstance = null;
       }
-      $('#modalLivePlayer').modal('hide');
+      closeModalHelper('modalLivePlayer');
     }
 
     function openProfileSettingsModal() {
@@ -2160,7 +2233,7 @@ $user = get_logged_in_user();
       document.getElementById('prof-email').value = currentCustomer.email || '';
       document.getElementById('prof-phone').value = currentCustomer.phone || '';
       document.getElementById('prof-city').value = currentCustomer.city || '';
-      $('#modalProfile').modal('show');
+      openModalHelper('modalProfile');
     }
 
     async function submitUpdateProfile(e) {
@@ -2211,7 +2284,7 @@ $user = get_logged_in_user();
           alert('Password berhasil diperbarui!');
           document.getElementById('new-password').value = '';
           document.getElementById('confirm-password').value = '';
-          $('#modalProfile').modal('hide');
+          closeModalHelper('modalProfile');
         } else {
           alert(data.message || 'Gagal update password.');
         }
@@ -2221,7 +2294,7 @@ $user = get_logged_in_user();
     }
 
     function openRequestUpgradeModal() {
-      $('#modalUpgradeQuota').modal('show');
+      openModalHelper('modalUpgradeQuota');
     }
 
     function logoutCustomer() {
