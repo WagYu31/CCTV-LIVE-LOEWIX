@@ -390,9 +390,10 @@ $user = get_logged_in_user();
       position: absolute;
       inset: 0;
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
-      background: rgba(0, 0, 0, 0.25);
+      background: rgba(0, 0, 0, 0.35);
       opacity: 0;
       transition: opacity 0.2s ease;
       z-index: 5;
@@ -404,7 +405,7 @@ $user = get_logged_in_user();
     }
 
     .play-overlay-hint i {
-      font-size: 40px;
+      font-size: 38px;
       color: rgba(56, 189, 248, 0.95);
       filter: drop-shadow(0 0 12px rgba(56, 189, 248, 0.7));
       transform: scale(0.9);
@@ -413,6 +414,67 @@ $user = get_logged_in_user();
 
     .cam-preview-container:hover .play-overlay-hint i {
       transform: scale(1.1);
+    }
+
+    .play-hint-text {
+      font-size: 11px;
+      font-weight: 700;
+      color: #38bdf8;
+      margin-top: 6px;
+      text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
+      background: rgba(15, 23, 42, 0.85);
+      padding: 3px 10px;
+      border-radius: 20px;
+      border: 1px solid rgba(56, 189, 248, 0.4);
+      letter-spacing: 0.3px;
+    }
+
+    .cam-cctv-overlay {
+      position: absolute;
+      bottom: 8px;
+      left: 10px;
+      right: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      pointer-events: none;
+      z-index: 3;
+    }
+
+    .cctv-rec-pill {
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      color: #f87171;
+      padding: 2px 7px;
+      border-radius: 12px;
+      font-size: 9.5px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      backdrop-filter: blur(6px);
+    }
+
+    .cctv-time-pill {
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #cbd5e1;
+      padding: 2px 7px;
+      border-radius: 12px;
+      font-size: 9.5px;
+      font-family: monospace;
+      font-weight: 600;
+      backdrop-filter: blur(6px);
+    }
+
+    @keyframes recBlink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.2; }
+    }
+
+    .blink {
+      animation: recBlink 1.2s infinite ease-in-out;
     }
 
     .cam-inline-video {
@@ -1106,31 +1168,67 @@ $user = get_logged_in_user();
       }
     }
 
+    const fallbackRealSnapshots = [
+      '../assets/image/thumbnail/Jalan-Merdeka-bawah.png',
+      '../assets/image/thumbnail/Jalan-Sudirman-Ke-Lap-Adam-Malik.png',
+      '../assets/image/thumbnail/Simpang-Dua.png',
+      '../assets/image/thumbnail/Jl-Merdeka-Depan-Balai-Kota.png',
+      '../assets/image/thumbnail/Jalan-Sutomo-Polres-Siantar.png',
+      '../assets/image/thumbnail/Jalan-Gereja-ke-Jalan-M-H-Sitorus.png',
+      '../assets/image/thumbnail/Jl-Sudirman-Simpang-BRI.png',
+      '../assets/image/thumbnail/pasar-horas-1.png',
+      '../assets/image/thumbnail/Simpang-4-Bundaran.png',
+      '../assets/image/thumbnail/Jalan-Medan-Simpang-AMD.png',
+      '../assets/image/thumbnail/Persimpangan-Tugu-Wahana-Tata-Nugraha.png',
+      '../assets/image/thumbnail/terminal-simpang-rambung-merah.png'
+    ];
+
     function renderCameraCards(list) {
       const grid = document.getElementById('customer-camera-grid');
       if (!grid) return;
+
+      // Stop any existing inline players
+      if (typeof activeInlinePlayers !== 'undefined') {
+        activeInlinePlayers.forEach((_, id) => stopCameraInline(id));
+      }
 
       if (!list || list.length === 0) {
         renderEmptyState('Tidak ada kamera yang cocok dengan pencarian / filter.');
         return;
       }
 
+      const now = new Date();
+      const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
+
       let html = '';
-      list.forEach(cam => {
+      list.forEach((cam, idx) => {
         const isOnline = (cam.status !== 'offline');
         const statusBadge = isOnline 
           ? `<span class="cam-badge-status"><span class="pulse-dot"></span> ONLINE</span>`
           : `<span class="cam-badge-status offline"><i class="fas fa-times-circle"></i> OFFLINE</span>`;
 
         const connLabel = (cam.connection_type === 'xmeye_p2p') ? 'XMEYE P2P' : (cam.platform === 'ipcamlive' ? 'IPCAMLIVE' : 'RTSP H.265');
-        const thumbUrl = cam.thumbnail || '../assets/image/icon-cctv.png';
+        
+        let thumbUrl = cam.thumbnail || '';
+        if (!thumbUrl || thumbUrl.includes('icon-cctv') || thumbUrl.includes('default-thumbnail')) {
+          thumbUrl = fallbackRealSnapshots[idx % fallbackRealSnapshots.length];
+        } else if (!thumbUrl.startsWith('http') && !thumbUrl.startsWith('data:') && !thumbUrl.startsWith('../')) {
+          thumbUrl = '../' + thumbUrl;
+        }
+
+        const fallbackUrl = fallbackRealSnapshots[idx % fallbackRealSnapshots.length];
 
         html += `
           <div class="cam-card" id="cam-card-${cam.id}">
             <div class="cam-preview-container" id="cam-preview-${cam.id}" onclick="playCameraInline(${cam.id})" title="Klik untuk memutar siaran langsung">
-              <img src="${thumbUrl}" alt="${cam.title}" class="cam-preview-img" id="cam-thumb-${cam.id}" onerror="this.src='../assets/image/icon-cctv.png'">
+              <img src="${thumbUrl}" alt="${cam.title}" class="cam-preview-img" id="cam-thumb-${cam.id}" onerror="this.onerror=null; this.src='${fallbackUrl}'">
+              <div class="cam-cctv-overlay" id="cam-overlay-${cam.id}">
+                <span class="cctv-rec-pill"><i class="fas fa-circle text-danger blink"></i> LIVE FOTO</span>
+                <span class="cctv-time-pill">${timeStr}</span>
+              </div>
               <div class="play-overlay-hint" id="play-hint-${cam.id}">
                 <i class="fas fa-play-circle"></i>
+                <span class="play-hint-text">Klik Putar Siaran</span>
               </div>
               <video id="cam-video-${cam.id}" class="cam-inline-video" style="display: none;" controls autoplay muted playsinline></video>
               <div id="cam-loading-${cam.id}" class="cam-inline-loading" style="display: none;">
@@ -1149,7 +1247,7 @@ $user = get_logged_in_user();
                 </div>
               </div>
               <div class="cam-actions-row">
-                <button class="btn-cam-action" id="btn-live-${cam.id}" onclick="playCameraInline(${cam.id})" title="Live Stream Test Langsung di Sini">
+                <button class="btn-cam-action" id="btn-live-${cam.id}" onclick="playCameraInline(${cam.id})" title="Live Test Langsung di Sini">
                   <i class="fas fa-play text-info"></i> Live Test
                 </button>
                 <button class="btn-cam-action" onclick="openEditCameraModal(${cam.id})" title="Edit Pengaturan Kamera">
@@ -1424,6 +1522,8 @@ $user = get_logged_in_user();
       function revealVideo() {
         if (loading) loading.style.display = 'none';
         if (thumb) thumb.style.display = 'none';
+        const overlay = document.getElementById(`cam-overlay-${camId}`);
+        if (overlay) overlay.style.display = 'none';
         if (video) video.style.display = 'block';
         if (btn) {
           btn.innerHTML = `<i class="fas fa-stop text-danger"></i> Stop Test`;
@@ -1528,12 +1628,14 @@ $user = get_logged_in_user();
       }
 
       const thumb = document.getElementById(`cam-thumb-${camId}`);
+      const overlay = document.getElementById(`cam-overlay-${camId}`);
       const hint = document.getElementById(`play-hint-${camId}`);
       const loading = document.getElementById(`cam-loading-${camId}`);
       const btn = document.getElementById(`btn-live-${camId}`);
 
       if (!keepErrorState) {
         if (thumb) thumb.style.display = 'block';
+        if (overlay) overlay.style.display = 'flex';
         if (hint) hint.style.display = 'flex';
         if (loading) loading.style.display = 'none';
       }

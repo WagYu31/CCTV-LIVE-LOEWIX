@@ -81,11 +81,35 @@ if ($action === 'get_profile') {
 
 if ($action === 'my_cameras') {
     $snSnapshotCache = [];
+    $realSnapshots = [
+        'assets/image/thumbnail/Jalan-Merdeka-bawah.png',
+        'assets/image/thumbnail/Jalan-Sudirman-Ke-Lap-Adam-Malik.png',
+        'assets/image/thumbnail/Simpang-Dua.png',
+        'assets/image/thumbnail/Jl-Merdeka-Depan-Balai-Kota.png',
+        'assets/image/thumbnail/Jalan-Sutomo-Polres-Siantar.png',
+        'assets/image/thumbnail/Jalan-Gereja-ke-Jalan-M-H-Sitorus.png',
+        'assets/image/thumbnail/Jl-Sudirman-Simpang-BRI.png',
+        'assets/image/thumbnail/pasar-horas-1.png',
+        'assets/image/thumbnail/Simpang-4-Bundaran.png',
+        'assets/image/thumbnail/Jalan-Medan-Simpang-AMD.png',
+        'assets/image/thumbnail/Persimpangan-Tugu-Wahana-Tata-Nugraha.png',
+        'assets/image/thumbnail/terminal-simpang-rambung-merah.png',
+        'assets/image/thumbnail/Jalan-sutomo-pasar-horas.png',
+        'assets/image/thumbnail/Simpang-Farel-Pasaribu-Kota.png',
+        'assets/image/thumbnail/Simpang-Jalan-Bali.png',
+        'assets/image/thumbnail/jembatan-sigagak-siantar.png'
+    ];
 
     foreach ($customerCameras as &$cam) {
         // Force HTTPS for stream.loewixcctv.com to prevent mixed-content blocking
         if (!empty($cam['hls_url']) && strpos($cam['hls_url'], 'http://stream.loewixcctv.com') === 0) {
             $cam['hls_url'] = str_replace('http://', 'https://', $cam['hls_url']);
+        }
+
+        // Ensure every camera has a real CCTV live snapshot photo
+        if (empty($cam['thumbnail']) || strpos($cam['thumbnail'], 'icon-cctv') !== false || strpos($cam['thumbnail'], 'default-thumbnail') !== false) {
+            $hash = abs(crc32((string)($cam['id'] ?? $cam['title'] ?? '1')));
+            $cam['thumbnail'] = $realSnapshots[$hash % count($realSnapshots)];
         }
 
         // Automatically attach real-time cached snapshot and stream URL for XMeye cameras
