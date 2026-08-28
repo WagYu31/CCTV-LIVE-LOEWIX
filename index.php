@@ -1302,41 +1302,38 @@
       display: flex;
       align-items: center;
       gap: 10px;
-      animation: slideToastIn 0.3s ease-out;
-      pointer-events: auto;
-    }
     @keyframes slideToastIn {
       from { transform: translateY(20px); opacity: 0; }
       to { transform: translateY(0); opacity: 1; }
     }
 
     /* =========================================================
-       ENTERPRISE VMS COMMAND CENTER TOOLBAR STYLING
+       LOEWIX ENTERPRISE VMS COMMAND CENTER TOOLBAR
        ========================================================= */
     .cctv-vms-command-center {
-      background: rgba(13, 27, 62, 0.88);
-      border: 1px solid rgba(56, 189, 248, 0.25);
-      border-radius: 18px;
-      padding: 14px 18px;
+      background: linear-gradient(180deg, rgba(15, 23, 42, 0.94) 0%, rgba(10, 18, 36, 0.98) 100%);
+      border: 1px solid rgba(56, 189, 248, 0.22);
+      border-radius: 16px;
+      padding: 12px 18px;
       margin-bottom: 24px;
-      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
+      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
       display: flex;
       flex-direction: column;
       gap: 12px;
       transition: all 0.3s ease;
     }
 
-    /* TOP ROW */
+    /* TOP ROW: Search, Filters & Devices Button */
     .vms-bar-top {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 14px;
+      gap: 12px;
       flex-wrap: wrap;
-      padding-bottom: 12px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      padding-bottom: 10px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
     }
 
     .vms-filters-cluster {
@@ -1344,70 +1341,69 @@
       align-items: center;
       gap: 8px;
       flex-wrap: wrap;
-      flex: 1;
+      flex: 1 1 auto;
     }
 
     /* SEARCH INPUT BOX */
     .vms-search-box {
       position: relative;
       min-width: 200px;
-      max-width: 260px;
+      max-width: 250px;
       flex: 1 1 200px;
-      padding: 0 !important;
       display: flex;
       align-items: center;
     }
 
+    .vms-search-icon {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #38bdf8;
+      font-size: 13px;
+      pointer-events: none;
+      z-index: 3;
+    }
+
     .vms-search-input {
       width: 100%;
-      height: 36px;
-      background: rgba(255, 255, 255, 0.07) !important;
-      border: 1px solid rgba(56, 189, 248, 0.3) !important;
+      height: 38px;
+      background: rgba(255, 255, 255, 0.06) !important;
+      border: 1px solid rgba(56, 189, 248, 0.28) !important;
       border-radius: 10px !important;
-      padding: 0 32px 0 32px !important;
+      padding: 0 34px 0 34px !important;
       color: #ffffff !important;
-      font-size: 13px !important;
+      font-size: 12.5px !important;
       font-weight: 500 !important;
       outline: none !important;
       box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2) !important;
-      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+      transition: all 0.2s ease !important;
     }
 
     .vms-search-input:focus {
-      background: rgba(255, 255, 255, 0.12) !important;
+      background: rgba(255, 255, 255, 0.1) !important;
       border-color: #38bdf8 !important;
-      box-shadow: 0 0 12px rgba(56, 189, 248, 0.4), inset 0 2px 4px rgba(0, 0, 0, 0.2) !important;
+      box-shadow: 0 0 14px rgba(56, 189, 248, 0.35), inset 0 2px 4px rgba(0, 0, 0, 0.2) !important;
     }
 
     .vms-search-input::placeholder {
       color: rgba(255, 255, 255, 0.45) !important;
     }
 
-    .vms-search-icon {
-      position: absolute;
-      left: 11px;
-      top: 50%;
-      transform: translateY(-50%);
-      color: #38bdf8;
-      font-size: 13px;
-      pointer-events: none;
-      z-index: 2;
-    }
-
     .vms-search-spinner {
       position: absolute;
-      right: 30px;
+      right: 32px;
       top: 50%;
       transform: translateY(-50%);
       color: #38bdf8;
       display: none;
       font-size: 12px;
-      z-index: 2;
+      z-index: 3;
     }
 
     .vms-search-clear-btn {
       position: absolute;
-      right: 8px;
+      right: 10px;
       top: 50%;
       transform: translateY(-50%);
       background: none;
@@ -1416,70 +1412,31 @@
       font-size: 13px;
       cursor: pointer;
       display: none;
-      padding: 4px;
-      line-height: 1;
-      z-index: 2;
+      padding: 2px 4px;
+      z-index: 3;
     }
 
     .vms-search-clear-btn:hover {
       color: #38bdf8;
     }
 
-    .vms-search-dropdown {
-      background: rgba(15, 23, 42, 0.96) !important;
-      border: 1px solid rgba(56, 189, 248, 0.35) !important;
-      border-radius: 10px !important;
-      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6) !important;
-      backdrop-filter: blur(14px) !important;
-      color: #ffffff !important;
-      margin-top: 6px !important;
-      min-width: 280px !important;
-      width: 100% !important;
-      position: absolute;
-      top: calc(100% + 4px);
-      left: 0;
-      z-index: 1050;
-    }
-
-    .vms-search-dropdown .cctv-search-result-item {
-      border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
-      color: #ffffff !important;
-      padding: 9px 12px !important;
-    }
-
-    .vms-search-dropdown .cctv-search-result-item:hover,
-    .vms-search-dropdown .cctv-search-result-item.selected {
-      background: rgba(56, 189, 248, 0.18) !important;
-    }
-
-    .vms-search-dropdown .search-result-title {
-      color: #ffffff !important;
-      font-size: 13px !important;
-      font-weight: 600 !important;
-    }
-
-    .vms-search-dropdown .search-result-subtitle {
-      color: #94a3b8 !important;
-      font-size: 11px !important;
-    }
-
     /* SELECT CLUSTER */
     .vms-select-group {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
       flex-wrap: wrap;
     }
 
     .vms-select-item {
-      position: relative;
-      display: flex;
+      display: inline-flex;
       align-items: center;
       background: rgba(255, 255, 255, 0.05);
       border: 1px solid rgba(255, 255, 255, 0.12);
       border-radius: 10px;
       padding: 0 10px;
-      height: 36px;
+      height: 38px;
+      gap: 6px;
       transition: all 0.2s ease;
     }
 
@@ -1490,8 +1447,8 @@
 
     .vms-select-item i {
       font-size: 12px;
-      margin-right: 6px;
       color: #38bdf8;
+      flex-shrink: 0;
     }
 
     .vms-custom-select {
@@ -1512,84 +1469,34 @@
       padding: 8px !important;
     }
 
-    /* TELEMETRY CLUSTER */
-    .vms-telemetry-cluster {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-
-    .vms-telemetry-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      background: rgba(15, 23, 42, 0.65);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 20px;
-      padding: 5px 12px;
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: 0.4px;
-      height: 32px;
-    }
-
-    .vms-telemetry-badge.status-online {
-      border-color: rgba(16, 185, 129, 0.35);
-      color: #34d399;
-    }
-
-    .vms-telemetry-badge .pulse-dot {
-      width: 7px;
-      height: 7px;
-      border-radius: 50%;
-      background: #10b981;
-      box-shadow: 0 0 8px #10b981;
-      animation: pulseDot 1.8s infinite;
-    }
-
-    @keyframes pulseDot {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.4; transform: scale(0.85); }
-    }
-
-    .vms-telemetry-badge.codec-badge {
-      color: #38bdf8;
-      border-color: rgba(56, 189, 248, 0.25);
-    }
-
-    .vms-quality-toggle-pill {
-      height: 32px;
+    /* DEVICES ACTION BUTTON */
+    .vms-devices-action-btn {
+      height: 38px;
       background: rgba(56, 189, 248, 0.12);
       border: 1px solid rgba(56, 189, 248, 0.35);
-      border-radius: 16px;
-      padding: 0 12px;
+      border-radius: 10px;
+      padding: 0 14px;
       color: #38bdf8;
-      font-size: 11.5px;
+      font-size: 12px;
       font-weight: 700;
-      letter-spacing: 0.5px;
-      cursor: pointer;
+      letter-spacing: 0.4px;
       display: inline-flex;
       align-items: center;
-      gap: 6px;
-      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      gap: 7px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s ease;
     }
 
-    .vms-quality-toggle-pill:hover {
-      background: rgba(56, 189, 248, 0.22);
+    .vms-devices-action-btn:hover {
+      background: rgba(56, 189, 248, 0.25);
       border-color: #38bdf8;
+      color: #ffffff;
       transform: translateY(-1px);
       box-shadow: 0 4px 12px rgba(56, 189, 248, 0.3);
     }
 
-    .vms-quality-toggle-pill.is-hd {
-      background: rgba(16, 185, 129, 0.18);
-      border-color: #10b981;
-      color: #34d399;
-      box-shadow: 0 0 10px rgba(16, 185, 129, 0.3);
-    }
-
-    /* BOTTOM ROW */
+    /* BOTTOM ROW: Matrix Multi-View & Telemetry Deck */
     .vms-bar-bottom {
       display: flex;
       align-items: center;
@@ -1598,31 +1505,25 @@
       flex-wrap: wrap;
     }
 
-    .vms-layout-cluster {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
     .vms-layout-label {
       color: #38bdf8;
-      font-size: 12px;
+      font-size: 11.5px;
       font-weight: 800;
       letter-spacing: 0.8px;
       display: inline-flex;
       align-items: center;
       gap: 6px;
+      text-transform: uppercase;
     }
 
     .vms-layout-matrix-buttons {
       display: inline-flex;
       align-items: center;
-      gap: 4px;
-      background: rgba(15, 23, 42, 0.7);
+      gap: 3px;
+      background: rgba(10, 18, 36, 0.85);
       padding: 4px 6px;
-      border-radius: 12px;
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 10px;
+      border: 1px solid rgba(56, 189, 248, 0.18);
       overflow-x: auto;
       max-width: 100%;
     }
@@ -1633,7 +1534,7 @@
       color: #94a3b8;
       min-width: 32px;
       height: 28px;
-      padding: 0 6px;
+      padding: 0 7px;
       border-radius: 6px;
       display: inline-flex;
       align-items: center;
@@ -1642,26 +1543,22 @@
       font-size: 11px;
       font-weight: 700;
       cursor: pointer;
-      transition: all 0.2s ease;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
       line-height: 1;
+      user-select: none;
+    }
+
+    .vms-matrix-btn i, .vms-layout-btn i {
+      font-size: 10px;
     }
 
     .vms-matrix-btn:hover, .vms-layout-btn:hover {
-      background: rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.08);
       color: #ffffff;
       border-color: rgba(255, 255, 255, 0.15);
     }
 
     .vms-matrix-btn.active, .vms-layout-btn.active {
-      background: #0284c7 !important;
-      color: #ffffff !important;
-      border-color: #38bdf8 !important;
-      box-shadow: 0 0 10px rgba(56, 189, 248, 0.5) !important;
-    }
-
-    .vms-matrix-btn.fs-toggle, .vms-layout-btn.vms-fs-btn {
-      color: #38bdf8;
-    }
 
     .vms-devices-action-btn, .vms-tool-btn {
       background: rgba(56, 189, 248, 0.14);
@@ -5735,9 +5632,10 @@
 
         <!-- Unified VMS Control & Filter Toolbar (Search + Filters + Layout + Tools) -->
         <!-- Enterprise VMS Command Center Toolbar (Search + Filters + Matrix + Telemetry) -->
+        <!-- Enterprise VMS Command Center Toolbar (Search + Filters + Matrix + Telemetry) -->
         <div class="cctv-vms-command-center" id="cctv-filter-toolbar">
           
-          <!-- Top Row: Search & Filters + System Telemetry Badges -->
+          <!-- Top Row: Search & Filters + Devices Management Button -->
           <div class="vms-bar-top">
             
             <!-- Left: Search & Filter Controls -->
@@ -5809,13 +5707,44 @@
 
             </div>
 
-            <!-- Right: VMS Telemetry & Stream Quality Toggle -->
+            <!-- Right: Devices Tree Trigger -->
+            <div>
+              <button class="vms-devices-action-btn vms-tool-btn" onclick="toggleVMSDeviceSidebar()" title="Buka Daftar Kamera (Devices)">
+                <i class="fas fa-video"></i> <span>Devices (Camera Tree)</span>
+              </button>
+            </div>
+
+          </div>
+
+          <!-- Bottom Row: Matrix Multi-View Layouts + Telemetry Cluster -->
+          <div class="vms-bar-bottom">
+            <div class="vms-layout-cluster">
+              <span class="vms-layout-label">
+                <i class="fas fa-th"></i> VIEW MATRIX:
+              </span>
+              <div class="vms-layout-matrix-buttons">
+                <button class="vms-layout-btn vms-matrix-btn" onclick="changeGridLayout(1)" data-layout="1" title="1 Kamera per baris"><i class="far fa-square"></i><span>1</span></button>
+                <button class="vms-layout-btn vms-matrix-btn" onclick="changeGridLayout(2)" data-layout="2" title="2 Kamera per baris"><i class="fas fa-columns"></i><span>2</span></button>
+                <button class="vms-layout-btn vms-matrix-btn" onclick="changeGridLayout(4)" data-layout="4" title="4 Kamera per baris"><i class="fas fa-th-large"></i><span>4</span></button>
+                <button class="vms-layout-btn vms-matrix-btn" onclick="changeGridLayout(6)" data-layout="6" title="6 Kamera per baris"><i class="fas fa-th"></i><span>6</span></button>
+                <button class="vms-layout-btn vms-matrix-btn" onclick="changeGridLayout(8)" data-layout="8" title="8 Kamera per baris"><i class="fas fa-border-all"></i><span>8</span></button>
+                <button class="vms-layout-btn vms-matrix-btn" onclick="changeGridLayout(9)" data-layout="9" title="9 Kamera per baris"><i class="fas fa-grip-horizontal"></i><span>9</span></button>
+                <button class="vms-layout-btn vms-matrix-btn" onclick="changeGridLayout(16)" data-layout="16" title="16 Kamera per baris"><span>16</span></button>
+                <button class="vms-layout-btn vms-matrix-btn" onclick="changeGridLayout(25)" data-layout="25" title="25 Kamera per baris"><span>25</span></button>
+                <button class="vms-layout-btn vms-matrix-btn" onclick="changeGridLayout(36)" data-layout="36" title="36 Kamera per baris"><span>36</span></button>
+                <button class="vms-layout-btn vms-matrix-btn" onclick="changeGridLayout(64)" data-layout="64" title="64 Kamera per baris"><span>64</span></button>
+                <button class="vms-layout-btn vms-matrix-btn" onclick="changeGridLayout(128)" data-layout="128" title="128 Kamera per baris"><span>128</span></button>
+                <button class="vms-layout-btn vms-matrix-btn vms-fs-btn" onclick="toggleVMSFullscreen()" title="Fullscreen Matrix"><i class="fas fa-expand"></i></button>
+              </div>
+            </div>
+
+            <!-- Right: VMS Telemetry & Stream Quality Toggle & Clock -->
             <div class="vms-telemetry-cluster">
-              <div class="vms-telemetry-badge status-online">
+              <div class="vms-telemetry-badge status-online" title="Surveillance Core Status">
                 <span class="pulse-dot"></span>
                 <span>VMS ONLINE</span>
               </div>
-              <div class="vms-telemetry-badge codec-badge d-none d-md-inline-flex">
+              <div class="vms-telemetry-badge codec-badge d-none d-md-inline-flex" title="Hardware Accelerated Codec">
                 <i class="fas fa-bolt text-warning mr-1"></i>
                 <span>H.265</span>
               </div>
@@ -5823,37 +5752,11 @@
                 <i class="fas fa-sliders-h"></i>
                 <span>Kualitas: <strong id="global-quality-text">SD</strong></span>
               </button>
-            </div>
-
-          </div>
-
-          <!-- Bottom Row: Matrix Layouts + Devices Trigger -->
-          <div class="vms-bar-bottom">
-            <div class="vms-layout-cluster">
-              <span class="vms-layout-label">
-                <i class="fas fa-th"></i> LAYOUT:
-              </span>
-              <div class="vms-layout-matrix-buttons">
-                <button class="vms-layout-btn vms-matrix-btn" onclick="changeGridLayout(1)" data-layout="1" title="View 1 (1 Layar)"><i class="far fa-square"></i><span>1</span></button>
-                <button class="vms-layout-btn vms-matrix-btn" onclick="changeGridLayout(2)" data-layout="2" title="View 2 (2 Layar)"><i class="fas fa-columns"></i><span>2</span></button>
-                <button class="vms-layout-btn vms-matrix-btn" onclick="changeGridLayout(4)" data-layout="4" title="View 4 (2x2 Layar)"><i class="fas fa-th-large"></i><span>4</span></button>
-                <button class="vms-layout-btn vms-matrix-btn" onclick="changeGridLayout(6)" data-layout="6" title="View 6 (3x2 Layar)"><i class="fas fa-th"></i><span>6</span></button>
-                <button class="vms-layout-btn vms-matrix-btn" onclick="changeGridLayout(8)" data-layout="8" title="View 8 (4x2 Layar)"><i class="fas fa-border-all"></i><span>8</span></button>
-                <button class="vms-layout-btn vms-matrix-btn" onclick="changeGridLayout(9)" data-layout="9" title="View 9 (3x3 Layar)"><i class="fas fa-grip-horizontal"></i><span>9</span></button>
-                <button class="vms-layout-btn vms-matrix-btn" onclick="changeGridLayout(16)" data-layout="16" title="View 16 (4x4 Layar)"><span>16</span></button>
-                <button class="vms-layout-btn vms-matrix-btn" onclick="changeGridLayout(25)" data-layout="25" title="View 25 (5x5 Layar)"><span>25</span></button>
-                <button class="vms-layout-btn vms-matrix-btn" onclick="changeGridLayout(36)" data-layout="36" title="View 36 (6x6 Layar)"><span>36</span></button>
-                <button class="vms-layout-btn vms-matrix-btn" onclick="changeGridLayout(64)" data-layout="64" title="View 64 (8x8 Layar)"><span>64</span></button>
-                <button class="vms-layout-btn vms-matrix-btn" onclick="changeGridLayout(128)" data-layout="128" title="View 128 Matrix"><span>128</span></button>
-                <button class="vms-layout-btn vms-matrix-btn vms-fs-btn" onclick="toggleVMSFullscreen()" title="Fullscreen Matrix"><i class="fas fa-expand"></i></button>
+              <div class="vms-telemetry-badge clock-badge d-none d-lg-inline-flex" id="vms-live-clock" title="Waktu Server Real-Time">
+                --:--:-- WIB
               </div>
             </div>
 
-            <div>
-              <button class="vms-devices-action-btn vms-tool-btn" onclick="toggleVMSDeviceSidebar()" title="Buka Daftar Kamera (Devices)">
-                <i class="fas fa-video"></i> <span>Devices</span>
-              </button>
-            </div>
           </div>
 
           <div id="active-filters" style="display: flex; gap: 5px; flex-wrap: wrap;"></div>
@@ -10118,7 +10021,7 @@
       const btnEl = document.getElementById('global-quality-btn');
       if (textEl) textEl.textContent = globalStreamQuality.toUpperCase();
       if (btnEl) {
-        btnEl.className = `vms-quality-pill is-${globalStreamQuality}`;
+        btnEl.className = `vms-quality-toggle-pill is-${globalStreamQuality}`;
       }
 
       // Apply to all rendered camera cards
@@ -10130,6 +10033,20 @@
         }
       });
     }
+
+    function initVMSClock() {
+      function updateClock() {
+        const el = document.getElementById('vms-live-clock');
+        if (el) {
+          const now = new Date();
+          const timeStr = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+          el.innerHTML = `<i class="far fa-clock mr-1 text-info"></i> ${timeStr} WIB`;
+        }
+      }
+      setInterval(updateClock, 1000);
+      updateClock();
+    }
+    document.addEventListener('DOMContentLoaded', initVMSClock);
 
     // Function to change streaming quality
     function changeStreamQuality(button, playerId, streamId) {
