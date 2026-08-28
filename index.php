@@ -5021,8 +5021,8 @@
   </div>
   <!-- Floating Taste-Skill Glassmorphism Header Bar End -->
 
-  <!-- Banner Section -->
-  <div class="header-and-banner-con w-100" style="padding-top: 40px; padding-bottom: 30px;">
+  <!-- Banner Section [HIDDEN] -->
+  <div class="header-and-banner-con w-100" style="display: none !important;">
     <div class="header-and-banner-inner-con overlay-content">
       <section class="banner-main-con">
         <div class="container">
@@ -5150,7 +5150,7 @@
   <!--lokasi_map-section-->
 
   <!-- ===== NEW FEATURE: Advanced CCTV Search ===== -->
-  <div class="container">
+  <div class="container" style="margin-top: 35px;">
     <div class="cctv-search-wrapper">
       <div class="cctv-search-container">
         <div class="cctv-search-input-wrapper">
