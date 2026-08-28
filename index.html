@@ -1593,14 +1593,14 @@
       padding: 6px !important;
     }
 
-    /* LIVE TEST ALL ACTION BUTTON */
-    .vms-livetest-action-btn {
+    /* REFRESH ALL ACTION BUTTON */
+    .vms-refresh-all-btn, .vms-livetest-action-btn {
       height: 34px;
-      background: linear-gradient(135deg, rgba(5, 150, 105, 0.25), rgba(16, 185, 129, 0.45));
-      border: 1px solid rgba(16, 185, 129, 0.55);
+      background: linear-gradient(135deg, rgba(14, 116, 144, 0.25), rgba(8, 47, 73, 0.55));
+      border: 1px solid rgba(56, 189, 248, 0.45);
       border-radius: 8px;
       padding: 0 14px;
-      color: #34d399;
+      color: #38bdf8;
       font-size: 11.5px;
       font-weight: 700;
       letter-spacing: 0.3px;
@@ -1610,33 +1610,22 @@
       cursor: pointer;
       white-space: nowrap;
       transition: all 0.2s ease;
-      box-shadow: 0 0 12px rgba(16, 185, 129, 0.2);
+      box-shadow: 0 0 12px rgba(56, 189, 248, 0.2);
     }
 
-    .vms-livetest-action-btn:hover {
-      background: linear-gradient(135deg, #059669, #10b981);
-      border-color: #34d399;
+    .vms-refresh-all-btn:hover, .vms-livetest-action-btn:hover {
+      background: linear-gradient(135deg, #0284c7, #0ea5e9);
+      border-color: #38bdf8;
       color: #ffffff;
       transform: translateY(-1px);
-      box-shadow: 0 4px 16px rgba(16, 185, 129, 0.55);
+      box-shadow: 0 4px 16px rgba(56, 189, 248, 0.55);
     }
 
-    .vms-livetest-action-btn.is-running {
-      background: linear-gradient(135deg, #dc2626, #ef4444) !important;
-      border-color: rgba(239, 68, 68, 0.7) !important;
+    .vms-refresh-all-btn.is-refreshing {
+      background: linear-gradient(135deg, #059669, #10b981) !important;
+      border-color: #34d399 !important;
       color: #ffffff !important;
-      box-shadow: 0 0 16px rgba(239, 68, 68, 0.6) !important;
-      animation: pulseGlowRunning 2s infinite !important;
-    }
-
-    .vms-livetest-action-btn.is-running:hover {
-      background: linear-gradient(135deg, #b91c1c, #dc2626) !important;
-      box-shadow: 0 0 24px rgba(239, 68, 68, 0.8) !important;
-    }
-
-    @keyframes pulseGlowRunning {
-      0%, 100% { box-shadow: 0 0 12px rgba(239, 68, 68, 0.4); }
-      50% { box-shadow: 0 0 22px rgba(239, 68, 68, 0.8); }
+      box-shadow: 0 0 16px rgba(16, 185, 129, 0.5) !important;
     }
 
     /* DEVICES ACTION BUTTON */
@@ -6133,10 +6122,10 @@
           </div>
         </div>
 
-        <!-- Right: Live Test ALL, Devices Action, Encode Settings, Dark Mode Toggle & User Auth Area -->
+        <!-- Right: Refresh ALL, Devices Action, Encode Settings, Dark Mode Toggle & User Auth Area -->
         <div class="d-flex align-items-center ml-auto" style="gap: 8px; flex-shrink: 0;">
-          <button class="vms-livetest-action-btn vms-tool-btn" id="vms-btn-livetest-all" onclick="toggleVMSLiveTestAll()" title="Putar & Uji Siaran Langsung Semua Kamera di Layar Sekaligus">
-            <i class="fas fa-play-circle"></i> <span>Live Test ALL</span>
+          <button class="vms-refresh-all-btn vms-tool-btn" id="vms-btn-refresh-all" onclick="refreshAllVMSCCTV()" title="Segarkan & Hubungkan Ulang Semua Kamera CCTV di Layar">
+            <i class="fas fa-rotate"></i> <span>Refresh ALL</span>
           </button>
 
           <button class="vms-devices-action-btn vms-tool-btn" onclick="toggleVMSDeviceSidebar()" title="Buka Daftar Kamera (Devices)">
@@ -10734,54 +10723,33 @@
       updateClock();
     }
 
-    // ===== VMS LIVE TEST ALL CONTROLLER (BATCH CONCURRENT STREAMING) =====
-    let isVMSLiveTestAllRunning = false;
+    // ===== VMS REFRESH ALL CONTROLLER (RELOAD & RECONNECT ALL CAMERAS) =====
+    let isVMSRefreshingAll = false;
 
-    async function toggleVMSLiveTestAll() {
-      const btnAll = document.getElementById('vms-btn-livetest-all');
+    async function refreshAllVMSCCTV() {
+      const btnAll = document.getElementById('vms-btn-refresh-all');
       const allThumbs = Array.from(document.querySelectorAll('.thumbnail-overlay')).filter(t => t.offsetParent !== null);
 
       if (allThumbs.length === 0) {
         if (typeof showCCTVToast === 'function') {
-          showCCTVToast('Tidak ada kamera CCTV di layar untuk diuji.', 'warning');
+          showCCTVToast('Tidak ada kamera CCTV di layar untuk disegarkan.', 'warning');
         } else {
-          alert('Tidak ada kamera CCTV di layar untuk diuji.');
+          alert('Tidak ada kamera CCTV di layar untuk disegarkan.');
         }
         return;
       }
 
-      // Check how many are currently playing (thumb display none or hidden)
-      const playingThumbs = allThumbs.filter(t => t.style.display === 'none');
-      const shouldStop = isVMSLiveTestAllRunning || (playingThumbs.length > 0 && playingThumbs.length >= Math.ceil(allThumbs.length / 2));
+      if (isVMSRefreshingAll) return;
+      isVMSRefreshingAll = true;
 
-      if (shouldStop) {
-        // Stop all running cameras
-        allThumbs.forEach(thumb => {
-          const camId = thumb.id.replace('thumb-', '');
-          reloadCCTV(`player-${camId}`, `thumb-${camId}`, `offline-${camId}`, camId);
-        });
-        isVMSLiveTestAllRunning = false;
-        if (btnAll) {
-          btnAll.className = 'vms-livetest-action-btn vms-tool-btn';
-          btnAll.innerHTML = `<i class="fas fa-play-circle"></i> <span>Live Test ALL</span>`;
-          btnAll.title = 'Putar & Uji Siaran Langsung Semua Kamera di Layar';
-        }
-        if (typeof showCCTVToast === 'function') {
-          showCCTVToast('Semua siaran kamera dihentikan.', 'info');
-        }
-        return;
-      }
-
-      // Start playing all visible cameras with a staggered delay of 75ms
-      isVMSLiveTestAllRunning = true;
       if (btnAll) {
-        btnAll.className = 'vms-livetest-action-btn vms-tool-btn is-running';
-        btnAll.innerHTML = `<i class="fas fa-stop-circle"></i> <span>Stop ALL Live</span>`;
-        btnAll.title = 'Hentikan Semua Siaran Live Test';
+        btnAll.className = 'vms-refresh-all-btn vms-tool-btn is-refreshing';
+        btnAll.innerHTML = `<i class="fas fa-rotate fa-spin"></i> <span>Refreshing...</span>`;
+        btnAll.title = 'Sedang menyegarkan seluruh kamera CCTV...';
       }
 
       if (typeof showCCTVToast === 'function') {
-        showCCTVToast(`Memulai Live Test untuk ${allThumbs.length} channel kamera...`, 'success');
+        showCCTVToast(`Menyegarkan & menghubungkan ulang ${allThumbs.length} channel kamera...`, 'info');
       }
 
       for (let i = 0; i < allThumbs.length; i++) {
@@ -10789,15 +10757,32 @@
         const camId = thumb.id.replace('thumb-', '');
         const playerId = `player-${camId}`;
         const thumbId = thumb.id;
+        const offlineId = `offline-${camId}`;
 
-        // If not already playing, start it
-        if (thumb.style.display !== 'none' && typeof playMediaMTXCCTV === 'function') {
+        // Reset offline message if visible
+        const offlineMsg = document.getElementById(offlineId);
+        if (offlineMsg) offlineMsg.style.display = 'none';
+
+        // Reconnect stream
+        if (typeof playMediaMTXCCTV === 'function') {
           playMediaMTXCCTV(thumb, playerId, thumbId);
           if (i < allThumbs.length - 1) {
             await new Promise(r => setTimeout(r, 75));
           }
         }
       }
+
+      setTimeout(() => {
+        isVMSRefreshingAll = false;
+        if (btnAll) {
+          btnAll.className = 'vms-refresh-all-btn vms-tool-btn';
+          btnAll.innerHTML = `<i class="fas fa-rotate"></i> <span>Refresh ALL</span>`;
+          btnAll.title = 'Segarkan & Hubungkan Ulang Semua Kamera CCTV di Layar';
+        }
+        if (typeof showCCTVToast === 'function') {
+          showCCTVToast('Semua channel kamera berhasil disegarkan!', 'success');
+        }
+      }, 1000);
     }
 
     // ===== VMS NETWORK SPEED & LATENCY (PING) TELEMETRY ENGINE =====
