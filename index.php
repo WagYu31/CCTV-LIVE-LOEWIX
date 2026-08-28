@@ -5501,7 +5501,12 @@
                 CCTV Live
               </a>
             </li>
-            <li class="nav-item" style="display: none !important;">
+            <li class="nav-item" id="nav-item-customer-dashboard" style="display: none;">
+              <a class="nav-link text-white d-flex align-items-center" href="customer/index.php" style="font-weight: 700; font-size: 14px; color: #38bdf8 !important; gap: 6px; transition: all 0.2s;">
+                <i class="fas fa-columns" style="color: #38bdf8; font-size: 14px;"></i>
+                Dashboard
+              </a>
+            </li>
               <a class="nav-link text-white d-flex align-items-center" href="#wifi" style="font-weight: 600; font-size: 14px; opacity: 0.85; gap: 6px; transition: all 0.2s;">
                 <i class="fas fa-wifi" style="color: #38bdf8; font-size: 14px;"></i>
                 WiFi Network
@@ -14415,10 +14420,16 @@
           ? user.cctv_used 
           : (Array.isArray(mediamtxData) && mediamtxData.length > 0 ? mediamtxData.length : (user.cctv_used || 0));
 
+        const navDashboardLink = document.getElementById('nav-item-customer-dashboard');
+        if (navDashboardLink) navDashboardLink.style.display = 'block';
+
         if (user.role === 'super_admin') {
           userArea.innerHTML = `
-            <a href="admin/index.html" class="btn btn-sm btn-outline-warning font-weight-bold d-inline-flex align-items-center" style="border-radius: 20px; font-size: 11px; white-space: nowrap; padding: 5px 12px; gap: 5px;" title="Buka Super Admin Control Center">
+            <a href="admin/index.php" class="btn btn-sm btn-outline-warning font-weight-bold d-inline-flex align-items-center" style="border-radius: 20px; font-size: 11px; white-space: nowrap; padding: 5px 12px; gap: 5px;" title="Buka Super Admin Control Center">
               <i class="fas fa-user-shield"></i> <span>ADMIN PANEL</span>
+            </a>
+            <a href="customer/index.php" class="btn btn-sm btn-outline-info font-weight-bold d-inline-flex align-items-center" style="border-radius: 20px; font-size: 11px; white-space: nowrap; padding: 5px 12px; gap: 5px; background: rgba(56, 189, 248, 0.1); border-color: rgba(56, 189, 248, 0.35); color: #38bdf8;" title="Buka Dashboard Customer">
+              <i class="fas fa-columns"></i> <span>DASHBOARD</span>
             </a>
             <button class="btn btn-sm btn-danger d-inline-flex align-items-center justify-content-center" onclick="logoutUser(event)" style="border-radius: 50%; width: 32px; height: 32px; padding: 0; background: rgba(239, 68, 68, 0.2); border: 1px solid rgba(239, 68, 68, 0.4); color: #ef4444;" title="Logout Akun">
               <i class="fas fa-sign-out-alt" style="font-size: 13px;"></i>
@@ -14426,15 +14437,21 @@
           `;
         } else {
           userArea.innerHTML = `
-            <div class="badge badge-info p-2 d-inline-flex align-items-center" style="border-radius: 20px; font-size: 11px; background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.3); color: #38bdf8; white-space: nowrap; gap: 5px;" title="Kuota Live Stream Customer">
+            <a href="customer/index.php" class="btn btn-sm btn-outline-info font-weight-bold d-inline-flex align-items-center" style="border-radius: 20px; font-size: 11px; white-space: nowrap; padding: 5px 12px; gap: 5px; background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.4); color: #38bdf8;" title="Buka Dashboard Customer">
+              <i class="fas fa-columns"></i> <span>DASHBOARD</span>
+            </a>
+            <a href="customer/index.php" class="badge badge-info p-2 d-inline-flex align-items-center text-decoration-none" style="border-radius: 20px; font-size: 11px; background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.3); color: #38bdf8; white-space: nowrap; gap: 5px; cursor: pointer;" title="Buka Detail Kuota Customer">
               <i class="fas fa-layer-group"></i> <span>KUOTA: ${usedCount} / ${user.cctv_quota || 20} CCTV</span>
-            </div>
+            </a>
             <button class="btn btn-sm btn-danger d-inline-flex align-items-center justify-content-center" onclick="logoutUser(event)" style="border-radius: 50%; width: 32px; height: 32px; padding: 0; background: rgba(239, 68, 68, 0.2); border: 1px solid rgba(239, 68, 68, 0.4); color: #ef4444;" title="Logout Akun">
               <i class="fas fa-sign-out-alt" style="font-size: 13px;"></i>
             </button>
           `;
         }
       } else {
+        const navDashboardLink = document.getElementById('nav-item-customer-dashboard');
+        if (navDashboardLink) navDashboardLink.style.display = 'none';
+
         userArea.innerHTML = `
           <button class="btn btn-sm" onclick="showLoginGateView()" style="background: linear-gradient(135deg, #00d2ff, #0066ff); border: none; font-weight: 700; border-radius: 25px; padding: 7px 20px; color: #fff; box-shadow: 0 4px 15px rgba(0, 102, 255, 0.4); text-transform: uppercase; font-size: 12px; letter-spacing: 0.5px; white-space: nowrap;">
             <i class="fas fa-sign-in-alt mr-1"></i> LOGIN
