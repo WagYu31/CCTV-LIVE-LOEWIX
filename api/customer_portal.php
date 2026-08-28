@@ -80,6 +80,62 @@ if ($action === 'get_profile') {
 }
 
 if ($action === 'my_cameras') {
+    $snSnapshotCache = [];
+
+    foreach ($customerCameras as &$cam) {
+        // Force HTTPS for stream.loewixcctv.com to prevent mixed-content blocking
+        if (!empty($cam['hls_url']) && strpos($cam['hls_url'], 'http://stream.loewixcctv.com') === 0) {
+            $cam['hls_url'] = str_replace('http://', 'https://', $cam['hls_url']);
+        }
+
+        // Automatically attach real-time cached snapshot and stream URL for XMeye cameras
+        if (($cam['connection_type'] ?? '') === 'xmeye_p2p' && !empty($cam['serial_number'])) {
+            $sn = strtolower(preg_replace('/[^a-zA-Z0-9]/', '', $cam['serial_number']));
+            $ch = (int)($cam['channel'] ?? 1);
+            $chIdx = max(0, $ch - 1);
+
+            // Attach cached live stream HLS URL if available (zero-delay instant start)
+            $cacheKey = md5("{$sn}_{$chIdx}_stream1_v3");
+            $streamCacheFile = sys_get_temp_dir() . "/jf_stream_{$cacheKey}.json";
+            if (!file_exists($streamCacheFile)) {
+                $legacyKey = md5("{$sn}_{$chIdx}_v3");
+                $streamCacheFile = sys_get_temp_dir() . "/jf_stream_{$legacyKey}.json";
+            }
+            if (file_exists($streamCacheFile)) {
+                $cachedStream = json_decode(@file_get_contents($streamCacheFile), true);
+                if ($cachedStream && !empty($cachedStream['url']) && ($cachedStream['expires_at'] ?? 0) > time()) {
+                    $cam['hls_url'] = $cachedStream['url'];
+                    $cam['streamPath'] = $cachedStream['url'];
+                }
+            }
+
+            // If stream is not resolved yet, fetch and cache it now
+            if (empty($cam['hls_url']) || strpos($cam['hls_url'], 'bcloud365.net') === false) {
+                if (file_exists(__DIR__ . '/jftech_gateway.php')) {
+                    require_once __DIR__ . '/jftech_gateway.php';
+                    $resolvedUrl = getJFTechLiveStreamUrl($sn, $ch, 'hls-fmp4', $cam['stream_quality'] ?? 'sub', $cam['device_user'] ?? 'admin', $cam['device_pass'] ?? '');
+                    if ($resolvedUrl) {
+                        $cam['hls_url'] = $resolvedUrl;
+                        $cam['streamPath'] = $resolvedUrl;
+                    }
+                }
+            }
+
+            if (!array_key_exists($sn, $snSnapshotCache)) {
+                $cacheFile = sys_get_temp_dir() . '/jftech_snapshots_' . $sn . '.json';
+                if (file_exists($cacheFile)) {
+                    $snSnapshotCache[$sn] = json_decode(file_get_contents($cacheFile), true);
+                } else {
+                    $snSnapshotCache[$sn] = null;
+                }
+            }
+
+            if (isset($snSnapshotCache[$sn]['snapshots'][$ch]) && !empty($snSnapshotCache[$sn]['snapshots'][$ch])) {
+                $cam['thumbnail'] = $snSnapshotCache[$sn]['snapshots'][$ch];
+            }
+        }
+    }
+
     echo json_encode([
         'success' => true,
         'total' => count($customerCameras),

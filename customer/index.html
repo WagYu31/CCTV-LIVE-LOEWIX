@@ -1234,15 +1234,28 @@
       }
     }
 
-    function openLivePlayerModal(camId) {
+    async function openLivePlayerModal(camId) {
       const cam = customerCameras.find(c => c.id == camId);
       if (!cam) return;
 
       document.getElementById('playerModalTitle').innerHTML = `<i class="fas fa-video text-info mr-2"></i> ${cam.title}`;
-      document.getElementById('playerModalSubtitle').innerText = `Lokasi: ${(cam.city || 'Siantar').toUpperCase()} | Tipe: ${cam.connection_type || 'RTSP'}`;
+      document.getElementById('playerModalSubtitle').innerText = `Lokasi: ${(cam.city || 'Siantar').toUpperCase()} | Tipe: ${cam.connection_type === 'xmeye_p2p' ? 'XMEYE P2P' : (cam.platform === 'ipcamlive' ? 'IPCAMLIVE' : 'RTSP H.265')}`;
 
       const video = document.getElementById('customer-preview-video');
-      const streamUrl = cam.hls_url || cam.streamPath;
+      const spinner = document.getElementById('player-loading-spinner');
+
+      if (spinner) {
+        spinner.style.display = 'block';
+        spinner.innerHTML = `<div class="spinner-border text-info mb-2" role="status"></div><div class="text-white font-weight-bold">Menghubungkan ke Stream Live...</div>`;
+      }
+      if (video) {
+        video.style.display = 'none';
+        video.muted = true;
+        video.setAttribute('playsinline', 'true');
+        video.setAttribute('webkit-playsinline', 'true');
+        video.setAttribute('autoplay', '');
+        video.setAttribute('muted', '');
+      }
 
       $('#modalLivePlayer').modal('show');
 
@@ -1251,29 +1264,120 @@
         hlsInstance = null;
       }
 
-      if (streamUrl && streamUrl.includes('.m3u8')) {
+      let streamUrl = cam.hls_url || cam.streamPath || '';
+
+      // If XMeye P2P camera without active bcloud URL, resolve via jftech_gateway.php
+      if (cam.connection_type === 'xmeye_p2p' || (!streamUrl.includes('bcloud365.net') && cam.serial_number)) {
+        const sn = cam.serial_number || (streamUrl.match(/^xmeye_([a-fA-F0-9]+)/) ? streamUrl.match(/^xmeye_([a-fA-F0-9]+)/)[1] : '');
+        const ch = cam.channel || 1;
+        const devUser = cam.device_user || 'admin';
+        const devPass = cam.device_pass || '';
+
+        if (sn) {
+          if (spinner) {
+            spinner.innerHTML = `<div class="spinner-border text-info mb-2" role="status"></div><div class="text-white font-weight-bold">Menghubungkan ke Cloud P2P...</div><small class="text-muted d-block mt-1">Device SN: ${sn} (CH ${ch})</small>`;
+          }
+          try {
+            const res = await fetch(`../api/jftech_gateway.php?action=get_live_stream&sn=${encodeURIComponent(sn)}&channel=${encodeURIComponent(ch)}&stream=1&device_user=${encodeURIComponent(devUser)}&device_pass=${encodeURIComponent(devPass)}`);
+            const data = await res.json();
+            if (data.success && data.hls_url) {
+              streamUrl = data.hls_url;
+              cam.hls_url = data.hls_url;
+            } else {
+              if (spinner) {
+                spinner.innerHTML = `<div class="text-danger mb-2"><i class="fas fa-video-slash fa-2x"></i></div><div class="text-white font-weight-bold">Kamera Sedang Offline / Tidak Merespon</div><small class="text-muted mt-1 d-block">${data.message || 'Periksa koneksi internet atau DVR kamera.'}</small>`;
+              }
+              return;
+            }
+          } catch (e) {
+            console.error('Failed to resolve XMeye stream:', e);
+          }
+        }
+      }
+
+      // Normalization for MediaMTX / RTSP stream path (e.g. "cctv_loewix_1" or "yamaha_dds")
+      if (streamUrl && !streamUrl.startsWith('http://') && !streamUrl.startsWith('https://')) {
+        streamUrl = `https://stream.loewixcctv.com/${streamUrl}/index.m3u8`;
+      } else if (streamUrl && streamUrl.startsWith('http://stream.loewixcctv.com')) {
+        streamUrl = streamUrl.replace('http://', 'https://');
+      }
+
+      if (!streamUrl) {
+        if (spinner) {
+          spinner.innerHTML = `<div class="text-warning mb-2"><i class="fas fa-exclamation-triangle fa-2x"></i></div><div class="text-white font-weight-bold">Stream URL Belum Dikonfigurasi</div><small class="text-muted mt-1 d-block">Silakan klik Edit untuk melengkapi URL RTSP/HLS kamera ini.</small>`;
+        }
+        return;
+      }
+
+      function startPlayback() {
+        if (spinner) spinner.style.display = 'none';
+        if (video) video.style.display = 'block';
+      }
+
+      if (streamUrl.includes('.m3u8') || streamUrl.includes('bcloud365.net')) {
         if (Hls.isSupported()) {
-          hlsInstance = new Hls({ enableWorker: true, lowLatencyMode: true });
+          hlsInstance = new Hls({
+            enableWorker: true,
+            lowLatencyMode: true,
+            liveSyncDurationCount: 1,
+            maxBufferLength: 2,
+            xhrSetup: function(xhr, url) {
+              try {
+                xhr.setRequestHeader('Bypass-Tunnel-Reminder', 'true');
+                xhr.setRequestHeader('ngrok-skip-browser-warning', 'true');
+              } catch (e) {}
+            }
+          });
           hlsInstance.loadSource(streamUrl);
           hlsInstance.attachMedia(video);
           hlsInstance.on(Hls.Events.MANIFEST_PARSED, () => {
-            video.play().catch(() => {});
+            video.muted = true;
+            const p = video.play();
+            if (p !== undefined) {
+              p.then(startPlayback).catch(e => {
+                console.warn('Autoplay caught:', e);
+                startPlayback();
+              });
+            } else {
+              startPlayback();
+            }
+          });
+          hlsInstance.on(Hls.Events.ERROR, (event, data) => {
+            if (data.fatal) {
+              if (data.type === Hls.ErrorTypes.NETWORK_ERROR) {
+                hlsInstance.startLoad();
+              } else if (data.type === Hls.ErrorTypes.MEDIA_ERROR) {
+                hlsInstance.recoverMediaError();
+              } else {
+                if (spinner) {
+                  spinner.style.display = 'block';
+                  spinner.innerHTML = `<div class="text-danger mb-2"><i class="fas fa-exclamation-circle fa-2x"></i></div><div class="text-white font-weight-bold">Gagal Memutar Siaran Live</div><small class="text-muted mt-1 d-block">Stream RTSP/HLS belum aktif di server streaming.</small>`;
+                }
+              }
+            }
           });
         } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
           video.src = streamUrl;
-          video.play().catch(() => {});
+          video.muted = true;
+          video.play().then(startPlayback).catch(startPlayback);
         }
-      } else if (streamUrl) {
+      } else {
         video.src = streamUrl;
-        video.play().catch(() => {});
+        video.muted = true;
+        video.play().then(startPlayback).catch(startPlayback);
       }
     }
 
     function closeLivePlayerModal() {
       const video = document.getElementById('customer-preview-video');
+      const spinner = document.getElementById('player-loading-spinner');
       if (video) {
         video.pause();
         video.src = '';
+        video.style.display = 'none';
+      }
+      if (spinner) {
+        spinner.style.display = 'none';
       }
       if (hlsInstance) {
         hlsInstance.destroy();
