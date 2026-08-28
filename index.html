@@ -8270,8 +8270,8 @@
         return;
       }
 
-      // Skip jika player tidak aktif atau tidak visible
-      if (!player.src || player.style.display === 'none' || player.classList.contains('hidden-iframe')) {
+      // Skip jika player tidak aktif atau menggunakan HLS (Hls.js mengelola live stream sendiri secara mandiri tanpa refresh)
+      if (player.hlsInstance || !player.src || player.style.display === 'none' || player.classList.contains('hidden-iframe')) {
         return;
       }
 
@@ -9214,31 +9214,33 @@
             console.log('[MediaMTX/JFTech] Loading HLS URL:', targetUrl);
 
             if (typeof Hls !== 'undefined' && Hls.isSupported()) {
-              // ===== REAL-TIME LIVE CCTV HIGH-PERFORMANCE LOW-LATENCY CONFIGURATION =====
+              // ===== REAL-TIME 0-LATENCY LIVE CCTV CONFIGURATION (ANTI-LOOP & ANTI-DELAY) =====
               const hls = new Hls({
                 enableWorker: true,
                 lowLatencyMode: true,
-                liveSyncDurationCount: 2,
-                liveMaxLatencyDurationCount: 5,
-                maxBufferLength: 4,
-                maxMaxBufferLength: 8,
-                maxBufferSize: 4 * 1024 * 1024,
+                liveSyncDurationCount: 1,
+                liveMaxLatencyDurationCount: 2.5,
+                liveDurationInfinity: true,
+                startPosition: -1,
+                maxBufferLength: 2,
+                maxMaxBufferLength: 4,
+                maxBufferSize: 2 * 1024 * 1024,
                 backBufferLength: 0,
-                maxFragLoadingTimeMs: 15000,
+                maxFragLoadingTimeMs: 12000,
                 maxLoadingDelay: 0,
-                manifestLoadingTimeOut: 12000,
+                manifestLoadingTimeOut: 10000,
                 manifestLoadingMaxRetry: 10,
-                manifestLoadingRetryDelay: 500,
+                manifestLoadingRetryDelay: 400,
                 levelLoadingMaxRetry: 6,
                 fragLoadingMaxRetry: 8,
-                fragLoadingRetryDelay: 500,
+                fragLoadingRetryDelay: 400,
                 startLevel: 0,
                 capLevelToPlayerSize: true,
                 abrEwmaDefaultEstimate: 1500000,
                 abrBandWidthFactor: 0.9,
                 abrBandWidthUpFactor: 0.8,
                 enableSoftwareAES: true,
-                maxBufferHole: 0.5,
+                maxBufferHole: 0.4,
                 highBufferWatchdogPeriod: 1,
                 nudgeOffset: 0.1,
                 nudgeMaxRetry: 5,
@@ -9247,6 +9249,9 @@
                   try {
                     xhr.setRequestHeader('Bypass-Tunnel-Reminder', 'true');
                     xhr.setRequestHeader('ngrok-skip-browser-warning', 'true');
+                    xhr.setRequestHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+                    xhr.setRequestHeader('Pragma', 'no-cache');
+                    xhr.setRequestHeader('Expires', '0');
                   } catch (e) {}
                 }
               });
@@ -9291,6 +9296,24 @@
               };
               hls.on(Hls.Events.FRAG_BUFFERED, revealLiveVideo);
               hls.on(Hls.Events.FRAG_LOADED, revealLiveVideo);
+
+              // Anti-Loop Guard: Keep locked directly to the real-time live edge
+              hls.on(Hls.Events.LEVEL_UPDATED, function(event, data) {
+                if (data && data.details && data.details.live) {
+                  const edge = data.details.totalduration;
+                  if (videoPlayer.currentTime > 0 && (edge - videoPlayer.currentTime) > 3) {
+                    videoPlayer.currentTime = edge - 0.5;
+                  }
+                }
+              });
+
+              // If video ends, seamlessly resume live edge without looping
+              videoPlayer.onended = function() {
+                if (hls && hls.liveSyncPosition) {
+                  videoPlayer.currentTime = hls.liveSyncPosition;
+                  videoPlayer.play().catch(function() {});
+                }
+              };
 
               // Auto-recover from stalls smoothly without showing buffering spinner
               hls.on(Hls.Events.BUFFER_STALLED, function() {
