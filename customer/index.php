@@ -1,11 +1,3 @@
-<?php
-/**
- * Customer Self-Service Portal & VMS Dashboard
- * PT. LOEWIX INDONESIA
- */
-require_once __DIR__ . '/../config/db.php';
-$user = get_logged_in_user();
-?>
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -61,7 +53,6 @@ $user = get_logged_in_user();
     ::-webkit-scrollbar-thumb { background: rgba(56, 189, 248, 0.25); border-radius: 10px; }
     ::-webkit-scrollbar-thumb:hover { background: rgba(56, 189, 248, 0.5); }
 
-    /* Top Floating Glass Header */
     /* Top Enterprise Glass Header */
     .customer-navbar {
       background: linear-gradient(180deg, rgba(8, 17, 39, 0.98) 0%, rgba(5, 12, 28, 0.94) 100%);
@@ -493,6 +484,47 @@ $user = get_logged_in_user();
       border-color: #38bdf8;
     }
 
+    .btn-live-test-all {
+      background: linear-gradient(135deg, #059669, #10b981);
+      color: #ffffff;
+      border: 1px solid rgba(16, 185, 129, 0.5);
+      padding: 9px 18px;
+      border-radius: 14px;
+      font-weight: 700;
+      font-size: 13px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 4px 16px rgba(16, 185, 129, 0.4);
+      cursor: pointer;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .btn-live-test-all:hover {
+      background: linear-gradient(135deg, #047857, #059669);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(16, 185, 129, 0.6);
+      color: #ffffff;
+      border-color: #34d399;
+    }
+
+    .btn-live-test-all.is-running {
+      background: linear-gradient(135deg, #dc2626, #ef4444);
+      border-color: rgba(239, 68, 68, 0.6);
+      box-shadow: 0 4px 16px rgba(239, 68, 68, 0.5);
+      animation: pulseGlowRunning 2s infinite;
+    }
+
+    .btn-live-test-all.is-running:hover {
+      background: linear-gradient(135deg, #b91c1c, #dc2626);
+      box-shadow: 0 8px 24px rgba(239, 68, 68, 0.7);
+    }
+
+    @keyframes pulseGlowRunning {
+      0%, 100% { box-shadow: 0 0 12px rgba(239, 68, 68, 0.4); }
+      50% { box-shadow: 0 0 22px rgba(239, 68, 68, 0.8); }
+    }
+
     .toolbar-controls-group {
       display: flex;
       align-items: center;
@@ -714,6 +746,10 @@ $user = get_logged_in_user();
     @keyframes recBlink {
       0%, 100% { opacity: 1; }
       50% { opacity: 0.2; }
+    }
+
+    .blink {
+      animation: recBlink 1.2s infinite ease-in-out;
     }
 
     .cam-standby-placeholder {
@@ -972,7 +1008,7 @@ $user = get_logged_in_user();
       <div class="d-flex align-items-center justify-content-between">
         
         <!-- Logo Brand & Portal Badge -->
-        <a href="../index.php" class="brand-logo-container">
+        <a href="../index.html" class="brand-logo-container">
           <img src="../assets/image/logo-loewix.png" alt="Loewix CCTV" class="navbar-loewix-logo">
           <span class="badge-hub-live d-none d-sm-inline-flex">
             <span class="pulse-dot"></span>
@@ -983,7 +1019,7 @@ $user = get_logged_in_user();
         <!-- Right User Actions -->
         <div class="d-flex align-items-center gap-3">
           
-          <a href="../index.php" class="btn-nav-vms" title="Buka Tampilan Live Matrix Grid VMS">
+          <a href="../index.html" class="btn-nav-vms" title="Buka Tampilan Live Matrix Grid VMS">
             <i class="fas fa-th-large"></i> <span class="d-none d-md-inline">LIVE VMS GRID</span>
           </a>
 
@@ -1138,6 +1174,11 @@ $user = get_logged_in_user();
         <button class="btn-add-camera" onclick="openAddCameraModal()" title="Tambahkan Kamera CCTV Baru">
           <i class="fas fa-plus-circle"></i>
           <span>Tambah Kamera CCTV</span>
+        </button>
+
+        <button class="btn-live-test-all" id="btn-live-test-all" onclick="toggleLiveTestAll()" title="Putar & Uji Siaran Langsung Semua Kamera Sekaligus">
+          <i class="fas fa-play-circle"></i>
+          <span>Live Test ALL</span>
         </button>
       </div>
 
@@ -1453,7 +1494,7 @@ $user = get_logged_in_user();
             loadCustomerCameras();
           } else {
             // Not logged in -> redirect to main page with login
-            window.location.href = '../index.php?login=required';
+            window.location.href = '../index.html?login=required';
           }
         }
       } catch (err) {
@@ -1464,7 +1505,7 @@ $user = get_logged_in_user();
           renderCustomerUI();
           loadCustomerCameras();
         } else {
-          window.location.href = '../index.php?login=required';
+          window.location.href = '../index.html?login=required';
         }
       }
     }
@@ -2103,6 +2144,79 @@ $user = get_logged_in_user();
         btn.innerHTML = `<i class="fas fa-play text-info"></i> Live Test`;
         btn.classList.remove('btn-playing-active');
       }
+
+      // If no active players left, reset Live Test ALL button
+      if (activeInlinePlayers.size === 0) {
+        isLiveTestAllRunning = false;
+        const btnAll = document.getElementById('btn-live-test-all');
+        if (btnAll) {
+          btnAll.className = 'btn-live-test-all';
+          btnAll.innerHTML = `<i class="fas fa-play-circle"></i> <span>Live Test ALL</span>`;
+          btnAll.title = 'Putar & Uji Siaran Langsung Semua Kamera Sekaligus';
+        }
+      }
+    }
+
+    // ===== LIVE TEST ALL CONTROLLER (BATCH CONCURRENT STREAMING) =====
+    let isLiveTestAllRunning = false;
+
+    async function toggleLiveTestAll() {
+      const btnAll = document.getElementById('btn-live-test-all');
+      
+      if (!customerCameras || customerCameras.length === 0) {
+        alert('Tidak ada channel kamera CCTV yang terdaftar.');
+        return;
+      }
+
+      // Check how many are currently playing
+      const currentlyPlayingCount = activeInlinePlayers.size;
+      const shouldStop = isLiveTestAllRunning || (currentlyPlayingCount > 0 && currentlyPlayingCount >= Math.ceil(customerCameras.length / 2));
+
+      if (shouldStop) {
+        // Stop all running cameras
+        customerCameras.forEach(cam => {
+          stopCameraInline(cam.id);
+        });
+        isLiveTestAllRunning = false;
+        if (btnAll) {
+          btnAll.className = 'btn-live-test-all';
+          btnAll.innerHTML = `<i class="fas fa-play-circle"></i> <span>Live Test ALL</span>`;
+          btnAll.title = 'Putar & Uji Siaran Langsung Semua Kamera Sekaligus';
+        }
+        return;
+      }
+
+      // Start all cameras with staggered 75ms delay
+      isLiveTestAllRunning = true;
+      if (btnAll) {
+        btnAll.className = 'btn-live-test-all is-running';
+        btnAll.innerHTML = `<i class="fas fa-stop-circle"></i> <span>Stop ALL Live</span>`;
+        btnAll.title = 'Hentikan Semua Siaran Live Test';
+      }
+
+      // Loop through all visible/filtered cameras or all customer cameras
+      const searchVal = (document.getElementById('filter-search-input')?.value || '').toLowerCase();
+      const cityVal = document.getElementById('filter-city-select')?.value || 'all';
+      const statusVal = document.getElementById('filter-status-select')?.value || 'all';
+
+      const targetCameras = customerCameras.filter(cam => {
+        const matchTitle = (cam.title || '').toLowerCase().includes(searchVal);
+        const matchCity = (cityVal === 'all') || (cam.city && cam.city.toLowerCase() === cityVal);
+        const matchStatus = (statusVal === 'all') || (statusVal === 'online' && cam.status !== 'offline') || (statusVal === 'offline' && cam.status === 'offline');
+        return matchTitle && matchCity && matchStatus;
+      });
+
+      const camsToPlay = targetCameras.length > 0 ? targetCameras : customerCameras;
+
+      for (let i = 0; i < camsToPlay.length; i++) {
+        const cam = camsToPlay[i];
+        if (!activeInlinePlayers.has(cam.id)) {
+          playCameraInline(cam.id);
+          if (i < camsToPlay.length - 1) {
+            await new Promise(r => setTimeout(r, 75));
+          }
+        }
+      }
     }
 
     async function openLivePlayerModal(camId) {
@@ -2330,7 +2444,7 @@ $user = get_logged_in_user();
     function logoutCustomer() {
       localStorage.removeItem('loewix_user');
       fetch('../api/auth.php?action=logout').finally(() => {
-        window.location.href = '../index.php';
+        window.location.href = '../index.html';
       });
     }
   </script>
