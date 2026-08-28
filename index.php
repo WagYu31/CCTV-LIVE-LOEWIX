@@ -5893,9 +5893,14 @@
   </section>
   <!--form-section-->
 
-  <!-- weight-footer-section [HIDDEN] -->
-  <section class="weight-footer-section" style="display: none !important;"></section>
-  <!-- weight-footer-section -->
+  <!-- Minimalist Copyright Footer Bar -->
+  <footer class="loewix-minimal-footer" style="padding: 20px 0 25px 0; text-align: center; border-top: 1px solid rgba(255, 255, 255, 0.08); margin-top: 30px;">
+    <div class="container">
+      <p style="color: rgba(255, 255, 255, 0.55); font-size: 12.5px; margin: 0; font-weight: 500; letter-spacing: 0.3px;">
+        © 2026 <strong style="color: #38bdf8; font-weight: 700;">PT. LOEWIX INDONESIA</strong> — LOEWIX CCTV Security Systems. All Rights Reserved.
+      </p>
+    </div>
+  </footer>
 
   <!-- Connection Status Indicator -->
   <div id="connection-status" class="connection-status"></div>
