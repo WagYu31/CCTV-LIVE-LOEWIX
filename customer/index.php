@@ -409,94 +409,189 @@ $user = get_logged_in_user();
       font-weight: 600;
     }
 
-    /* Action & Filter Toolbar */
+    /* Ultra-Modern Action & Filter Toolbar */
     .customer-toolbar {
-      background: rgba(13, 27, 62, 0.85);
-      border: 1px solid rgba(56, 189, 248, 0.25);
-      border-radius: 16px;
-      padding: 14px 20px;
-      margin-bottom: 24px;
+      background: linear-gradient(135deg, rgba(13, 27, 62, 0.88) 0%, rgba(6, 14, 32, 0.95) 100%);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      border-radius: 20px;
+      padding: 16px 24px;
+      margin-bottom: 26px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 12px;
+      gap: 16px;
       flex-wrap: wrap;
-      backdrop-filter: blur(14px);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.12);
     }
 
-    .btn-add-cam {
-      background: linear-gradient(135deg, #0284c7, #38bdf8);
-      color: #ffffff;
-      border: none;
-      padding: 9px 20px;
+    .toolbar-left-group {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .toolbar-title-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .toolbar-icon-badge {
+      width: 42px;
+      height: 42px;
       border-radius: 12px;
+      background: radial-gradient(circle at top left, rgba(56, 189, 248, 0.28), rgba(2, 132, 199, 0.12));
+      border: 1px solid rgba(56, 189, 248, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      color: #38bdf8;
+      box-shadow: 0 0 14px rgba(56, 189, 248, 0.25);
+    }
+
+    .toolbar-heading {
+      font-size: 18px;
+      font-weight: 800;
+      color: #ffffff;
+      margin: 0;
+      letter-spacing: -0.3px;
+      line-height: 1.2;
+    }
+
+    .toolbar-subtext {
+      font-size: 11px;
+      font-weight: 600;
+      color: #94a3b8;
+      letter-spacing: 0.3px;
+    }
+
+    .btn-add-camera {
+      background: linear-gradient(135deg, #0284c7, #0ea5e9);
+      color: #ffffff;
+      border: 1px solid rgba(56, 189, 248, 0.5);
+      padding: 9px 20px;
+      border-radius: 14px;
       font-weight: 700;
       font-size: 13px;
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      box-shadow: 0 4px 15px rgba(2, 132, 199, 0.4);
+      box-shadow: 0 4px 16px rgba(2, 132, 199, 0.45);
       cursor: pointer;
-      transition: all 0.2s ease;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
-    .btn-add-cam:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 6px 20px rgba(56, 189, 248, 0.5);
+    .btn-add-camera:hover {
+      background: linear-gradient(135deg, #0369a1, #0284c7);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(56, 189, 248, 0.55);
       color: #ffffff;
+      border-color: #38bdf8;
     }
 
-    .search-input-box {
+    .toolbar-controls-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      flex: 1;
+      justify-content: flex-end;
+      min-width: 300px;
+    }
+
+    .toolbar-search-box {
       position: relative;
       flex: 1;
       min-width: 220px;
-      max-width: 320px;
+      max-width: 340px;
     }
 
-    .search-input-box input {
+    .toolbar-search-box input {
       width: 100%;
-      height: 38px;
-      background: rgba(255, 255, 255, 0.06);
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      border-radius: 10px;
-      padding: 0 12px 0 34px;
+      height: 42px;
+      background: rgba(15, 23, 42, 0.75);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 14px;
+      padding: 0 14px 0 38px;
       color: #ffffff;
       font-size: 13px;
+      font-weight: 500;
       outline: none;
-      transition: all 0.2s;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
-    .search-input-box input:focus {
+    .toolbar-search-box input:focus {
       border-color: #38bdf8;
-      background: rgba(255, 255, 255, 0.1);
-      box-shadow: 0 0 10px rgba(56, 189, 248, 0.3);
+      background: rgba(15, 23, 42, 0.95);
+      box-shadow: 0 0 14px rgba(56, 189, 248, 0.35);
     }
 
-    .search-input-box i {
+    .toolbar-search-box input::placeholder {
+      color: #64748b;
+    }
+
+    .toolbar-search-box i {
       position: absolute;
-      left: 12px;
+      left: 14px;
       top: 50%;
       transform: translateY(-50%);
       color: #38bdf8;
       font-size: 13px;
+      pointer-events: none;
     }
 
-    .filter-select-pill {
-      height: 38px;
-      background: rgba(255, 255, 255, 0.06);
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      border-radius: 10px;
-      color: #ffffff;
-      padding: 0 12px;
-      font-size: 13px;
+    .toolbar-select-pill {
+      height: 42px;
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 14px;
+      color: #e2e8f0;
+      padding: 0 14px;
+      font-size: 12.5px;
       font-weight: 600;
       outline: none;
       cursor: pointer;
+      transition: all 0.2s;
     }
 
-    .filter-select-pill option {
-      background: #0f172a;
+    .toolbar-select-pill:focus,
+    .toolbar-select-pill:hover {
+      border-color: rgba(56, 189, 248, 0.5);
+      background: rgba(15, 23, 42, 0.95);
+      box-shadow: 0 0 12px rgba(56, 189, 248, 0.2);
+    }
+
+    .toolbar-select-pill option {
+      background: #0b1329;
       color: #ffffff;
+      padding: 8px;
+    }
+
+    .btn-toolbar-refresh {
+      width: 42px;
+      height: 42px;
+      border-radius: 14px;
+      background: rgba(15, 23, 42, 0.75);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      color: #38bdf8;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .btn-toolbar-refresh:hover {
+      background: rgba(56, 189, 248, 0.15);
+      border-color: #38bdf8;
+      color: #ffffff;
+      transform: rotate(90deg);
+      box-shadow: 0 0 14px rgba(56, 189, 248, 0.35);
     }
 
     /* Camera Cards Grid */
@@ -1028,24 +1123,32 @@ $user = get_logged_in_user();
     <!-- Section Header & Toolbar -->
     <div class="customer-toolbar">
       
-      <!-- Left: Title & Add Button -->
-      <div class="d-flex align-items-center gap-3 flex-wrap">
-        <h4 class="font-weight-bold mb-0 text-white" style="font-size: 18px; display: inline-flex; align-items: center; gap: 8px;">
-          <i class="fas fa-camera text-info"></i> Daftar Channel CCTV Saya
-        </h4>
-        <button class="btn-add-cam" onclick="openAddCameraModal()">
-          <i class="fas fa-plus"></i> Tambah Kamera CCTV
+      <!-- Left: Title Group & Add Camera Action -->
+      <div class="toolbar-left-group">
+        <div class="toolbar-title-group">
+          <div class="toolbar-icon-badge">
+            <i class="fas fa-video"></i>
+          </div>
+          <div>
+            <h4 class="toolbar-heading">Daftar Channel CCTV Saya</h4>
+            <div class="toolbar-subtext">Live Stream & Monitoring Hub</div>
+          </div>
+        </div>
+
+        <button class="btn-add-camera" onclick="openAddCameraModal()" title="Tambahkan Kamera CCTV Baru">
+          <i class="fas fa-plus-circle"></i>
+          <span>Tambah Kamera CCTV</span>
         </button>
       </div>
 
       <!-- Right: Search & Filters -->
-      <div class="d-flex align-items-center gap-2 flex-wrap">
-        <div class="search-input-box">
+      <div class="toolbar-controls-group">
+        <div class="toolbar-search-box">
           <i class="fas fa-search"></i>
           <input type="text" id="filter-search-input" placeholder="Cari nama kamera / lokasi..." onkeyup="applyCameraFilters()">
         </div>
 
-        <select class="filter-select-pill" id="filter-city-select" onchange="applyCameraFilters()">
+        <select class="toolbar-select-pill" id="filter-city-select" onchange="applyCameraFilters()">
           <option value="all">🌐 Semua Wilayah</option>
           <option value="siantar">📍 Pematangsiantar</option>
           <option value="jakarta">📍 DKI Jakarta</option>
@@ -1054,11 +1157,15 @@ $user = get_logged_in_user();
           <option value="bali">📍 Bali / Denpasar</option>
         </select>
 
-        <select class="filter-select-pill" id="filter-status-select" onchange="applyCameraFilters()">
-          <option value="all">Semua Status</option>
-          <option value="online">Online</option>
-          <option value="offline">Offline</option>
+        <select class="toolbar-select-pill" id="filter-status-select" onchange="applyCameraFilters()">
+          <option value="all">⚡ Semua Status</option>
+          <option value="online">🟢 Online</option>
+          <option value="offline">🔴 Offline</option>
         </select>
+
+        <button class="btn-toolbar-refresh" onclick="loadCustomerCameras(true)" title="Segarkan Data CCTV">
+          <i class="fas fa-rotate"></i>
+        </button>
       </div>
 
     </div>
