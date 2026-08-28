@@ -377,6 +377,69 @@ $user = get_logged_in_user();
       display: flex;
       align-items: center;
       justify-content: center;
+      cursor: pointer;
+    }
+
+    .cam-preview-container .play-overlay-hint {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0, 0, 0, 0.25);
+      opacity: 0;
+      transition: opacity 0.2s ease;
+      z-index: 5;
+      pointer-events: none;
+    }
+
+    .cam-preview-container:hover .play-overlay-hint {
+      opacity: 1;
+    }
+
+    .play-overlay-hint i {
+      font-size: 40px;
+      color: rgba(56, 189, 248, 0.95);
+      filter: drop-shadow(0 0 12px rgba(56, 189, 248, 0.7));
+      transform: scale(0.9);
+      transition: transform 0.2s ease;
+    }
+
+    .cam-preview-container:hover .play-overlay-hint i {
+      transform: scale(1.1);
+    }
+
+    .cam-inline-video {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      background: #000;
+      z-index: 4;
+    }
+
+    .cam-inline-loading {
+      position: absolute;
+      inset: 0;
+      background: rgba(10, 18, 36, 0.88);
+      backdrop-filter: blur(4px);
+      z-index: 6;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: #38bdf8;
+      text-align: center;
+      padding: 10px;
+    }
+
+    .btn-playing-active {
+      background: rgba(239, 68, 68, 0.25) !important;
+      border-color: rgba(239, 68, 68, 0.7) !important;
+      color: #fca5a5 !important;
+      box-shadow: 0 0 10px rgba(239, 68, 68, 0.4) !important;
     }
 
     .cam-preview-img {
@@ -1057,9 +1120,17 @@ $user = get_logged_in_user();
         const thumbUrl = cam.thumbnail || '../assets/image/icon-cctv.png';
 
         html += `
-          <div class="cam-card">
-            <div class="cam-preview-container">
-              <img src="${thumbUrl}" alt="${cam.title}" class="cam-preview-img" onerror="this.src='../assets/image/icon-cctv.png'">
+          <div class="cam-card" id="cam-card-${cam.id}">
+            <div class="cam-preview-container" id="cam-preview-${cam.id}" onclick="playCameraInline(${cam.id})" title="Klik untuk memutar siaran langsung">
+              <img src="${thumbUrl}" alt="${cam.title}" class="cam-preview-img" id="cam-thumb-${cam.id}" onerror="this.src='../assets/image/icon-cctv.png'">
+              <div class="play-overlay-hint" id="play-hint-${cam.id}">
+                <i class="fas fa-play-circle"></i>
+              </div>
+              <video id="cam-video-${cam.id}" class="cam-inline-video" style="display: none;" controls autoplay muted playsinline></video>
+              <div id="cam-loading-${cam.id}" class="cam-inline-loading" style="display: none;">
+                <div class="spinner-border text-info spinner-border-sm mb-1" role="status"></div>
+                <span style="font-size: 11px; font-weight: 600;">Menghubungkan...</span>
+              </div>
               ${statusBadge}
               <span class="cam-badge-type">${connLabel}</span>
             </div>
@@ -1072,7 +1143,7 @@ $user = get_logged_in_user();
                 </div>
               </div>
               <div class="cam-actions-row">
-                <button class="btn-cam-action" onclick="openLivePlayerModal(${cam.id})" title="Live Stream Test">
+                <button class="btn-cam-action" id="btn-live-${cam.id}" onclick="playCameraInline(${cam.id})" title="Live Stream Test Langsung di Sini">
                   <i class="fas fa-play text-info"></i> Live Test
                 </button>
                 <button class="btn-cam-action" onclick="openEditCameraModal(${cam.id})" title="Edit Pengaturan Kamera">
@@ -1239,6 +1310,199 @@ $user = get_logged_in_user();
       } catch (err) {
         console.error('Delete camera error:', err);
         alert('Terjadi kesalahan koneksi.');
+      }
+    }
+
+    // ===== INLINE CAMERA PLAYER CONTROLLER (DIRECT CARD PLAYBACK) =====
+    const activeInlinePlayers = new Map(); // camId -> { hls, video }
+
+    async function playCameraInline(camId) {
+      const cam = customerCameras.find(c => c.id == camId);
+      if (!cam) return;
+
+      const container = document.getElementById(`cam-preview-${camId}`);
+      const thumb = document.getElementById(`cam-thumb-${camId}`);
+      const hint = document.getElementById(`play-hint-${camId}`);
+      const video = document.getElementById(`cam-video-${camId}`);
+      const loading = document.getElementById(`cam-loading-${camId}`);
+      const btn = document.getElementById(`btn-live-${camId}`);
+
+      if (!container || !video) return;
+
+      // If already playing this camera, toggle stop
+      if (activeInlinePlayers.has(camId)) {
+        stopCameraInline(camId);
+        return;
+      }
+
+      // Hide hint overlay & show loading
+      if (hint) hint.style.display = 'none';
+      if (loading) {
+        loading.style.display = 'flex';
+        loading.innerHTML = `<div class="spinner-border text-info spinner-border-sm mb-1" role="status"></div><span style="font-size: 11px; font-weight: 600;">Menghubungkan Stream...</span>`;
+      }
+      if (btn) {
+        btn.innerHTML = `<i class="fas fa-spinner fa-spin text-info"></i> Loading...`;
+      }
+
+      let streamUrl = cam.hls_url || cam.streamPath || '';
+
+      // If XMeye P2P camera without active bcloud URL, resolve via jftech_gateway.php
+      if (cam.connection_type === 'xmeye_p2p' || (!streamUrl.includes('bcloud365.net') && cam.serial_number)) {
+        const sn = cam.serial_number || (streamUrl.match(/^xmeye_([a-fA-F0-9]+)/) ? streamUrl.match(/^xmeye_([a-fA-F0-9]+)/)[1] : '');
+        const ch = cam.channel || 1;
+        const devUser = cam.device_user || 'admin';
+        const devPass = cam.device_pass || '';
+
+        if (sn) {
+          if (loading) {
+            loading.innerHTML = `<div class="spinner-border text-info spinner-border-sm mb-1" role="status"></div><span style="font-size: 11px; font-weight: 600;">Cloud P2P (CH ${ch})...</span>`;
+          }
+          try {
+            const res = await fetch(`../api/jftech_gateway.php?action=get_live_stream&sn=${encodeURIComponent(sn)}&channel=${encodeURIComponent(ch)}&stream=1&device_user=${encodeURIComponent(devUser)}&device_pass=${encodeURIComponent(devPass)}`);
+            const data = await res.json();
+            if (data.success && data.hls_url) {
+              streamUrl = data.hls_url;
+              cam.hls_url = data.hls_url;
+            } else {
+              if (loading) {
+                loading.innerHTML = `<div class="text-danger mb-1"><i class="fas fa-video-slash"></i></div><span style="font-size: 11px; font-weight: 600; color: #f87171;">Offline</span><button class="btn btn-xs btn-outline-light mt-1" style="font-size: 10px; padding: 2px 6px;" onclick="event.stopPropagation(); playCameraInline(${camId})">Coba Lagi</button>`;
+              }
+              if (btn) btn.innerHTML = `<i class="fas fa-play text-info"></i> Live Test`;
+              return;
+            }
+          } catch (e) {
+            console.error('Failed to resolve XMeye stream:', e);
+          }
+        }
+      }
+
+      // Normalization for MediaMTX / RTSP stream path (e.g. "cctv_loewix_1" or "yamaha_dds")
+      if (streamUrl && !streamUrl.startsWith('http://') && !streamUrl.startsWith('https://')) {
+        streamUrl = `https://stream.loewixcctv.com/${streamUrl}/index.m3u8`;
+      } else if (streamUrl && streamUrl.startsWith('http://stream.loewixcctv.com')) {
+        streamUrl = streamUrl.replace('http://', 'https://');
+      }
+
+      if (!streamUrl) {
+        if (loading) {
+          loading.innerHTML = `<div class="text-warning mb-1"><i class="fas fa-exclamation-triangle"></i></div><span style="font-size: 11px; font-weight: 600; color: #fbbf24;">URL Belum Dikonfigurasi</span>`;
+        }
+        if (btn) btn.innerHTML = `<i class="fas fa-play text-info"></i> Live Test`;
+        return;
+      }
+
+      function revealVideo() {
+        if (loading) loading.style.display = 'none';
+        if (thumb) thumb.style.display = 'none';
+        if (video) video.style.display = 'block';
+        if (btn) {
+          btn.innerHTML = `<i class="fas fa-stop text-danger"></i> Stop Test`;
+          btn.classList.add('btn-playing-active');
+        }
+      }
+
+      video.muted = true;
+      video.setAttribute('playsinline', 'true');
+      video.setAttribute('webkit-playsinline', 'true');
+      video.setAttribute('autoplay', '');
+      video.setAttribute('muted', '');
+
+      let hls = null;
+
+      if (streamUrl.includes('.m3u8') || streamUrl.includes('bcloud365.net')) {
+        if (Hls.isSupported()) {
+          hls = new Hls({
+            enableWorker: true,
+            lowLatencyMode: true,
+            liveSyncDurationCount: 1,
+            maxBufferLength: 2,
+            xhrSetup: function(xhr, url) {
+              try {
+                xhr.setRequestHeader('Bypass-Tunnel-Reminder', 'true');
+                xhr.setRequestHeader('ngrok-skip-browser-warning', 'true');
+              } catch (e) {}
+            }
+          });
+
+          hls.loadSource(streamUrl);
+          hls.attachMedia(video);
+
+          hls.on(Hls.Events.MANIFEST_PARSED, () => {
+            video.muted = true;
+            const p = video.play();
+            if (p !== undefined) {
+              p.then(revealVideo).catch(e => {
+                console.warn('Autoplay prevented:', e);
+                revealVideo();
+              });
+            } else {
+              revealVideo();
+            }
+          });
+
+          hls.on(Hls.Events.ERROR, (event, data) => {
+            if (data.fatal) {
+              if (data.type === Hls.ErrorTypes.NETWORK_ERROR) {
+                hls.startLoad();
+              } else if (data.type === Hls.ErrorTypes.MEDIA_ERROR) {
+                hls.recoverMediaError();
+              } else {
+                if (loading) {
+                  loading.style.display = 'flex';
+                  loading.innerHTML = `<div class="text-danger mb-1"><i class="fas fa-exclamation-circle"></i></div><span style="font-size: 11px; font-weight: 600; color: #f87171;">Stream Belum Aktif</span><button class="btn btn-xs btn-outline-light mt-1" style="font-size: 10px; padding: 2px 6px;" onclick="event.stopPropagation(); playCameraInline(${camId})">Retry</button>`;
+                }
+                if (btn) {
+                  btn.innerHTML = `<i class="fas fa-play text-info"></i> Live Test`;
+                  btn.classList.remove('btn-playing-active');
+                }
+                stopCameraInline(camId);
+              }
+            }
+          });
+
+        } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+          video.src = streamUrl;
+          video.muted = true;
+          video.play().then(revealVideo).catch(revealVideo);
+        }
+      } else {
+        video.src = streamUrl;
+        video.muted = true;
+        video.play().then(revealVideo).catch(revealVideo);
+      }
+
+      video.onplaying = revealVideo;
+      video.onloadeddata = revealVideo;
+
+      activeInlinePlayers.set(camId, { hls, video });
+    }
+
+    function stopCameraInline(camId) {
+      const playerObj = activeInlinePlayers.get(camId);
+      if (playerObj) {
+        if (playerObj.hls) {
+          playerObj.hls.destroy();
+        }
+        if (playerObj.video) {
+          playerObj.video.pause();
+          playerObj.video.src = '';
+          playerObj.video.style.display = 'none';
+        }
+        activeInlinePlayers.delete(camId);
+      }
+
+      const thumb = document.getElementById(`cam-thumb-${camId}`);
+      const hint = document.getElementById(`play-hint-${camId}`);
+      const loading = document.getElementById(`cam-loading-${camId}`);
+      const btn = document.getElementById(`btn-live-${camId}`);
+
+      if (thumb) thumb.style.display = 'block';
+      if (hint) hint.style.display = 'flex';
+      if (loading) loading.style.display = 'none';
+      if (btn) {
+        btn.innerHTML = `<i class="fas fa-play text-info"></i> Live Test`;
+        btn.classList.remove('btn-playing-active');
       }
     }
 
