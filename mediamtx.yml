@@ -18,13 +18,28 @@ paths:
     rtspTransport: tcp
     sourceOnDemand: yes
 
+  cctv_loewix_1_sub:
+    source: rtsp://103.164.101.50:8203/user=admin&password=admin1234&channel=1&stream=1.sdp
+    rtspTransport: tcp
+    sourceOnDemand: yes
+
   cctv_loewix_2:
     source: rtsp://103.164.101.50:8203/user=admin&password=admin1234&channel=2&stream=0.sdp
     rtspTransport: tcp
     sourceOnDemand: yes
 
+  cctv_loewix_2_sub:
+    source: rtsp://103.164.101.50:8203/user=admin&password=admin1234&channel=2&stream=1.sdp
+    rtspTransport: tcp
+    sourceOnDemand: yes
+
   cctv_loewix_3:
     source: rtsp://103.164.101.50:8203/user=admin&password=admin1234&channel=3&stream=0.sdp
+    rtspTransport: tcp
+    sourceOnDemand: yes
+
+  cctv_loewix_3_sub:
+    source: rtsp://103.164.101.50:8203/user=admin&password=admin1234&channel=3&stream=1.sdp
     rtspTransport: tcp
     sourceOnDemand: yes
 

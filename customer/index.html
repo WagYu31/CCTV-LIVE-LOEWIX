@@ -1222,12 +1222,13 @@
             <!-- RTSP Stream Path Fields -->
             <div id="field-rtsp-container">
               <div class="form-group form-group-dark">
-                <label>Stream Path / URL HLS:</label>
-                <input type="text" id="cust-cam-hls" class="form-control form-control-dark" placeholder="https://stream.loewixcctv.com:8443/cam-01/index.m3u8">
+                <label class="text-white"><i class="fas fa-link text-info mr-1"></i> URL Stream RTSP / Link Kamera:</label>
+                <input type="text" id="cust-cam-rtsp" class="form-control form-control-dark" placeholder="rtsp://admin:password@ip:port/stream atau path cctv_loewix_1">
+                <small class="text-muted d-block mt-1" style="font-size: 11px;"><i class="fas fa-info-circle text-info"></i> Masukkan URL RTSP dari kamera/DVR. Server Loewix otomatis mengonversikannya menjadi live stream web.</small>
               </div>
-              <div class="form-group form-group-dark">
-                <label>RTSP Direct Source (Opsional):</label>
-                <input type="text" id="cust-cam-rtsp" class="form-control form-control-dark" placeholder="rtsp://admin:pass@192.168.1.100:554/stream1">
+              <div class="form-group form-group-dark mb-2">
+                <label style="font-size: 11.5px; color: #94a3b8;"><i class="fas fa-globe text-muted mr-1"></i> Custom Stream Path / URL HLS (Opsional):</label>
+                <input type="text" id="cust-cam-hls" class="form-control form-control-dark" placeholder="Otomatis diisi server, contoh: cctv_loewix_1" style="font-size: 12px;">
               </div>
             </div>
 
@@ -1744,14 +1745,28 @@
       const form = document.getElementById('formCamCustomer');
       const formData = new FormData();
 
+      const connType = document.getElementById('cust-cam-conn-type').value;
+      const rtspVal = document.getElementById('cust-cam-rtsp').value.trim();
+      const hlsVal = document.getElementById('cust-cam-hls').value.trim();
+      const snVal = document.getElementById('cust-cam-sn').value.trim();
+
+      if (connType === 'rtsp' && !rtspVal && !hlsVal) {
+        alert('Silakan masukkan URL RTSP kamera Anda.');
+        return;
+      }
+      if (connType === 'xmeye_p2p' && !snVal) {
+        alert('Silakan masukkan Serial Number (Cloud ID) kamera XMeye Anda.');
+        return;
+      }
+
       formData.append('action', 'save_camera');
       formData.append('id', document.getElementById('cust-cam-id').value);
       formData.append('title', document.getElementById('cust-cam-title').value);
       formData.append('city', document.getElementById('cust-cam-city').value);
-      formData.append('connection_type', document.getElementById('cust-cam-conn-type').value);
-      formData.append('hls_url', document.getElementById('cust-cam-hls').value);
-      formData.append('rtsp_url', document.getElementById('cust-cam-rtsp').value);
-      formData.append('serial_number', document.getElementById('cust-cam-sn').value);
+      formData.append('connection_type', connType);
+      formData.append('hls_url', hlsVal);
+      formData.append('rtsp_url', rtspVal);
+      formData.append('serial_number', snVal);
       formData.append('channel', document.getElementById('cust-cam-channel').value);
       formData.append('status', document.getElementById('cust-cam-status').value);
       formData.append('user_id', currentCustomer ? currentCustomer.id : '');
@@ -1891,6 +1906,21 @@
             return;
           }
         }
+      }
+
+      // Auto-fallback if only rtsp_url is present
+      if (!streamUrl && cam.rtsp_url) {
+        if (cam.rtsp_url.includes('103.164.101.50:8203') && cam.rtsp_url.includes('channel=1')) {
+          streamUrl = cam.rtsp_url.includes('stream=1') ? 'https://stream.loewixcctv.com/cctv_loewix_1_sub/index.m3u8' : 'https://stream.loewixcctv.com/cctv_loewix_1/index.m3u8';
+        } else if (cam.rtsp_url.includes('103.164.101.50:8203') && cam.rtsp_url.includes('channel=2')) {
+          streamUrl = cam.rtsp_url.includes('stream=1') ? 'https://stream.loewixcctv.com/cctv_loewix_2_sub/index.m3u8' : 'https://stream.loewixcctv.com/cctv_loewix_2/index.m3u8';
+        } else if (cam.rtsp_url.includes('103.164.101.50:8203') && cam.rtsp_url.includes('channel=3')) {
+          streamUrl = cam.rtsp_url.includes('stream=1') ? 'https://stream.loewixcctv.com/cctv_loewix_3_sub/index.m3u8' : 'https://stream.loewixcctv.com/cctv_loewix_3/index.m3u8';
+        } else {
+          const path = cam.streamPath || `cam_live_${camId}`;
+          streamUrl = `https://stream.loewixcctv.com/${path}/index.m3u8`;
+        }
+        cam.hls_url = streamUrl;
       }
 
       // Normalization for MediaMTX / RTSP stream path (e.g. "cctv_loewix_1" or "yamaha_dds")

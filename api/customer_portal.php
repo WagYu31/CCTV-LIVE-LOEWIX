@@ -79,6 +79,44 @@ if ($action === 'get_profile') {
     exit;
 }
 
+function sync_rtsp_to_mediamtx($streamPath, $rtspUrl) {
+    if (empty($streamPath) || empty($rtspUrl)) return false;
+    
+    $mediamtxFile = __DIR__ . '/../mediamtx.yml';
+    if (!file_exists($mediamtxFile)) return false;
+
+    $content = @file_get_contents($mediamtxFile);
+    if ($content === false) return false;
+
+    // Check if path already registered
+    if (preg_match('/^\s*' . preg_quote($streamPath, '/') . ':\s*$/m', $content)) {
+        return true;
+    }
+
+    // Append path to mediamtx.yml
+    $newEntry = "\n  {$streamPath}:\n    source: {$rtspUrl}\n    rtspTransport: tcp\n    sourceOnDemand: yes\n";
+    $content .= $newEntry;
+    @file_put_contents($mediamtxFile, $content);
+
+    // Try notifying MediaMTX API via curl
+    try {
+        $ch = curl_init("http://127.0.0.1:9997/v3/config/paths/add/" . urlencode($streamPath));
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode([
+            'source' => $rtspUrl,
+            'rtspTransport' => 'tcp',
+            'sourceOnDemand' => true
+        ]));
+        curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 2);
+        @curl_exec($ch);
+        @curl_close($ch);
+    } catch (Exception $e) {}
+
+    return true;
+}
+
 if ($action === 'my_cameras') {
     $snSnapshotCache = [];
 
@@ -86,6 +124,25 @@ if ($action === 'my_cameras') {
         // Force HTTPS for stream.loewixcctv.com to prevent mixed-content blocking
         if (!empty($cam['hls_url']) && strpos($cam['hls_url'], 'http://stream.loewixcctv.com') === 0) {
             $cam['hls_url'] = str_replace('http://', 'https://', $cam['hls_url']);
+        }
+
+        // Auto-resolve RTSP cameras missing HLS URL or streamPath
+        if (($cam['connection_type'] ?? '') === 'rtsp' && !empty($cam['rtsp_url'])) {
+            if (empty($cam['streamPath'])) {
+                if (strpos($cam['rtsp_url'], '103.164.101.50:8203') !== false && strpos($cam['rtsp_url'], 'channel=1') !== false) {
+                    $cam['streamPath'] = 'cctv_loewix_1';
+                } elseif (strpos($cam['rtsp_url'], '103.164.101.50:8203') !== false && strpos($cam['rtsp_url'], 'channel=2') !== false) {
+                    $cam['streamPath'] = 'cctv_loewix_2';
+                } elseif (strpos($cam['rtsp_url'], '103.164.101.50:8203') !== false && strpos($cam['rtsp_url'], 'channel=3') !== false) {
+                    $cam['streamPath'] = 'cctv_loewix_3';
+                } else {
+                    $cam['streamPath'] = 'cam_live_' . $cam['id'];
+                }
+            }
+            if (empty($cam['hls_url'])) {
+                $cam['hls_url'] = "https://stream.loewixcctv.com/{$cam['streamPath']}/index.m3u8";
+            }
+            sync_rtsp_to_mediamtx($cam['streamPath'], $cam['rtsp_url']);
         }
 
         // Check if a dedicated saved live snapshot exists for this camera
@@ -295,6 +352,32 @@ if ($action === 'save_camera') {
     if (empty($title)) {
         echo json_encode(['success' => false, 'message' => 'Nama kamera wajib diisi!']);
         exit;
+    }
+
+    // If user pasted rtsp:// into hls_url field, move it to rtsp_url
+    if (strpos($hls_url, 'rtsp://') === 0) {
+        if (empty($rtsp_url)) $rtsp_url = $hls_url;
+        $hls_url = '';
+    }
+
+    // Auto-resolve RTSP parameters and streamPath
+    if ($connection_type === 'rtsp' && !empty($rtsp_url)) {
+        if (empty($streamPath)) {
+            if (strpos($rtsp_url, '103.164.101.50:8203') !== false && strpos($rtsp_url, 'channel=1') !== false) {
+                $streamPath = 'cctv_loewix_1';
+            } elseif (strpos($rtsp_url, '103.164.101.50:8203') !== false && strpos($rtsp_url, 'channel=2') !== false) {
+                $streamPath = 'cctv_loewix_2';
+            } elseif (strpos($rtsp_url, '103.164.101.50:8203') !== false && strpos($rtsp_url, 'channel=3') !== false) {
+                $streamPath = 'cctv_loewix_3';
+            } else {
+                $tempId = $camId > 0 ? $camId : (count($db['cameras']) > 0 ? max(array_column($db['cameras'], 'id')) + 1 : 1);
+                $streamPath = 'cam_live_' . $tempId;
+            }
+        }
+        if (empty($hls_url)) {
+            $hls_url = "https://stream.loewixcctv.com/{$streamPath}/index.m3u8";
+        }
+        sync_rtsp_to_mediamtx($streamPath, $rtsp_url);
     }
 
     if ($camId > 0) {
