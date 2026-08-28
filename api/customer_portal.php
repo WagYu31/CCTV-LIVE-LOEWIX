@@ -81,24 +81,6 @@ if ($action === 'get_profile') {
 
 if ($action === 'my_cameras') {
     $snSnapshotCache = [];
-    $realSnapshots = [
-        'assets/image/thumbnail/Jalan-Merdeka-bawah.png',
-        'assets/image/thumbnail/Jalan-Sudirman-Ke-Lap-Adam-Malik.png',
-        'assets/image/thumbnail/Simpang-Dua.png',
-        'assets/image/thumbnail/Jl-Merdeka-Depan-Balai-Kota.png',
-        'assets/image/thumbnail/Jalan-Sutomo-Polres-Siantar.png',
-        'assets/image/thumbnail/Jalan-Gereja-ke-Jalan-M-H-Sitorus.png',
-        'assets/image/thumbnail/Jl-Sudirman-Simpang-BRI.png',
-        'assets/image/thumbnail/pasar-horas-1.png',
-        'assets/image/thumbnail/Simpang-4-Bundaran.png',
-        'assets/image/thumbnail/Jalan-Medan-Simpang-AMD.png',
-        'assets/image/thumbnail/Persimpangan-Tugu-Wahana-Tata-Nugraha.png',
-        'assets/image/thumbnail/terminal-simpang-rambung-merah.png',
-        'assets/image/thumbnail/Jalan-sutomo-pasar-horas.png',
-        'assets/image/thumbnail/Simpang-Farel-Pasaribu-Kota.png',
-        'assets/image/thumbnail/Simpang-Jalan-Bali.png',
-        'assets/image/thumbnail/jembatan-sigagak-siantar.png'
-    ];
 
     foreach ($customerCameras as &$cam) {
         // Force HTTPS for stream.loewixcctv.com to prevent mixed-content blocking
@@ -106,10 +88,15 @@ if ($action === 'my_cameras') {
             $cam['hls_url'] = str_replace('http://', 'https://', $cam['hls_url']);
         }
 
-        // Ensure every camera has a real CCTV live snapshot photo
-        if (empty($cam['thumbnail']) || strpos($cam['thumbnail'], 'icon-cctv') !== false || strpos($cam['thumbnail'], 'default-thumbnail') !== false) {
-            $hash = abs(crc32((string)($cam['id'] ?? $cam['title'] ?? '1')));
-            $cam['thumbnail'] = $realSnapshots[$hash % count($realSnapshots)];
+        // Check if a dedicated saved live snapshot exists for this camera
+        $snapFile = __DIR__ . "/../assets/image/snapshots/cam_{$cam['id']}.jpg";
+        if (file_exists($snapFile) && filesize($snapFile) > 1000) {
+            $cam['thumbnail'] = "assets/image/snapshots/cam_{$cam['id']}.jpg?v=" . filemtime($snapFile);
+        } else {
+            // Check if existing thumbnail is valid (not old Siantar or default-thumbnail)
+            if (!empty($cam['thumbnail']) && (strpos($cam['thumbnail'], 'default-thumbnail') !== false || strpos($cam['thumbnail'], 'icon-cctv') !== false || strpos($cam['thumbnail'], 'Jalan-') !== false || strpos($cam['thumbnail'], 'Simpang-') !== false)) {
+                $cam['thumbnail'] = '';
+            }
         }
 
         // Automatically attach real-time cached snapshot and stream URL for XMeye cameras
@@ -154,7 +141,7 @@ if ($action === 'my_cameras') {
                 }
             }
 
-            if (isset($snSnapshotCache[$sn]['snapshots'][$ch]) && !empty($snSnapshotCache[$sn]['snapshots'][$ch])) {
+            if (empty($cam['thumbnail']) && isset($snSnapshotCache[$sn]['snapshots'][$ch]) && !empty($snSnapshotCache[$sn]['snapshots'][$ch])) {
                 $cam['thumbnail'] = $snSnapshotCache[$sn]['snapshots'][$ch];
             }
         }
@@ -167,6 +154,69 @@ if ($action === 'my_cameras') {
         'used' => $usedQuota,
         'remaining' => max(0, $totalQuota - $usedQuota),
         'cameras' => $customerCameras
+    ]);
+    exit;
+}
+
+if ($action === 'save_snapshot') {
+    $camId = (int)($_POST['camera_id'] ?? 0);
+    $imageData = trim($_POST['image_data'] ?? '');
+
+    if ($camId <= 0 || empty($imageData)) {
+        echo json_encode(['success' => false, 'message' => 'Data gambar / ID Kamera tidak valid.']);
+        exit;
+    }
+
+    // Verify camera ownership
+    $found = false;
+    foreach ($customerCameras as &$c) {
+        if ((int)$c['id'] === $camId) {
+            $found = true;
+            break;
+        }
+    }
+    if (!$found && $user['role'] !== 'super_admin') {
+        echo json_encode(['success' => false, 'message' => 'Kamera tidak ditemukan.']);
+        exit;
+    }
+
+    if (preg_match('/^data:image\/(\w+);base64,/', $imageData, $type)) {
+        $imageData = substr($imageData, strpos($imageData, ',') + 1);
+        $imageData = base64_decode($imageData);
+        if ($imageData === false) {
+            echo json_encode(['success' => false, 'message' => 'Gagal mendekode gambar base64.']);
+            exit;
+        }
+    } else {
+        echo json_encode(['success' => false, 'message' => 'Format URI gambar tidak valid.']);
+        exit;
+    }
+
+    $targetDir = __DIR__ . '/../assets/image/snapshots';
+    if (!file_exists($targetDir)) {
+        @mkdir($targetDir, 0777, true);
+    }
+
+    $fileName = "cam_{$camId}.jpg";
+    $filePath = "{$targetDir}/{$fileName}";
+    @file_put_contents($filePath, $imageData);
+
+    $relativeUrl = "assets/image/snapshots/{$fileName}";
+
+    // Update in database
+    foreach ($db['cameras'] as &$c) {
+        if ((int)$c['id'] === $camId) {
+            $c['thumbnail'] = $relativeUrl;
+            $c['last_snapshot_at'] = date('Y-m-d H:i:s');
+            break;
+        }
+    }
+    save_db_data($db);
+
+    echo json_encode([
+        'success' => true,
+        'message' => 'Snapshot live kamera berhasil disimpan!',
+        'thumbnail' => $relativeUrl . '?v=' . time()
     ]);
     exit;
 }

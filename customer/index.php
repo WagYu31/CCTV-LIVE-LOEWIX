@@ -473,8 +473,47 @@ $user = get_logged_in_user();
       50% { opacity: 0.2; }
     }
 
-    .blink {
-      animation: recBlink 1.2s infinite ease-in-out;
+    .cam-standby-placeholder {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(circle at center, #0f2347 0%, #060b18 100%);
+      color: #64748b;
+      z-index: 1;
+      padding: 15px;
+      text-align: center;
+      background-image: 
+        linear-gradient(rgba(56, 189, 248, 0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(56, 189, 248, 0.04) 1px, transparent 1px);
+      background-size: 20px 20px;
+    }
+
+    .cam-standby-placeholder .standby-icon {
+      font-size: 32px;
+      color: rgba(56, 189, 248, 0.7);
+      margin-bottom: 6px;
+      filter: drop-shadow(0 0 10px rgba(56, 189, 248, 0.4));
+    }
+
+    .cam-standby-placeholder .standby-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: #cbd5e1;
+      letter-spacing: 0.5px;
+    }
+
+    .cam-standby-placeholder .standby-hint {
+      font-size: 10px;
+      font-weight: 600;
+      color: #38bdf8;
+      margin-top: 5px;
+      background: rgba(56, 189, 248, 0.12);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      padding: 2px 8px;
+      border-radius: 10px;
     }
 
     .cam-inline-video {
@@ -1168,21 +1207,6 @@ $user = get_logged_in_user();
       }
     }
 
-    const fallbackRealSnapshots = [
-      '../assets/image/thumbnail/Jalan-Merdeka-bawah.png',
-      '../assets/image/thumbnail/Jalan-Sudirman-Ke-Lap-Adam-Malik.png',
-      '../assets/image/thumbnail/Simpang-Dua.png',
-      '../assets/image/thumbnail/Jl-Merdeka-Depan-Balai-Kota.png',
-      '../assets/image/thumbnail/Jalan-Sutomo-Polres-Siantar.png',
-      '../assets/image/thumbnail/Jalan-Gereja-ke-Jalan-M-H-Sitorus.png',
-      '../assets/image/thumbnail/Jl-Sudirman-Simpang-BRI.png',
-      '../assets/image/thumbnail/pasar-horas-1.png',
-      '../assets/image/thumbnail/Simpang-4-Bundaran.png',
-      '../assets/image/thumbnail/Jalan-Medan-Simpang-AMD.png',
-      '../assets/image/thumbnail/Persimpangan-Tugu-Wahana-Tata-Nugraha.png',
-      '../assets/image/thumbnail/terminal-simpang-rambung-merah.png'
-    ];
-
     function renderCameraCards(list) {
       const grid = document.getElementById('customer-camera-grid');
       if (!grid) return;
@@ -1210,20 +1234,36 @@ $user = get_logged_in_user();
         const connLabel = (cam.connection_type === 'xmeye_p2p') ? 'XMEYE P2P' : (cam.platform === 'ipcamlive' ? 'IPCAMLIVE' : 'RTSP H.265');
         
         let thumbUrl = cam.thumbnail || '';
-        if (!thumbUrl || thumbUrl.includes('icon-cctv') || thumbUrl.includes('default-thumbnail')) {
-          thumbUrl = fallbackRealSnapshots[idx % fallbackRealSnapshots.length];
-        } else if (!thumbUrl.startsWith('http') && !thumbUrl.startsWith('data:') && !thumbUrl.startsWith('../')) {
+        if (thumbUrl && !thumbUrl.startsWith('http') && !thumbUrl.startsWith('data:') && !thumbUrl.startsWith('../')) {
           thumbUrl = '../' + thumbUrl;
         }
 
-        const fallbackUrl = fallbackRealSnapshots[idx % fallbackRealSnapshots.length];
+        const hasRealSnapshot = (thumbUrl && !thumbUrl.includes('icon-cctv') && !thumbUrl.includes('default-thumbnail'));
+
+        const imageElement = hasRealSnapshot
+          ? `<img src="${thumbUrl}" alt="${cam.title}" class="cam-preview-img" id="cam-thumb-${cam.id}" onerror="this.style.display='none'; const sb=document.getElementById('cam-standby-${cam.id}'); if(sb) sb.style.display='flex';">
+             <div class="cam-standby-placeholder" id="cam-standby-${cam.id}" style="display:none;">
+               <div class="standby-icon"><i class="fas fa-video"></i></div>
+               <div class="standby-title">${cam.title}</div>
+               <div class="standby-hint"><i class="fas fa-play"></i> Klik Live Test</div>
+             </div>`
+          : `<img src="" alt="${cam.title}" class="cam-preview-img" id="cam-thumb-${cam.id}" style="display:none;">
+             <div class="cam-standby-placeholder" id="cam-standby-${cam.id}">
+               <div class="standby-icon"><i class="fas fa-video"></i></div>
+               <div class="standby-title">${cam.title}</div>
+               <div class="standby-hint"><i class="fas fa-play"></i> Klik Live Test</div>
+             </div>`;
+
+        const overlayBadge = hasRealSnapshot
+          ? `<span class="cctv-rec-pill"><i class="fas fa-circle text-danger blink"></i> LIVE SNAPSHOT</span>`
+          : `<span class="cctv-rec-pill" style="border-color: rgba(56, 189, 248, 0.4); color: #38bdf8;"><i class="fas fa-satellite-dish"></i> STANDBY</span>`;
 
         html += `
           <div class="cam-card" id="cam-card-${cam.id}">
             <div class="cam-preview-container" id="cam-preview-${cam.id}" onclick="playCameraInline(${cam.id})" title="Klik untuk memutar siaran langsung">
-              <img src="${thumbUrl}" alt="${cam.title}" class="cam-preview-img" id="cam-thumb-${cam.id}" onerror="this.onerror=null; this.src='${fallbackUrl}'">
+              ${imageElement}
               <div class="cam-cctv-overlay" id="cam-overlay-${cam.id}">
-                <span class="cctv-rec-pill"><i class="fas fa-circle text-danger blink"></i> LIVE FOTO</span>
+                ${overlayBadge}
                 <span class="cctv-time-pill">${timeStr}</span>
               </div>
               <div class="play-overlay-hint" id="play-hint-${cam.id}">
@@ -1522,6 +1562,8 @@ $user = get_logged_in_user();
       function revealVideo() {
         if (loading) loading.style.display = 'none';
         if (thumb) thumb.style.display = 'none';
+        const standby = document.getElementById(`cam-standby-${camId}`);
+        if (standby) standby.style.display = 'none';
         const overlay = document.getElementById(`cam-overlay-${camId}`);
         if (overlay) overlay.style.display = 'none';
         if (video) video.style.display = 'block';
@@ -1529,6 +1571,36 @@ $user = get_logged_in_user();
           btn.innerHTML = `<i class="fas fa-stop text-danger"></i> Stop Test`;
           btn.classList.add('btn-playing-active');
         }
+
+        // Automatic live snapshot grabber: captures a clean frame from live stream to refresh thumbnail
+        setTimeout(() => {
+          try {
+            if (video && video.videoWidth > 0 && video.videoHeight > 0) {
+              const canvas = document.createElement('canvas');
+              canvas.width = 640;
+              canvas.height = Math.round(640 * (video.videoHeight / video.videoWidth));
+              const ctx = canvas.getContext('2d');
+              ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+              const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+
+              // Update in-memory thumbnail & element
+              if (thumb) {
+                thumb.src = dataUrl;
+                thumb.style.display = 'none'; // currently playing video
+              }
+              cam.thumbnail = dataUrl;
+
+              // Save to backend database for permanent weekly snapshot
+              const fd = new FormData();
+              fd.append('action', 'save_snapshot');
+              fd.append('camera_id', camId);
+              fd.append('image_data', dataUrl);
+              fetch('../api/customer_portal.php', { method: 'POST', body: fd }).catch(e => {});
+            }
+          } catch (e) {
+            console.warn('Live snapshot auto-capture note:', e);
+          }
+        }, 1600);
       }
 
       video.muted = true;
@@ -1628,13 +1700,20 @@ $user = get_logged_in_user();
       }
 
       const thumb = document.getElementById(`cam-thumb-${camId}`);
+      const standby = document.getElementById(`cam-standby-${camId}`);
       const overlay = document.getElementById(`cam-overlay-${camId}`);
       const hint = document.getElementById(`play-hint-${camId}`);
       const loading = document.getElementById(`cam-loading-${camId}`);
       const btn = document.getElementById(`btn-live-${camId}`);
 
       if (!keepErrorState) {
-        if (thumb) thumb.style.display = 'block';
+        if (thumb && thumb.src && !thumb.src.endsWith('/customer/') && !thumb.src.endsWith('/customer/index.php') && thumb.getAttribute('src') !== '') {
+          thumb.style.display = 'block';
+          if (standby) standby.style.display = 'none';
+        } else if (standby) {
+          standby.style.display = 'flex';
+          if (thumb) thumb.style.display = 'none';
+        }
         if (overlay) overlay.style.display = 'flex';
         if (hint) hint.style.display = 'flex';
         if (loading) loading.style.display = 'none';
