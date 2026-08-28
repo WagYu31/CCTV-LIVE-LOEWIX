@@ -10509,10 +10509,39 @@
           const devPass = element.getAttribute('data-device-pass') || '';
           const currentQuality = element.getAttribute('data-stream-quality') || globalStreamQuality || 'sd';
           const streamIdx = currentQuality === 'hd' ? '0' : '1';
-          const directHls = element.getAttribute('data-hls-url') || (streamPath.startsWith('http') ? streamPath : '');
+          let directHls = element.getAttribute('data-hls-url') || (streamPath.startsWith('http') ? streamPath : '');
 
+          if (directHls && directHls.startsWith('http://stream.loewixcctv.com')) {
+            directHls = directHls.replace('http://', 'https://');
+          }
+
+          // 1. Direct RTSP mapping for Loewix Port 8203 (Yamaha DDS, TESS, etc.)
+          if (streamPath.includes('103.164.101.50:8203') || (directHls && directHls.includes('103.164.101.50:8203'))) {
+            const rtspFull = streamPath.includes('103.164.101.50:8203') ? streamPath : directHls;
+            if (rtspFull.includes('channel=1')) {
+              const target = streamIdx === '0' ? `${STREAM_BASE}/cctv_loewix_1/index.m3u8` : `${STREAM_BASE}/cctv_loewix_1_sub/index.m3u8`;
+              mountHLS(target);
+              return;
+            } else if (rtspFull.includes('channel=2')) {
+              const target = streamIdx === '0' ? `${STREAM_BASE}/cctv_loewix_2/index.m3u8` : `${STREAM_BASE}/cctv_loewix_2_sub/index.m3u8`;
+              mountHLS(target);
+              return;
+            } else if (rtspFull.includes('channel=3')) {
+              const target = streamIdx === '0' ? `${STREAM_BASE}/cctv_loewix_3/index.m3u8` : `${STREAM_BASE}/cctv_loewix_3_sub/index.m3u8`;
+              mountHLS(target);
+              return;
+            }
+          }
+
+          // 2. Direct named stream paths for MediaMTX (e.g. cctv_loewix_1, cctv_loewix_2, cctv_loewix_3)
+          if (streamPath === 'cctv_loewix_1' || streamPath === 'cctv_loewix_2' || streamPath === 'cctv_loewix_3') {
+            const target = streamIdx === '0' ? `${STREAM_BASE}/${streamPath}/index.m3u8` : `${STREAM_BASE}/${streamPath}_sub/index.m3u8`;
+            mountHLS(target);
+            return;
+          }
+
+          // 3. Direct valid HLS URL mount
           if (directHls && (directHls.startsWith('http://') || directHls.startsWith('https://')) && !directHls.includes('stream.loewixcctv.com/xmeye_')) {
-            // Direct ultra-fast mount (0 delay, like Yamaha DDS & pre-resolved JFTech HLS)
             mountHLS(directHls);
           } else if (connType === 'xmeye_p2p' || streamPath.startsWith('xmeye_')) {
             const cleanSn = sn || (streamPath.match(/^xmeye_([a-fA-F0-9]+)/) ? streamPath.match(/^xmeye_([a-fA-F0-9]+)/)[1] : '');
@@ -10546,15 +10575,8 @@
           } else if (streamPath.startsWith('http://') || streamPath.startsWith('https://')) {
             mountHLS(streamPath);
           } else if (streamPath.startsWith('rtsp://')) {
-            console.warn('[MediaMTX] Direct RTSP URL detected:', streamPath);
-            if (thumb) {
-              const loadingText = thumb.querySelector('.loading-text');
-              if (loadingText) {
-                loadingText.innerHTML = '<i class="fas fa-exclamation-triangle text-warning"></i> RTSP Direct URL perlu MediaMTX!';
-                loadingText.style.opacity = '1';
-              }
-            }
-            return;
+            const camId = thumbId.replace('thumb-', '');
+            mountHLS(`${STREAM_BASE}/cam_live_${camId}/index.m3u8`);
           } else {
             mountHLS(`${STREAM_BASE}/${streamPath}/index.m3u8`);
           }

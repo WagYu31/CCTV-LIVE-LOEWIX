@@ -68,6 +68,26 @@ if ($action === 'public_list' || $action === 'list') {
                 $cam['hls_url'] = str_replace('http://', 'https://', $cam['hls_url']);
             }
 
+            // Auto-resolve RTSP cameras to MediaMTX HLS streams (e.g. Yamaha DDS, TESS)
+            if (!empty($cam['rtsp_url']) && (empty($cam['hls_url']) || strpos($cam['hls_url'], 'rtsp://') === 0)) {
+                if (strpos($cam['rtsp_url'], '103.164.101.50:8203') !== false && strpos($cam['rtsp_url'], 'channel=1') !== false) {
+                    $cam['hls_url'] = 'https://stream.loewixcctv.com/cctv_loewix_1_sub/index.m3u8';
+                    $cam['streamPath'] = 'cctv_loewix_1_sub';
+                } else if (strpos($cam['rtsp_url'], '103.164.101.50:8203') !== false && strpos($cam['rtsp_url'], 'channel=2') !== false) {
+                    $cam['hls_url'] = 'https://stream.loewixcctv.com/cctv_loewix_2_sub/index.m3u8';
+                    $cam['streamPath'] = 'cctv_loewix_2_sub';
+                } else if (strpos($cam['rtsp_url'], '103.164.101.50:8203') !== false && strpos($cam['rtsp_url'], 'channel=3') !== false) {
+                    $cam['hls_url'] = 'https://stream.loewixcctv.com/cctv_loewix_3_sub/index.m3u8';
+                    $cam['streamPath'] = 'cctv_loewix_3_sub';
+                } else {
+                    $path = !empty($cam['streamPath']) && !strpos($cam['streamPath'], '://') ? $cam['streamPath'] : ('cam_live_' . $cam['id']);
+                    $cam['hls_url'] = 'https://stream.loewixcctv.com/' . $path . '/index.m3u8';
+                    $cam['streamPath'] = $path;
+                }
+            } else if (!empty($cam['streamPath']) && strpos($cam['streamPath'], 'cctv_loewix_') === 0 && empty($cam['hls_url'])) {
+                $cam['hls_url'] = 'https://stream.loewixcctv.com/' . $cam['streamPath'] . '/index.m3u8';
+            }
+
             // Automatically attach real-time cached snapshot and stream URL for XMeye cameras
             if (($cam['connection_type'] ?? '') === 'xmeye_p2p' && !empty($cam['serial_number'])) {
                 $sn = strtolower(preg_replace('/[^a-zA-Z0-9]/', '', $cam['serial_number']));
