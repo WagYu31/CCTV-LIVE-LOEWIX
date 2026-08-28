@@ -1309,10 +1309,6 @@
     }
 
     /* =========================================================
-       LOEWIX ENTERPRISE VMS COMMAND CENTER TOOLBAR
-       ========================================================= */
-    .cctv-vms-command-center {
-    /* =========================================================
        LOEWIX ENTERPRISE VMS MASTER STICKY HEADER BAR
        ========================================================= */
     .cctv-vms-command-center {
@@ -1337,6 +1333,60 @@
       flex-direction: column;
       gap: 9px;
       transition: all 0.3s ease;
+    }
+
+    /* =========================================================
+       LOEWIX ENTERPRISE FIXED BOTTOM STATUS & COPYRIGHT BAR
+       ========================================================= */
+    .loewix-minimal-footer {
+      position: fixed !important;
+      bottom: 0 !important;
+      left: 0 !important;
+      right: 0 !important;
+      z-index: 1030 !important;
+      width: 100% !important;
+      height: 28px !important;
+      background: rgba(8, 15, 32, 0.96) !important;
+      border-top: 1px solid rgba(56, 189, 248, 0.22) !important;
+      backdrop-filter: blur(16px) !important;
+      -webkit-backdrop-filter: blur(16px) !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      padding: 0 16px !important;
+      margin: 0 !important;
+      box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.5) !important;
+      user-select: none !important;
+    }
+
+    .loewix-minimal-footer .container {
+      max-width: 100% !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+    }
+
+    .loewix-minimal-footer p {
+      color: rgba(255, 255, 255, 0.55) !important;
+      font-size: 11px !important;
+      font-weight: 500 !important;
+      letter-spacing: 0.3px !important;
+      margin: 0 !important;
+      line-height: 1 !important;
+      white-space: nowrap !important;
+      overflow: hidden !important;
+      text-overflow: ellipsis !important;
+    }
+
+    .loewix-minimal-footer p strong {
+      color: #38bdf8 !important;
+      font-weight: 700 !important;
+    }
+
+    #cctv {
+      padding-bottom: 45px !important;
     }
 
     .vms-brand-logo {
@@ -5896,11 +5946,11 @@
   </section>
   <!--form-section-->
 
-  <!-- Minimalist Copyright Footer Bar -->
-  <footer class="loewix-minimal-footer" style="padding: 20px 0 25px 0; text-align: center; border-top: 1px solid rgba(255, 255, 255, 0.08); margin-top: 30px;">
+  <!-- Minimalist Fixed Bottom Copyright & Status Bar -->
+  <footer class="loewix-minimal-footer">
     <div class="container">
-      <p style="color: rgba(255, 255, 255, 0.55); font-size: 12.5px; margin: 0; font-weight: 500; letter-spacing: 0.3px;">
-        © 2026 <strong style="color: #38bdf8; font-weight: 700;">PT. LOEWIX INDONESIA</strong> — LOEWIX CCTV Security Systems. All Rights Reserved.
+      <p>
+        © 2026 <strong>PT. LOEWIX INDONESIA</strong> — LOEWIX CCTV Security Systems. All Rights Reserved.
       </p>
     </div>
   </footer>
