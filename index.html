@@ -1349,13 +1349,12 @@
       transform: scale(1.03);
     }
 
-    /* TOP ROW: Brand, Search, Filters & User Actions */
+    /* TOP ROW: Brand, Search & User Actions */
     .vms-bar-top {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 10px;
-      flex-wrap: wrap;
+      gap: 12px;
       padding-bottom: 10px;
       border-bottom: 1px solid rgba(255, 255, 255, 0.08);
     }
@@ -1371,8 +1370,8 @@
     /* SEARCH INPUT BOX */
     .vms-search-box {
       position: relative;
-      min-width: 200px;
-      max-width: 250px;
+      min-width: 180px;
+      max-width: 320px;
       flex: 1 1 200px;
       display: flex;
       align-items: center;
@@ -1380,24 +1379,24 @@
 
     .vms-search-icon {
       position: absolute;
-      left: 12px;
+      left: 11px;
       top: 50%;
       transform: translateY(-50%);
       color: #38bdf8;
-      font-size: 13px;
+      font-size: 12px;
       pointer-events: none;
       z-index: 3;
     }
 
     .vms-search-input {
       width: 100%;
-      height: 38px;
+      height: 34px;
       background: rgba(255, 255, 255, 0.06) !important;
       border: 1px solid rgba(56, 189, 248, 0.28) !important;
-      border-radius: 10px !important;
-      padding: 0 34px 0 34px !important;
+      border-radius: 8px !important;
+      padding: 0 30px 0 30px !important;
       color: #ffffff !important;
-      font-size: 12.5px !important;
+      font-size: 12px !important;
       font-weight: 500 !important;
       outline: none !important;
       box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2) !important;
@@ -1407,7 +1406,7 @@
     .vms-search-input:focus {
       background: rgba(255, 255, 255, 0.1) !important;
       border-color: #38bdf8 !important;
-      box-shadow: 0 0 14px rgba(56, 189, 248, 0.35), inset 0 2px 4px rgba(0, 0, 0, 0.2) !important;
+      box-shadow: 0 0 12px rgba(56, 189, 248, 0.35), inset 0 2px 4px rgba(0, 0, 0, 0.2) !important;
     }
 
     .vms-search-input::placeholder {
@@ -1416,24 +1415,24 @@
 
     .vms-search-spinner {
       position: absolute;
-      right: 32px;
+      right: 28px;
       top: 50%;
       transform: translateY(-50%);
       color: #38bdf8;
       display: none;
-      font-size: 12px;
+      font-size: 11px;
       z-index: 3;
     }
 
     .vms-search-clear-btn {
       position: absolute;
-      right: 10px;
+      right: 8px;
       top: 50%;
       transform: translateY(-50%);
       background: none;
       border: none;
       color: #94a3b8;
-      font-size: 13px;
+      font-size: 12px;
       cursor: pointer;
       display: none;
       padding: 2px 4px;
@@ -1495,10 +1494,10 @@
       align-items: center;
       background: rgba(255, 255, 255, 0.05);
       border: 1px solid rgba(255, 255, 255, 0.12);
-      border-radius: 10px;
-      padding: 0 10px;
-      height: 38px;
-      gap: 6px;
+      border-radius: 8px;
+      padding: 0 8px;
+      height: 32px;
+      gap: 5px;
       transition: all 0.2s ease;
     }
 
@@ -1508,7 +1507,7 @@
     }
 
     .vms-select-item i {
-      font-size: 12px;
+      font-size: 11px;
       color: #38bdf8;
       flex-shrink: 0;
     }
@@ -1517,9 +1516,9 @@
       background: transparent !important;
       border: none !important;
       color: #ffffff !important;
-      font-size: 12.5px !important;
+      font-size: 11.5px !important;
       font-weight: 600 !important;
-      padding: 0 4px 0 0 !important;
+      padding: 0 2px 0 0 !important;
       height: 100% !important;
       cursor: pointer !important;
       outline: none !important;
@@ -1528,23 +1527,23 @@
     .vms-custom-select option {
       background: #0f172a !important;
       color: #ffffff !important;
-      padding: 8px !important;
+      padding: 6px !important;
     }
 
     /* DEVICES ACTION BUTTON */
     .vms-devices-action-btn {
-      height: 38px;
+      height: 34px;
       background: rgba(56, 189, 248, 0.12);
       border: 1px solid rgba(56, 189, 248, 0.35);
-      border-radius: 10px;
-      padding: 0 14px;
+      border-radius: 8px;
+      padding: 0 12px;
       color: #38bdf8;
-      font-size: 12px;
+      font-size: 11.5px;
       font-weight: 700;
-      letter-spacing: 0.4px;
+      letter-spacing: 0.3px;
       display: inline-flex;
       align-items: center;
-      gap: 7px;
+      gap: 6px;
       cursor: pointer;
       white-space: nowrap;
       transition: all 0.2s ease;
@@ -1563,7 +1562,7 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 14px;
+      gap: 12px;
       flex-wrap: wrap;
     }
 
@@ -5684,21 +5683,20 @@
         <!-- Overlay untuk Pop-up -->
         <div id="popupOverlay" onclick="closeTrafficPopup()"></div>
 
-        <!-- Unified VMS Command Center & Header Bar (Brand + Search + Filters + User Session + Matrix) -->
+        <!-- Unified VMS Command Center & Header Bar (Clean 2-Row Master Deck) -->
         <div class="cctv-vms-command-center" id="cctv-filter-toolbar">
           
-          <!-- Top Row: Logo, Search, Filters & User Actions -->
+          <!-- Top Row: Brand Logo, Search Bar & User Session Controls -->
           <div class="vms-bar-top">
             
-            <!-- Left: Brand Logo + Search + Filter Controls -->
-            <div class="vms-filters-cluster">
-              
+            <!-- Left: Brand Logo + Search Input -->
+            <div class="d-flex align-items-center" style="gap: 12px; flex: 1 1 auto; max-width: 450px;">
               <!-- Brand Logo -->
-              <a href="index.html" class="vms-brand-logo mr-1" title="LOEWIX Enterprise CCTV">
+              <a href="index.html" class="vms-brand-logo" title="LOEWIX Enterprise CCTV">
                 <img src="assets/image/logo-loewix-white.png" alt="LOEWIX CCTV">
               </a>
 
-              <div class="d-none d-md-block" style="width: 1px; height: 26px; background: rgba(255,255,255,0.15); margin: 0 3px;"></div>
+              <div class="d-none d-sm-block" style="width: 1px; height: 24px; background: rgba(255,255,255,0.15); margin: 0 2px;"></div>
               
               <!-- Search Box -->
               <div class="vms-search-box cctv-search-input-wrapper">
@@ -5721,8 +5719,33 @@
                 </button>
                 <div class="cctv-search-results vms-search-dropdown" id="cctv-search-results"></div>
               </div>
+            </div>
 
-              <!-- Filter Selects -->
+            <!-- Right: Devices Action, Dark Mode Toggle & User Auth Area -->
+            <div class="d-flex align-items-center ml-auto" style="gap: 8px; flex-shrink: 0;">
+              <button class="vms-devices-action-btn vms-tool-btn" onclick="toggleVMSDeviceSidebar()" title="Buka Daftar Kamera (Devices)">
+                <i class="fas fa-video"></i> <span>Devices (Camera Tree)</span>
+              </button>
+
+              <button id="dark-mode-toggle" class="btn btn-sm text-white" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.2); border-radius: 50%; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; padding: 0;" title="Toggle Dark Mode">
+                <i class="fas fa-moon" id="dark-mode-icon" style="font-size: 13px;"></i>
+              </button>
+
+              <div id="nav-user-area" class="d-flex align-items-center" style="gap: 6px;">
+                <button class="btn btn-sm" onclick="showLoginGateView()" style="background: linear-gradient(135deg, #00d2ff, #0066ff); border: none; font-weight: 700; border-radius: 20px; padding: 5px 16px; color: #fff; box-shadow: 0 4px 12px rgba(0, 102, 255, 0.4); text-transform: uppercase; font-size: 11.5px; letter-spacing: 0.5px;">
+                  <i class="fas fa-sign-in-alt mr-1"></i> LOGIN
+                </button>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Bottom Row: Filter Dropdowns + View Matrix Layouts + Telemetry Cluster -->
+          <div class="vms-bar-bottom">
+            
+            <!-- Left: Filter Dropdowns + Matrix Layout Buttons -->
+            <div class="d-flex align-items-center flex-wrap" style="gap: 8px;">
+              <!-- Filter Selects Group -->
               <div class="vms-select-group">
                 <div class="vms-select-item" title="Filter Wilayah">
                   <i class="fas fa-map-marker-alt"></i>
@@ -5764,51 +5787,32 @@
                 </div>
               </div>
 
-            </div>
+              <div class="d-none d-xl-block" style="width: 1px; height: 20px; background: rgba(255,255,255,0.12); margin: 0 2px;"></div>
 
-            <!-- Right: Devices Tree Trigger, Dark Mode Toggle & User Auth Area -->
-            <div class="d-flex align-items-center ml-auto" style="gap: 8px; flex-shrink: 0;">
-              <button class="vms-devices-action-btn vms-tool-btn" onclick="toggleVMSDeviceSidebar()" title="Buka Daftar Kamera (Devices)">
-                <i class="fas fa-video"></i> <span>Devices (Camera Tree)</span>
-              </button>
-
-              <button id="dark-mode-toggle" class="btn btn-sm text-white" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.2); border-radius: 50%; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; padding: 0;" title="Toggle Dark Mode">
-                <i class="fas fa-moon" id="dark-mode-icon" style="font-size: 13px;"></i>
-              </button>
-
-              <div id="nav-user-area" class="d-flex align-items-center" style="gap: 6px;">
-                <button class="btn btn-sm" onclick="showLoginGateView()" style="background: linear-gradient(135deg, #00d2ff, #0066ff); border: none; font-weight: 700; border-radius: 20px; padding: 5px 16px; color: #fff; box-shadow: 0 4px 12px rgba(0, 102, 255, 0.4); text-transform: uppercase; font-size: 11.5px; letter-spacing: 0.5px;">
-                  <i class="fas fa-sign-in-alt mr-1"></i> LOGIN
-                </button>
-              </div>
-            </div>
-
-          </div>
-
-          <!-- Bottom Row: Matrix Multi-View Layouts + Telemetry Cluster -->
-          <div class="vms-bar-bottom">
-            <div class="vms-layout-cluster">
-              <span class="vms-layout-label">
-                <i class="fas fa-th"></i> VIEW MATRIX:
-              </span>
-              <div class="vms-layout-matrix-buttons">
-                <button class="vms-layout-btn vms-matrix-btn" onclick="changeGridLayout(1)" data-layout="1" title="1 Kamera per baris"><i class="far fa-square"></i><span>1</span></button>
-                <button class="vms-layout-btn vms-matrix-btn" onclick="changeGridLayout(2)" data-layout="2" title="2 Kamera per baris"><i class="fas fa-columns"></i><span>2</span></button>
-                <button class="vms-layout-btn vms-matrix-btn" onclick="changeGridLayout(4)" data-layout="4" title="4 Kamera per baris"><i class="fas fa-th-large"></i><span>4</span></button>
-                <button class="vms-layout-btn vms-matrix-btn" onclick="changeGridLayout(6)" data-layout="6" title="6 Kamera per baris"><i class="fas fa-th"></i><span>6</span></button>
-                <button class="vms-layout-btn vms-matrix-btn" onclick="changeGridLayout(8)" data-layout="8" title="8 Kamera per baris"><i class="fas fa-border-all"></i><span>8</span></button>
-                <button class="vms-layout-btn vms-matrix-btn" onclick="changeGridLayout(9)" data-layout="9" title="9 Kamera per baris"><i class="fas fa-grip-horizontal"></i><span>9</span></button>
-                <button class="vms-layout-btn vms-matrix-btn" onclick="changeGridLayout(16)" data-layout="16" title="16 Kamera per baris"><span>16</span></button>
-                <button class="vms-layout-btn vms-matrix-btn" onclick="changeGridLayout(25)" data-layout="25" title="25 Kamera per baris"><span>25</span></button>
-                <button class="vms-layout-btn vms-matrix-btn" onclick="changeGridLayout(36)" data-layout="36" title="36 Kamera per baris"><span>36</span></button>
-                <button class="vms-layout-btn vms-matrix-btn" onclick="changeGridLayout(64)" data-layout="64" title="64 Kamera per baris"><span>64</span></button>
-                <button class="vms-layout-btn vms-matrix-btn" onclick="changeGridLayout(128)" data-layout="128" title="128 Kamera per baris"><span>128</span></button>
-                <button class="vms-layout-btn vms-matrix-btn vms-fs-btn" onclick="toggleVMSFullscreen()" title="Fullscreen Matrix"><i class="fas fa-expand"></i></button>
+              <!-- Matrix Layout Buttons -->
+              <div class="vms-layout-cluster">
+                <span class="vms-layout-label">
+                  <i class="fas fa-th"></i> VIEW MATRIX:
+                </span>
+                <div class="vms-layout-matrix-buttons">
+                  <button class="vms-layout-btn vms-matrix-btn" onclick="changeGridLayout(1)" data-layout="1" title="1 Kamera per baris"><i class="far fa-square"></i><span>1</span></button>
+                  <button class="vms-layout-btn vms-matrix-btn" onclick="changeGridLayout(2)" data-layout="2" title="2 Kamera per baris"><i class="fas fa-columns"></i><span>2</span></button>
+                  <button class="vms-layout-btn vms-matrix-btn" onclick="changeGridLayout(4)" data-layout="4" title="4 Kamera per baris"><i class="fas fa-th-large"></i><span>4</span></button>
+                  <button class="vms-layout-btn vms-matrix-btn" onclick="changeGridLayout(6)" data-layout="6" title="6 Kamera per baris"><i class="fas fa-th"></i><span>6</span></button>
+                  <button class="vms-layout-btn vms-matrix-btn" onclick="changeGridLayout(8)" data-layout="8" title="8 Kamera per baris"><i class="fas fa-border-all"></i><span>8</span></button>
+                  <button class="vms-layout-btn vms-matrix-btn" onclick="changeGridLayout(9)" data-layout="9" title="9 Kamera per baris"><i class="fas fa-grip-horizontal"></i><span>9</span></button>
+                  <button class="vms-layout-btn vms-matrix-btn" onclick="changeGridLayout(16)" data-layout="16" title="16 Kamera per baris"><span>16</span></button>
+                  <button class="vms-layout-btn vms-matrix-btn" onclick="changeGridLayout(25)" data-layout="25" title="25 Kamera per baris"><span>25</span></button>
+                  <button class="vms-layout-btn vms-matrix-btn" onclick="changeGridLayout(36)" data-layout="36" title="36 Kamera per baris"><span>36</span></button>
+                  <button class="vms-layout-btn vms-matrix-btn" onclick="changeGridLayout(64)" data-layout="64" title="64 Kamera per baris"><span>64</span></button>
+                  <button class="vms-layout-btn vms-matrix-btn" onclick="changeGridLayout(128)" data-layout="128" title="128 Kamera per baris"><span>128</span></button>
+                  <button class="vms-layout-btn vms-matrix-btn vms-fs-btn" onclick="toggleVMSFullscreen()" title="Fullscreen Matrix"><i class="fas fa-expand"></i></button>
+                </div>
               </div>
             </div>
 
             <!-- Right: VMS Telemetry & Stream Quality Toggle & Clock -->
-            <div class="vms-telemetry-cluster">
+            <div class="vms-telemetry-cluster ml-auto">
               <div class="vms-telemetry-badge status-online" title="Surveillance Core Status">
                 <span class="pulse-dot"></span>
                 <span>VMS ONLINE</span>
