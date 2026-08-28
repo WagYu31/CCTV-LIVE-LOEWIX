@@ -12,6 +12,12 @@ $user = get_logged_in_user();
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Customer Control Hub - PT. LOEWIX INDONESIA</title>
+  <!-- Favicons & App Icons (Loewix Official) -->
+  <link rel="icon" type="image/png" href="../assets/image/logo-loewix.png?v=2">
+  <link rel="icon" type="image/png" sizes="32x32" href="../assets/image/favicon-32x32.png?v=2">
+  <link rel="icon" type="image/png" sizes="16x16" href="../assets/image/favicon-16x16.png?v=2">
+  <link rel="shortcut icon" href="../favicon.ico?v=2">
+  <link rel="apple-touch-icon" sizes="180x180" href="../assets/image/apple-touch-icon.png?v=2">
   <link rel="stylesheet" href="../assets/bootstarp/bootstrap.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -1345,6 +1351,26 @@ $user = get_logged_in_user();
         btn.innerHTML = `<i class="fas fa-spinner fa-spin text-info"></i> Loading...`;
       }
 
+      function showInlineError(title, subtitle) {
+        if (loading) {
+          loading.style.display = 'flex';
+          loading.innerHTML = `
+            <div class="text-danger mb-1" style="font-size: 20px;"><i class="fas fa-video-slash"></i></div>
+            <span style="font-size: 11px; font-weight: 700; color: #fca5a5;">${title}</span>
+            <small class="text-muted d-block mt-1 mb-2" style="font-size: 10px; max-width: 90%;">${subtitle}</small>
+            <div class="d-flex gap-1">
+              <button class="btn btn-xs btn-outline-info" style="font-size: 10px; padding: 2px 8px; border-radius: 4px;" onclick="event.stopPropagation(); playCameraInline(${camId})"><i class="fas fa-redo-alt"></i> Coba Lagi</button>
+              <button class="btn btn-xs btn-outline-secondary" style="font-size: 10px; padding: 2px 8px; border-radius: 4px;" onclick="event.stopPropagation(); openEditCameraModal(${camId})"><i class="fas fa-cog"></i> Edit</button>
+            </div>
+          `;
+        }
+        if (btn) {
+          btn.innerHTML = `<i class="fas fa-play text-info"></i> Live Test`;
+          btn.classList.remove('btn-playing-active');
+        }
+        stopCameraInline(camId, true);
+      }
+
       let streamUrl = cam.hls_url || cam.streamPath || '';
 
       // If XMeye P2P camera without active bcloud URL, resolve via jftech_gateway.php
@@ -1356,23 +1382,29 @@ $user = get_logged_in_user();
 
         if (sn) {
           if (loading) {
-            loading.innerHTML = `<div class="spinner-border text-info spinner-border-sm mb-1" role="status"></div><span style="font-size: 11px; font-weight: 600;">Cloud P2P (CH ${ch})...</span>`;
+            loading.innerHTML = `<div class="spinner-border text-info spinner-border-sm mb-1" role="status"></div><span style="font-size: 11px; font-weight: 600;">Cloud P2P (CH ${ch})...</span><small class="text-muted d-block mt-1" style="font-size:10px;">SN: ${sn}</small>`;
           }
           try {
-            const res = await fetch(`../api/jftech_gateway.php?action=get_live_stream&sn=${encodeURIComponent(sn)}&channel=${encodeURIComponent(ch)}&stream=1&device_user=${encodeURIComponent(devUser)}&device_pass=${encodeURIComponent(devPass)}`);
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 8000);
+            
+            const res = await fetch(`../api/jftech_gateway.php?action=get_live_stream&sn=${encodeURIComponent(sn)}&channel=${encodeURIComponent(ch)}&stream=1&device_user=${encodeURIComponent(devUser)}&device_pass=${encodeURIComponent(devPass)}`, {
+              signal: controller.signal
+            });
+            clearTimeout(timeoutId);
             const data = await res.json();
+
             if (data.success && data.hls_url) {
               streamUrl = data.hls_url;
               cam.hls_url = data.hls_url;
             } else {
-              if (loading) {
-                loading.innerHTML = `<div class="text-danger mb-1"><i class="fas fa-video-slash"></i></div><span style="font-size: 11px; font-weight: 600; color: #f87171;">Offline</span><button class="btn btn-xs btn-outline-light mt-1" style="font-size: 10px; padding: 2px 6px;" onclick="event.stopPropagation(); playCameraInline(${camId})">Coba Lagi</button>`;
-              }
-              if (btn) btn.innerHTML = `<i class="fas fa-play text-info"></i> Live Test`;
+              showInlineError('Kamera Sedang Offline', data.message || 'DVR/Kamera tidak terhubung ke Cloud P2P.');
               return;
             }
           } catch (e) {
             console.error('Failed to resolve XMeye stream:', e);
+            showInlineError('Koneksi Cloud Timeout', 'Kamera tidak merespon dalam 8 detik. Pastikan DVR/Kamera menyala.');
+            return;
           }
         }
       }
@@ -1385,10 +1417,7 @@ $user = get_logged_in_user();
       }
 
       if (!streamUrl) {
-        if (loading) {
-          loading.innerHTML = `<div class="text-warning mb-1"><i class="fas fa-exclamation-triangle"></i></div><span style="font-size: 11px; font-weight: 600; color: #fbbf24;">URL Belum Dikonfigurasi</span>`;
-        }
-        if (btn) btn.innerHTML = `<i class="fas fa-play text-info"></i> Live Test`;
+        showInlineError('URL Belum Dikonfigurasi', 'Silakan klik Edit untuk mengisi URL RTSP / Serial Number.');
         return;
       }
 
@@ -1409,6 +1438,7 @@ $user = get_logged_in_user();
       video.setAttribute('muted', '');
 
       let hls = null;
+      let netRetryCount = 0;
 
       if (streamUrl.includes('.m3u8') || streamUrl.includes('bcloud365.net')) {
         if (Hls.isSupported()) {
@@ -1417,6 +1447,8 @@ $user = get_logged_in_user();
             lowLatencyMode: true,
             liveSyncDurationCount: 1,
             maxBufferLength: 2,
+            manifestLoadingTimeOut: 6000,
+            manifestLoadingMaxRetry: 2,
             xhrSetup: function(xhr, url) {
               try {
                 xhr.setRequestHeader('Bypass-Tunnel-Reminder', 'true');
@@ -1444,19 +1476,20 @@ $user = get_logged_in_user();
           hls.on(Hls.Events.ERROR, (event, data) => {
             if (data.fatal) {
               if (data.type === Hls.ErrorTypes.NETWORK_ERROR) {
-                hls.startLoad();
+                netRetryCount++;
+                if (netRetryCount <= 2) {
+                  setTimeout(() => {
+                    if (activeInlinePlayers.has(camId)) {
+                      hls.startLoad();
+                    }
+                  }, 1200);
+                } else {
+                  showInlineError('Siaran Belum Aktif', 'Stream 404 di server streaming.');
+                }
               } else if (data.type === Hls.ErrorTypes.MEDIA_ERROR) {
                 hls.recoverMediaError();
               } else {
-                if (loading) {
-                  loading.style.display = 'flex';
-                  loading.innerHTML = `<div class="text-danger mb-1"><i class="fas fa-exclamation-circle"></i></div><span style="font-size: 11px; font-weight: 600; color: #f87171;">Stream Belum Aktif</span><button class="btn btn-xs btn-outline-light mt-1" style="font-size: 10px; padding: 2px 6px;" onclick="event.stopPropagation(); playCameraInline(${camId})">Retry</button>`;
-                }
-                if (btn) {
-                  btn.innerHTML = `<i class="fas fa-play text-info"></i> Live Test`;
-                  btn.classList.remove('btn-playing-active');
-                }
-                stopCameraInline(camId);
+                showInlineError('Gagal Memuat Siaran', 'Stream offline / error.');
               }
             }
           });
@@ -1465,11 +1498,13 @@ $user = get_logged_in_user();
           video.src = streamUrl;
           video.muted = true;
           video.play().then(revealVideo).catch(revealVideo);
+          video.onerror = () => showInlineError('Kamera Offline', 'Tidak dapat memutar siaran.');
         }
       } else {
         video.src = streamUrl;
         video.muted = true;
         video.play().then(revealVideo).catch(revealVideo);
+        video.onerror = () => showInlineError('Kamera Offline', 'Tidak dapat memutar siaran.');
       }
 
       video.onplaying = revealVideo;
@@ -1478,7 +1513,7 @@ $user = get_logged_in_user();
       activeInlinePlayers.set(camId, { hls, video });
     }
 
-    function stopCameraInline(camId) {
+    function stopCameraInline(camId, keepErrorState = false) {
       const playerObj = activeInlinePlayers.get(camId);
       if (playerObj) {
         if (playerObj.hls) {
@@ -1497,9 +1532,11 @@ $user = get_logged_in_user();
       const loading = document.getElementById(`cam-loading-${camId}`);
       const btn = document.getElementById(`btn-live-${camId}`);
 
-      if (thumb) thumb.style.display = 'block';
-      if (hint) hint.style.display = 'flex';
-      if (loading) loading.style.display = 'none';
+      if (!keepErrorState) {
+        if (thumb) thumb.style.display = 'block';
+        if (hint) hint.style.display = 'flex';
+        if (loading) loading.style.display = 'none';
+      }
       if (btn) {
         btn.innerHTML = `<i class="fas fa-play text-info"></i> Live Test`;
         btn.classList.remove('btn-playing-active');
