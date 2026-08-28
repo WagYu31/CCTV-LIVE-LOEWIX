@@ -10728,9 +10728,12 @@
 
     async function refreshAllVMSCCTV() {
       const btnAll = document.getElementById('vms-btn-refresh-all');
-      const allThumbs = Array.from(document.querySelectorAll('.thumbnail-overlay')).filter(t => t.offsetParent !== null);
+      const allCards = Array.from(document.querySelectorAll('.traffic-card[id^="card-"]'));
+      const allThumbs = Array.from(document.querySelectorAll('.thumbnail-overlay[id^="thumb-"]'));
 
-      if (allThumbs.length === 0) {
+      const targetList = allCards.length > 0 ? allCards : allThumbs;
+
+      if (targetList.length === 0) {
         if (typeof showCCTVToast === 'function') {
           showCCTVToast('Tidak ada kamera CCTV di layar untuk disegarkan.', 'warning');
         } else {
@@ -10749,26 +10752,59 @@
       }
 
       if (typeof showCCTVToast === 'function') {
-        showCCTVToast(`Menyegarkan & menghubungkan ulang ${allThumbs.length} channel kamera...`, 'info');
+        showCCTVToast(`Menyegarkan & menghubungkan ulang ${targetList.length} channel kamera...`, 'info');
       }
 
-      for (let i = 0; i < allThumbs.length; i++) {
-        const thumb = allThumbs[i];
-        const camId = thumb.id.replace('thumb-', '');
-        const playerId = `player-${camId}`;
-        const thumbId = thumb.id;
-        const offlineId = `offline-${camId}`;
+      for (let i = 0; i < targetList.length; i++) {
+        const item = targetList[i];
+        const camId = item.id.replace('card-', '').replace('thumb-', '');
+        const thumb = document.getElementById(`thumb-${camId}`);
+        const player = document.getElementById(`player-${camId}`);
+        const offlineMsg = document.getElementById(`offline-${camId}`);
+        const buffering = document.getElementById(`buffering-${camId}`);
+        const loadingIndicator = document.getElementById(`loading-${camId}`);
 
-        // Reset offline message if visible
-        const offlineMsg = document.getElementById(offlineId);
+        // Hide error & buffering messages
         if (offlineMsg) offlineMsg.style.display = 'none';
+        if (buffering) buffering.style.display = 'none';
+        if (loadingIndicator) loadingIndicator.style.display = 'block';
 
-        // Reconnect stream
-        if (typeof playMediaMTXCCTV === 'function') {
-          playMediaMTXCCTV(thumb, playerId, thumbId);
-          if (i < allThumbs.length - 1) {
-            await new Promise(r => setTimeout(r, 75));
+        // Destroy previous HLS instance
+        if (player && player.hlsInstance) {
+          try {
+            player.hlsInstance.destroy();
+          } catch(e) {}
+          player.hlsInstance = null;
+        }
+
+        if (player) {
+          player.style.display = 'none';
+          player.src = '';
+        }
+
+        if (thumb) {
+          thumb.style.display = 'flex';
+          thumb.style.opacity = '1';
+          const connType = thumb.getAttribute('data-connection-type') || '';
+          const sp = thumb.getAttribute('data-stream-path') || '';
+          if (connType === 'xmeye_p2p' || sp.startsWith('xmeye_')) {
+            thumb.removeAttribute('data-hls-url');
           }
+        }
+
+        // Trigger fresh stream play
+        if (thumb && typeof playMediaMTXCCTV === 'function') {
+          playMediaMTXCCTV(thumb, `player-${camId}`, `thumb-${camId}`);
+        }
+
+        if (loadingIndicator) {
+          setTimeout(() => {
+            if (loadingIndicator) loadingIndicator.style.display = 'none';
+          }, 800);
+        }
+
+        if (i < targetList.length - 1) {
+          await new Promise(r => setTimeout(r, 60));
         }
       }
 
@@ -10782,7 +10818,7 @@
         if (typeof showCCTVToast === 'function') {
           showCCTVToast('Semua channel kamera berhasil disegarkan!', 'success');
         }
-      }, 1000);
+      }, 1200);
     }
 
     // ===== VMS NETWORK SPEED & LATENCY (PING) TELEMETRY ENGINE =====
