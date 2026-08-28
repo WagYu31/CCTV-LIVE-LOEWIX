@@ -1154,6 +1154,83 @@
       border-radius: 9px;
     }
 
+    /* VMS Snapshot Flash & Recording Indicator Styles */
+    .snapshot-flash-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: #ffffff;
+      opacity: 0.85;
+      z-index: 50;
+      pointer-events: none;
+      border-radius: 12px;
+      animation: snapshotFlash 0.35s ease-out forwards;
+    }
+    @keyframes snapshotFlash {
+      0% { opacity: 0.85; }
+      100% { opacity: 0; }
+    }
+    @keyframes pulseRec {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.35; transform: scale(0.9); }
+    }
+    .card-action-toolbar .action-btn.is-recording {
+      background: rgba(239, 68, 68, 0.25) !important;
+      border-color: #ef4444 !important;
+      color: #ef4444 !important;
+      box-shadow: 0 0 10px rgba(239, 68, 68, 0.6) !important;
+    }
+    .recording-badge {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      z-index: 25;
+      background: rgba(220, 38, 38, 0.92);
+      color: #ffffff;
+      padding: 3px 9px;
+      border-radius: 20px;
+      font-weight: 800;
+      font-size: 11px;
+      letter-spacing: 0.5px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 0 14px rgba(239, 68, 68, 0.8);
+      backdrop-filter: blur(4px);
+    }
+    .cctv-toast-container {
+      position: fixed;
+      bottom: 25px;
+      right: 25px;
+      z-index: 99999;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      pointer-events: none;
+    }
+    .cctv-toast-item {
+      background: rgba(15, 23, 42, 0.92);
+      color: #ffffff;
+      border: 1px solid rgba(56, 189, 248, 0.35);
+      border-radius: 12px;
+      padding: 12px 18px;
+      font-size: 13px;
+      font-weight: 600;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+      backdrop-filter: blur(12px);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      animation: slideToastIn 0.3s ease-out;
+      pointer-events: auto;
+    }
+    @keyframes slideToastIn {
+      from { transform: translateY(20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
     .vms-quality-pill {
       background: rgba(56, 189, 248, 0.15);
       color: #38bdf8;
@@ -10692,6 +10769,250 @@
       toggleCameraFullscreen(id);
     }
 
+    // ===== TOAST NOTIFICATION UTILITY =====
+    function showToastNotification(message, type = 'info') {
+      let container = document.getElementById('cctv-toast-container');
+      if (!container) {
+        container = document.createElement('div');
+        container.id = 'cctv-toast-container';
+        container.className = 'cctv-toast-container';
+        document.body.appendChild(container);
+      }
+
+      const toast = document.createElement('div');
+      toast.className = 'cctv-toast-item';
+      let iconHtml = '<i class="fas fa-info-circle text-info"></i>';
+      if (type === 'success' || message.includes('📸') || message.includes('🎬')) {
+        iconHtml = '<i class="fas fa-check-circle text-success"></i>';
+      } else if (type === 'warning' || message.includes('⚠️')) {
+        iconHtml = '<i class="fas fa-exclamation-triangle text-warning"></i>';
+      } else if (type === 'error' || message.includes('🔴')) {
+        iconHtml = '<i class="fas fa-circle text-danger"></i>';
+      }
+
+      toast.innerHTML = `${iconHtml} <span>${message}</span>`;
+      container.appendChild(toast);
+
+      setTimeout(() => {
+        toast.style.transition = 'all 0.3s ease';
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(15px)';
+        setTimeout(() => toast.remove(), 300);
+      }, 3500);
+    }
+
+    // ===== AUDIO CONTROL (SUARA) =====
+    function toggleCameraAudio(cameraId) {
+      const player = document.getElementById(`player-${cameraId}`);
+      const icon = document.getElementById(`audio-icon-${cameraId}`);
+      const btn = document.getElementById(`audio-btn-${cameraId}`);
+      if (!player) return;
+
+      if (player.muted) {
+        player.muted = false;
+        player.volume = 1.0;
+        if (icon) {
+          icon.className = 'fas fa-volume-up';
+          icon.style.color = '#38bdf8';
+        }
+        if (btn) btn.title = 'Matikan Suara (Mute)';
+        showToastNotification(`🔊 Suara aktif: ${player.title || 'CCTV'}`);
+      } else {
+        player.muted = true;
+        if (icon) {
+          icon.className = 'fas fa-volume-mute';
+          icon.style.color = '';
+        }
+        if (btn) btn.title = 'Aktifkan Suara (Unmute)';
+        showToastNotification(`🔇 Suara dimatikan: ${player.title || 'CCTV'}`);
+      }
+    }
+
+    // ===== SNAPSHOT CONTROL (FOTO / SCREENSHOT) =====
+    function captureCameraSnapshot(cameraId, cameraTitle) {
+      const player = document.getElementById(`player-${cameraId}`);
+      const card = document.getElementById(`card-${cameraId}`);
+      if (!player || player.style.display === 'none' || player.readyState < 2) {
+        showToastNotification('⚠️ Tunggu siaran video aktif sebelum mengambil foto.', 'warning');
+        return;
+      }
+
+      try {
+        // Flash animation
+        if (card) {
+          const flash = document.createElement('div');
+          flash.className = 'snapshot-flash-overlay';
+          card.appendChild(flash);
+          setTimeout(() => flash.remove(), 350);
+        }
+
+        const width = player.videoWidth || player.clientWidth || 1280;
+        const height = player.videoHeight || player.clientHeight || 720;
+
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+
+        // Draw current video frame
+        ctx.drawImage(player, 0, 0, width, height);
+
+        // Watermark Loewix CCTV & Timestamp Bar
+        const now = new Date();
+        const dateStr = now.toLocaleDateString('id-ID', { year: 'numeric', month: '2-digit', day: '2-digit' }) + ' ' + now.toLocaleTimeString('id-ID', { hour12: false });
+        
+        ctx.fillStyle = 'rgba(10, 15, 30, 0.75)';
+        ctx.fillRect(0, height - 46, width, 46);
+
+        ctx.font = 'bold 18px sans-serif';
+        ctx.fillStyle = '#38bdf8';
+        ctx.fillText('LOEWIX CCTV SURVEILLANCE', 20, height - 17);
+
+        ctx.font = '15px sans-serif';
+        ctx.fillStyle = '#ffffff';
+        ctx.fillText(`${cameraTitle || 'CCTV Live'} | ${dateStr}`, Math.max(320, width - 420), height - 17);
+
+        // Download image file
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.95);
+        const link = document.createElement('a');
+        const safeTitle = (cameraTitle || 'cctv').replace(/[^a-zA-Z0-9_-]/g, '_');
+        const timestampStr = now.toISOString().replace(/[:.]/g, '-').slice(0, 19);
+        link.download = `CCTV-FOTO-${safeTitle}-${timestampStr}.jpg`;
+        link.href = dataUrl;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        showToastNotification(`📸 Foto berhasil diunduh: ${cameraTitle || 'CCTV'}`);
+      } catch (err) {
+        console.error('[Snapshot] Error taking photo:', err);
+        showToastNotification('⚠️ Gagal mengambil foto (Proteksi Cross-Origin Stream).', 'error');
+      }
+    }
+
+    // ===== RECORD CONTROL (REKAM VIDEO) =====
+    const activeCameraRecorders = new Map();
+
+    function toggleCameraRecording(cameraId, cameraTitle) {
+      if (activeCameraRecorders.has(cameraId)) {
+        stopCameraRecording(cameraId);
+      } else {
+        startCameraRecording(cameraId, cameraTitle);
+      }
+    }
+
+    function startCameraRecording(cameraId, cameraTitle) {
+      const player = document.getElementById(`player-${cameraId}`);
+      const recBtn = document.getElementById(`record-btn-${cameraId}`);
+      const recIcon = document.getElementById(`record-icon-${cameraId}`);
+      const recBadge = document.getElementById(`rec-badge-${cameraId}`);
+      const recTimer = document.getElementById(`rec-timer-${cameraId}`);
+
+      if (!player || player.style.display === 'none' || player.readyState < 2) {
+        showToastNotification('⚠️ Tunggu siaran video aktif untuk mulai merekam.', 'warning');
+        return;
+      }
+
+      let stream = null;
+      if (typeof player.captureStream === 'function') {
+        stream = player.captureStream();
+      } else if (typeof player.mozCaptureStream === 'function') {
+        stream = player.mozCaptureStream();
+      }
+
+      if (!stream) {
+        showToastNotification('⚠️ Browser Anda tidak mendukung perekaman langsung dari video stream.', 'warning');
+        return;
+      }
+
+      let mimeType = 'video/webm;codecs=vp8,opus';
+      if (!window.MediaRecorder || !MediaRecorder.isTypeSupported(mimeType)) {
+        mimeType = 'video/webm';
+        if (window.MediaRecorder && !MediaRecorder.isTypeSupported(mimeType)) {
+          mimeType = '';
+        }
+      }
+
+      try {
+        const options = mimeType ? { mimeType } : {};
+        const mediaRecorder = new MediaRecorder(stream, options);
+        const recordedChunks = [];
+
+        mediaRecorder.ondataavailable = function(e) {
+          if (e.data && e.data.size > 0) {
+            recordedChunks.push(e.data);
+          }
+        };
+
+        let seconds = 0;
+        const timerInterval = setInterval(() => {
+          seconds++;
+          const mins = String(Math.floor(seconds / 60)).padStart(2, '0');
+          const secs = String(seconds % 60).padStart(2, '0');
+          if (recTimer) recTimer.textContent = `${mins}:${secs}`;
+        }, 1000);
+
+        mediaRecorder.onstop = function() {
+          clearInterval(timerInterval);
+          if (recBadge) recBadge.style.display = 'none';
+          if (recIcon) {
+            recIcon.className = 'fas fa-circle text-danger';
+            recIcon.style.animation = '';
+          }
+          if (recBtn) {
+            recBtn.classList.remove('is-recording');
+            recBtn.title = 'Mulai Rekam Video';
+          }
+
+          if (recordedChunks.length > 0) {
+            const blob = new Blob(recordedChunks, { type: mimeType || 'video/webm' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            const now = new Date();
+            const safeTitle = (cameraTitle || 'cctv').replace(/[^a-zA-Z0-9_-]/g, '_');
+            const timestampStr = now.toISOString().replace(/[:.]/g, '-').slice(0, 19);
+            a.href = url;
+            a.download = `CCTV-RECORD-${safeTitle}-${timestampStr}.webm`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            setTimeout(() => URL.revokeObjectURL(url), 2000);
+
+            showToastNotification(`🎬 Rekaman video (${seconds} detik) berhasil disimpan: ${cameraTitle || 'CCTV'}`);
+          }
+          activeCameraRecorders.delete(cameraId);
+        };
+
+        mediaRecorder.start(1000);
+        activeCameraRecorders.set(cameraId, { recorder: mediaRecorder, timer: timerInterval, title: cameraTitle });
+
+        if (recBadge) {
+          recBadge.style.display = 'inline-flex';
+          if (recTimer) recTimer.textContent = '00:00';
+        }
+        if (recIcon) {
+          recIcon.className = 'fas fa-stop text-danger';
+          recIcon.style.animation = 'pulseRec 1s infinite';
+        }
+        if (recBtn) {
+          recBtn.classList.add('is-recording');
+          recBtn.title = 'Stop & Simpan Rekaman Video';
+        }
+
+        showToastNotification(`🔴 Mulai merekam video: ${cameraTitle || 'CCTV'}`);
+      } catch (e) {
+        console.error('[Recording] Error starting recorder:', e);
+        showToastNotification('⚠️ Gagal memulai rekaman video.', 'error');
+      }
+    }
+
+    function stopCameraRecording(cameraId) {
+      const session = activeCameraRecorders.get(cameraId);
+      if (session && session.recorder && session.recorder.state !== 'inactive') {
+        session.recorder.stop();
+      }
+    }
+
     function changeGlobalCity(cityId) {
       console.log('[City Filter] Changing city to:', cityId);
       currentGlobalCity = cityId;
@@ -10979,6 +11300,12 @@
                     <div class="buffering-spinner"></div>
                   </div>
 
+                  <!-- Active Recording Badge Indicator -->
+                  <div class="recording-badge" id="rec-badge-${camera.id}" style="display: none;">
+                    <span style="width: 7px; height: 7px; background: #fff; border-radius: 50%; display: inline-block; animation: pulseRec 1s infinite;"></span>
+                    <span>REC <span id="rec-timer-${camera.id}">00:00</span></span>
+                  </div>
+
                   <!-- Video element untuk HLS player -->
                   <video id="player-${camera.id}" class="hidden-iframe hls-video-player"
                          controls autoplay muted playsinline webkit-playsinline x-webkit-airplay="allow" preload="auto"
@@ -10997,6 +11324,15 @@
                     <div class="card-action-toolbar">
                       <button class="action-btn quality-toggle-btn ${(cameraQualityMap.get(camera.id) || globalStreamQuality) === 'hd' ? 'is-hd' : 'is-sd'}" id="quality-btn-${camera.id}" onclick="event.stopPropagation(); toggleCameraQuality(${camera.id})" title="Ganti Kualitas (${(cameraQualityMap.get(camera.id) || globalStreamQuality) === 'hd' ? 'HD (High Def)' : 'SD (Standard Def)'})">
                         ${((cameraQualityMap.get(camera.id) || globalStreamQuality) === 'hd') ? 'HD' : 'SD'}
+                      </button>
+                      <button class="action-btn" id="audio-btn-${camera.id}" onclick="event.stopPropagation(); toggleCameraAudio(${camera.id})" title="Aktifkan/Matikan Suara (Audio)">
+                        <i class="fas fa-volume-mute" id="audio-icon-${camera.id}"></i>
+                      </button>
+                      <button class="action-btn" onclick="event.stopPropagation(); captureCameraSnapshot(${camera.id}, '${camera.title.replace(/'/g, "\\'")}')" title="Ambil Foto (Snapshot / Screenshot)">
+                        <i class="fas fa-camera"></i>
+                      </button>
+                      <button class="action-btn" id="record-btn-${camera.id}" onclick="event.stopPropagation(); toggleCameraRecording(${camera.id}, '${camera.title.replace(/'/g, "\\'")}')" title="Mulai/Stop Rekam Video">
+                        <i class="fas fa-circle text-danger" id="record-icon-${camera.id}"></i>
                       </button>
                       <button class="action-btn" onclick="event.stopPropagation(); toggleCameraFullscreen(${camera.id})" title="Layar Penuh (Fullscreen)">
                         <i class="fas fa-expand"></i>
