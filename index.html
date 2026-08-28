@@ -1620,6 +1620,314 @@
       box-shadow: 0 4px 12px rgba(56, 189, 248, 0.3);
     }
 
+    /* ENCODE ACTION BUTTON */
+    .vms-encode-action-btn {
+      height: 34px;
+      background: rgba(56, 189, 248, 0.12);
+      border: 1px solid rgba(56, 189, 248, 0.35);
+      border-radius: 8px;
+      padding: 0 12px;
+      color: #38bdf8;
+      font-size: 11.5px;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s ease;
+    }
+
+    .vms-encode-action-btn:hover {
+      background: rgba(56, 189, 248, 0.25);
+      border-color: #38bdf8;
+      color: #ffffff;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(56, 189, 248, 0.3);
+    }
+
+    /* =========================================================
+       LOEWIX ENTERPRISE CCTV ENCODE SETTINGS MODAL (DVR OSD)
+       ========================================================= */
+    .vms-encode-modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.78);
+      z-index: 999999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      padding: 15px;
+      overflow-y: auto;
+    }
+
+    .vms-encode-window {
+      background: #c5d4e8;
+      color: #1e293b;
+      width: 100%;
+      max-width: 620px;
+      border: 2px solid #8ba3c7;
+      border-radius: 8px;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      overflow: hidden;
+      animation: encodeWindowPop 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    body.dark-mode .vms-encode-window {
+      background: linear-gradient(180deg, #1b283d 0%, #121c2d 100%);
+      color: #e2e8f0;
+      border-color: #38bdf8;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.85), 0 0 20px rgba(56, 189, 248, 0.25);
+    }
+
+    @keyframes encodeWindowPop {
+      from { transform: scale(0.95); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    .vms-encode-titlebar {
+      background: linear-gradient(180deg, #1a365d 0%, #0f2444 100%);
+      color: #ffffff;
+      padding: 8px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 2px solid #38bdf8;
+      user-select: none;
+    }
+
+    .vms-encode-title {
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      display: flex;
+      align-items: center;
+    }
+
+    .vms-encode-close-btn {
+      background: transparent;
+      border: none;
+      color: #94a3b8;
+      font-size: 20px;
+      font-weight: 700;
+      line-height: 1;
+      cursor: pointer;
+      padding: 0 4px;
+      transition: color 0.2s;
+    }
+
+    .vms-encode-close-btn:hover {
+      color: #ef4444;
+    }
+
+    .vms-encode-body {
+      padding: 16px 20px;
+    }
+
+    .vms-encode-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .vms-encode-label {
+      width: 140px;
+      font-size: 13px;
+      font-weight: 600;
+      margin: 0;
+      color: inherit;
+    }
+
+    .vms-encode-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .vms-encode-header-row {
+      display: grid;
+      grid-template-columns: 140px 1fr 1fr;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 4px;
+    }
+
+    .vms-encode-stream-header {
+      font-size: 12.5px;
+      font-weight: 700;
+      text-align: left;
+      padding: 4px 6px;
+      border-radius: 4px;
+      background: rgba(15, 36, 68, 0.15);
+      color: #0284c7;
+    }
+
+    body.dark-mode .vms-encode-stream-header {
+      background: rgba(56, 189, 248, 0.12);
+      color: #38bdf8;
+    }
+
+    .vms-encode-param-row {
+      display: grid;
+      grid-template-columns: 140px 1fr 1fr;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .vms-encode-param-name {
+      font-size: 12.5px;
+      font-weight: 600;
+      color: inherit;
+    }
+
+    .vms-encode-select, .vms-encode-input {
+      width: 100%;
+      height: 28px;
+      background: #ffffff;
+      color: #0f172a;
+      border: 1px solid #94a3b8;
+      border-radius: 4px;
+      padding: 2px 8px;
+      font-size: 12px;
+      font-weight: 500;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    body.dark-mode .vms-encode-select,
+    body.dark-mode .vms-encode-input {
+      background: #0d1829;
+      color: #f1f5f9;
+      border-color: #334155;
+    }
+
+    .vms-encode-select:focus, .vms-encode-input:focus {
+      border-color: #0284c7;
+      box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.2);
+    }
+
+    body.dark-mode .vms-encode-select:focus,
+    body.dark-mode .vms-encode-input:focus {
+      border-color: #38bdf8;
+      box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.25);
+    }
+
+    .vms-encode-check {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      margin: 0;
+      user-select: none;
+    }
+
+    .vms-encode-check input[type="checkbox"] {
+      accent-color: #0284c7;
+      width: 15px;
+      height: 15px;
+      cursor: pointer;
+    }
+
+    .vms-encode-telemetry-box {
+      background: rgba(15, 23, 42, 0.85);
+      color: #94a3b8;
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      border-radius: 6px;
+      padding: 8px 12px;
+    }
+
+    .vms-encode-actions {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 16px;
+      padding-top: 14px;
+      border-top: 1px solid rgba(148, 163, 184, 0.3);
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .vms-encode-btn {
+      height: 30px;
+      padding: 0 16px;
+      font-size: 12px;
+      font-weight: 700;
+      border-radius: 4px;
+      cursor: pointer;
+      border: 1px solid transparent;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+    }
+
+    .vms-encode-btn.btn-advanced {
+      background: #e2e8f0;
+      color: #334155;
+      border-color: #cbd5e1;
+    }
+
+    body.dark-mode .vms-encode-btn.btn-advanced {
+      background: #1e293b;
+      color: #cbd5e1;
+      border-color: #475569;
+    }
+
+    .vms-encode-btn.btn-advanced:hover {
+      background: #cbd5e1;
+      color: #0f172a;
+    }
+
+    body.dark-mode .vms-encode-btn.btn-advanced:hover {
+      background: #334155;
+      color: #fff;
+    }
+
+    .vms-encode-btn.btn-copy {
+      background: rgba(56, 189, 248, 0.15);
+      color: #0284c7;
+      border-color: rgba(56, 189, 248, 0.4);
+    }
+
+    body.dark-mode .vms-encode-btn.btn-copy {
+      color: #38bdf8;
+    }
+
+    .vms-encode-btn.btn-copy:hover {
+      background: rgba(56, 189, 248, 0.25);
+    }
+
+    .vms-encode-btn.btn-ok {
+      background: linear-gradient(180deg, #0284c7 0%, #0369a1 100%);
+      color: #ffffff;
+      min-width: 75px;
+      box-shadow: 0 2px 6px rgba(2, 132, 199, 0.3);
+    }
+
+    .vms-encode-btn.btn-ok:hover {
+      background: linear-gradient(180deg, #0369a1 0%, #075985 100%);
+      transform: translateY(-1px);
+    }
+
+    .vms-encode-btn.btn-cancel {
+      background: #64748b;
+      color: #ffffff;
+      min-width: 75px;
+    }
+
+    .vms-encode-btn.btn-cancel:hover {
+      background: #475569;
+    }
+
     /* BOTTOM ROW: Matrix Multi-View & Telemetry Deck */
     .vms-bar-bottom {
       display: flex;
@@ -5765,10 +6073,14 @@
           </div>
         </div>
 
-        <!-- Right: Devices Action, Dark Mode Toggle & User Auth Area -->
+        <!-- Right: Devices Action, Encode Settings, Dark Mode Toggle & User Auth Area -->
         <div class="d-flex align-items-center ml-auto" style="gap: 8px; flex-shrink: 0;">
           <button class="vms-devices-action-btn vms-tool-btn" onclick="toggleVMSDeviceSidebar()" title="Buka Daftar Kamera (Devices)">
             <i class="fas fa-video"></i> <span>Devices (Camera Tree)</span>
+          </button>
+
+          <button class="vms-encode-action-btn vms-tool-btn" onclick="openEncodeModal(1)" title="Buka Menu Encode (Stream & Compression Settings)">
+            <i class="fas fa-sliders-h"></i> <span>Encode</span>
           </button>
 
           <button id="dark-mode-toggle" class="btn btn-sm text-white" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.2); border-radius: 50%; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; padding: 0;" title="Toggle Dark Mode">
@@ -5861,7 +6173,7 @@
             <span class="pulse-dot"></span>
             <span>VMS ONLINE</span>
           </div>
-          <div class="vms-telemetry-badge codec-badge d-none d-md-inline-flex" title="Hardware Accelerated Codec">
+          <div class="vms-telemetry-badge codec-badge d-none d-md-inline-flex" onclick="openEncodeModal(1)" style="cursor: pointer;" title="Klik untuk Pengaturan Encode (H.265 / Bitrate / FPS)">
             <i class="fas fa-bolt text-warning mr-1"></i>
             <span>H.265</span>
           </div>
@@ -5927,6 +6239,289 @@
                 <button type="submit" style="background: #20bf6b; color: #fff; border: none; border-radius: 8px; padding: 8px 20px; font-size: 14px; font-weight: 600; cursor: pointer;"><i class="fas fa-save"></i> Simpan Konfigurasi</button>
               </div>
             </form>
+          </div>
+        </div>
+
+        <!-- ===== MODAL ENCODE PENGATURAN CCTV (XM / JFTECH / LOEWIX DVR ENCODE INTERFACE) ===== -->
+        <div id="cameraEncodeModal" class="vms-encode-modal-overlay" style="display: none;">
+          <div class="vms-encode-window">
+            
+            <!-- Title Bar -->
+            <div class="vms-encode-titlebar">
+              <div class="vms-encode-title">
+                <i class="fas fa-microchip text-info mr-2"></i>
+                <span>Encode</span>
+              </div>
+              <button type="button" class="vms-encode-close-btn" onclick="closeEncodeModal()" title="Tutup">&times;</button>
+            </div>
+
+            <!-- Window Body -->
+            <div class="vms-encode-body">
+              
+              <!-- Top Channel Selector Row -->
+              <div class="vms-encode-row align-items-center mb-3">
+                <label class="vms-encode-label">Channel</label>
+                <div style="flex: 1; max-width: 200px;">
+                  <select id="encode-channel" class="vms-encode-select" onchange="loadChannelEncodeConfig(this.value)">
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                    <option value="7">7</option>
+                    <option value="8">8</option>
+                    <option value="9">9</option>
+                    <option value="16">16</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Main vs Extra Stream Dual Columns Grid -->
+              <div class="vms-encode-grid">
+                
+                <!-- Stream Column Headers -->
+                <div class="vms-encode-header-row">
+                  <div></div>
+                  <div class="vms-encode-stream-header">Main Stream</div>
+                  <div class="vms-encode-stream-header">Extra Stream</div>
+                </div>
+
+                <!-- Row 1: Compression -->
+                <div class="vms-encode-param-row">
+                  <div class="vms-encode-param-name">Compression</div>
+                  <div>
+                    <select id="enc-main-compression" class="vms-encode-select">
+                      <option value="H.265" selected>H.265</option>
+                      <option value="H.264">H.264</option>
+                      <option value="H.265+">H.265+</option>
+                      <option value="H.265AI">H.265AI</option>
+                      <option value="H.265X">H.265X</option>
+                    </select>
+                  </div>
+                  <div>
+                    <select id="enc-extra-compression" class="vms-encode-select">
+                      <option value="Extra Stream" selected>Extra Stream</option>
+                      <option value="H.265">H.265</option>
+                      <option value="H.264">H.264</option>
+                    </select>
+                  </div>
+                </div>
+
+                <!-- Row 2: Resolution -->
+                <div class="vms-encode-param-row">
+                  <div class="vms-encode-param-name">Resolution</div>
+                  <div>
+                    <select id="enc-main-resolution" class="vms-encode-select">
+                      <option value="6M" selected>6M</option>
+                      <option value="4K">4K</option>
+                      <option value="5M">5M</option>
+                      <option value="4M">4M</option>
+                      <option value="3M">3M</option>
+                      <option value="1080P">1080P</option>
+                      <option value="720P">720P</option>
+                    </select>
+                  </div>
+                  <div>
+                    <select id="enc-extra-resolution" class="vms-encode-select">
+                      <option value="HD1" selected>HD1</option>
+                      <option value="D1">D1</option>
+                      <option value="CIF">CIF</option>
+                      <option value="QVGA">QVGA</option>
+                    </select>
+                  </div>
+                </div>
+
+                <!-- Row 3: Frame Rate(FPS) -->
+                <div class="vms-encode-param-row">
+                  <div class="vms-encode-param-name">Frame Rate(FPS)</div>
+                  <div>
+                    <select id="enc-main-fps" class="vms-encode-select" onchange="updateEncodeTelemetryFromUI()">
+                      <option value="20" selected>20</option>
+                      <option value="25">25</option>
+                      <option value="30">30</option>
+                      <option value="15">15</option>
+                      <option value="12">12</option>
+                      <option value="10">10</option>
+                    </select>
+                  </div>
+                  <div>
+                    <select id="enc-extra-fps" class="vms-encode-select" onchange="updateEncodeTelemetryFromUI()">
+                      <option value="20" selected>20</option>
+                      <option value="25">25</option>
+                      <option value="30">30</option>
+                      <option value="15">15</option>
+                      <option value="12">12</option>
+                      <option value="10">10</option>
+                    </select>
+                  </div>
+                </div>
+
+                <!-- Row 4: Bit Rate Type -->
+                <div class="vms-encode-param-row">
+                  <div class="vms-encode-param-name">Bit Rate Type</div>
+                  <div>
+                    <select id="enc-main-bitrate-type" class="vms-encode-select">
+                      <option value="VBR" selected>VBR</option>
+                      <option value="CBR">CBR</option>
+                    </select>
+                  </div>
+                  <div>
+                    <select id="enc-extra-bitrate-type" class="vms-encode-select">
+                      <option value="VBR" selected>VBR</option>
+                      <option value="CBR">CBR</option>
+                    </select>
+                  </div>
+                </div>
+
+                <!-- Row 5: Quality -->
+                <div class="vms-encode-param-row">
+                  <div class="vms-encode-param-name">Quality</div>
+                  <div>
+                    <select id="enc-main-quality" class="vms-encode-select">
+                      <option value="high" selected>high</option>
+                      <option value="best">best</option>
+                      <option value="better">better</option>
+                      <option value="good">good</option>
+                      <option value="middle">middle</option>
+                      <option value="low">low</option>
+                      <option value="lowest">lowest</option>
+                    </select>
+                  </div>
+                  <div>
+                    <select id="enc-extra-quality" class="vms-encode-select">
+                      <option value="high" selected>high</option>
+                      <option value="best">best</option>
+                      <option value="better">better</option>
+                      <option value="good">good</option>
+                      <option value="middle">middle</option>
+                      <option value="low">low</option>
+                      <option value="lowest">lowest</option>
+                    </select>
+                  </div>
+                </div>
+
+                <!-- Row 6: Bit Rate(Kb/S) -->
+                <div class="vms-encode-param-row">
+                  <div class="vms-encode-param-name">Bit Rate(Kb/S)</div>
+                  <div>
+                    <input type="number" id="enc-main-bitrate" class="vms-encode-input" value="3316" oninput="updateEncodeTelemetryFromUI()">
+                  </div>
+                  <div>
+                    <input type="number" id="enc-extra-bitrate" class="vms-encode-input" value="552" oninput="updateEncodeTelemetryFromUI()">
+                  </div>
+                </div>
+
+                <!-- Row 7: I Frame Interval -->
+                <div class="vms-encode-param-row">
+                  <div class="vms-encode-param-name">I Frame Interval</div>
+                  <div>
+                    <select id="enc-main-iframe" class="vms-encode-select">
+                      <option value="2" selected>2</option>
+                      <option value="1">1</option>
+                      <option value="3">3</option>
+                      <option value="4">4</option>
+                      <option value="5">5</option>
+                      <option value="6">6</option>
+                    </select>
+                  </div>
+                  <div>
+                    <select id="enc-extra-iframe" class="vms-encode-select">
+                      <option value="2" selected>2</option>
+                      <option value="1">1</option>
+                      <option value="3">3</option>
+                      <option value="4">4</option>
+                      <option value="5">5</option>
+                      <option value="6">6</option>
+                    </select>
+                  </div>
+                </div>
+
+                <!-- Row 8: Video/Audio -->
+                <div class="vms-encode-param-row">
+                  <div class="vms-encode-param-name">Video/Audio</div>
+                  <div class="d-flex align-items-center" style="gap: 14px;">
+                    <label class="vms-encode-check"><input type="checkbox" id="enc-main-video" checked> <span>Video</span></label>
+                    <label class="vms-encode-check"><input type="checkbox" id="enc-main-audio" checked> <span>Audio</span></label>
+                  </div>
+                  <div class="d-flex align-items-center" style="gap: 14px;">
+                    <label class="vms-encode-check"><input type="checkbox" id="enc-extra-video" checked> <span>Video</span></label>
+                    <label class="vms-encode-check"><input type="checkbox" id="enc-extra-audio" checked> <span>Audio</span></label>
+                  </div>
+                </div>
+
+                <!-- Row 9: Smart Encode -->
+                <div class="vms-encode-param-row">
+                  <div class="vms-encode-param-name">Smart Encode</div>
+                  <div>
+                    <select id="enc-main-smart" class="vms-encode-select">
+                      <option value="H.265AI" selected>H.265AI</option>
+                      <option value="H.265+">H.265+</option>
+                      <option value="H.265X">H.265X</option>
+                      <option value="H.264+">H.264+</option>
+                      <option value="Off">Off</option>
+                    </select>
+                  </div>
+                  <div>
+                    <select id="enc-extra-smart" class="vms-encode-select">
+                      <option value="H.265AI" selected>H.265AI</option>
+                      <option value="H.265+">H.265+</option>
+                      <option value="H.265X">H.265X</option>
+                      <option value="H.264+">H.264+</option>
+                      <option value="Off">Off</option>
+                    </select>
+                  </div>
+                </div>
+
+              </div>
+
+              <!-- Advanced Drawer (Collapsible) -->
+              <div id="vms-encode-advanced-drawer" style="display: none; margin-top: 14px; padding: 12px; background: rgba(0,0,0,0.35); border: 1px dashed rgba(56, 189, 248, 0.35); border-radius: 6px;">
+                <div style="font-size: 11.5px; font-weight: 700; color: #38bdf8; margin-bottom: 8px;">
+                  <i class="fas fa-cogs mr-1"></i> Advanced Stream & Compression Parameters
+                </div>
+                <div class="row">
+                  <div class="col-md-6 mb-2">
+                    <label style="font-size: 11px; color: #94a3b8; display: block; margin-bottom: 4px;">Audio Codec Format:</label>
+                    <select id="enc-adv-audiocodec" class="vms-encode-select">
+                      <option value="AAC" selected>AAC (High Fidelity 64Kbps)</option>
+                      <option value="G.711A">G.711A (ALaw 8KHz)</option>
+                      <option value="G.711U">G.711U (uLaw 8KHz)</option>
+                    </select>
+                  </div>
+                  <div class="col-md-6 mb-2">
+                    <label style="font-size: 11px; color: #94a3b8; display: block; margin-bottom: 4px;">GOP Size (Group of Pictures):</label>
+                    <input type="number" id="enc-adv-gop" class="vms-encode-input" value="40">
+                  </div>
+                  <div class="col-12 d-flex flex-wrap" style="gap: 16px; margin-top: 6px;">
+                    <label class="vms-encode-check"><input type="checkbox" id="enc-adv-roi" checked> <span>Enable ROI (Region of Interest AI Encoding)</span></label>
+                    <label class="vms-encode-check"><input type="checkbox" id="enc-adv-watermark" checked> <span>Overlay Timestamp OSD</span></label>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Live Bandwidth & Storage Telemetry Calculation Box -->
+              <div class="vms-encode-telemetry-box mt-3">
+                <div class="d-flex align-items-center justify-content-between flex-wrap" style="gap: 8px; font-size: 11px;">
+                  <span><i class="fas fa-tachometer-alt text-warning mr-1"></i> Total Bitrate: <strong id="enc-calc-bitrate" class="text-white">3.87 Mbps</strong></span>
+                  <span><i class="fas fa-hdd text-info mr-1"></i> Estimasi Storage / 24 Jam: <strong id="enc-calc-storage" class="text-white">40.8 GB</strong></span>
+                  <span><i class="fas fa-network-wired text-success mr-1"></i> Core Codec: <strong class="text-success">H.265 AI Smart Engine</strong></span>
+                </div>
+              </div>
+
+              <!-- Footer Buttons Row (matching screenshot: Advanced, OK, Cancel) -->
+              <div class="vms-encode-actions">
+                <div class="d-flex align-items-center" style="gap: 8px;">
+                  <button type="button" class="vms-encode-btn btn-advanced" onclick="toggleEncodeAdvanced()">Advanced</button>
+                  <button type="button" class="vms-encode-btn btn-copy" onclick="copyEncodeToAllChannels()" title="Terapkan ke semua channel">Copy to All Channels</button>
+                </div>
+                <div class="d-flex align-items-center ml-auto" style="gap: 8px;">
+                  <button type="button" class="vms-encode-btn btn-ok" onclick="saveEncodeConfig()">OK</button>
+                  <button type="button" class="vms-encode-btn btn-cancel" onclick="closeEncodeModal()">Cancel</button>
+                </div>
+              </div>
+
+            </div>
           </div>
         </div>
 
@@ -11501,6 +12096,223 @@
         alert('Kamera berhasil ditambahkan!');
         generateCCTVHTML(currentGlobalCity);
       });
+    }
+
+    // ===== LOEWIX DVR ENCODE SETTINGS MODULE =====
+    let currentEncodeChannel = 1;
+
+    async function openEncodeModal(channelId) {
+      currentEncodeChannel = parseInt(channelId) || 1;
+      const modal = document.getElementById('cameraEncodeModal');
+      if (!modal) return;
+
+      // Populate channel selector with active cameras if available
+      const chanSelect = document.getElementById('encode-channel');
+      if (chanSelect && typeof mediamtxData !== 'undefined' && Array.isArray(mediamtxData) && mediamtxData.length > 0) {
+        chanSelect.innerHTML = '';
+        mediamtxData.forEach((cam, index) => {
+          const chNum = cam.id || (index + 1);
+          const opt = document.createElement('option');
+          opt.value = chNum;
+          opt.textContent = `${chNum} - ${cam.title || 'Camera ' + chNum}`;
+          chanSelect.appendChild(opt);
+        });
+        chanSelect.value = currentEncodeChannel;
+      }
+
+      modal.style.display = 'flex';
+      await loadChannelEncodeConfig(currentEncodeChannel);
+    }
+
+    function closeEncodeModal() {
+      const modal = document.getElementById('cameraEncodeModal');
+      if (modal) modal.style.display = 'none';
+    }
+
+    async function loadChannelEncodeConfig(channel) {
+      currentEncodeChannel = parseInt(channel) || 1;
+      try {
+        const res = await fetch(`api/camera_encode.php?action=get&channel=${currentEncodeChannel}`);
+        const data = await res.json();
+        if (data.success && data.profile) {
+          applyEncodeProfileToUI(data.profile);
+          updateEncodeTelemetry(data.profile);
+        }
+      } catch (err) {
+        console.warn('[Encode] Fetch failed, using UI values:', err);
+        updateEncodeTelemetryFromUI();
+      }
+    }
+
+    function applyEncodeProfileToUI(p) {
+      const m = p.main_stream || {};
+      const e = p.extra_stream || {};
+      const a = p.advanced || {};
+
+      // Main Stream
+      setSelectVal('enc-main-compression', m.compression || 'H.265');
+      setSelectVal('enc-main-resolution', m.resolution || '6M');
+      setSelectVal('enc-main-fps', m.fps || 20);
+      setSelectVal('enc-main-bitrate-type', m.bitrate_type || 'VBR');
+      setSelectVal('enc-main-quality', m.quality || 'high');
+      setInputVal('enc-main-bitrate', m.bitrate_kbps || 3316);
+      setSelectVal('enc-main-iframe', m.iframe_interval || 2);
+      setCheckVal('enc-main-video', m.enable_video !== false);
+      setCheckVal('enc-main-audio', m.enable_audio !== false);
+      setSelectVal('enc-main-smart', m.smart_encode || 'H.265AI');
+
+      // Extra Stream
+      setSelectVal('enc-extra-compression', e.compression || 'Extra Stream');
+      setSelectVal('enc-extra-resolution', e.resolution || 'HD1');
+      setSelectVal('enc-extra-fps', e.fps || 20);
+      setSelectVal('enc-extra-bitrate-type', e.bitrate_type || 'VBR');
+      setSelectVal('enc-extra-quality', e.quality || 'high');
+      setInputVal('enc-extra-bitrate', e.bitrate_kbps || 552);
+      setSelectVal('enc-extra-iframe', e.iframe_interval || 2);
+      setCheckVal('enc-extra-video', e.enable_video !== false);
+      setCheckVal('enc-extra-audio', e.enable_audio !== false);
+      setSelectVal('enc-extra-smart', e.smart_encode || 'H.265AI');
+
+      // Advanced
+      setSelectVal('enc-adv-audiocodec', a.audio_codec || 'AAC');
+      setInputVal('enc-adv-gop', a.gop_size || 40);
+      setCheckVal('enc-adv-roi', a.roi_enabled !== false);
+      setCheckVal('enc-adv-watermark', a.watermark_osd !== false);
+    }
+
+    function getEncodeProfileFromUI() {
+      return {
+        channel: currentEncodeChannel,
+        main_stream: {
+          compression: document.getElementById('enc-main-compression').value,
+          resolution: document.getElementById('enc-main-resolution').value,
+          fps: parseInt(document.getElementById('enc-main-fps').value) || 20,
+          bitrate_type: document.getElementById('enc-main-bitrate-type').value,
+          quality: document.getElementById('enc-main-quality').value,
+          bitrate_kbps: parseInt(document.getElementById('enc-main-bitrate').value) || 3316,
+          iframe_interval: parseInt(document.getElementById('enc-main-iframe').value) || 2,
+          enable_video: document.getElementById('enc-main-video').checked,
+          enable_audio: document.getElementById('enc-main-audio').checked,
+          smart_encode: document.getElementById('enc-main-smart').value
+        },
+        extra_stream: {
+          compression: document.getElementById('enc-extra-compression').value,
+          resolution: document.getElementById('enc-extra-resolution').value,
+          fps: parseInt(document.getElementById('enc-extra-fps').value) || 20,
+          bitrate_type: document.getElementById('enc-extra-bitrate-type').value,
+          quality: document.getElementById('enc-extra-quality').value,
+          bitrate_kbps: parseInt(document.getElementById('enc-extra-bitrate').value) || 552,
+          iframe_interval: parseInt(document.getElementById('enc-extra-iframe').value) || 2,
+          enable_video: document.getElementById('enc-extra-video').checked,
+          enable_audio: document.getElementById('enc-extra-audio').checked,
+          smart_encode: document.getElementById('enc-extra-smart').value
+        },
+        advanced: {
+          audio_codec: document.getElementById('enc-adv-audiocodec').value,
+          gop_size: parseInt(document.getElementById('enc-adv-gop').value) || 40,
+          roi_enabled: document.getElementById('enc-adv-roi').checked,
+          watermark_osd: document.getElementById('enc-adv-watermark').checked
+        }
+      };
+    }
+
+    function updateEncodeTelemetryFromUI() {
+      const mainKbps = parseInt(document.getElementById('enc-main-bitrate').value) || 3316;
+      const extraKbps = parseInt(document.getElementById('enc-extra-bitrate').value) || 552;
+      const totalKbps = mainKbps + extraKbps;
+      const mbps = (totalKbps / 1024).toFixed(2);
+      const gbPerDay = ((totalKbps * 3600 * 24) / (8 * 1024 * 1024)).toFixed(1);
+
+      const bitrateEl = document.getElementById('enc-calc-bitrate');
+      const storageEl = document.getElementById('enc-calc-storage');
+      if (bitrateEl) bitrateEl.textContent = `${mbps} Mbps (${mainKbps} + ${extraKbps} Kbps)`;
+      if (storageEl) storageEl.textContent = `${gbPerDay} GB / Hari`;
+    }
+
+    function updateEncodeTelemetry(p) {
+      const m = p.main_stream || {};
+      const e = p.extra_stream || {};
+      const mainKbps = parseInt(m.bitrate_kbps) || 3316;
+      const extraKbps = parseInt(e.bitrate_kbps) || 552;
+      const totalKbps = mainKbps + extraKbps;
+      const mbps = (totalKbps / 1024).toFixed(2);
+      const gbPerDay = ((totalKbps * 3600 * 24) / (8 * 1024 * 1024)).toFixed(1);
+
+      const bitrateEl = document.getElementById('enc-calc-bitrate');
+      const storageEl = document.getElementById('enc-calc-storage');
+      if (bitrateEl) bitrateEl.textContent = `${mbps} Mbps`;
+      if (storageEl) storageEl.textContent = `${gbPerDay} GB / Hari`;
+    }
+
+    function toggleEncodeAdvanced() {
+      const drawer = document.getElementById('vms-encode-advanced-drawer');
+      if (drawer) {
+        drawer.style.display = (drawer.style.display === 'none' || !drawer.style.display) ? 'block' : 'none';
+      }
+    }
+
+    async function saveEncodeConfig() {
+      const profile = getEncodeProfileFromUI();
+      try {
+        const res = await fetch('api/camera_encode.php?action=save', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(profile)
+        });
+        const data = await res.json();
+        if (data.success) {
+          if (typeof showCCTVToast === 'function') {
+            showCCTVToast(data.message || 'Konfigurasi Encode berhasil disimpan!', 'success');
+          } else {
+            alert(data.message || 'Konfigurasi Encode berhasil disimpan!');
+          }
+          closeEncodeModal();
+        } else {
+          alert(data.message || 'Gagal menyimpan konfigurasi encode.');
+        }
+      } catch (err) {
+        console.error('[Encode] Save error:', err);
+        alert('Terjadi kesalahan koneksi saat menyimpan konfigurasi.');
+      }
+    }
+
+    async function copyEncodeToAllChannels() {
+      if (!confirm('Apakah Anda yakin ingin menerapkan pengaturan Encode ini ke SEMUA Channel kamera?')) {
+        return;
+      }
+      const profile = getEncodeProfileFromUI();
+      profile.copy_to_all = true;
+      try {
+        const res = await fetch('api/camera_encode.php?action=save', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(profile)
+        });
+        const data = await res.json();
+        if (data.success) {
+          if (typeof showCCTVToast === 'function') {
+            showCCTVToast(data.message, 'success');
+          } else {
+            alert(data.message);
+          }
+          closeEncodeModal();
+        }
+      } catch (err) {
+        alert('Gagal menerapkan konfigurasi massal.');
+      }
+    }
+
+    function setSelectVal(id, val) {
+      const el = document.getElementById(id);
+      if (el) el.value = val;
+    }
+    function setInputVal(id, val) {
+      const el = document.getElementById(id);
+      if (el) el.value = val;
+    }
+    function setCheckVal(id, val) {
+      const el = document.getElementById(id);
+      if (el) el.checked = !!val;
     }
 
     // Generate CCTV HTML - Updated untuk Multi-Kota & MediaMTX HLS streaming
