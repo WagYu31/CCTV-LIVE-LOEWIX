@@ -1267,53 +1267,122 @@
       to { transform: translateY(0); opacity: 1; }
     }
 
-    /* Integrated Toolbar Search Box Styles */
-    .cctv-filter-toolbar .cctv-search-input-wrapper {
+    /* =========================================================
+       ENTERPRISE VMS COMMAND CENTER TOOLBAR STYLING
+       ========================================================= */
+    .cctv-vms-command-center {
+      background: rgba(13, 27, 62, 0.88);
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      border-radius: 18px;
+      padding: 14px 18px;
+      margin-bottom: 24px;
+      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      transition: all 0.3s ease;
+    }
+
+    /* TOP ROW */
+    .vms-bar-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      flex-wrap: wrap;
+      padding-bottom: 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .vms-filters-cluster {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      flex: 1;
+    }
+
+    /* SEARCH INPUT BOX */
+    .vms-search-box {
+      position: relative;
+      min-width: 200px;
+      max-width: 260px;
+      flex: 1 1 200px;
       padding: 0 !important;
       display: flex;
       align-items: center;
-      position: relative;
     }
-    .cctv-filter-toolbar .cctv-search-input {
-      background: rgba(255, 255, 255, 0.08) !important;
-      color: #ffffff !important;
+
+    .vms-search-input {
+      width: 100%;
+      height: 36px;
+      background: rgba(255, 255, 255, 0.07) !important;
       border: 1px solid rgba(56, 189, 248, 0.3) !important;
-      border-radius: 8px !important;
-      padding: 6px 30px 6px 30px !important;
+      border-radius: 10px !important;
+      padding: 0 32px 0 32px !important;
+      color: #ffffff !important;
       font-size: 13px !important;
-      height: 33px !important;
-      line-height: normal;
-      box-shadow: none !important;
+      font-weight: 500 !important;
+      outline: none !important;
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2) !important;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
     }
-    .cctv-filter-toolbar .cctv-search-input::placeholder {
-      color: rgba(255, 255, 255, 0.5) !important;
-    }
-    .cctv-filter-toolbar .cctv-search-input:focus {
-      border-color: #38bdf8 !important;
-      box-shadow: 0 0 10px rgba(56, 189, 248, 0.35) !important;
+
+    .vms-search-input:focus {
       background: rgba(255, 255, 255, 0.12) !important;
+      border-color: #38bdf8 !important;
+      box-shadow: 0 0 12px rgba(56, 189, 248, 0.4), inset 0 2px 4px rgba(0, 0, 0, 0.2) !important;
     }
-    .cctv-filter-toolbar .cctv-search-icon {
-      left: 10px !important;
-      font-size: 12px !important;
-      color: #38bdf8 !important;
+
+    .vms-search-input::placeholder {
+      color: rgba(255, 255, 255, 0.45) !important;
     }
-    .cctv-filter-toolbar .cctv-search-clear {
-      right: 8px !important;
-      font-size: 13px !important;
-      color: #94a3b8 !important;
-      width: 18px !important;
-      height: 18px !important;
+
+    .vms-search-icon {
+      position: absolute;
+      left: 11px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #38bdf8;
+      font-size: 13px;
+      pointer-events: none;
+      z-index: 2;
     }
-    .cctv-filter-toolbar .cctv-search-clear:hover {
-      color: #38bdf8 !important;
+
+    .vms-search-spinner {
+      position: absolute;
+      right: 30px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #38bdf8;
+      display: none;
+      font-size: 12px;
+      z-index: 2;
     }
-    .cctv-filter-toolbar .cctv-search-loading {
-      right: 28px !important;
-      font-size: 12px !important;
-      color: #38bdf8 !important;
+
+    .vms-search-clear-btn {
+      position: absolute;
+      right: 8px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: #94a3b8;
+      font-size: 13px;
+      cursor: pointer;
+      display: none;
+      padding: 4px;
+      line-height: 1;
+      z-index: 2;
     }
-    .cctv-filter-toolbar .cctv-search-results {
+
+    .vms-search-clear-btn:hover {
+      color: #38bdf8;
+    }
+
+    .vms-search-dropdown {
       background: rgba(15, 23, 42, 0.96) !important;
       border: 1px solid rgba(56, 189, 248, 0.35) !important;
       border-radius: 10px !important;
@@ -1323,51 +1392,310 @@
       margin-top: 6px !important;
       min-width: 280px !important;
       width: 100% !important;
+      position: absolute;
+      top: calc(100% + 4px);
+      left: 0;
+      z-index: 1050;
     }
-    .cctv-filter-toolbar .cctv-search-result-item {
+
+    .vms-search-dropdown .cctv-search-result-item {
       border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
       color: #ffffff !important;
       padding: 9px 12px !important;
     }
-    .cctv-filter-toolbar .cctv-search-result-item:hover,
-    .cctv-filter-toolbar .cctv-search-result-item.selected {
+
+    .vms-search-dropdown .cctv-search-result-item:hover,
+    .vms-search-dropdown .cctv-search-result-item.selected {
       background: rgba(56, 189, 248, 0.18) !important;
     }
-    .cctv-filter-toolbar .search-result-title {
+
+    .vms-search-dropdown .search-result-title {
       color: #ffffff !important;
       font-size: 13px !important;
       font-weight: 600 !important;
     }
-    .cctv-filter-toolbar .search-result-subtitle {
+
+    .vms-search-dropdown .search-result-subtitle {
       color: #94a3b8 !important;
       font-size: 11px !important;
     }
 
-    .vms-quality-pill {
-      background: rgba(56, 189, 248, 0.15);
+    /* SELECT CLUSTER */
+    .vms-select-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .vms-select-item {
+      position: relative;
+      display: flex;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 10px;
+      padding: 0 10px;
+      height: 36px;
+      transition: all 0.2s ease;
+    }
+
+    .vms-select-item:hover, .vms-select-item:focus-within {
+      background: rgba(255, 255, 255, 0.09);
+      border-color: rgba(56, 189, 248, 0.4);
+    }
+
+    .vms-select-item i {
+      font-size: 12px;
+      margin-right: 6px;
       color: #38bdf8;
+    }
+
+    .vms-custom-select {
+      background: transparent !important;
+      border: none !important;
+      color: #ffffff !important;
+      font-size: 12.5px !important;
+      font-weight: 600 !important;
+      padding: 0 4px 0 0 !important;
+      height: 100% !important;
+      cursor: pointer !important;
+      outline: none !important;
+    }
+
+    .vms-custom-select option {
+      background: #0f172a !important;
+      color: #ffffff !important;
+      padding: 8px !important;
+    }
+
+    /* TELEMETRY CLUSTER */
+    .vms-telemetry-cluster {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .vms-telemetry-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(15, 23, 42, 0.65);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 20px;
+      padding: 5px 12px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.4px;
+      height: 32px;
+    }
+
+    .vms-telemetry-badge.status-online {
+      border-color: rgba(16, 185, 129, 0.35);
+      color: #34d399;
+    }
+
+    .vms-telemetry-badge .pulse-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #10b981;
+      box-shadow: 0 0 8px #10b981;
+      animation: pulseDot 1.8s infinite;
+    }
+
+    @keyframes pulseDot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.85); }
+    }
+
+    .vms-telemetry-badge.codec-badge {
+      color: #38bdf8;
+      border-color: rgba(56, 189, 248, 0.25);
+    }
+
+    .vms-quality-toggle-pill {
+      height: 32px;
+      background: rgba(56, 189, 248, 0.12);
       border: 1px solid rgba(56, 189, 248, 0.35);
-      border-radius: 6px;
-      padding: 1px 7px;
-      font-size: 10.5px;
-      font-weight: 800;
+      border-radius: 16px;
+      padding: 0 12px;
+      color: #38bdf8;
+      font-size: 11.5px;
+      font-weight: 700;
       letter-spacing: 0.5px;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
-      gap: 3px;
-      transition: all 0.2s ease;
-      line-height: 1.4;
+      gap: 6px;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
-    .vms-quality-pill.is-hd {
-      background: rgba(16, 185, 129, 0.2);
+    .vms-quality-toggle-pill:hover {
+      background: rgba(56, 189, 248, 0.22);
+      border-color: #38bdf8;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(56, 189, 248, 0.3);
+    }
+
+    .vms-quality-toggle-pill.is-hd {
+      background: rgba(16, 185, 129, 0.18);
+      border-color: #10b981;
       color: #34d399;
-      border-color: rgba(52, 211, 153, 0.5);
-      box-shadow: 0 0 8px rgba(16, 185, 129, 0.35);
+      box-shadow: 0 0 10px rgba(16, 185, 129, 0.3);
     }
 
-    .vms-quality-pill:hover {
+    /* BOTTOM ROW */
+    .vms-bar-bottom {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+
+    .vms-layout-cluster {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .vms-layout-label {
+      color: #38bdf8;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.8px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .vms-layout-matrix-buttons {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: rgba(15, 23, 42, 0.7);
+      padding: 4px 6px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      overflow-x: auto;
+      max-width: 100%;
+    }
+
+    .vms-matrix-btn, .vms-layout-btn {
+      background: transparent;
+      border: 1px solid transparent;
+      color: #94a3b8;
+      min-width: 32px;
+      height: 28px;
+      padding: 0 6px;
+      border-radius: 6px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      line-height: 1;
+    }
+
+    .vms-matrix-btn:hover, .vms-layout-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: #ffffff;
+      border-color: rgba(255, 255, 255, 0.15);
+    }
+
+    .vms-matrix-btn.active, .vms-layout-btn.active {
+      background: #0284c7 !important;
+      color: #ffffff !important;
+      border-color: #38bdf8 !important;
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.5) !important;
+    }
+
+    .vms-matrix-btn.fs-toggle, .vms-layout-btn.vms-fs-btn {
+      color: #38bdf8;
+    }
+
+    .vms-devices-action-btn, .vms-tool-btn {
+      background: rgba(56, 189, 248, 0.14);
+      border: 1px solid rgba(56, 189, 248, 0.38);
+      color: #38bdf8;
+      padding: 6px 16px;
+      height: 34px;
+      border-radius: 17px;
+      font-weight: 700;
+      font-size: 12.5px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .vms-devices-action-btn:hover, .vms-tool-btn:hover {
+      background: #38bdf8;
+      color: #091650;
+      box-shadow: 0 0 15px rgba(56, 189, 248, 0.4);
+      transform: translateY(-1px);
+    }
+
+    /* RESPONSIVE BREAKPOINTS */
+    @media (max-width: 1199px) {
+      .vms-search-box {
+        min-width: 100%;
+        max-width: 100%;
+        flex: 1 1 100%;
+      }
+    }
+
+    @media (max-width: 991px) {
+      .cctv-vms-command-center {
+        padding: 12px 14px;
+      }
+      .vms-filters-cluster {
+        width: 100%;
+      }
+      .vms-select-group {
+        width: 100%;
+      }
+      .vms-select-item {
+        flex: 1 1 calc(50% - 6px);
+      }
+      .vms-bar-top {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .vms-telemetry-cluster {
+        width: 100%;
+        justify-content: space-between;
+      }
+    }
+
+    @media (max-width: 576px) {
+      .vms-select-item {
+        flex: 1 1 100%;
+      }
+      .vms-bar-bottom {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+      }
+      .vms-layout-cluster {
+        width: 100%;
+      }
+      .vms-layout-matrix-buttons {
+        width: 100%;
+        justify-content: flex-start;
+      }
+      .vms-devices-action-btn {
+        width: 100%;
+        justify-content: center;
+      }
+    }
       transform: scale(1.05);
       border-color: #38bdf8;
     }
@@ -5404,117 +5732,123 @@
         <div id="popupOverlay" onclick="closeTrafficPopup()"></div>
 
         <!-- Unified VMS Control & Filter Toolbar (Search + Filters + Layout + Tools) -->
-        <div class="cctv-filter-toolbar" id="cctv-filter-toolbar" style="display: flex; flex-direction: column; gap: 14px; margin-bottom: 25px; padding: 16px 20px; background: rgba(13, 27, 62, 0.88); border-radius: 16px; border: 1px solid rgba(56, 189, 248, 0.25); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35); backdrop-filter: blur(14px);">
+        <!-- Enterprise VMS Command Center Toolbar (Search + Filters + Matrix + Telemetry) -->
+        <div class="cctv-vms-command-center" id="cctv-filter-toolbar">
           
-          <!-- Top Row: Integrated Search + Select Filters + VMS Engine Status -->
-          <div style="display: flex; gap: 12px; flex-wrap: wrap; align-items: center; justify-content: space-between; width: 100%; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 12px;">
-            <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center; flex: 1;">
+          <!-- Top Row: Search & Filters + System Telemetry Badges -->
+          <div class="vms-bar-top">
+            
+            <!-- Left: Search & Filter Controls -->
+            <div class="vms-filters-cluster">
               
-              <!-- Search CCTV Input Box -->
-              <div class="cctv-search-input-wrapper" style="position: relative; min-width: 220px; max-width: 320px; flex: 1;">
-                <i class="fas fa-search cctv-search-icon" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: #38bdf8; font-size: 13px; pointer-events: none; z-index: 2;"></i>
+              <!-- Search Box -->
+              <div class="vms-search-box cctv-search-input-wrapper">
+                <i class="fas fa-search vms-search-icon cctv-search-icon"></i>
                 <input
                   type="text"
                   id="cctv-search-input"
-                  class="cctv-search-input"
-                  placeholder="Cari nama CCTV / lokasi..."
-                  autocomplete="off"
-                  style="background: rgba(255,255,255,0.08); color: #fff; border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 8px; padding: 6px 32px 6px 30px; font-size: 13px; width: 100%; outline: none; transition: all 0.2s;" />
-                <span class="cctv-search-loading" id="cctv-search-loading" style="position: absolute; right: 28px; top: 50%; transform: translateY(-50%); color: #38bdf8; display: none;">
+                  class="vms-search-input cctv-search-input"
+                  placeholder="Cari CCTV / lokasi..."
+                  autocomplete="off" />
+                <span class="vms-search-spinner cctv-search-loading" id="cctv-search-loading">
                   <i class="fas fa-spinner fa-spin"></i>
                 </span>
                 <button
                   type="button"
-                  class="cctv-search-clear"
+                  class="vms-search-clear-btn cctv-search-clear"
                   id="cctv-search-clear"
-                  aria-label="Clear search"
-                  style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: none; border: none; color: #94a3b8; cursor: pointer; display: none; padding: 2px;">
+                  aria-label="Clear search">
                   <i class="fas fa-times"></i>
                 </button>
-                <div class="cctv-search-results" id="cctv-search-results" style="position: absolute; top: calc(100% + 5px); left: 0; right: 0; z-index: 1000;"></div>
+                <div class="cctv-search-results vms-search-dropdown" id="cctv-search-results"></div>
               </div>
 
-              <!-- Wilayah -->
-              <div class="filter-group" style="display: flex; align-items: center; gap: 6px;">
-                <label style="color: #38bdf8; font-weight: 600; margin: 0; font-size: 13px;"><i class="fas fa-map-marker-alt"></i> Wilayah:</label>
-                <select class="filter-select" id="filter-city" style="background: rgba(255,255,255,0.08); color: #fff; border: 1px solid rgba(255,255,255,0.18); border-radius: 8px; padding: 6px 10px; font-weight: 600; font-size: 13px;" onchange="changeGlobalCity(this.value)">
-                  <option value="all" selected style="color: #111;">🌐 Semua Wilayah</option>
-                  <option value="siantar" style="color: #111;">📍 Pematangsiantar</option>
-                  <option value="jakarta" style="color: #111;">📍 DKI Jakarta</option>
-                  <option value="medan" style="color: #111;">📍 Kota Medan</option>
-                  <option value="bandung" style="color: #111;">📍 Kota Bandung</option>
-                  <option value="bali" style="color: #111;">📍 Bali / Denpasar</option>
-                </select>
+              <!-- Filter Selects -->
+              <div class="vms-select-group">
+                <div class="vms-select-item" title="Filter Wilayah">
+                  <i class="fas fa-map-marker-alt"></i>
+                  <select class="vms-custom-select" id="filter-city" onchange="changeGlobalCity(this.value)">
+                    <option value="all" selected>🌐 Semua Wilayah</option>
+                    <option value="siantar">📍 Pematangsiantar</option>
+                    <option value="jakarta">📍 DKI Jakarta</option>
+                    <option value="medan">📍 Kota Medan</option>
+                    <option value="bandung">📍 Kota Bandung</option>
+                    <option value="bali">📍 Bali / Denpasar</option>
+                  </select>
+                </div>
+
+                <div class="vms-select-item" title="Filter Platform">
+                  <i class="fas fa-server"></i>
+                  <select class="vms-custom-select" id="filter-platform">
+                    <option value="all">Platform: Semua</option>
+                    <option value="mediamtx">MediaMTX</option>
+                    <option value="ipcamlive">IPCamLive</option>
+                  </select>
+                </div>
+
+                <div class="vms-select-item" title="Filter Status">
+                  <i class="fas fa-circle-notch"></i>
+                  <select class="vms-custom-select" id="filter-status">
+                    <option value="all">Status: Semua</option>
+                    <option value="online">Online</option>
+                    <option value="offline">Offline</option>
+                  </select>
+                </div>
+
+                <div class="vms-select-item" title="Urutan CCTV">
+                  <i class="fas fa-sort-amount-down"></i>
+                  <select class="vms-custom-select" id="filter-sort">
+                    <option value="default">Urutan: Default</option>
+                    <option value="name-asc">Nama A-Z</option>
+                    <option value="name-desc">Nama Z-A</option>
+                  </select>
+                </div>
               </div>
 
-              <!-- Platform -->
-              <div class="filter-group" style="display: flex; align-items: center; gap: 6px;">
-                <label style="color: #94a3b8; margin: 0; font-size: 13px;">Platform:</label>
-                <select class="filter-select" id="filter-platform" style="background: rgba(255,255,255,0.08); color: #fff; border: 1px solid rgba(255,255,255,0.18); border-radius: 8px; padding: 6px 10px; font-size: 13px;">
-                  <option value="all" style="color: #111;">Semua Platform</option>
-                  <option value="mediamtx" style="color: #111;">MediaMTX</option>
-                  <option value="ipcamlive" style="color: #111;">IPCamLive</option>
-                </select>
-              </div>
-
-              <!-- Status -->
-              <div class="filter-group" style="display: flex; align-items: center; gap: 6px;">
-                <label style="color: #94a3b8; margin: 0; font-size: 13px;">Status:</label>
-                <select class="filter-select" id="filter-status" style="background: rgba(255,255,255,0.08); color: #fff; border: 1px solid rgba(255,255,255,0.18); border-radius: 8px; padding: 6px 10px; font-size: 13px;">
-                  <option value="all">Semua Status</option>
-                  <option value="online">Online</option>
-                  <option value="offline">Offline</option>
-                </select>
-              </div>
-
-              <!-- Urutkan -->
-              <div class="filter-group" style="display: flex; align-items: center; gap: 6px;">
-                <label style="color: #94a3b8; margin: 0; font-size: 13px;">Urutkan:</label>
-                <select class="filter-select" id="filter-sort" style="background: rgba(255,255,255,0.08); color: #fff; border: 1px solid rgba(255,255,255,0.18); border-radius: 8px; padding: 6px 10px; font-size: 13px;">
-                  <option value="default">Default</option>
-                  <option value="name-asc">Nama A-Z</option>
-                  <option value="name-desc">Nama Z-A</option>
-                </select>
-              </div>
             </div>
 
-            <!-- VMS Status & Quality Indicator -->
-            <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
-              <div class="vms-stat-item" style="font-size: 12px;"><span class="vms-stat-label" style="color: #94a3b8;">Loewix VMS:</span> <span class="vms-stat-val text-success" style="font-weight: 700; color: #00ff66 !important;">ONLINE</span></div>
-              <div class="vms-stat-item d-none d-lg-block" style="font-size: 12px;"><span class="vms-stat-label" style="color: #94a3b8;">Engine:</span> <span class="vms-stat-val text-info" style="font-weight: 600; color: #38bdf8 !important;">H.265 HEVC</span></div>
-              <div class="vms-stat-item" style="display: flex; align-items: center; gap: 6px; font-size: 12px;">
-                <span class="vms-stat-label" style="color: #94a3b8;">Kualitas:</span>
-                <button id="global-quality-btn" class="vms-quality-pill is-sd" onclick="toggleGlobalStreamQuality()" title="Ganti Kualitas Semua CCTV (SD / HD)">
-                  <span id="global-quality-text">SD</span>
-                </button>
+            <!-- Right: VMS Telemetry & Stream Quality Toggle -->
+            <div class="vms-telemetry-cluster">
+              <div class="vms-telemetry-badge status-online">
+                <span class="pulse-dot"></span>
+                <span>VMS ONLINE</span>
               </div>
+              <div class="vms-telemetry-badge codec-badge d-none d-md-inline-flex">
+                <i class="fas fa-bolt text-warning mr-1"></i>
+                <span>H.265</span>
+              </div>
+              <button id="global-quality-btn" class="vms-quality-toggle-pill is-sd" onclick="toggleGlobalStreamQuality()" title="Ganti Kualitas Semua CCTV (SD / HD)">
+                <i class="fas fa-sliders-h"></i>
+                <span>Kualitas: <strong id="global-quality-text">SD</strong></span>
+              </button>
             </div>
+
           </div>
 
-          <!-- Bottom Row: Unified Layout Grid Buttons + Fullscreen + Devices -->
-          <div style="display: flex; gap: 12px; flex-wrap: wrap; align-items: center; justify-content: space-between; width: 100%;">
-            <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-              <span style="color: #38bdf8; font-weight: 700; font-size: 13px; display: inline-flex; align-items: center; gap: 6px;">
-                <i class="fas fa-th"></i> Layout:
+          <!-- Bottom Row: Matrix Layouts + Devices Trigger -->
+          <div class="vms-bar-bottom">
+            <div class="vms-layout-cluster">
+              <span class="vms-layout-label">
+                <i class="fas fa-th"></i> LAYOUT:
               </span>
-              <div class="vms-dock-center" style="display: inline-flex; gap: 4px; flex-wrap: wrap; align-items: center;">
-                <button class="vms-layout-btn" onclick="changeGridLayout(1)" data-layout="1" title="View 1 (1 Layar)"><i class="far fa-square"></i><span>1</span></button>
-                <button class="vms-layout-btn" onclick="changeGridLayout(2)" data-layout="2" title="View 2 (2 Layar)"><i class="fas fa-columns"></i><span>2</span></button>
-                <button class="vms-layout-btn" onclick="changeGridLayout(4)" data-layout="4" title="View 4 (2x2 Layar)"><i class="fas fa-th-large"></i><span>4</span></button>
-                <button class="vms-layout-btn" onclick="changeGridLayout(6)" data-layout="6" title="View 6 (3x2 Layar)"><i class="fas fa-th"></i><span>6</span></button>
-                <button class="vms-layout-btn" onclick="changeGridLayout(8)" data-layout="8" title="View 8 (4x2 Layar)"><i class="fas fa-border-all"></i><span>8</span></button>
-                <button class="vms-layout-btn" onclick="changeGridLayout(9)" data-layout="9" title="View 9 (3x3 Layar)"><i class="fas fa-grip-horizontal"></i><span>9</span></button>
-                <button class="vms-layout-btn" onclick="changeGridLayout(16)" data-layout="16" title="View 16 (4x4 Layar)"><span class="vms-badge-icon">16</span></button>
-                <button class="vms-layout-btn" onclick="changeGridLayout(25)" data-layout="25" title="View 25 (5x5 Layar)"><span class="vms-badge-icon">25</span></button>
-                <button class="vms-layout-btn" onclick="changeGridLayout(36)" data-layout="36" title="View 36 (6x6 Layar)"><span class="vms-badge-icon">36</span></button>
-                <button class="vms-layout-btn" onclick="changeGridLayout(64)" data-layout="64" title="View 64 (8x8 Layar)"><span class="vms-badge-icon">64</span></button>
-                <button class="vms-layout-btn" onclick="changeGridLayout(128)" data-layout="128" title="View 128 Matrix"><span class="vms-badge-icon">128</span></button>
-                <button class="vms-layout-btn vms-fs-btn" onclick="toggleVMSFullscreen()" title="Fullscreen Matrix"><i class="fas fa-expand"></i></button>
+              <div class="vms-layout-matrix-buttons">
+                <button class="vms-layout-btn vms-matrix-btn" onclick="changeGridLayout(1)" data-layout="1" title="View 1 (1 Layar)"><i class="far fa-square"></i><span>1</span></button>
+                <button class="vms-layout-btn vms-matrix-btn" onclick="changeGridLayout(2)" data-layout="2" title="View 2 (2 Layar)"><i class="fas fa-columns"></i><span>2</span></button>
+                <button class="vms-layout-btn vms-matrix-btn" onclick="changeGridLayout(4)" data-layout="4" title="View 4 (2x2 Layar)"><i class="fas fa-th-large"></i><span>4</span></button>
+                <button class="vms-layout-btn vms-matrix-btn" onclick="changeGridLayout(6)" data-layout="6" title="View 6 (3x2 Layar)"><i class="fas fa-th"></i><span>6</span></button>
+                <button class="vms-layout-btn vms-matrix-btn" onclick="changeGridLayout(8)" data-layout="8" title="View 8 (4x2 Layar)"><i class="fas fa-border-all"></i><span>8</span></button>
+                <button class="vms-layout-btn vms-matrix-btn" onclick="changeGridLayout(9)" data-layout="9" title="View 9 (3x3 Layar)"><i class="fas fa-grip-horizontal"></i><span>9</span></button>
+                <button class="vms-layout-btn vms-matrix-btn" onclick="changeGridLayout(16)" data-layout="16" title="View 16 (4x4 Layar)"><span>16</span></button>
+                <button class="vms-layout-btn vms-matrix-btn" onclick="changeGridLayout(25)" data-layout="25" title="View 25 (5x5 Layar)"><span>25</span></button>
+                <button class="vms-layout-btn vms-matrix-btn" onclick="changeGridLayout(36)" data-layout="36" title="View 36 (6x6 Layar)"><span>36</span></button>
+                <button class="vms-layout-btn vms-matrix-btn" onclick="changeGridLayout(64)" data-layout="64" title="View 64 (8x8 Layar)"><span>64</span></button>
+                <button class="vms-layout-btn vms-matrix-btn" onclick="changeGridLayout(128)" data-layout="128" title="View 128 Matrix"><span>128</span></button>
+                <button class="vms-layout-btn vms-matrix-btn vms-fs-btn" onclick="toggleVMSFullscreen()" title="Fullscreen Matrix"><i class="fas fa-expand"></i></button>
               </div>
             </div>
 
-            <div style="display: flex; align-items: center; gap: 8px;">
-              <button class="vms-tool-btn" onclick="toggleVMSDeviceSidebar()" title="Buka Daftar Kamera (Devices)" style="background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.4); color: #38bdf8; padding: 7px 16px; border-radius: 20px; font-weight: 700; font-size: 13px; display: inline-flex; align-items: center; gap: 8px; cursor: pointer;">
+            <div>
+              <button class="vms-devices-action-btn vms-tool-btn" onclick="toggleVMSDeviceSidebar()" title="Buka Daftar Kamera (Devices)">
                 <i class="fas fa-video"></i> <span>Devices</span>
               </button>
             </div>
