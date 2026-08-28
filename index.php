@@ -1312,29 +1312,49 @@
        LOEWIX ENTERPRISE VMS COMMAND CENTER TOOLBAR
        ========================================================= */
     .cctv-vms-command-center {
-      background: linear-gradient(180deg, rgba(15, 23, 42, 0.94) 0%, rgba(10, 18, 36, 0.98) 100%);
-      border: 1px solid rgba(56, 189, 248, 0.22);
-      border-radius: 16px;
+      background: linear-gradient(180deg, rgba(13, 24, 48, 0.95) 0%, rgba(8, 15, 32, 0.98) 100%);
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      border-radius: 18px;
       padding: 12px 18px;
-      margin-bottom: 24px;
-      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.08);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
+      margin-bottom: 20px;
+      box-shadow: 0 20px 45px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      gap: 10px;
       transition: all 0.3s ease;
     }
 
-    /* TOP ROW: Search, Filters & Devices Button */
+    .vms-brand-logo {
+      display: flex;
+      align-items: center;
+      flex-shrink: 0;
+      text-decoration: none;
+    }
+
+    .vms-brand-logo img {
+      height: 32px;
+      width: auto;
+      max-height: 32px;
+      object-fit: contain;
+      filter: drop-shadow(0 2px 8px rgba(0, 210, 255, 0.3));
+      transition: transform 0.2s ease;
+    }
+
+    .vms-brand-logo:hover img {
+      transform: scale(1.03);
+    }
+
+    /* TOP ROW: Brand, Search, Filters & User Actions */
     .vms-bar-top {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 12px;
+      gap: 10px;
       flex-wrap: wrap;
       padding-bottom: 10px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
     }
 
     .vms-filters-cluster {
@@ -5391,53 +5411,6 @@
   <!-- ===== MAIN DASHBOARD APPLICATION WRAPPER ===== -->
   <div id="main-app-content" style="display: none;">
 
-  <!-- Floating Taste-Skill Glassmorphism Header Bar -->
-  <div class="header-floating-wrapper" style="position: fixed; top: 15px; left: 0; right: 0; z-index: 1040; pointer-events: none;">
-    <div class="container" style="max-width: 1200px;">
-      <nav
-        class="navbar navbar-expand-lg navbar-dark p-0"
-        id="myNavbar"
-        style="
-            background: rgba(13, 27, 62, 0.75);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            border-radius: 50px;
-            padding: 10px 24px !important;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.35);
-            pointer-events: auto;
-            transition: all 0.3s ease;
-          ">
-        <a class="navbar-brand p-0 mr-3" href="index.php" style="display: flex; align-items: center; flex-shrink: 0;">
-          <img
-            src="assets/image/logo-loewix-white.png"
-            alt="LOEWIX CCTV"
-            style="height: 38px; max-height: 38px; width: auto; min-width: 120px; object-fit: contain; display: block; flex-shrink: 0; filter: drop-shadow(0 2px 8px rgba(0,0,0,0.3));" />
-        </a>
-
-        <div class="d-flex align-items-center ml-auto" style="gap: 10px;">
-          <select id="city-selector-nav" class="form-control form-control-sm" style="background: rgba(255,255,255,0.12); color: white; border: 1px solid rgba(255,255,255,0.25); border-radius: 20px; padding: 5px 12px; font-weight: 600; cursor: pointer; width: auto; font-size: 13px; outline: none;" onchange="changeGlobalCity(this.value)">
-            <option value="all" selected style="color: #111;">🌐 Semua Wilayah</option>
-            <option value="siantar" style="color: #111;">📍 Pematangsiantar</option>
-            <option value="jakarta" style="color: #111;">📍 DKI Jakarta</option>
-            <option value="medan" style="color: #111;">📍 Kota Medan</option>
-            <option value="bandung" style="color: #111;">📍 Kota Bandung</option>
-            <option value="bali" style="color: #111;">📍 Bali / Denpasar</option>
-          </select>
-          <button id="dark-mode-toggle" class="btn btn-sm text-white" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;" title="Toggle Dark Mode">
-            <i class="fas fa-moon" id="dark-mode-icon"></i>
-          </button>
-          <div id="nav-user-area" class="d-flex align-items-center" style="gap: 8px;">
-            <button class="btn btn-sm" onclick="openLoginModal()" style="background: linear-gradient(135deg, #00d2ff, #0066ff); border: none; font-weight: 700; border-radius: 25px; padding: 7px 20px; color: #fff; box-shadow: 0 4px 15px rgba(0, 102, 255, 0.4); text-transform: uppercase; font-size: 12px; letter-spacing: 0.5px;">
-              <i class="fas fa-sign-in-alt mr-1"></i> LOGIN
-            </button>
-          </div>
-        </div>
-      </nav>
-    </div>
-  </div>
-  <!-- Floating Taste-Skill Glassmorphism Header Bar End -->
-
   <!-- Banner Section [HIDDEN] -->
   <div class="header-and-banner-con w-100" style="display: none !important;">
     <div class="header-and-banner-inner-con overlay-content">
@@ -5610,7 +5583,7 @@
 
 
   <!-- CCTV Section -->
-  <section id="cctv" style="padding-top: 95px;">
+  <section id="cctv" style="padding-top: 20px;">
     <div class="Pricing-con dots-left-img">
       <div class="container-fluid px-xl-5 px-lg-4 px-md-3 px-2 overlay-content">
         <!-- Pricing-title (Hidden per user request) -->
@@ -5631,16 +5604,21 @@
         <!-- Overlay untuk Pop-up -->
         <div id="popupOverlay" onclick="closeTrafficPopup()"></div>
 
-        <!-- Unified VMS Control & Filter Toolbar (Search + Filters + Layout + Tools) -->
-        <!-- Enterprise VMS Command Center Toolbar (Search + Filters + Matrix + Telemetry) -->
-        <!-- Enterprise VMS Command Center Toolbar (Search + Filters + Matrix + Telemetry) -->
+        <!-- Unified VMS Command Center & Header Bar (Brand + Search + Filters + User Session + Matrix) -->
         <div class="cctv-vms-command-center" id="cctv-filter-toolbar">
           
-          <!-- Top Row: Search & Filters + Devices Management Button -->
+          <!-- Top Row: Logo, Search, Filters & User Actions -->
           <div class="vms-bar-top">
             
-            <!-- Left: Search & Filter Controls -->
+            <!-- Left: Brand Logo + Search + Filter Controls -->
             <div class="vms-filters-cluster">
+              
+              <!-- Brand Logo -->
+              <a href="index.php" class="vms-brand-logo mr-1" title="LOEWIX Enterprise CCTV">
+                <img src="assets/image/logo-loewix-white.png" alt="LOEWIX CCTV">
+              </a>
+
+              <div class="d-none d-md-block" style="width: 1px; height: 26px; background: rgba(255,255,255,0.15); margin: 0 3px;"></div>
               
               <!-- Search Box -->
               <div class="vms-search-box cctv-search-input-wrapper">
@@ -5708,11 +5686,21 @@
 
             </div>
 
-            <!-- Right: Devices Tree Trigger -->
-            <div>
+            <!-- Right: Devices Tree Trigger, Dark Mode Toggle & User Auth Area -->
+            <div class="d-flex align-items-center ml-auto" style="gap: 8px; flex-shrink: 0;">
               <button class="vms-devices-action-btn vms-tool-btn" onclick="toggleVMSDeviceSidebar()" title="Buka Daftar Kamera (Devices)">
                 <i class="fas fa-video"></i> <span>Devices (Camera Tree)</span>
               </button>
+
+              <button id="dark-mode-toggle" class="btn btn-sm text-white" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.2); border-radius: 50%; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; padding: 0;" title="Toggle Dark Mode">
+                <i class="fas fa-moon" id="dark-mode-icon" style="font-size: 13px;"></i>
+              </button>
+
+              <div id="nav-user-area" class="d-flex align-items-center" style="gap: 6px;">
+                <button class="btn btn-sm" onclick="showLoginGateView()" style="background: linear-gradient(135deg, #00d2ff, #0066ff); border: none; font-weight: 700; border-radius: 20px; padding: 5px 16px; color: #fff; box-shadow: 0 4px 12px rgba(0, 102, 255, 0.4); text-transform: uppercase; font-size: 11.5px; letter-spacing: 0.5px;">
+                  <i class="fas fa-sign-in-alt mr-1"></i> LOGIN
+                </button>
+              </div>
             </div>
 
           </div>
