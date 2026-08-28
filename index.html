@@ -9175,38 +9175,42 @@
             console.log('[MediaMTX/JFTech] Loading HLS URL:', targetUrl);
 
             if (typeof Hls !== 'undefined' && Hls.isSupported()) {
-              // ===== ANTI-BUFFERING & ULTRA-LEAN LOW-BANDWIDTH STREAM CONFIGURATION =====
+              // ===== HIGH-BANDWIDTH ULTRA-SMOOTH ZERO-BUFFERING CONFIGURATION =====
               const hls = new Hls({
                 enableWorker: true,
                 lowLatencyMode: false,
-                liveSyncDurationCount: 2,
-                liveMaxLatencyDurationCount: 6,
-                maxBufferLength: 2,
-                maxMaxBufferLength: 4,
-                maxBufferSize: 1.5 * 1024 * 1024,
-                backBufferLength: 0,
-                maxFragLoadingTimeMs: 15000,
+                liveSyncDurationCount: 3,
+                liveMaxLatencyDurationCount: 8,
+                maxBufferLength: 15,
+                maxMaxBufferLength: 30,
+                maxBufferSize: 60 * 1024 * 1024,
+                backBufferLength: 10,
+                maxFragLoadingTimeMs: 20000,
                 maxLoadingDelay: 0,
-                manifestLoadingTimeOut: 12000,
-                manifestLoadingMaxRetry: 8,
-                manifestLoadingRetryDelay: 1000,
-                levelLoadingMaxRetry: 5,
-                fragLoadingMaxRetry: 5,
-                startLevel: 0,
-                capLevelToPlayerSize: true,
-                abrEwmaDefaultEstimate: 500000,
-                abrBandWidthFactor: 0.7,
-                abrBandWidthUpFactor: 0.4,
+                manifestLoadingTimeOut: 15000,
+                manifestLoadingMaxRetry: 10,
+                manifestLoadingRetryDelay: 500,
+                levelLoadingMaxRetry: 8,
+                fragLoadingMaxRetry: 8,
+                fragLoadingRetryDelay: 500,
+                startLevel: -1,
+                capLevelToPlayerSize: false,
+                abrEwmaDefaultEstimate: 5000000,
+                abrBandWidthFactor: 0.95,
+                abrBandWidthUpFactor: 0.9,
                 enableSoftwareAES: true,
-                maxBufferHole: 0.5,
-                highBufferWatchdogPeriod: 2,
-                nudgeOffset: 0.1,
-                nudgeMaxRetry: 5,
-                progressive: false
+                maxBufferHole: 0.8,
+                highBufferWatchdogPeriod: 1,
+                nudgeOffset: 0.2,
+                nudgeMaxRetry: 10,
+                progressive: true,
+                xhrSetup: function(xhr, url) {
+                  try {
+                    xhr.setRequestHeader('Bypass-Tunnel-Reminder', 'true');
+                    xhr.setRequestHeader('ngrok-skip-browser-warning', 'true');
+                  } catch (e) {}
+                }
               });
-
-              hls.loadSource(targetUrl);
-              hls.attachMedia(videoPlayer);
 
               function revealLiveVideo() {
                 if (thumb) {
@@ -9249,17 +9253,15 @@
               };
               hls.on(Hls.Events.FRAG_BUFFERED, revealLiveVideo);
 
-              // Auto-recover from stalls smoothly
+              // Auto-recover from stalls smoothly without showing buffering spinner
               hls.on(Hls.Events.BUFFER_STALLED, function() {
                 if (videoPlayer.buffered.length > 0) {
                   const end = videoPlayer.buffered.end(videoPlayer.buffered.length - 1);
-                  if (Math.abs(videoPlayer.currentTime - end) > 0.5) {
-                    videoPlayer.currentTime = end - 0.2;
+                  if (Math.abs(videoPlayer.currentTime - end) > 0.3) {
+                    videoPlayer.currentTime = end - 0.1;
                   }
                 }
-                if (videoPlayer.paused) {
-                  videoPlayer.play().catch(function() {});
-                }
+                videoPlayer.play().catch(function() {});
               });
 
               let netErrorCount = 0;
@@ -9271,48 +9273,33 @@
                   switch(data.type) {
                     case Hls.ErrorTypes.NETWORK_ERROR:
                       netErrorCount++;
-                      if (netErrorCount <= 3) {
-                        console.log('[Stream] Recovering network error (attempt ' + netErrorCount + ')...');
-                        setTimeout(() => hls.startLoad(), 1500);
+                      if (netErrorCount <= 6) {
+                        console.log('[Stream] Smoothly recovering network (attempt ' + netErrorCount + ')...');
+                        setTimeout(() => hls.startLoad(), 800);
                       } else {
-                        console.error('[Stream] Network error exceeded retry limit.');
-                        hls.destroy();
-                        if (bufferingOverlay) bufferingOverlay.style.display = 'none';
-                        if (thumb) {
-                          thumb.style.display = 'flex';
-                          thumb.style.opacity = '1';
-                          const loadingText = thumb.querySelector('.loading-text');
-                          if (loadingText) loadingText.innerHTML = '<i class="fas fa-play-circle"></i> Klik untuk memutar';
-                        }
+                        setTimeout(() => {
+                          netErrorCount = 0;
+                          hls.loadSource(targetUrl);
+                          hls.startLoad();
+                        }, 2000);
                       }
                       break;
                     case Hls.ErrorTypes.MEDIA_ERROR:
                       mediaErrorCount++;
-                      if (mediaErrorCount <= 2) {
-                        console.log('[Stream] Recovering media error (attempt ' + mediaErrorCount + ')...');
+                      if (mediaErrorCount <= 4) {
                         hls.recoverMediaError();
                       } else {
-                        console.error('[Stream] Media error unrecoverable.');
-                        hls.destroy();
-                        if (bufferingOverlay) bufferingOverlay.style.display = 'none';
-                        if (thumb) {
-                          thumb.style.display = 'flex';
-                          thumb.style.opacity = '1';
-                          const loadingText = thumb.querySelector('.loading-text');
-                          if (loadingText) loadingText.innerHTML = '<i class="fas fa-play-circle"></i> Klik untuk memutar';
-                        }
+                        hls.swapAudioCodec();
+                        hls.recoverMediaError();
                       }
                       break;
                     default:
-                      console.error('[Stream] Fatal unrecoverable error:', data.details);
-                      hls.destroy();
-                      if (bufferingOverlay) bufferingOverlay.style.display = 'none';
-                      if (thumb) {
-                        thumb.style.display = 'flex';
-                        thumb.style.opacity = '1';
-                        const loadingText = thumb.querySelector('.loading-text');
-                        if (loadingText) loadingText.innerHTML = '<i class="fas fa-play-circle"></i> Klik untuk memutar';
-                      }
+                      setTimeout(() => {
+                        try {
+                          hls.destroy();
+                          mountHLS(targetUrl);
+                        } catch(e) {}
+                      }, 2000);
                       break;
                   }
                 }
@@ -9320,6 +9307,8 @@
 
               videoPlayer.hlsInstance = hls;
               videoPlayer.setAttribute('data-hls-loaded', 'true');
+              hls.loadSource(targetUrl);
+              hls.attachMedia(videoPlayer);
             } else if (videoPlayer.canPlayType('application/vnd.apple.mpegurl')) {
               // Safari iOS / Mobile native HLS
               videoPlayer.src = targetUrl;
@@ -11433,7 +11422,7 @@
           if (typeof playMediaMTXCCTV === 'function' && thumb) {
             playMediaMTXCCTV(thumb, playerId, thumb.id);
           }
-        }, playIndex * 180);
+        }, playIndex * 50);
         playIndex++;
       });
     }
