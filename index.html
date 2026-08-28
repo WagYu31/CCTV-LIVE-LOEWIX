@@ -6291,7 +6291,7 @@
                 <div class="vms-encode-param-row">
                   <div class="vms-encode-param-name">Compression</div>
                   <div>
-                    <select id="enc-main-compression" class="vms-encode-select">
+                    <select id="enc-main-compression" class="vms-encode-select" onchange="onMainResolutionOrCompressionChange()">
                       <option value="H.265" selected>H.265</option>
                       <option value="H.264">H.264</option>
                       <option value="H.265+">H.265+</option>
@@ -6300,7 +6300,7 @@
                     </select>
                   </div>
                   <div>
-                    <select id="enc-extra-compression" class="vms-encode-select">
+                    <select id="enc-extra-compression" class="vms-encode-select" onchange="updateEncodeTelemetryFromUI()">
                       <option value="Extra Stream" selected>Extra Stream</option>
                       <option value="H.265">H.265</option>
                       <option value="H.264">H.264</option>
@@ -6312,7 +6312,7 @@
                 <div class="vms-encode-param-row">
                   <div class="vms-encode-param-name">Resolution</div>
                   <div>
-                    <select id="enc-main-resolution" class="vms-encode-select">
+                    <select id="enc-main-resolution" class="vms-encode-select" onchange="onMainResolutionOrCompressionChange()">
                       <option value="6M" selected>6M</option>
                       <option value="4K">4K</option>
                       <option value="5M">5M</option>
@@ -6323,7 +6323,7 @@
                     </select>
                   </div>
                   <div>
-                    <select id="enc-extra-resolution" class="vms-encode-select">
+                    <select id="enc-extra-resolution" class="vms-encode-select" onchange="onExtraResolutionChange()">
                       <option value="HD1" selected>HD1</option>
                       <option value="D1">D1</option>
                       <option value="CIF">CIF</option>
@@ -6378,7 +6378,7 @@
                 <div class="vms-encode-param-row">
                   <div class="vms-encode-param-name">Quality</div>
                   <div>
-                    <select id="enc-main-quality" class="vms-encode-select">
+                    <select id="enc-main-quality" class="vms-encode-select" onchange="onMainResolutionOrCompressionChange()">
                       <option value="high" selected>high</option>
                       <option value="best">best</option>
                       <option value="better">better</option>
@@ -6389,7 +6389,7 @@
                     </select>
                   </div>
                   <div>
-                    <select id="enc-extra-quality" class="vms-encode-select">
+                    <select id="enc-extra-quality" class="vms-encode-select" onchange="updateEncodeTelemetryFromUI()">
                       <option value="high" selected>high</option>
                       <option value="best">best</option>
                       <option value="better">better</option>
@@ -6454,7 +6454,7 @@
                 <div class="vms-encode-param-row">
                   <div class="vms-encode-param-name">Smart Encode</div>
                   <div>
-                    <select id="enc-main-smart" class="vms-encode-select">
+                    <select id="enc-main-smart" class="vms-encode-select" onchange="onMainResolutionOrCompressionChange()">
                       <option value="H.265AI" selected>H.265AI</option>
                       <option value="H.265+">H.265+</option>
                       <option value="H.265X">H.265X</option>
@@ -12102,22 +12102,54 @@
     let currentEncodeChannel = 1;
 
     async function openEncodeModal(channelId) {
-      currentEncodeChannel = parseInt(channelId) || 1;
+      currentEncodeChannel = channelId || 1;
       const modal = document.getElementById('cameraEncodeModal');
       if (!modal) return;
 
-      // Populate channel selector with active cameras if available
+      // Populate channel selector with active cameras with robust fallback
       const chanSelect = document.getElementById('encode-channel');
-      if (chanSelect && typeof mediamtxData !== 'undefined' && Array.isArray(mediamtxData) && mediamtxData.length > 0) {
+      if (chanSelect) {
         chanSelect.innerHTML = '';
-        mediamtxData.forEach((cam, index) => {
-          const chNum = cam.id || (index + 1);
-          const opt = document.createElement('option');
-          opt.value = chNum;
-          opt.textContent = `${chNum} - ${cam.title || 'Camera ' + chNum}`;
-          chanSelect.appendChild(opt);
-        });
-        chanSelect.value = currentEncodeChannel;
+        
+        let foundMatch = false;
+        const camList = (typeof mediamtxData !== 'undefined' && Array.isArray(mediamtxData) && mediamtxData.length > 0)
+          ? mediamtxData
+          : (typeof cctvData !== 'undefined' && Array.isArray(cctvData) && cctvData.length > 0)
+            ? cctvData
+            : [];
+
+        if (camList.length > 0) {
+          camList.forEach((cam, index) => {
+            const chVal = String(cam.id || (index + 1));
+            const opt = document.createElement('option');
+            opt.value = chVal;
+            opt.textContent = `Channel ${index + 1} - ${cam.title || 'Camera ' + (index + 1)}`;
+            if (chVal == String(currentEncodeChannel)) {
+              opt.selected = true;
+              foundMatch = true;
+            }
+            chanSelect.appendChild(opt);
+          });
+        }
+
+        // Always fallback to standard DVR channels 1..16 if list is empty
+        if (chanSelect.options.length === 0) {
+          for (let i = 1; i <= 16; i++) {
+            const opt = document.createElement('option');
+            opt.value = String(i);
+            opt.textContent = `Channel ${i}`;
+            if (String(i) == String(currentEncodeChannel)) {
+              opt.selected = true;
+              foundMatch = true;
+            }
+            chanSelect.appendChild(opt);
+          }
+        }
+
+        if (!foundMatch && chanSelect.options.length > 0) {
+          chanSelect.selectedIndex = 0;
+          currentEncodeChannel = chanSelect.value;
+        }
       }
 
       modal.style.display = 'flex';
@@ -12130,9 +12162,9 @@
     }
 
     async function loadChannelEncodeConfig(channel) {
-      currentEncodeChannel = parseInt(channel) || 1;
+      currentEncodeChannel = channel || 1;
       try {
-        const res = await fetch(`api/camera_encode.php?action=get&channel=${currentEncodeChannel}`);
+        const res = await fetch(`api/camera_encode.php?action=get&channel=${encodeURIComponent(currentEncodeChannel)}`);
         const data = await res.json();
         if (data.success && data.profile) {
           applyEncodeProfileToUI(data.profile);
@@ -12178,6 +12210,47 @@
       setInputVal('enc-adv-gop', a.gop_size || 40);
       setCheckVal('enc-adv-roi', a.roi_enabled !== false);
       setCheckVal('enc-adv-watermark', a.watermark_osd !== false);
+    }
+
+    // Auto-calculate recommended Bitrate when Resolution, Compression, or Quality changes
+    function onMainResolutionOrCompressionChange() {
+      const res = document.getElementById('enc-main-resolution').value;
+      const comp = document.getElementById('enc-main-compression').value;
+      const smart = document.getElementById('enc-main-smart').value;
+      const quality = document.getElementById('enc-main-quality').value;
+
+      let baseBitrate = 3316;
+      switch (res) {
+        case '4K': baseBitrate = 4096; break;
+        case '6M': baseBitrate = 3316; break;
+        case '5M': baseBitrate = 3072; break;
+        case '4M': baseBitrate = 2560; break;
+        case '3M': baseBitrate = 2048; break;
+        case '1080P': baseBitrate = 1536; break;
+        case '720P': baseBitrate = 1024; break;
+      }
+
+      if (comp === 'H.264') baseBitrate = Math.round(baseBitrate * 1.35);
+      if (smart === 'H.265AI' || smart === 'H.265+') baseBitrate = Math.round(baseBitrate * 0.75);
+
+      if (quality === 'best') baseBitrate = Math.round(baseBitrate * 1.2);
+      else if (quality === 'lowest') baseBitrate = Math.round(baseBitrate * 0.7);
+
+      document.getElementById('enc-main-bitrate').value = baseBitrate;
+      updateEncodeTelemetryFromUI();
+    }
+
+    function onExtraResolutionChange() {
+      const res = document.getElementById('enc-extra-resolution').value;
+      let baseBitrate = 552;
+      switch (res) {
+        case 'D1': baseBitrate = 768; break;
+        case 'HD1': baseBitrate = 552; break;
+        case 'CIF': baseBitrate = 384; break;
+        case 'QVGA': baseBitrate = 256; break;
+      }
+      document.getElementById('enc-extra-bitrate').value = baseBitrate;
+      updateEncodeTelemetryFromUI();
     }
 
     function getEncodeProfileFromUI() {
@@ -12253,6 +12326,12 @@
 
     async function saveEncodeConfig() {
       const profile = getEncodeProfileFromUI();
+      const okBtn = document.querySelector('.vms-encode-btn.btn-ok');
+      if (okBtn) {
+        okBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menyimpan...';
+        okBtn.disabled = true;
+      }
+
       try {
         const res = await fetch('api/camera_encode.php?action=save', {
           method: 'POST',
@@ -12262,9 +12341,9 @@
         const data = await res.json();
         if (data.success) {
           if (typeof showCCTVToast === 'function') {
-            showCCTVToast(data.message || 'Konfigurasi Encode berhasil disimpan!', 'success');
+            showCCTVToast(data.message || `Konfigurasi Encode Channel ${currentEncodeChannel} berhasil disimpan!`, 'success');
           } else {
-            alert(data.message || 'Konfigurasi Encode berhasil disimpan!');
+            alert(data.message || `Konfigurasi Encode Channel ${currentEncodeChannel} berhasil disimpan!`);
           }
           closeEncodeModal();
         } else {
@@ -12273,6 +12352,11 @@
       } catch (err) {
         console.error('[Encode] Save error:', err);
         alert('Terjadi kesalahan koneksi saat menyimpan konfigurasi.');
+      } finally {
+        if (okBtn) {
+          okBtn.innerHTML = 'OK';
+          okBtn.disabled = false;
+        }
       }
     }
 
@@ -12291,9 +12375,9 @@
         const data = await res.json();
         if (data.success) {
           if (typeof showCCTVToast === 'function') {
-            showCCTVToast(data.message, 'success');
+            showCCTVToast(data.message || 'Pengaturan Encode berhasil diterapkan ke semua channel!', 'success');
           } else {
-            alert(data.message);
+            alert(data.message || 'Pengaturan Encode berhasil diterapkan ke semua channel!');
           }
           closeEncodeModal();
         }
