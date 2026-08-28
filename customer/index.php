@@ -228,81 +228,185 @@ $user = get_logged_in_user();
       box-shadow: 0 20px 45px rgba(0, 0, 0, 0.5), 0 0 20px rgba(56, 189, 248, 0.15);
     }
 
-    /* Quota Hero Widget */
+    /* Quota Hero Widget - Ultra Premium Glass Architecture */
     .quota-hero-banner {
-      background: linear-gradient(135deg, rgba(13, 27, 62, 0.95), rgba(8, 47, 73, 0.85));
+      background: radial-gradient(circle at 10% 20%, rgba(14, 116, 144, 0.25) 0%, rgba(8, 20, 48, 0.95) 45%, rgba(4, 10, 26, 0.98) 100%);
       border: 1px solid rgba(56, 189, 248, 0.35);
+      border-radius: 24px;
+      padding: 30px 34px;
+      margin-top: 24px;
+      margin-bottom: 30px;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.65), 0 0 35px rgba(14, 116, 144, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.16);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .quota-hero-banner::after {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -20%;
+      width: 400px;
+      height: 400px;
+      background: radial-gradient(circle, rgba(56, 189, 248, 0.12) 0%, transparent 70%);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .hero-tier-badge {
+      background: linear-gradient(135deg, #0284c7, #025078);
+      border: 1px solid rgba(56, 189, 248, 0.5);
+      color: #ffffff;
+      padding: 5px 14px;
       border-radius: 20px;
-      padding: 26px 30px;
-      margin-top: 25px;
-      margin-bottom: 28px;
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.15);
-      backdrop-filter: blur(16px);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.8px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 0 14px rgba(2, 132, 199, 0.5);
+    }
+
+    .hero-city-badge {
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: #cbd5e1;
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 11.5px;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .hero-customer-title {
+      font-size: 28px;
+      font-weight: 900;
+      color: #ffffff;
+      letter-spacing: -0.5px;
+      margin-top: 6px;
+      margin-bottom: 6px;
+      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
     }
 
     .quota-progress-track {
       height: 12px;
       background: rgba(255, 255, 255, 0.08);
-      border-radius: 10px;
+      border-radius: 12px;
       overflow: hidden;
-      margin: 14px 0 8px 0;
+      margin: 12px 0 10px 0;
       position: relative;
+      border: 1px solid rgba(255, 255, 255, 0.08);
     }
 
     .quota-progress-fill {
       height: 100%;
-      background: linear-gradient(90deg, #0284c7, #38bdf8, #10b981);
-      border-radius: 10px;
+      background: linear-gradient(90deg, #0284c7, #38bdf8 60%, #10b981 100%);
+      border-radius: 12px;
       transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-      box-shadow: 0 0 12px rgba(56, 189, 248, 0.6);
+      box-shadow: 0 0 14px rgba(56, 189, 248, 0.7);
     }
 
-    /* Metric Cards */
+    .quota-cap-pill {
+      background: rgba(56, 189, 248, 0.14);
+      border: 1px solid rgba(56, 189, 248, 0.4);
+      color: #38bdf8;
+      padding: 3px 10px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 800;
+      font-family: monospace;
+      letter-spacing: 0.3px;
+    }
+
+    /* Metric Cards - 3D Glass Design */
     .metric-card {
-      background: rgba(13, 27, 62, 0.65);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 16px;
-      padding: 20px;
+      background: linear-gradient(135deg, rgba(15, 26, 56, 0.75) 0%, rgba(8, 16, 36, 0.85) 100%);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 18px;
+      padding: 16px 18px;
       display: flex;
       align-items: center;
-      gap: 16px;
-      transition: all 0.25s ease;
+      gap: 14px;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+      position: relative;
+      overflow: hidden;
     }
 
     .metric-card:hover {
-      background: rgba(13, 27, 62, 0.9);
-      border-color: rgba(56, 189, 248, 0.35);
-      transform: translateY(-2px);
+      background: linear-gradient(135deg, rgba(20, 36, 76, 0.85) 0%, rgba(10, 22, 48, 0.95) 100%);
+      border-color: rgba(56, 189, 248, 0.4);
+      transform: translateY(-3px);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5), 0 0 20px rgba(56, 189, 248, 0.2);
     }
 
     .metric-icon {
       width: 48px;
       height: 48px;
+      min-width: 48px;
       border-radius: 14px;
       display: flex;
       align-items: center;
       justify-content: center;
       font-size: 20px;
+      border: 1px solid transparent;
     }
 
-    .metric-icon.cyan { background: rgba(56, 189, 248, 0.15); color: #38bdf8; }
-    .metric-icon.emerald { background: rgba(16, 185, 129, 0.15); color: #34d399; }
-    .metric-icon.amber { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
-    .metric-icon.purple { background: rgba(139, 92, 246, 0.15); color: #a78bfa; }
+    .metric-icon.cyan {
+      background: radial-gradient(circle at top left, rgba(56, 189, 248, 0.28), rgba(2, 132, 199, 0.12));
+      border-color: rgba(56, 189, 248, 0.4);
+      color: #38bdf8;
+      box-shadow: 0 0 15px rgba(56, 189, 248, 0.25);
+    }
+
+    .metric-icon.emerald {
+      background: radial-gradient(circle at top left, rgba(16, 185, 129, 0.28), rgba(5, 150, 105, 0.12));
+      border-color: rgba(16, 185, 129, 0.4);
+      color: #34d399;
+      box-shadow: 0 0 15px rgba(16, 185, 129, 0.25);
+    }
+
+    .metric-icon.amber {
+      background: radial-gradient(circle at top left, rgba(245, 158, 11, 0.28), rgba(217, 119, 6, 0.12));
+      border-color: rgba(245, 158, 11, 0.4);
+      color: #fbbf24;
+      box-shadow: 0 0 15px rgba(245, 158, 11, 0.25);
+    }
+
+    .metric-icon.purple {
+      background: radial-gradient(circle at top left, rgba(168, 85, 247, 0.35), rgba(124, 58, 237, 0.15));
+      border-color: rgba(168, 85, 247, 0.45);
+      color: #c084fc;
+      box-shadow: 0 0 15px rgba(168, 85, 247, 0.3);
+    }
 
     .metric-value {
       font-size: 24px;
-      font-weight: 800;
+      font-weight: 900;
       color: #ffffff;
-      line-height: 1.2;
+      line-height: 1.1;
+      font-family: system-ui, -apple-system, sans-serif;
     }
 
     .metric-label {
-      font-size: 12px;
+      font-size: 11px;
       color: #94a3b8;
-      font-weight: 600;
+      font-weight: 800;
       text-transform: uppercase;
-      letter-spacing: 0.5px;
+      letter-spacing: 0.6px;
+      margin-top: 2px;
+    }
+
+    .metric-sub {
+      font-size: 10px;
+      color: #64748b;
+      font-weight: 600;
     }
 
     /* Action & Filter Toolbar */
@@ -816,38 +920,53 @@ $user = get_logged_in_user();
 
     <!-- Quota & Metrics Hero Banner -->
     <div class="quota-hero-banner">
-      <div class="row align-items-center">
+      <div class="row align-items-center position-relative" style="z-index: 1;">
         
-        <div class="col-lg-7 mb-4 mb-lg-0">
-          <div class="d-flex align-items-center gap-2 mb-2">
-            <span class="badge badge-primary px-3 py-1 font-weight-bold" style="background: #0284c7; border-radius: 20px; font-size: 11px; letter-spacing: 0.5px;">
-              <i class="fas fa-shield-alt mr-1"></i> ENTERPRISE VIP TIER
+        <!-- Left Customer Info & Quota Meter -->
+        <div class="col-lg-7 mb-4 mb-lg-0 pe-lg-4">
+          <div class="d-flex align-items-center gap-2 mb-2 flex-wrap">
+            <span class="hero-tier-badge">
+              <i class="fas fa-shield-halved"></i> ENTERPRISE VIP TIER
             </span>
-            <span class="text-muted" style="font-size: 12px;" id="hero-customer-city">📍 Pematangsiantar</span>
+            <span class="hero-city-badge" id="hero-customer-city">
+              <i class="fas fa-location-dot text-info"></i> Jakarta
+            </span>
+            <span class="hero-city-badge" style="border-color: rgba(16, 185, 129, 0.35); color: #34d399;">
+              <span class="pulse-dot"></span> Cloud Live Active
+            </span>
           </div>
-          <h2 class="font-weight-extrabold mb-1" style="font-size: 26px;" id="hero-customer-name">
-            PT. Jaya Sentosa Enterprise
+          
+          <h2 class="hero-customer-title" id="hero-customer-name">
+            Yamaha DDS
           </h2>
-          <p class="text-muted mb-3" style="font-size: 13.5px;">
-            Pusat kendali kamera pengawas CCTV multi-channel terisolasi & terenkripsi cloud Loewix.
+          
+          <p class="text-muted mb-3" style="font-size: 13.5px; line-height: 1.5; color: #94a3b8 !important;">
+            Pusat kendali kamera pengawas CCTV multi-channel terisolasi, enkripsi end-to-end, dan pemantauan siaran langsung cloud Loewix.
           </p>
 
           <!-- Quota Progress Meter -->
-          <div class="d-flex justify-content-between align-items-center font-weight-bold" style="font-size: 13px;">
-            <span style="color: #38bdf8;"><i class="fas fa-layer-group mr-1"></i> Kuota Kamera Terpakai:</span>
-            <span id="hero-quota-text" style="color: #ffffff;">0 / 20 Kamera (0%)</span>
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <span style="font-size: 13px; font-weight: 700; color: #38bdf8; display: inline-flex; align-items: center; gap: 6px;">
+              <i class="fas fa-layer-group"></i> Kuota Kamera Terpakai
+            </span>
+            <span class="quota-cap-pill" id="hero-quota-text">0 / 20 Kamera (0%)</span>
           </div>
+          
           <div class="quota-progress-track">
             <div class="quota-progress-fill" id="hero-quota-bar" style="width: 0%;"></div>
           </div>
-          <div class="d-flex justify-content-between text-muted" style="font-size: 11.5px;">
-            <span>Terpasang: <strong id="hero-used-count" class="text-white">0</strong> CCTV</span>
-            <span>Tersisa: <strong id="hero-remaining-count" class="text-emerald" style="color: #34d399;">0</strong> Slot</span>
+          
+          <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 text-muted" style="font-size: 12px; font-weight: 600;">
+            <span><i class="fas fa-circle text-info" style="font-size: 8px;"></i> Terpasang: <strong id="hero-used-count" class="text-white">0</strong> CCTV</span>
+            <span><i class="fas fa-circle text-emerald" style="color: #34d399; font-size: 8px;"></i> Tersisa: <strong id="hero-remaining-count" style="color: #34d399;">0</strong> Slot</span>
+            <span class="d-none d-md-inline" style="color: #64748b;"><i class="fas fa-server text-muted"></i> Loewix Cloud Storage: Aktif</span>
           </div>
         </div>
 
-        <div class="col-lg-5">
+        <!-- Right 4 Metric Stat Cards (2x2) -->
+        <div class="col-lg-5 ps-lg-3">
           <div class="row g-3">
+            
             <div class="col-6">
               <div class="metric-card">
                 <div class="metric-icon cyan">
@@ -856,6 +975,7 @@ $user = get_logged_in_user();
                 <div>
                   <div class="metric-value" id="card-total-cam">0</div>
                   <div class="metric-label">Total CCTV</div>
+                  <div class="metric-sub">Terdaftar</div>
                 </div>
               </div>
             </div>
@@ -866,35 +986,39 @@ $user = get_logged_in_user();
                   <i class="fas fa-wifi"></i>
                 </div>
                 <div>
-                  <div class="metric-value" id="card-online-cam">0</div>
+                  <div class="metric-value text-emerald" style="color: #34d399;" id="card-online-cam">0</div>
                   <div class="metric-label">Live Online</div>
+                  <div class="metric-sub">Streaming Aktif</div>
                 </div>
               </div>
             </div>
 
-            <div class="col-6 mt-3">
+            <div class="col-6">
               <div class="metric-card">
                 <div class="metric-icon amber">
-                  <i class="fas fa-hdd"></i>
+                  <i class="fas fa-server"></i>
                 </div>
                 <div>
-                  <div class="metric-value" id="card-quota-max">20</div>
+                  <div class="metric-value" style="color: #fbbf24;" id="card-quota-max">20</div>
                   <div class="metric-label">Max Kuota</div>
+                  <div class="metric-sub">Slot Kamera</div>
                 </div>
               </div>
             </div>
 
-            <div class="col-6 mt-3">
-              <div class="metric-card" onclick="openRequestUpgradeModal()" style="cursor: pointer; border-color: rgba(56, 189, 248, 0.3);" title="Klik untuk Upgrade Kuota">
+            <div class="col-6">
+              <div class="metric-card" onclick="openRequestUpgradeModal()" style="cursor: pointer;" title="Klik untuk Tambah / Upgrade Kuota">
                 <div class="metric-icon purple">
-                  <i class="fas fa-arrow-circle-up"></i>
+                  <i class="fas fa-circle-arrow-up"></i>
                 </div>
                 <div>
-                  <div class="metric-value" style="font-size: 15px; color: #a78bfa;">UPGRADE</div>
+                  <div class="metric-value" style="font-size: 16px; color: #c084fc; letter-spacing: 0.5px;">UPGRADE</div>
                   <div class="metric-label">Tambah Kuota</div>
+                  <div class="metric-sub" style="color: #a855f7;">Klik Request</div>
                 </div>
               </div>
             </div>
+
           </div>
         </div>
 
