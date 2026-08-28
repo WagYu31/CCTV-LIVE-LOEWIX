@@ -9417,6 +9417,19 @@
                   element.setAttribute('data-hls-url', data.hls_url);
                   element.setAttribute('data-stream-path', data.hls_url);
                   mountHLS(data.hls_url);
+                } else if (data.device_status === 'offline' || data.error_code === 4101) {
+                  if (bufferingOverlay) bufferingOverlay.style.display = 'none';
+                  if (thumb) {
+                    thumb.style.display = 'flex';
+                    thumb.style.opacity = '1';
+                    const loadingText = thumb.querySelector('.loading-text');
+                    if (loadingText) {
+                      loadingText.innerHTML = '<i class="fas fa-video-slash text-danger" style="color:#ef4444;"></i> Kamera Sedang Offline';
+                    }
+                  }
+                  if (typeof showOfflineMessage === 'function') {
+                    showOfflineMessage(playerId, thumbId, 'Kamera Sedang Offline (Cek Daya / Internet)');
+                  }
                 } else {
                   mountHLS(`${STREAM_BASE}/${streamPath}/index.m3u8`);
                 }

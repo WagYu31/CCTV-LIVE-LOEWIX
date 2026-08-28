@@ -241,7 +241,10 @@ function getJFTechLiveStreamUrl($sn, $channel = 1, $protocol = 'hls-fmp4', $stre
     }
 
     $deviceToken = getJFDeviceToken($cleanSN);
-    if (!$deviceToken) return null;
+    if (!$deviceToken) {
+        $GLOBALS['last_jf_error'] = ['code' => 29010, 'msg' => 'Device Token tidak ditemukan / SN tidak valid di Cloud'];
+        return null;
+    }
 
     $url = JF_BASE_URL . '/rtc/device/livestream/' . $deviceToken;
     $body = [
@@ -272,6 +275,11 @@ function getJFTechLiveStreamUrl($sn, $channel = 1, $protocol = 'hls-fmp4', $stre
         ]));
         return $liveUrl;
     }
+
+    $GLOBALS['last_jf_error'] = [
+        'code' => $res['code'] ?? 5000,
+        'msg' => $res['msg'] ?? 'Device offline atau gagal mendapatkan stream'
+    ];
 
     return null;
 }
@@ -305,15 +313,20 @@ if ($action === 'get_live_stream') {
         exit;
     }
 
+    $lastErr = $GLOBALS['last_jf_error'] ?? ['code' => 4101, 'msg' => 'Device offline'];
+    $isOffline = ($lastErr['code'] === 4101 || stripos($lastErr['msg'], 'offline') !== false);
+
     $streamPath = "xmeye_{$cleanSN}_ch{$channel}";
     echo json_encode([
         'success' => false,
+        'device_status' => $isOffline ? 'offline' : 'error',
+        'error_code' => $lastErr['code'],
         'source' => 'stream_fallback',
         'streamPath' => $streamPath,
         'hls_url' => "https://stream.loewixcctv.com/{$streamPath}/index.m3u8",
         'sn' => $cleanSN,
         'channel' => $channel,
-        'message' => 'Gagal mendapatkan live stream dari JFTech Cloud.'
+        'message' => $isOffline ? 'Kamera sedang Offline (Mati Daya / Tidak Terhubung ke Internet)' : ($lastErr['msg'] ?? 'Gagal mendapatkan live stream dari JFTech Cloud.')
     ]);
     exit;
 }
