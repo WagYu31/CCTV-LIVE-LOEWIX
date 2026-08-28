@@ -5240,59 +5240,98 @@
         <!-- Overlay untuk Pop-up -->
         <div id="popupOverlay" onclick="closeTrafficPopup()"></div>
 
-        <!-- Advanced Filter Toolbar -->
-        <div class="cctv-filter-toolbar" id="cctv-filter-toolbar" style="display: flex; gap: 15px; flex-wrap: wrap; align-items: center; justify-content: center; margin-bottom: 30px; padding: 15px 20px; background: rgba(13, 27, 62, 0.8); border-radius: 12px; border: 1px solid rgba(255,255,255,0.15);">
-          <div class="filter-group" style="display: flex; align-items: center; gap: 8px;">
-            <label style="color: #4cd137; font-weight: 600; margin: 0;"><i class="fas fa-map-marker-alt"></i> Wilayah / Kota:</label>
-            <select class="filter-select" id="filter-city" style="background: rgba(255,255,255,0.1); color: #fff; border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; padding: 6px 12px; font-weight: 600;" onchange="changeGlobalCity(this.value)">
-              <option value="all" selected style="color: #111;">🌐 Semua Wilayah</option>
-              <option value="siantar" style="color: #111;">📍 Pematangsiantar</option>
-              <option value="jakarta" style="color: #111;">📍 DKI Jakarta</option>
-              <option value="medan" style="color: #111;">📍 Kota Medan</option>
-              <option value="bandung" style="color: #111;">📍 Kota Bandung</option>
-              <option value="bali" style="color: #111;">📍 Bali / Denpasar</option>
-            </select>
+        <!-- Unified VMS Control & Filter Toolbar (Gambar 1 digabung ke Gambar 2) -->
+        <div class="cctv-filter-toolbar" id="cctv-filter-toolbar" style="display: flex; flex-direction: column; gap: 14px; margin-bottom: 25px; padding: 16px 20px; background: rgba(13, 27, 62, 0.88); border-radius: 16px; border: 1px solid rgba(56, 189, 248, 0.25); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35); backdrop-filter: blur(14px);">
+          
+          <!-- Top Row: Filters & Engine Status -->
+          <div style="display: flex; gap: 12px; flex-wrap: wrap; align-items: center; justify-content: space-between; width: 100%; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 12px;">
+            <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+              <!-- Wilayah -->
+              <div class="filter-group" style="display: flex; align-items: center; gap: 6px;">
+                <label style="color: #38bdf8; font-weight: 600; margin: 0; font-size: 13px;"><i class="fas fa-map-marker-alt"></i> Wilayah / Kota:</label>
+                <select class="filter-select" id="filter-city" style="background: rgba(255,255,255,0.08); color: #fff; border: 1px solid rgba(255,255,255,0.18); border-radius: 8px; padding: 6px 10px; font-weight: 600; font-size: 13px;" onchange="changeGlobalCity(this.value)">
+                  <option value="all" selected style="color: #111;">🌐 Semua Wilayah</option>
+                  <option value="siantar" style="color: #111;">📍 Pematangsiantar</option>
+                  <option value="jakarta" style="color: #111;">📍 DKI Jakarta</option>
+                  <option value="medan" style="color: #111;">📍 Kota Medan</option>
+                  <option value="bandung" style="color: #111;">📍 Kota Bandung</option>
+                  <option value="bali" style="color: #111;">📍 Bali / Denpasar</option>
+                </select>
+              </div>
+
+              <!-- Platform -->
+              <div class="filter-group" style="display: flex; align-items: center; gap: 6px;">
+                <label style="color: #94a3b8; margin: 0; font-size: 13px;">Platform:</label>
+                <select class="filter-select" id="filter-platform" style="background: rgba(255,255,255,0.08); color: #fff; border: 1px solid rgba(255,255,255,0.18); border-radius: 8px; padding: 6px 10px; font-size: 13px;">
+                  <option value="all" style="color: #111;">Semua Platform</option>
+                  <option value="mediamtx" style="color: #111;">MediaMTX</option>
+                  <option value="ipcamlive" style="color: #111;">IPCamLive</option>
+                </select>
+              </div>
+
+              <!-- Status -->
+              <div class="filter-group" style="display: flex; align-items: center; gap: 6px;">
+                <label style="color: #94a3b8; margin: 0; font-size: 13px;">Status:</label>
+                <select class="filter-select" id="filter-status" style="background: rgba(255,255,255,0.08); color: #fff; border: 1px solid rgba(255,255,255,0.18); border-radius: 8px; padding: 6px 10px; font-size: 13px;">
+                  <option value="all">Semua Status</option>
+                  <option value="online">Online</option>
+                  <option value="offline">Offline</option>
+                </select>
+              </div>
+
+              <!-- Urutkan -->
+              <div class="filter-group" style="display: flex; align-items: center; gap: 6px;">
+                <label style="color: #94a3b8; margin: 0; font-size: 13px;">Urutkan:</label>
+                <select class="filter-select" id="filter-sort" style="background: rgba(255,255,255,0.08); color: #fff; border: 1px solid rgba(255,255,255,0.18); border-radius: 8px; padding: 6px 10px; font-size: 13px;">
+                  <option value="default">Default</option>
+                  <option value="name-asc">Nama A-Z</option>
+                  <option value="name-desc">Nama Z-A</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- VMS Status & Quality Indicator -->
+            <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+              <div class="vms-stat-item" style="font-size: 12px;"><span class="vms-stat-label" style="color: #94a3b8;">Loewix VMS:</span> <span class="vms-stat-val text-success" style="font-weight: 700; color: #00ff66 !important;">ONLINE</span></div>
+              <div class="vms-stat-item d-none d-lg-block" style="font-size: 12px;"><span class="vms-stat-label" style="color: #94a3b8;">Engine:</span> <span class="vms-stat-val text-info" style="font-weight: 600; color: #38bdf8 !important;">H.265 HEVC</span></div>
+              <div class="vms-stat-item" style="display: flex; align-items: center; gap: 6px; font-size: 12px;">
+                <span class="vms-stat-label" style="color: #94a3b8;">Kualitas:</span>
+                <button id="global-quality-btn" class="vms-quality-pill is-sd" onclick="toggleGlobalStreamQuality()" title="Ganti Kualitas Semua CCTV (SD / HD)">
+                  <span id="global-quality-text">SD</span>
+                </button>
+              </div>
+            </div>
           </div>
-          <div class="filter-group" style="display: flex; align-items: center; gap: 8px;">
-            <label style="color: #888; margin: 0;">Platform:</label>
-            <select class="filter-select" id="filter-platform" style="background: rgba(255,255,255,0.1); color: #fff; border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; padding: 6px 12px;">
-              <option value="all" style="color: #111;">Semua Platform</option>
-              <option value="mediamtx" style="color: #111;">MediaMTX</option>
-              <option value="ipcamlive" style="color: #111;">IPCamLive</option>
-            </select>
+
+          <!-- Bottom Row: Unified Layout Grid Buttons + Fullscreen + Devices -->
+          <div style="display: flex; gap: 12px; flex-wrap: wrap; align-items: center; justify-content: space-between; width: 100%;">
+            <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+              <span style="color: #38bdf8; font-weight: 700; font-size: 13px; display: inline-flex; align-items: center; gap: 6px;">
+                <i class="fas fa-th"></i> Layout:
+              </span>
+              <div class="vms-dock-center" style="display: inline-flex; gap: 4px; flex-wrap: wrap; align-items: center;">
+                <button class="vms-layout-btn" onclick="changeGridLayout(1)" data-layout="1" title="View 1 (1 Layar)"><i class="far fa-square"></i><span>1</span></button>
+                <button class="vms-layout-btn" onclick="changeGridLayout(2)" data-layout="2" title="View 2 (2 Layar)"><i class="fas fa-columns"></i><span>2</span></button>
+                <button class="vms-layout-btn" onclick="changeGridLayout(4)" data-layout="4" title="View 4 (2x2 Layar)"><i class="fas fa-th-large"></i><span>4</span></button>
+                <button class="vms-layout-btn" onclick="changeGridLayout(6)" data-layout="6" title="View 6 (3x2 Layar)"><i class="fas fa-th"></i><span>6</span></button>
+                <button class="vms-layout-btn" onclick="changeGridLayout(8)" data-layout="8" title="View 8 (4x2 Layar)"><i class="fas fa-border-all"></i><span>8</span></button>
+                <button class="vms-layout-btn" onclick="changeGridLayout(9)" data-layout="9" title="View 9 (3x3 Layar)"><i class="fas fa-grip-horizontal"></i><span>9</span></button>
+                <button class="vms-layout-btn" onclick="changeGridLayout(16)" data-layout="16" title="View 16 (4x4 Layar)"><span class="vms-badge-icon">16</span></button>
+                <button class="vms-layout-btn" onclick="changeGridLayout(25)" data-layout="25" title="View 25 (5x5 Layar)"><span class="vms-badge-icon">25</span></button>
+                <button class="vms-layout-btn" onclick="changeGridLayout(36)" data-layout="36" title="View 36 (6x6 Layar)"><span class="vms-badge-icon">36</span></button>
+                <button class="vms-layout-btn" onclick="changeGridLayout(64)" data-layout="64" title="View 64 (8x8 Layar)"><span class="vms-badge-icon">64</span></button>
+                <button class="vms-layout-btn" onclick="changeGridLayout(128)" data-layout="128" title="View 128 Matrix"><span class="vms-badge-icon">128</span></button>
+                <button class="vms-layout-btn vms-fs-btn" onclick="toggleVMSFullscreen()" title="Fullscreen Matrix"><i class="fas fa-expand"></i></button>
+              </div>
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <button class="vms-tool-btn" onclick="toggleVMSDeviceSidebar()" title="Buka Daftar Kamera (Devices)" style="background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.4); color: #38bdf8; padding: 7px 16px; border-radius: 20px; font-weight: 700; font-size: 13px; display: inline-flex; align-items: center; gap: 8px; cursor: pointer;">
+                <i class="fas fa-video"></i> <span>Devices</span>
+              </button>
+            </div>
           </div>
-          <div class="filter-group">
-            <label>Status:</label>
-            <select class="filter-select" id="filter-status">
-              <option value="all">Semua Status</option>
-              <option value="online">Online</option>
-              <option value="offline">Offline</option>
-            </select>
-          </div>
-          <div class="filter-group">
-            <label>Urutkan:</label>
-            <select class="filter-select" id="filter-sort">
-              <option value="default">Default</option>
-              <option value="name-asc">Nama A-Z</option>
-              <option value="name-desc">Nama Z-A</option>
-            </select>
-          </div>
-          <div class="filter-group">
-            <label style="color: #60a5fa;"><i class="fas fa-th"></i> Layout:</label>
-            <select class="filter-select" id="filter-grid" onchange="changeGridLayout(this.value)" style="background: rgba(255,255,255,0.1); color: #fff; border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; padding: 6px 12px; font-weight: 600;">
-              <option value="1" style="color: #111;">⬜ View 1</option>
-              <option value="2" style="color: #111;">◫ View 2</option>
-              <option value="4" selected style="color: #111;">田 View 4</option>
-              <option value="6" style="color: #111;">⊞ View 6</option>
-              <option value="8" style="color: #111;">▥ View 8</option>
-              <option value="9" style="color: #111;">▦ View 9</option>
-              <option value="16" style="color: #111;">🔢 View 16</option>
-              <option value="25" style="color: #111;">🎛️ View 25</option>
-              <option value="36" style="color: #111;">📊 View 36</option>
-              <option value="64" style="color: #111;">🌐 View 64</option>
-              <option value="128" style="color: #111;">🚀 View 128</option>
-            </select>
-          </div>
+
           <div id="active-filters" style="display: flex; gap: 5px; flex-wrap: wrap;"></div>
         </div>
 
@@ -5345,8 +5384,8 @@
         <!-- Dynamic CCTV Content Container -->
         <div id="cctv-container"></div>
 
-        <!-- ===== XMEYE VMS FLOATING CONTROL DOCK ===== -->
-        <div class="vms-dock-wrapper">
+        <!-- ===== XMEYE VMS FLOATING CONTROL DOCK [MERGED TO TOP TOOLBAR] ===== -->
+        <div class="vms-dock-wrapper" style="display: none !important;">
           <div class="vms-control-dock" id="vms-control-dock">
             <div class="vms-dock-left">
               <div class="vms-stat-item"><span class="vms-stat-label">Loewix VMS:</span> <span class="vms-stat-val text-success">ONLINE</span></div>
