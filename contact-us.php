@@ -21,11 +21,11 @@
     <meta name="csrf-token" content="c6e41c3578e26a175e1a8752e34ec95888fd2abea31357915b90b0051075181b">
     
     <!-- Favicons & App Icons (Loewix Official) -->
-    <link rel="icon" type="image/png" href="assets/image/logo-loewix.png?v=2">
-    <link rel="icon" type="image/png" sizes="32x32" href="assets/image/favicon-32x32.png?v=2">
-    <link rel="icon" type="image/png" sizes="16x16" href="assets/image/favicon-16x16.png?v=2">
-    <link rel="shortcut icon" href="favicon.ico?v=2">
-    <link rel="apple-touch-icon" sizes="180x180" href="assets/image/apple-touch-icon.png?v=2">
+    <link rel="icon" type="image/png" sizes="192x192" href="apple-touch-icon.png?v=3">
+    <link rel="icon" type="image/png" sizes="32x32" href="assets/image/favicon-32x32.png?v=3">
+    <link rel="icon" type="image/png" sizes="16x16" href="assets/image/favicon-16x16.png?v=3">
+    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png?v=3">
+    <link rel="shortcut icon" type="image/x-icon" href="favicon.ico?v=3">
     
     <!-- CSS -->
     <link rel="stylesheet" href="assets/css/animate.css">
