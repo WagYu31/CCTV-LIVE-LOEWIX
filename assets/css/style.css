@@ -273,7 +273,7 @@ body {
   margin-right: 33px;
 }
 nav.scrolled {
-  background-color: #ffffff;
+  background-color: rgba(13, 27, 62, 0.92) !important;
 }
 
 /*navbar-start*/

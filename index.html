@@ -489,6 +489,42 @@
 
   <!-- Custom Card Styles -->
   <style>
+    /* Global Universal Dark Navy Theme */
+    html, body {
+      background-color: #091650 !important;
+      background: #091650 !important;
+      color: #ffffff !important;
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+    }
+
+    #main-app-content {
+      background-color: #091650 !important;
+      background: #091650 !important;
+      min-height: 100vh;
+      width: 100%;
+    }
+
+    #cctv {
+      background-color: #091650 !important;
+      background: #091650 !important;
+    }
+
+    .Pricing-con {
+      background-color: #091650 !important;
+      background: #091650 !important;
+    }
+
+    .header-floating-wrapper {
+      background: transparent !important;
+    }
+
+    nav.scrolled, #myNavbar.scrolled {
+      background: rgba(13, 27, 62, 0.92) !important;
+      background-color: rgba(13, 27, 62, 0.92) !important;
+    }
+
     /* Card Styles - Modern Professional Design (Image 2) */
     /* Verkada-Grade Enterprise CCTV Card Styling */
     .traffic-card {
