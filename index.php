@@ -1312,17 +1312,30 @@
        LOEWIX ENTERPRISE VMS COMMAND CENTER TOOLBAR
        ========================================================= */
     .cctv-vms-command-center {
-      background: linear-gradient(180deg, rgba(13, 24, 48, 0.95) 0%, rgba(8, 15, 32, 0.98) 100%);
-      border: 1px solid rgba(56, 189, 248, 0.25);
-      border-radius: 18px;
-      padding: 12px 18px;
-      margin-bottom: 20px;
-      box-shadow: 0 20px 45px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.1);
-      backdrop-filter: blur(24px);
-      -webkit-backdrop-filter: blur(24px);
+    /* =========================================================
+       LOEWIX ENTERPRISE VMS MASTER STICKY HEADER BAR
+       ========================================================= */
+    .cctv-vms-command-center {
+      position: sticky;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 1040;
+      width: 100%;
+      background: linear-gradient(180deg, rgba(10, 20, 42, 0.98) 0%, rgba(6, 12, 28, 0.99) 100%);
+      border-top: none;
+      border-left: none;
+      border-right: none;
+      border-bottom: 1px solid rgba(56, 189, 248, 0.25);
+      border-radius: 0;
+      padding: 10px calc(1.2rem + 1vw);
+      margin: 0 0 20px 0;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.65), inset 0 -1px 0 rgba(255, 255, 255, 0.06);
+      backdrop-filter: blur(25px);
+      -webkit-backdrop-filter: blur(25px);
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 9px;
       transition: all 0.3s ease;
     }
 
@@ -5582,178 +5595,164 @@
 
 
   <!-- CCTV Section -->
-  <section id="cctv" style="padding-top: 20px;">
-    <div class="Pricing-con dots-left-img">
-      <div class="container-fluid px-xl-5 px-lg-4 px-md-3 px-2 overlay-content">
-        <!-- Pricing-title (Hidden per user request) -->
-        <div class="Pricing-title text-center" style="display: none !important; margin-bottom: 25px;">
-          <h5 style="color: #38bdf8; letter-spacing: 2px; text-transform: uppercase; font-weight: 700;">LOEWIX LIVE SURVEILLANCE GRID</h5>
-          <h2 style="font-size: 2.3rem; font-weight: 800; color: #ffffff; margin-top: 8px;">
-            <img
-              src="assets/image/icon-cctv.png"
-              alt="Loewix CCTV Icon"
-              class="icon"
-              height="50"
-              width="50" style="margin-right: 10px; filter: drop-shadow(0 0 10px rgba(56, 189, 248, 0.5));" />
-            Live Network Status
-          </h2>
-          <p style="color: rgba(255,255,255,0.7); font-size: 1.05rem; margin-top: 8px;">Active surveillance grids across global enterprise endpoints.</p>
+  <section id="cctv" style="padding-top: 0;">
+    
+    <!-- Unified VMS Master Sticky Header Bar (Clean 2-Row Master Deck) -->
+    <header class="cctv-vms-command-center" id="cctv-filter-toolbar">
+      
+      <!-- Top Row: Brand Logo, Search Bar & User Session Controls -->
+      <div class="vms-bar-top">
+        
+        <!-- Left: Brand Logo + Search Input -->
+        <div class="d-flex align-items-center" style="gap: 12px; flex: 1 1 auto; max-width: 450px;">
+          <!-- Brand Logo -->
+          <a href="index.php" class="vms-brand-logo" title="LOEWIX Enterprise CCTV">
+            <img src="assets/image/logo-loewix-white.png" alt="LOEWIX CCTV">
+          </a>
+
+          <div class="d-none d-sm-block" style="width: 1px; height: 24px; background: rgba(255,255,255,0.15); margin: 0 2px;"></div>
+          
+          <!-- Search Box -->
+          <div class="vms-search-box cctv-search-input-wrapper">
+            <i class="fas fa-search vms-search-icon cctv-search-icon"></i>
+            <input
+              type="text"
+              id="cctv-search-input"
+              class="vms-search-input cctv-search-input"
+              placeholder="Cari CCTV / lokasi..."
+              autocomplete="off" />
+            <span class="vms-search-spinner cctv-search-loading" id="cctv-search-loading">
+              <i class="fas fa-spinner fa-spin"></i>
+            </span>
+            <button
+              type="button"
+              class="vms-search-clear-btn cctv-search-clear"
+              id="cctv-search-clear"
+              aria-label="Clear search">
+              <i class="fas fa-times"></i>
+            </button>
+            <div class="cctv-search-results vms-search-dropdown" id="cctv-search-results"></div>
+          </div>
         </div>
 
+        <!-- Right: Devices Action, Dark Mode Toggle & User Auth Area -->
+        <div class="d-flex align-items-center ml-auto" style="gap: 8px; flex-shrink: 0;">
+          <button class="vms-devices-action-btn vms-tool-btn" onclick="toggleVMSDeviceSidebar()" title="Buka Daftar Kamera (Devices)">
+            <i class="fas fa-video"></i> <span>Devices (Camera Tree)</span>
+          </button>
+
+          <button id="dark-mode-toggle" class="btn btn-sm text-white" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.2); border-radius: 50%; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; padding: 0;" title="Toggle Dark Mode">
+            <i class="fas fa-moon" id="dark-mode-icon" style="font-size: 13px;"></i>
+          </button>
+
+          <div id="nav-user-area" class="d-flex align-items-center" style="gap: 6px;">
+            <button class="btn btn-sm" onclick="showLoginGateView()" style="background: linear-gradient(135deg, #00d2ff, #0066ff); border: none; font-weight: 700; border-radius: 20px; padding: 5px 16px; color: #fff; box-shadow: 0 4px 12px rgba(0, 102, 255, 0.4); text-transform: uppercase; font-size: 11.5px; letter-spacing: 0.5px;">
+              <i class="fas fa-sign-in-alt mr-1"></i> LOGIN
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Bottom Row: Filter Dropdowns + View Matrix Layouts + Telemetry Cluster -->
+      <div class="vms-bar-bottom">
+        
+        <!-- Left: Filter Dropdowns + Matrix Layout Buttons -->
+        <div class="d-flex align-items-center flex-wrap" style="gap: 8px;">
+          <!-- Filter Selects Group -->
+          <div class="vms-select-group">
+            <div class="vms-select-item" title="Filter Wilayah">
+              <i class="fas fa-map-marker-alt"></i>
+              <select class="vms-custom-select" id="filter-city" onchange="changeGlobalCity(this.value)">
+                <option value="all" selected>🌐 Semua Wilayah</option>
+                <option value="siantar">📍 Pematangsiantar</option>
+                <option value="jakarta">📍 DKI Jakarta</option>
+                <option value="medan">📍 Kota Medan</option>
+                <option value="bandung">📍 Kota Bandung</option>
+                <option value="bali">📍 Bali / Denpasar</option>
+              </select>
+            </div>
+
+            <div class="vms-select-item" title="Filter Platform">
+              <i class="fas fa-server"></i>
+              <select class="vms-custom-select" id="filter-platform">
+                <option value="all">Platform: Semua</option>
+                <option value="mediamtx">MediaMTX</option>
+                <option value="ipcamlive">IPCamLive</option>
+              </select>
+            </div>
+
+            <div class="vms-select-item" title="Filter Status">
+              <i class="fas fa-circle-notch"></i>
+              <select class="vms-custom-select" id="filter-status">
+                <option value="all">Status: Semua</option>
+                <option value="online">Online</option>
+                <option value="offline">Offline</option>
+              </select>
+            </div>
+
+            <div class="vms-select-item" title="Urutan CCTV">
+              <i class="fas fa-sort-amount-down"></i>
+              <select class="vms-custom-select" id="filter-sort">
+                <option value="default">Urutan: Default</option>
+                <option value="name-asc">Nama A-Z</option>
+                <option value="name-desc">Nama Z-A</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="d-none d-xl-block" style="width: 1px; height: 20px; background: rgba(255,255,255,0.12); margin: 0 2px;"></div>
+
+          <!-- Matrix Layout Buttons -->
+          <div class="vms-layout-cluster">
+            <span class="vms-layout-label">
+              <i class="fas fa-th"></i> VIEW MATRIX:
+            </span>
+            <div class="vms-layout-matrix-buttons">
+              <button class="vms-layout-btn vms-matrix-btn" onclick="changeGridLayout(1)" data-layout="1" title="1 Kamera per baris"><i class="far fa-square"></i><span>1</span></button>
+              <button class="vms-layout-btn vms-matrix-btn" onclick="changeGridLayout(2)" data-layout="2" title="2 Kamera per baris"><i class="fas fa-columns"></i><span>2</span></button>
+              <button class="vms-layout-btn vms-matrix-btn" onclick="changeGridLayout(4)" data-layout="4" title="4 Kamera per baris"><i class="fas fa-th-large"></i><span>4</span></button>
+              <button class="vms-layout-btn vms-matrix-btn" onclick="changeGridLayout(6)" data-layout="6" title="6 Kamera per baris"><i class="fas fa-th"></i><span>6</span></button>
+              <button class="vms-layout-btn vms-matrix-btn" onclick="changeGridLayout(8)" data-layout="8" title="8 Kamera per baris"><i class="fas fa-border-all"></i><span>8</span></button>
+              <button class="vms-layout-btn vms-matrix-btn" onclick="changeGridLayout(9)" data-layout="9" title="9 Kamera per baris"><i class="fas fa-grip-horizontal"></i><span>9</span></button>
+              <button class="vms-layout-btn vms-matrix-btn" onclick="changeGridLayout(16)" data-layout="16" title="16 Kamera per baris"><span>16</span></button>
+              <button class="vms-layout-btn vms-matrix-btn" onclick="changeGridLayout(25)" data-layout="25" title="25 Kamera per baris"><span>25</span></button>
+              <button class="vms-layout-btn vms-matrix-btn" onclick="changeGridLayout(36)" data-layout="36" title="36 Kamera per baris"><span>36</span></button>
+              <button class="vms-layout-btn vms-matrix-btn" onclick="changeGridLayout(64)" data-layout="64" title="64 Kamera per baris"><span>64</span></button>
+              <button class="vms-layout-btn vms-matrix-btn" onclick="changeGridLayout(128)" data-layout="128" title="128 Kamera per baris"><span>128</span></button>
+              <button class="vms-layout-btn vms-matrix-btn vms-fs-btn" onclick="toggleVMSFullscreen()" title="Fullscreen Matrix"><i class="fas fa-expand"></i></button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: VMS Telemetry & Stream Quality Toggle & Clock -->
+        <div class="vms-telemetry-cluster ml-auto">
+          <div class="vms-telemetry-badge status-online" title="Surveillance Core Status">
+            <span class="pulse-dot"></span>
+            <span>VMS ONLINE</span>
+          </div>
+          <div class="vms-telemetry-badge codec-badge d-none d-md-inline-flex" title="Hardware Accelerated Codec">
+            <i class="fas fa-bolt text-warning mr-1"></i>
+            <span>H.265</span>
+          </div>
+          <button id="global-quality-btn" class="vms-quality-toggle-pill is-sd" onclick="toggleGlobalStreamQuality()" title="Ganti Kualitas Semua CCTV (SD / HD)">
+            <i class="fas fa-sliders-h"></i>
+            <span>Kualitas: <strong id="global-quality-text">SD</strong></span>
+          </button>
+          <div class="vms-telemetry-badge clock-badge d-none d-lg-inline-flex" id="vms-live-clock" title="Waktu Server Real-Time">
+            --:--:-- WIB
+          </div>
+        </div>
+
+      </div>
+
+      <div id="active-filters" style="display: flex; gap: 5px; flex-wrap: wrap;"></div>
+    </header>
+
+    <div class="Pricing-con dots-left-img" style="padding-top: 10px;">
+      <div class="container-fluid px-xl-5 px-lg-4 px-md-3 px-2 overlay-content">
         <!-- Overlay untuk Pop-up -->
         <div id="popupOverlay" onclick="closeTrafficPopup()"></div>
-
-        <!-- Unified VMS Command Center & Header Bar (Clean 2-Row Master Deck) -->
-        <div class="cctv-vms-command-center" id="cctv-filter-toolbar">
-          
-          <!-- Top Row: Brand Logo, Search Bar & User Session Controls -->
-          <div class="vms-bar-top">
-            
-            <!-- Left: Brand Logo + Search Input -->
-            <div class="d-flex align-items-center" style="gap: 12px; flex: 1 1 auto; max-width: 450px;">
-              <!-- Brand Logo -->
-              <a href="index.php" class="vms-brand-logo" title="LOEWIX Enterprise CCTV">
-                <img src="assets/image/logo-loewix-white.png" alt="LOEWIX CCTV">
-              </a>
-
-              <div class="d-none d-sm-block" style="width: 1px; height: 24px; background: rgba(255,255,255,0.15); margin: 0 2px;"></div>
-              
-              <!-- Search Box -->
-              <div class="vms-search-box cctv-search-input-wrapper">
-                <i class="fas fa-search vms-search-icon cctv-search-icon"></i>
-                <input
-                  type="text"
-                  id="cctv-search-input"
-                  class="vms-search-input cctv-search-input"
-                  placeholder="Cari CCTV / lokasi..."
-                  autocomplete="off" />
-                <span class="vms-search-spinner cctv-search-loading" id="cctv-search-loading">
-                  <i class="fas fa-spinner fa-spin"></i>
-                </span>
-                <button
-                  type="button"
-                  class="vms-search-clear-btn cctv-search-clear"
-                  id="cctv-search-clear"
-                  aria-label="Clear search">
-                  <i class="fas fa-times"></i>
-                </button>
-                <div class="cctv-search-results vms-search-dropdown" id="cctv-search-results"></div>
-              </div>
-            </div>
-
-            <!-- Right: Devices Action, Dark Mode Toggle & User Auth Area -->
-            <div class="d-flex align-items-center ml-auto" style="gap: 8px; flex-shrink: 0;">
-              <button class="vms-devices-action-btn vms-tool-btn" onclick="toggleVMSDeviceSidebar()" title="Buka Daftar Kamera (Devices)">
-                <i class="fas fa-video"></i> <span>Devices (Camera Tree)</span>
-              </button>
-
-              <button id="dark-mode-toggle" class="btn btn-sm text-white" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.2); border-radius: 50%; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; padding: 0;" title="Toggle Dark Mode">
-                <i class="fas fa-moon" id="dark-mode-icon" style="font-size: 13px;"></i>
-              </button>
-
-              <div id="nav-user-area" class="d-flex align-items-center" style="gap: 6px;">
-                <button class="btn btn-sm" onclick="showLoginGateView()" style="background: linear-gradient(135deg, #00d2ff, #0066ff); border: none; font-weight: 700; border-radius: 20px; padding: 5px 16px; color: #fff; box-shadow: 0 4px 12px rgba(0, 102, 255, 0.4); text-transform: uppercase; font-size: 11.5px; letter-spacing: 0.5px;">
-                  <i class="fas fa-sign-in-alt mr-1"></i> LOGIN
-                </button>
-              </div>
-            </div>
-
-          </div>
-
-          <!-- Bottom Row: Filter Dropdowns + View Matrix Layouts + Telemetry Cluster -->
-          <div class="vms-bar-bottom">
-            
-            <!-- Left: Filter Dropdowns + Matrix Layout Buttons -->
-            <div class="d-flex align-items-center flex-wrap" style="gap: 8px;">
-              <!-- Filter Selects Group -->
-              <div class="vms-select-group">
-                <div class="vms-select-item" title="Filter Wilayah">
-                  <i class="fas fa-map-marker-alt"></i>
-                  <select class="vms-custom-select" id="filter-city" onchange="changeGlobalCity(this.value)">
-                    <option value="all" selected>🌐 Semua Wilayah</option>
-                    <option value="siantar">📍 Pematangsiantar</option>
-                    <option value="jakarta">📍 DKI Jakarta</option>
-                    <option value="medan">📍 Kota Medan</option>
-                    <option value="bandung">📍 Kota Bandung</option>
-                    <option value="bali">📍 Bali / Denpasar</option>
-                  </select>
-                </div>
-
-                <div class="vms-select-item" title="Filter Platform">
-                  <i class="fas fa-server"></i>
-                  <select class="vms-custom-select" id="filter-platform">
-                    <option value="all">Platform: Semua</option>
-                    <option value="mediamtx">MediaMTX</option>
-                    <option value="ipcamlive">IPCamLive</option>
-                  </select>
-                </div>
-
-                <div class="vms-select-item" title="Filter Status">
-                  <i class="fas fa-circle-notch"></i>
-                  <select class="vms-custom-select" id="filter-status">
-                    <option value="all">Status: Semua</option>
-                    <option value="online">Online</option>
-                    <option value="offline">Offline</option>
-                  </select>
-                </div>
-
-                <div class="vms-select-item" title="Urutan CCTV">
-                  <i class="fas fa-sort-amount-down"></i>
-                  <select class="vms-custom-select" id="filter-sort">
-                    <option value="default">Urutan: Default</option>
-                    <option value="name-asc">Nama A-Z</option>
-                    <option value="name-desc">Nama Z-A</option>
-                  </select>
-                </div>
-              </div>
-
-              <div class="d-none d-xl-block" style="width: 1px; height: 20px; background: rgba(255,255,255,0.12); margin: 0 2px;"></div>
-
-              <!-- Matrix Layout Buttons -->
-              <div class="vms-layout-cluster">
-                <span class="vms-layout-label">
-                  <i class="fas fa-th"></i> VIEW MATRIX:
-                </span>
-                <div class="vms-layout-matrix-buttons">
-                  <button class="vms-layout-btn vms-matrix-btn" onclick="changeGridLayout(1)" data-layout="1" title="1 Kamera per baris"><i class="far fa-square"></i><span>1</span></button>
-                  <button class="vms-layout-btn vms-matrix-btn" onclick="changeGridLayout(2)" data-layout="2" title="2 Kamera per baris"><i class="fas fa-columns"></i><span>2</span></button>
-                  <button class="vms-layout-btn vms-matrix-btn" onclick="changeGridLayout(4)" data-layout="4" title="4 Kamera per baris"><i class="fas fa-th-large"></i><span>4</span></button>
-                  <button class="vms-layout-btn vms-matrix-btn" onclick="changeGridLayout(6)" data-layout="6" title="6 Kamera per baris"><i class="fas fa-th"></i><span>6</span></button>
-                  <button class="vms-layout-btn vms-matrix-btn" onclick="changeGridLayout(8)" data-layout="8" title="8 Kamera per baris"><i class="fas fa-border-all"></i><span>8</span></button>
-                  <button class="vms-layout-btn vms-matrix-btn" onclick="changeGridLayout(9)" data-layout="9" title="9 Kamera per baris"><i class="fas fa-grip-horizontal"></i><span>9</span></button>
-                  <button class="vms-layout-btn vms-matrix-btn" onclick="changeGridLayout(16)" data-layout="16" title="16 Kamera per baris"><span>16</span></button>
-                  <button class="vms-layout-btn vms-matrix-btn" onclick="changeGridLayout(25)" data-layout="25" title="25 Kamera per baris"><span>25</span></button>
-                  <button class="vms-layout-btn vms-matrix-btn" onclick="changeGridLayout(36)" data-layout="36" title="36 Kamera per baris"><span>36</span></button>
-                  <button class="vms-layout-btn vms-matrix-btn" onclick="changeGridLayout(64)" data-layout="64" title="64 Kamera per baris"><span>64</span></button>
-                  <button class="vms-layout-btn vms-matrix-btn" onclick="changeGridLayout(128)" data-layout="128" title="128 Kamera per baris"><span>128</span></button>
-                  <button class="vms-layout-btn vms-matrix-btn vms-fs-btn" onclick="toggleVMSFullscreen()" title="Fullscreen Matrix"><i class="fas fa-expand"></i></button>
-                </div>
-              </div>
-            </div>
-
-            <!-- Right: VMS Telemetry & Stream Quality Toggle & Clock -->
-            <div class="vms-telemetry-cluster ml-auto">
-              <div class="vms-telemetry-badge status-online" title="Surveillance Core Status">
-                <span class="pulse-dot"></span>
-                <span>VMS ONLINE</span>
-              </div>
-              <div class="vms-telemetry-badge codec-badge d-none d-md-inline-flex" title="Hardware Accelerated Codec">
-                <i class="fas fa-bolt text-warning mr-1"></i>
-                <span>H.265</span>
-              </div>
-              <button id="global-quality-btn" class="vms-quality-toggle-pill is-sd" onclick="toggleGlobalStreamQuality()" title="Ganti Kualitas Semua CCTV (SD / HD)">
-                <i class="fas fa-sliders-h"></i>
-                <span>Kualitas: <strong id="global-quality-text">SD</strong></span>
-              </button>
-              <div class="vms-telemetry-badge clock-badge d-none d-lg-inline-flex" id="vms-live-clock" title="Waktu Server Real-Time">
-                --:--:-- WIB
-              </div>
-            </div>
-
-          </div>
-
-          <div id="active-filters" style="display: flex; gap: 5px; flex-wrap: wrap;"></div>
-        </div>
 
         <!-- ===== MODAL PENGATURAN KAMERA RTSP / IP (CUSTOM OVERLAY) ===== -->
         <div id="cameraConfigModal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.85); z-index: 999999; align-items: center; justify-content: center; backdrop-filter: blur(6px); pointer-events: auto;">
