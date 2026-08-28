@@ -1231,6 +1231,82 @@
       to { transform: translateY(0); opacity: 1; }
     }
 
+    /* Integrated Toolbar Search Box Styles */
+    .cctv-filter-toolbar .cctv-search-input-wrapper {
+      padding: 0 !important;
+      display: flex;
+      align-items: center;
+      position: relative;
+    }
+    .cctv-filter-toolbar .cctv-search-input {
+      background: rgba(255, 255, 255, 0.08) !important;
+      color: #ffffff !important;
+      border: 1px solid rgba(56, 189, 248, 0.3) !important;
+      border-radius: 8px !important;
+      padding: 6px 30px 6px 30px !important;
+      font-size: 13px !important;
+      height: 33px !important;
+      line-height: normal;
+      box-shadow: none !important;
+    }
+    .cctv-filter-toolbar .cctv-search-input::placeholder {
+      color: rgba(255, 255, 255, 0.5) !important;
+    }
+    .cctv-filter-toolbar .cctv-search-input:focus {
+      border-color: #38bdf8 !important;
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.35) !important;
+      background: rgba(255, 255, 255, 0.12) !important;
+    }
+    .cctv-filter-toolbar .cctv-search-icon {
+      left: 10px !important;
+      font-size: 12px !important;
+      color: #38bdf8 !important;
+    }
+    .cctv-filter-toolbar .cctv-search-clear {
+      right: 8px !important;
+      font-size: 13px !important;
+      color: #94a3b8 !important;
+      width: 18px !important;
+      height: 18px !important;
+    }
+    .cctv-filter-toolbar .cctv-search-clear:hover {
+      color: #38bdf8 !important;
+    }
+    .cctv-filter-toolbar .cctv-search-loading {
+      right: 28px !important;
+      font-size: 12px !important;
+      color: #38bdf8 !important;
+    }
+    .cctv-filter-toolbar .cctv-search-results {
+      background: rgba(15, 23, 42, 0.96) !important;
+      border: 1px solid rgba(56, 189, 248, 0.35) !important;
+      border-radius: 10px !important;
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6) !important;
+      backdrop-filter: blur(14px) !important;
+      color: #ffffff !important;
+      margin-top: 6px !important;
+      min-width: 280px !important;
+      width: 100% !important;
+    }
+    .cctv-filter-toolbar .cctv-search-result-item {
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+      color: #ffffff !important;
+      padding: 9px 12px !important;
+    }
+    .cctv-filter-toolbar .cctv-search-result-item:hover,
+    .cctv-filter-toolbar .cctv-search-result-item.selected {
+      background: rgba(56, 189, 248, 0.18) !important;
+    }
+    .cctv-filter-toolbar .search-result-title {
+      color: #ffffff !important;
+      font-size: 13px !important;
+      font-weight: 600 !important;
+    }
+    .cctv-filter-toolbar .search-result-subtitle {
+      color: #94a3b8 !important;
+      font-size: 11px !important;
+    }
+
     .vms-quality-pill {
       background: rgba(56, 189, 248, 0.15);
       color: #38bdf8;
@@ -5226,34 +5302,7 @@
   </section>
   <!--lokasi_map-section-->
 
-  <!-- ===== NEW FEATURE: Advanced CCTV Search ===== -->
-  <div class="container" style="margin-top: 105px; margin-bottom: 20px;">
-    <div class="cctv-search-wrapper">
-      <div class="cctv-search-container">
-        <div class="cctv-search-input-wrapper">
-          <i class="fas fa-search cctv-search-icon"></i>
-          <input
-            type="text"
-            id="cctv-search-input"
-            class="cctv-search-input"
-            placeholder="Cari CCTV berdasarkan nama lokasi..."
-            autocomplete="off" />
-          <span class="cctv-search-loading" id="cctv-search-loading">
-            <i class="fas fa-spinner"></i>
-          </span>
-          <button
-            type="button"
-            class="cctv-search-clear"
-            id="cctv-search-clear"
-            aria-label="Clear search">
-            <i class="fas fa-times"></i>
-          </button>
-        </div>
-        <div class="cctv-search-results" id="cctv-search-results"></div>
-      </div>
-    </div>
-  </div>
-  <!-- ===== END Advanced CCTV Search ===== -->
+
 
   <!-- ===== NEW FEATURE: Statistics Cards [HIDDEN] ===== -->
   <section class="statistics-section" style="display: none !important;">
@@ -5297,7 +5346,7 @@
 
 
   <!-- CCTV Section -->
-  <section id="cctv">
+  <section id="cctv" style="padding-top: 95px;">
     <div class="Pricing-con dots-left-img">
       <div class="container overlay-content">
         <div class="Pricing-title text-center" style="margin-bottom: 25px;">
@@ -5317,15 +5366,40 @@
         <!-- Overlay untuk Pop-up -->
         <div id="popupOverlay" onclick="closeTrafficPopup()"></div>
 
-        <!-- Unified VMS Control & Filter Toolbar (Gambar 1 digabung ke Gambar 2) -->
+        <!-- Unified VMS Control & Filter Toolbar (Search + Filters + Layout + Tools) -->
         <div class="cctv-filter-toolbar" id="cctv-filter-toolbar" style="display: flex; flex-direction: column; gap: 14px; margin-bottom: 25px; padding: 16px 20px; background: rgba(13, 27, 62, 0.88); border-radius: 16px; border: 1px solid rgba(56, 189, 248, 0.25); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35); backdrop-filter: blur(14px);">
           
-          <!-- Top Row: Filters & Engine Status -->
+          <!-- Top Row: Integrated Search + Select Filters + VMS Engine Status -->
           <div style="display: flex; gap: 12px; flex-wrap: wrap; align-items: center; justify-content: space-between; width: 100%; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 12px;">
-            <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+            <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center; flex: 1;">
+              
+              <!-- Search CCTV Input Box -->
+              <div class="cctv-search-input-wrapper" style="position: relative; min-width: 220px; max-width: 320px; flex: 1;">
+                <i class="fas fa-search cctv-search-icon" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: #38bdf8; font-size: 13px; pointer-events: none; z-index: 2;"></i>
+                <input
+                  type="text"
+                  id="cctv-search-input"
+                  class="cctv-search-input"
+                  placeholder="Cari nama CCTV / lokasi..."
+                  autocomplete="off"
+                  style="background: rgba(255,255,255,0.08); color: #fff; border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 8px; padding: 6px 32px 6px 30px; font-size: 13px; width: 100%; outline: none; transition: all 0.2s;" />
+                <span class="cctv-search-loading" id="cctv-search-loading" style="position: absolute; right: 28px; top: 50%; transform: translateY(-50%); color: #38bdf8; display: none;">
+                  <i class="fas fa-spinner fa-spin"></i>
+                </span>
+                <button
+                  type="button"
+                  class="cctv-search-clear"
+                  id="cctv-search-clear"
+                  aria-label="Clear search"
+                  style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: none; border: none; color: #94a3b8; cursor: pointer; display: none; padding: 2px;">
+                  <i class="fas fa-times"></i>
+                </button>
+                <div class="cctv-search-results" id="cctv-search-results" style="position: absolute; top: calc(100% + 5px); left: 0; right: 0; z-index: 1000;"></div>
+              </div>
+
               <!-- Wilayah -->
               <div class="filter-group" style="display: flex; align-items: center; gap: 6px;">
-                <label style="color: #38bdf8; font-weight: 600; margin: 0; font-size: 13px;"><i class="fas fa-map-marker-alt"></i> Wilayah / Kota:</label>
+                <label style="color: #38bdf8; font-weight: 600; margin: 0; font-size: 13px;"><i class="fas fa-map-marker-alt"></i> Wilayah:</label>
                 <select class="filter-select" id="filter-city" style="background: rgba(255,255,255,0.08); color: #fff; border: 1px solid rgba(255,255,255,0.18); border-radius: 8px; padding: 6px 10px; font-weight: 600; font-size: 13px;" onchange="changeGlobalCity(this.value)">
                   <option value="all" selected style="color: #111;">🌐 Semua Wilayah</option>
                   <option value="siantar" style="color: #111;">📍 Pematangsiantar</option>
