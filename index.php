@@ -1303,6 +1303,9 @@
       display: flex;
       align-items: center;
       gap: 10px;
+      animation: slideToastIn 0.3s ease-out;
+      pointer-events: auto;
+    }
     @keyframes slideToastIn {
       from { transform: translateY(20px); opacity: 0; }
       to { transform: translateY(0); opacity: 1; }
@@ -1501,6 +1504,44 @@
 
     .vms-search-clear-btn:hover {
       color: #38bdf8;
+    }
+
+    .vms-search-dropdown {
+      background: rgba(15, 23, 42, 0.96) !important;
+      border: 1px solid rgba(56, 189, 248, 0.35) !important;
+      border-radius: 10px !important;
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6) !important;
+      backdrop-filter: blur(14px) !important;
+      color: #ffffff !important;
+      margin-top: 6px !important;
+      min-width: 280px !important;
+      width: 100% !important;
+      position: absolute;
+      top: calc(100% + 4px);
+      left: 0;
+      z-index: 1050;
+    }
+
+    .vms-search-dropdown .cctv-search-result-item {
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+      color: #ffffff !important;
+      padding: 9px 12px !important;
+    }
+
+    .vms-search-dropdown .cctv-search-result-item:hover,
+    .vms-search-dropdown .cctv-search-result-item.selected {
+      background: rgba(56, 189, 248, 0.18) !important;
+    }
+
+    .vms-search-dropdown .search-result-title {
+      color: #ffffff !important;
+      font-size: 13px !important;
+      font-weight: 600 !important;
+    }
+
+    .vms-search-dropdown .search-result-subtitle {
+      color: #94a3b8 !important;
+      font-size: 11px !important;
     }
 
     /* SELECT CLUSTER */
@@ -1896,6 +1937,13 @@
       flex-wrap: wrap;
     }
 
+    .vms-layout-cluster {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
     .vms-layout-label {
       color: #38bdf8;
       font-size: 11.5px;
@@ -1950,28 +1998,100 @@
     }
 
     .vms-matrix-btn.active, .vms-layout-btn.active {
-
-    .vms-devices-action-btn, .vms-tool-btn {
-      background: rgba(56, 189, 248, 0.14);
-      border: 1px solid rgba(56, 189, 248, 0.38);
-      color: #38bdf8;
-      padding: 6px 16px;
-      height: 34px;
-      border-radius: 17px;
-      font-weight: 700;
-      font-size: 12.5px;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      cursor: pointer;
-      transition: all 0.2s ease;
+      background: linear-gradient(135deg, #0284c7, #0ea5e9) !important;
+      color: #ffffff !important;
+      border-color: #38bdf8 !important;
+      box-shadow: 0 0 12px rgba(14, 165, 233, 0.5) !important;
     }
 
-    .vms-devices-action-btn:hover, .vms-tool-btn:hover {
-      background: #38bdf8;
-      color: #091650;
-      box-shadow: 0 0 15px rgba(56, 189, 248, 0.4);
+    .vms-fs-btn {
+      color: #38bdf8;
+      border-left: 1px solid rgba(255, 255, 255, 0.1) !important;
+      margin-left: 3px;
+      padding-left: 8px;
+    }
+
+    /* TELEMETRY CLUSTER */
+    .vms-telemetry-cluster {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .vms-telemetry-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 18px;
+      padding: 0 11px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.4px;
+      height: 30px;
+      color: #cbd5e1;
+    }
+
+    .vms-telemetry-badge.status-online {
+      border-color: rgba(16, 185, 129, 0.35);
+      color: #34d399;
+      background: rgba(16, 185, 129, 0.08);
+    }
+
+    .vms-telemetry-badge .pulse-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #10b981;
+      box-shadow: 0 0 8px #10b981;
+      animation: pulseDot 1.8s infinite;
+    }
+
+    .vms-telemetry-badge.codec-badge {
+      color: #38bdf8;
+      border-color: rgba(56, 189, 248, 0.25);
+      background: rgba(56, 189, 248, 0.06);
+    }
+
+    .vms-telemetry-badge.clock-badge {
+      color: #94a3b8;
+      font-family: monospace;
+      font-size: 11.5px;
+      letter-spacing: 0.5px;
+    }
+
+    /* STREAM QUALITY TOGGLE BUTTON (SD/HD) */
+    .vms-quality-toggle-pill, .vms-quality-pill {
+      height: 30px;
+      background: rgba(56, 189, 248, 0.12) !important;
+      border: 1px solid rgba(56, 189, 248, 0.35) !important;
+      border-radius: 16px !important;
+      padding: 0 12px !important;
+      color: #38bdf8 !important;
+      font-size: 11.5px !important;
+      font-weight: 700 !important;
+      letter-spacing: 0.5px !important;
+      cursor: pointer !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      gap: 6px !important;
+      transition: all 0.2s ease !important;
+    }
+
+    .vms-quality-toggle-pill:hover, .vms-quality-pill:hover {
+      background: rgba(56, 189, 248, 0.22) !important;
+      border-color: #38bdf8 !important;
       transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(56, 189, 248, 0.3) !important;
+    }
+
+    .vms-quality-toggle-pill.is-hd, .vms-quality-pill.is-hd {
+      background: rgba(16, 185, 129, 0.18) !important;
+      border-color: rgba(16, 185, 129, 0.5) !important;
+      color: #34d399 !important;
+      box-shadow: 0 0 10px rgba(16, 185, 129, 0.25) !important;
     }
 
     /* RESPONSIVE BREAKPOINTS */
@@ -2026,6 +2146,9 @@
         width: 100%;
         justify-content: center;
       }
+    }
+      transform: scale(1.05);
+      border-color: #38bdf8;
     }
       transform: scale(1.05);
       border-color: #38bdf8;
@@ -5711,7 +5834,7 @@
       </div>
     </div>
 
-    <!-- RIGHT: 44% Luxury Authentication Deck -->
+    <!-- RIGHT: 44% Luxury Authentication Dock -->
     <div class="gate-stage-right">
       <div class="gate-auth-box">
         
@@ -5911,49 +6034,6 @@
   </section>
   <!--lokasi_map-section-->
 
-
-
-  <!-- ===== NEW FEATURE: Statistics Cards [HIDDEN] ===== -->
-  <section class="statistics-section" style="display: none !important;">
-    <div class="container">
-      <div class="statistics-container">
-        <div class="stat-card wow fadeInUp" data-wow-delay="0.1s">
-          <div class="stat-card-icon">
-            <i class="fas fa-video"></i>
-          </div>
-          <div class="stat-card-label">Total CCTV</div>
-          <div class="stat-card-value" id="stat-total-cctv">
-            <span class="stat-number">0</span>
-            <span class="stat-unit">Kamera</span>
-          </div>
-        </div>
-        <div class="stat-card wow fadeInUp" data-wow-delay="0.2s">
-          <div class="stat-card-icon">
-            <i class="fas fa-wifi"></i>
-          </div>
-          <div class="stat-card-label">Total WiFi</div>
-          <div class="stat-card-value" id="stat-total-wifi">
-            <span class="stat-number">0</span>
-            <span class="stat-unit">Lokasi</span>
-          </div>
-        </div>
-        <div class="stat-card wow fadeInUp" data-wow-delay="0.3s">
-          <div class="stat-card-icon">
-            <i class="fas fa-users"></i>
-          </div>
-          <div class="stat-card-label">Pengunjung Online</div>
-          <div class="stat-card-value" id="stat-online-users">
-            <span class="stat-number">0</span>
-            <span class="stat-unit">User</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-  <!-- ===== END Statistics Cards ===== -->
-
-
-
   <!-- CCTV Section -->
   <section id="cctv" style="padding-top: 0;">
     
@@ -5966,7 +6046,7 @@
         <!-- Left: Brand Logo + Search Input -->
         <div class="d-flex align-items-center" style="gap: 12px; flex: 1 1 auto; max-width: 450px;">
           <!-- Brand Logo -->
-          <a href="index.php" class="vms-brand-logo" title="LOEWIX Enterprise CCTV">
+          <a href="index.html" class="vms-brand-logo" title="LOEWIX Enterprise CCTV">
             <img src="assets/image/logo-loewix-white.png" alt="LOEWIX CCTV">
           </a>
 
@@ -6460,6 +6540,7 @@
                 </div>
               </div>
 
+            </div>
           </div>
         </div>
 
@@ -7336,8 +7417,7 @@
     ];
 
     // Terminal / Kamera Tambahan (Live Demo Stream)
-    const terminalTanjungPinggirData = [
-      {
+    const terminalTanjungPinggirData = [{
         id: 201,
         title: 'Terminal Tanjung Pinggir 1',
         streamPath: 'jalan_sutomo_polres_siantar',
@@ -7356,8 +7436,6 @@
         section: 'terminal-tanjung-pinggir'
       },
     ];
-    // ===== AKHIR TERMINAL =====
-
     // WiFi Location Data - DKI Jakarta Public Internet (JakWifi)
     const wifiLocations = [
       // Jakarta Pusat
@@ -15220,10 +15298,10 @@
 
         if (user.role === 'super_admin') {
           userArea.innerHTML = `
-            <a href="admin/index.php" class="btn btn-sm btn-outline-warning font-weight-bold d-inline-flex align-items-center" style="border-radius: 20px; font-size: 11px; white-space: nowrap; padding: 5px 12px; gap: 5px;" title="Buka Super Admin Control Center">
+            <a href="admin/index.html" class="btn btn-sm btn-outline-warning font-weight-bold d-inline-flex align-items-center" style="border-radius: 20px; font-size: 11px; white-space: nowrap; padding: 5px 12px; gap: 5px;" title="Buka Super Admin Control Center">
               <i class="fas fa-user-shield"></i> <span>ADMIN PANEL</span>
             </a>
-            <a href="customer/index.php" class="btn btn-sm btn-outline-info font-weight-bold d-inline-flex align-items-center" style="border-radius: 20px; font-size: 11px; white-space: nowrap; padding: 5px 12px; gap: 5px; background: rgba(56, 189, 248, 0.1); border-color: rgba(56, 189, 248, 0.35); color: #38bdf8;" title="Buka Dashboard Customer">
+            <a href="customer/index.html" class="btn btn-sm btn-outline-info font-weight-bold d-inline-flex align-items-center" style="border-radius: 20px; font-size: 11px; white-space: nowrap; padding: 5px 12px; gap: 5px; background: rgba(56, 189, 248, 0.1); border-color: rgba(56, 189, 248, 0.35); color: #38bdf8;" title="Buka Dashboard Customer">
               <i class="fas fa-columns"></i> <span>DASHBOARD</span>
             </a>
             <button class="btn btn-sm btn-danger d-inline-flex align-items-center justify-content-center" onclick="logoutUser(event)" style="border-radius: 50%; width: 32px; height: 32px; padding: 0; background: rgba(239, 68, 68, 0.2); border: 1px solid rgba(239, 68, 68, 0.4); color: #ef4444;" title="Logout Akun">
@@ -15232,10 +15310,10 @@
           `;
         } else {
           userArea.innerHTML = `
-            <a href="customer/index.php" class="btn btn-sm btn-outline-info font-weight-bold d-inline-flex align-items-center" style="border-radius: 20px; font-size: 11px; white-space: nowrap; padding: 5px 12px; gap: 5px; background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.4); color: #38bdf8;" title="Buka Dashboard Customer">
+            <a href="customer/index.html" class="btn btn-sm btn-outline-info font-weight-bold d-inline-flex align-items-center" style="border-radius: 20px; font-size: 11px; white-space: nowrap; padding: 5px 12px; gap: 5px; background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.4); color: #38bdf8;" title="Buka Dashboard Customer">
               <i class="fas fa-columns"></i> <span>DASHBOARD</span>
             </a>
-            <a href="customer/index.php" class="badge badge-info p-2 d-inline-flex align-items-center text-decoration-none" style="border-radius: 20px; font-size: 11px; background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.3); color: #38bdf8; white-space: nowrap; gap: 5px; cursor: pointer;" title="Buka Detail Kuota Customer">
+            <a href="customer/index.html" class="badge badge-info p-2 d-inline-flex align-items-center text-decoration-none" style="border-radius: 20px; font-size: 11px; background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.3); color: #38bdf8; white-space: nowrap; gap: 5px; cursor: pointer;" title="Buka Detail Kuota Customer">
               <i class="fas fa-layer-group"></i> <span>KUOTA: ${usedCount} / ${user.cctv_quota || 20} CCTV</span>
             </a>
             <button class="btn btn-sm btn-danger d-inline-flex align-items-center justify-content-center" onclick="logoutUser(event)" style="border-radius: 50%; width: 32px; height: 32px; padding: 0; background: rgba(239, 68, 68, 0.2); border: 1px solid rgba(239, 68, 68, 0.4); color: #ef4444;" title="Logout Akun">
