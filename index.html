@@ -5150,7 +5150,7 @@
   <!--lokasi_map-section-->
 
   <!-- ===== NEW FEATURE: Advanced CCTV Search ===== -->
-  <div class="container" style="margin-top: 35px;">
+  <div class="container" style="margin-top: 105px; margin-bottom: 20px;">
     <div class="cctv-search-wrapper">
       <div class="cctv-search-container">
         <div class="cctv-search-input-wrapper">
