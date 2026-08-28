@@ -5349,7 +5349,8 @@
   <section id="cctv" style="padding-top: 95px;">
     <div class="Pricing-con dots-left-img">
       <div class="container overlay-content">
-        <div class="Pricing-title text-center" style="margin-bottom: 25px;">
+        <!-- Pricing-title (Hidden per user request) -->
+        <div class="Pricing-title text-center" style="display: none !important; margin-bottom: 25px;">
           <h5 style="color: #38bdf8; letter-spacing: 2px; text-transform: uppercase; font-weight: 700;">LOEWIX LIVE SURVEILLANCE GRID</h5>
           <h2 style="font-size: 2.3rem; font-weight: 800; color: #ffffff; margin-top: 8px;">
             <img
