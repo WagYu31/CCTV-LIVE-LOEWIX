@@ -5473,69 +5473,23 @@
             alt="LOEWIX CCTV"
             style="height: 38px; max-height: 38px; width: auto; min-width: 120px; object-fit: contain; display: block; flex-shrink: 0; filter: drop-shadow(0 2px 8px rgba(0,0,0,0.3));" />
         </a>
-        <button
-          class="navbar-toggler p-0 collapsed mr-2"
-          type="button"
-          data-toggle="collapse"
-          data-target="#navbarSupportedContent"
-          aria-controls="navbarSupportedContent"
-          aria-expanded="false"
-          aria-label="Toggle navigation"
-          style="border: none; outline: none; background: transparent;">
-          <span class="navbar-toggler-icon"></span>
-        </button>
 
-        <div
-          class="collapse navbar-collapse justify-content-end"
-          id="navbarSupportedContent">
-          <ul class="navbar-nav align-items-center" style="gap: 20px; margin-right: 15px;">
-            <li class="nav-item active">
-              <a class="nav-link text-white d-flex align-items-center" href="index.php" style="font-weight: 600; font-size: 14px; opacity: 1; gap: 6px; transition: all 0.2s;">
-                <i class="fas fa-home" style="color: #38bdf8; font-size: 14px;"></i>
-                Home
-              </a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link text-white d-flex align-items-center" href="#cctv" style="font-weight: 600; font-size: 14px; opacity: 0.85; gap: 6px; transition: all 0.2s;">
-                <i class="fas fa-video" style="color: #38bdf8; font-size: 14px;"></i>
-                CCTV Live
-              </a>
-            </li>
-            <li class="nav-item" id="nav-item-customer-dashboard" style="display: none;">
-              <a class="nav-link text-white d-flex align-items-center" href="customer/index.php" style="font-weight: 700; font-size: 14px; color: #38bdf8 !important; gap: 6px; transition: all 0.2s;">
-                <i class="fas fa-columns" style="color: #38bdf8; font-size: 14px;"></i>
-                Dashboard
-              </a>
-            </li>
-              <a class="nav-link text-white d-flex align-items-center" href="#wifi" style="font-weight: 600; font-size: 14px; opacity: 0.85; gap: 6px; transition: all 0.2s;">
-                <i class="fas fa-wifi" style="color: #38bdf8; font-size: 14px;"></i>
-                WiFi Network
-              </a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link text-white d-flex align-items-center" href="about-us.php" style="font-weight: 600; font-size: 14px; opacity: 0.85; gap: 6px; transition: all 0.2s;">
-                <i class="fas fa-info-circle" style="color: #38bdf8; font-size: 14px;"></i>
-                About Loewix
-              </a>
-            </li>
-          </ul>
-          <div class="d-flex align-items-center" style="gap: 10px;">
-            <select id="city-selector-nav" class="form-control form-control-sm" style="background: rgba(255,255,255,0.12); color: white; border: 1px solid rgba(255,255,255,0.25); border-radius: 20px; padding: 5px 12px; font-weight: 600; cursor: pointer; width: auto; font-size: 13px; outline: none;" onchange="changeGlobalCity(this.value)">
-              <option value="all" selected style="color: #111;">🌐 Semua Wilayah</option>
-              <option value="siantar" style="color: #111;">📍 Pematangsiantar</option>
-              <option value="jakarta" style="color: #111;">📍 DKI Jakarta</option>
-              <option value="medan" style="color: #111;">📍 Kota Medan</option>
-              <option value="bandung" style="color: #111;">📍 Kota Bandung</option>
-              <option value="bali" style="color: #111;">📍 Bali / Denpasar</option>
-            </select>
-            <button id="dark-mode-toggle" class="btn btn-sm text-white" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;" title="Toggle Dark Mode">
-              <i class="fas fa-moon" id="dark-mode-icon"></i>
+        <div class="d-flex align-items-center ml-auto" style="gap: 10px;">
+          <select id="city-selector-nav" class="form-control form-control-sm" style="background: rgba(255,255,255,0.12); color: white; border: 1px solid rgba(255,255,255,0.25); border-radius: 20px; padding: 5px 12px; font-weight: 600; cursor: pointer; width: auto; font-size: 13px; outline: none;" onchange="changeGlobalCity(this.value)">
+            <option value="all" selected style="color: #111;">🌐 Semua Wilayah</option>
+            <option value="siantar" style="color: #111;">📍 Pematangsiantar</option>
+            <option value="jakarta" style="color: #111;">📍 DKI Jakarta</option>
+            <option value="medan" style="color: #111;">📍 Kota Medan</option>
+            <option value="bandung" style="color: #111;">📍 Kota Bandung</option>
+            <option value="bali" style="color: #111;">📍 Bali / Denpasar</option>
+          </select>
+          <button id="dark-mode-toggle" class="btn btn-sm text-white" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;" title="Toggle Dark Mode">
+            <i class="fas fa-moon" id="dark-mode-icon"></i>
+          </button>
+          <div id="nav-user-area" class="d-flex align-items-center" style="gap: 8px;">
+            <button class="btn btn-sm" onclick="openLoginModal()" style="background: linear-gradient(135deg, #00d2ff, #0066ff); border: none; font-weight: 700; border-radius: 25px; padding: 7px 20px; color: #fff; box-shadow: 0 4px 15px rgba(0, 102, 255, 0.4); text-transform: uppercase; font-size: 12px; letter-spacing: 0.5px;">
+              <i class="fas fa-sign-in-alt mr-1"></i> LOGIN
             </button>
-            <div id="nav-user-area" class="d-flex align-items-center" style="gap: 8px;">
-              <button class="btn btn-sm" onclick="openLoginModal()" style="background: linear-gradient(135deg, #00d2ff, #0066ff); border: none; font-weight: 700; border-radius: 25px; padding: 7px 20px; color: #fff; box-shadow: 0 4px 15px rgba(0, 102, 255, 0.4); text-transform: uppercase; font-size: 12px; letter-spacing: 0.5px;">
-                <i class="fas fa-sign-in-alt mr-1"></i> LOGIN
-              </button>
-            </div>
           </div>
         </div>
       </nav>
