@@ -4927,11 +4927,13 @@
       /* GPU acceleration */
     }
 
-    /* Optimize video rendering for many concurrent videos */
+    /* Optimize video rendering for full screen fill & high quality playback */
     video.hls-video-player {
       image-rendering: auto;
-      object-fit: contain;
+      object-fit: cover !important;
       background: #000;
+      width: 100% !important;
+      height: 100% !important;
     }
 
     /* Buffering overlay fast transition */
@@ -6469,6 +6471,23 @@
                       <option value="H.265X">H.265X</option>
                       <option value="H.264+">H.264+</option>
                       <option value="Off">Off</option>
+                    </select>
+                  </div>
+                </div>
+
+                <!-- Row 10: Display Mode / Aspect Ratio -->
+                <div class="vms-encode-param-row">
+                  <div class="vms-encode-param-name">Display Mode</div>
+                  <div>
+                    <select id="enc-main-displaymode" class="vms-encode-select">
+                      <option value="cover" selected>Full Layar (Fill 16:9 - Tanpa Bar Hitam)</option>
+                      <option value="contain">Original Aspect Ratio (Fit 4:3)</option>
+                    </select>
+                  </div>
+                  <div>
+                    <select id="enc-extra-displaymode" class="vms-encode-select">
+                      <option value="cover" selected>Full Layar (Fill 16:9 - Tanpa Bar Hitam)</option>
+                      <option value="contain">Original Aspect Ratio (Fit 4:3)</option>
                     </select>
                   </div>
                 </div>
@@ -12210,6 +12229,10 @@
       setInputVal('enc-adv-gop', a.gop_size || 40);
       setCheckVal('enc-adv-roi', a.roi_enabled !== false);
       setCheckVal('enc-adv-watermark', a.watermark_osd !== false);
+
+      // Display Mode
+      setSelectVal('enc-main-displaymode', p.display_mode || 'cover');
+      setSelectVal('enc-extra-displaymode', p.display_mode || 'cover');
     }
 
     // Auto-calculate recommended Bitrate when Resolution, Compression, or Quality changes
@@ -12254,8 +12277,10 @@
     }
 
     function getEncodeProfileFromUI() {
+      const dispMode = document.getElementById('enc-main-displaymode') ? document.getElementById('enc-main-displaymode').value : 'cover';
       return {
         channel: currentEncodeChannel,
+        display_mode: dispMode,
         main_stream: {
           compression: document.getElementById('enc-main-compression').value,
           resolution: document.getElementById('enc-main-resolution').value,
@@ -12326,9 +12351,12 @@
 
     async function saveEncodeConfig() {
       const profile = getEncodeProfileFromUI();
+      const targetCamId = currentEncodeChannel;
+      const dispMode = profile.display_mode || 'cover';
+
       const okBtn = document.querySelector('.vms-encode-btn.btn-ok');
       if (okBtn) {
-        okBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menyimpan...';
+        okBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menerapkan...';
         okBtn.disabled = true;
       }
 
@@ -12340,10 +12368,32 @@
         });
         const data = await res.json();
         if (data.success) {
+          // 1. Instantly apply HD Main Stream mode to target camera
+          if (typeof setCameraQuality === 'function') {
+            setCameraQuality(targetCamId, 'hd');
+          }
+
+          // 2. Instantly set Full Layar object-fit styling
+          const playerEl = document.getElementById(`player-${targetCamId}`);
+          const thumbEl = document.getElementById(`thumb-${targetCamId}`);
+          const fitStyle = dispMode === 'contain' ? 'contain' : 'cover';
+
+          if (playerEl) {
+            playerEl.style.objectFit = fitStyle;
+          }
+          if (thumbEl) {
+            thumbEl.style.objectFit = fitStyle;
+          }
+
+          // 3. Trigger live stream refresh for target camera
+          if (thumbEl && typeof playMediaMTXCCTV === 'function') {
+            playMediaMTXCCTV(thumbEl, `player-${targetCamId}`, `thumb-${targetCamId}`);
+          }
+
           if (typeof showCCTVToast === 'function') {
-            showCCTVToast(data.message || `Konfigurasi Encode Channel ${currentEncodeChannel} berhasil disimpan!`, 'success');
+            showCCTVToast(`Konfigurasi Encode Channel ${currentEncodeChannel} berhasil disimpan & beralih ke Full HD!`, 'success');
           } else {
-            alert(data.message || `Konfigurasi Encode Channel ${currentEncodeChannel} berhasil disimpan!`);
+            alert(`Konfigurasi Encode Channel ${currentEncodeChannel} berhasil disimpan! Kamera beralih ke Full HD.`);
           }
           closeEncodeModal();
         } else {
@@ -12374,6 +12424,12 @@
         });
         const data = await res.json();
         if (data.success) {
+          if (typeof toggleGlobalStreamQuality === 'function') {
+            // Set all to HD
+            document.querySelectorAll('.hls-video-player, .cctv-thumbnail').forEach(el => {
+              el.style.objectFit = 'cover';
+            });
+          }
           if (typeof showCCTVToast === 'function') {
             showCCTVToast(data.message || 'Pengaturan Encode berhasil diterapkan ke semua channel!', 'success');
           } else {
