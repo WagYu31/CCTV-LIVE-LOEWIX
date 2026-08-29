@@ -500,22 +500,26 @@ function get_user_invoices($userId) {
  */
 function get_user_billing_profile($userId) {
     $db = get_db_data();
-    foreach ($db['billing_profiles'] as $prof) {
-        if ((int)$prof['user_id'] === (int)$userId) {
-            return $prof;
+    if (isset($db['billing_profiles']) && is_array($db['billing_profiles'])) {
+        foreach ($db['billing_profiles'] as $prof) {
+            if ((int)$prof['user_id'] === (int)$userId) {
+                return $prof;
+            }
         }
     }
     // Fallback if not set
-    foreach ($db['users'] as $u) {
-        if ((int)$u['id'] === (int)$userId) {
-            return [
-                'user_id' => $u['id'],
-                'company_name' => $u['name'],
-                'tax_id' => '-',
-                'billing_email' => $u['email'],
-                'billing_phone' => $u['phone'] ?? '-',
-                'billing_address' => 'Kota ' . ucfirst($u['city'] ?? 'Jakarta') . ', Indonesia'
-            ];
+    if (isset($db['users']) && is_array($db['users'])) {
+        foreach ($db['users'] as $u) {
+            if ((int)$u['id'] === (int)$userId) {
+                return [
+                    'user_id' => $u['id'],
+                    'company_name' => $u['name'],
+                    'tax_id' => '',
+                    'billing_email' => $u['email'],
+                    'billing_phone' => ($u['phone'] !== '-' && !empty($u['phone'])) ? $u['phone'] : '',
+                    'billing_address' => 'Kota ' . ucfirst($u['city'] ?? 'Pematangsiantar') . ', Indonesia'
+                ];
+            }
         }
     }
     return null;

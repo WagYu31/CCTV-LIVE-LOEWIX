@@ -354,13 +354,14 @@ function showLoewixCheckoutModal(payResult, user) {
   if (!modal) {
     modal = document.createElement('div');
     modal.id = 'modalLoewixCheckoutSim';
-    modal.style.cssText = `
-      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-      background: rgba(4, 9, 24, 0.88); backdrop-filter: blur(12px);
-      z-index: 99999; display: flex; align-items: center; justify-content: center; padding: 20px;
-    `;
     document.body.appendChild(modal);
   }
+  
+  modal.style.cssText = `
+    position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important;
+    background: rgba(4, 9, 24, 0.88) !important; backdrop-filter: blur(12px) !important;
+    z-index: 2147483647 !important; display: flex !important; align-items: center !important; justify-content: center !important; padding: 20px !important;
+  `;
 
   modal.innerHTML = `
     <div style="background: #0c1630; border: 1.5px solid #38bdf8; border-radius: 16px; max-width: 480px; width: 100%; box-shadow: 0 20px 50px rgba(0,0,0,0.8); overflow: hidden; font-family: 'Space Grotesk', sans-serif;">
@@ -461,11 +462,9 @@ async function completeRegistrationPayment(orderId, paymentType) {
     console.error('Error verifying payment:', e);
   }
   
-  if (currentUser) {
-    showDashboardView(currentUser);
-  } else {
-    window.location.reload();
-  }
+  const modal = document.getElementById('modalLoewixCheckoutSim');
+  if (modal) modal.remove();
+  window.location.href = 'customer/index.php';
 }
 
 function toggleGatePasswordVisibility(inputId = 'gate-login-password', iconId = 'gate-toggle-pwd') {

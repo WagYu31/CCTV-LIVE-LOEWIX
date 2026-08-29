@@ -219,6 +219,20 @@ if ($action === 'register') {
     ];
 
     $db['users'][] = $newUser;
+
+    // Auto-create default billing profile for the user
+    if (!isset($db['billing_profiles']) || !is_array($db['billing_profiles'])) {
+        $db['billing_profiles'] = [];
+    }
+    $db['billing_profiles'][] = [
+        'user_id' => $newUser['id'],
+        'company_name' => $name,
+        'tax_id' => '',
+        'billing_email' => $email,
+        'billing_phone' => !empty($phone) ? $phone : '',
+        'billing_address' => 'Kota ' . ucfirst($city) . ', Indonesia'
+    ];
+
     save_db_data($db);
 
     // Auto-login newly registered user

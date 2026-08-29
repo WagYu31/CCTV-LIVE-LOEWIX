@@ -4684,20 +4684,24 @@
         }
       }
 
-      // 5. Render Billing Profile Form
-      if (profile) {
-        const comp = document.getElementById('bill-company-name');
-        const tax = document.getElementById('bill-tax-id');
-        const email = document.getElementById('bill-email');
-        const phone = document.getElementById('bill-phone');
-        const addr = document.getElementById('bill-address');
+      // 5. Render Billing Profile Form (Auto prefilled with user registration data)
+      const comp = document.getElementById('bill-company-name');
+      const tax = document.getElementById('bill-tax-id');
+      const email = document.getElementById('bill-email');
+      const phone = document.getElementById('bill-phone');
+      const addr = document.getElementById('bill-address');
 
-        if (comp) comp.value = profile.company_name || '';
-        if (tax) tax.value = profile.tax_id || '';
-        if (email) email.value = profile.billing_email || '';
-        if (phone) phone.value = profile.billing_phone || '';
-        if (addr) addr.value = profile.billing_address || '';
-      }
+      const defName = (profile && profile.company_name) ? profile.company_name : (currentUser ? currentUser.name : '');
+      const defEmail = (profile && profile.billing_email) ? profile.billing_email : (currentUser ? currentUser.email : '');
+      const defPhone = (profile && profile.billing_phone) ? profile.billing_phone : (currentUser ? (currentUser.phone || '') : '');
+      const defAddr = (profile && profile.billing_address) ? profile.billing_address : (currentUser ? ('Kota ' + (currentUser.city || 'Pematangsiantar') + ', Indonesia') : '');
+      const defTax = (profile && profile.tax_id && profile.tax_id !== '-') ? profile.tax_id : '';
+
+      if (comp) comp.value = defName;
+      if (tax) tax.value = defTax;
+      if (email) email.value = defEmail;
+      if (phone) phone.value = defPhone;
+      if (addr) addr.value = defAddr;
     }
 
     async function checkoutPlanMidtrans(planId, cycle) {
