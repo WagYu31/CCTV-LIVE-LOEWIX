@@ -106,4 +106,81 @@ if ($action === 'check_session') {
     exit;
 }
 
+if ($action === 'register') {
+    $name = trim($_POST['name'] ?? '');
+    $email = trim($_POST['email'] ?? '');
+    $password = trim($_POST['password'] ?? '');
+    $phone = trim($_POST['phone'] ?? '');
+    $city = trim($_POST['city'] ?? 'siantar');
+
+    if (empty($name) || empty($email) || empty($password)) {
+        echo json_encode(['success' => false, 'message' => 'Nama, Email, dan Password wajib diisi!']);
+        exit;
+    }
+
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        echo json_encode(['success' => false, 'message' => 'Format email tidak valid!']);
+        exit;
+    }
+
+    if (strlen($password) < 6) {
+        echo json_encode(['success' => false, 'message' => 'Kata sandi minimal 6 karakter!']);
+        exit;
+    }
+
+    $db = get_db_data();
+
+    // Check if email already registered
+    foreach ($db['users'] as $user) {
+        if (strtolower($user['email']) === strtolower($email)) {
+            echo json_encode(['success' => false, 'message' => 'Email ini sudah terdaftar. Silakan gunakan email lain atau login!']);
+            exit;
+        }
+    }
+
+    // Generate safe user ID
+    $existingIds = array_column($db['users'], 'id');
+    $newUserId = count($existingIds) > 0 ? max($existingIds) + 1 : 1;
+
+    $newUser = [
+        'id' => $newUserId,
+        'name' => $name,
+        'email' => $email,
+        'password' => password_hash($password, PASSWORD_BCRYPT),
+        'role' => 'customer',
+        'cctv_quota' => 20,
+        'phone' => !empty($phone) ? $phone : '-',
+        'city' => $city,
+        'status' => 'active',
+        'created_at' => date('Y-m-d H:i:s')
+    ];
+
+    $db['users'][] = $newUser;
+    save_db_data($db);
+
+    // Auto-login newly registered user
+    $_SESSION['user_id'] = $newUser['id'];
+    $_SESSION['user_name'] = $newUser['name'];
+    $_SESSION['user_email'] = $newUser['email'];
+    $_SESSION['user_role'] = $newUser['role'];
+    $_SESSION['cctv_quota'] = $newUser['cctv_quota'];
+    $_SESSION['cctv_used'] = 0;
+    $_SESSION['user_city'] = $newUser['city'];
+
+    echo json_encode([
+        'success' => true,
+        'message' => 'Pendaftaran akun berhasil!',
+        'user' => [
+            'id' => $newUser['id'],
+            'name' => $newUser['name'],
+            'email' => $newUser['email'],
+            'role' => $newUser['role'],
+            'cctv_quota' => $newUser['cctv_quota'],
+            'cctv_used' => 0,
+            'city' => $newUser['city']
+        ]
+    ]);
+    exit;
+}
+
 echo json_encode(['success' => false, 'message' => 'Invalid Action']);
