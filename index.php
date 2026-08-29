@@ -675,16 +675,6 @@
           <img src="assets/image/logo-loewix-white.png" alt="Loewix CCTV" style="height: 38px;">
         </div>
 
-        <!-- Mode Switcher Tabs (Login / Register) -->
-        <div class="auth-mode-switcher">
-          <button type="button" class="auth-mode-btn active" id="tab-btn-login" onclick="switchGateAuthMode('login')">
-            <i class="fas fa-sign-in-alt"></i> <span>Masuk (Login)</span>
-          </button>
-          <button type="button" class="auth-mode-btn" id="tab-btn-register" onclick="switchGateAuthMode('register')">
-            <i class="fas fa-user-plus"></i> <span>Daftar Akun Baru</span>
-          </button>
-        </div>
-
         <div class="gate-auth-header-block">
           <div class="gate-auth-tag" id="gate-auth-tag-text">
             SELAMAT DATANG
