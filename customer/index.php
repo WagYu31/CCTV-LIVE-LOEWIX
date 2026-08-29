@@ -2009,6 +2009,32 @@
       </div>
     </div>
 
+    <!-- ======================================================== -->
+    <!-- TAB ADMIN 4: KELOLA PAKET SAAS & HARGA LANGGANAN (SPA) -->
+    <!-- ======================================================== -->
+    <div id="tab-admin-plans" class="customer-tab-pane" style="display: none;">
+      <div class="admin-mgmt-card">
+        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+          <div>
+            <h4 class="font-weight-bold mb-1" style="color: #ffffff; display: flex; align-items: center; gap: 8px;">
+              <i class="fas fa-cubes" style="color: #38bdf8;"></i> Kelola Paket SaaS & Tarif Langganan Loewix CCTV
+            </h4>
+            <p class="text-muted mb-0" style="font-size: 13px;">
+              Konfigurasi harga paket bulanan & tahunan, alokasi kuota CCTV, badge promo, dan fitur streaming untuk halaman pendaftaran & portal.
+            </p>
+          </div>
+          <button class="btn-gold-admin" onclick="openAddPlanModal()">
+            <i class="fas fa-plus-circle mr-1"></i> Tambah Paket Baru
+          </button>
+        </div>
+
+        <!-- Plans Cards Grid -->
+        <div class="row g-4" id="admin-plans-grid">
+          <!-- Populated by loadAdminPlansList() -->
+        </div>
+      </div>
+    </div>
+
   </div>
 
   <!-- ===== MODAL TAMBAH / EDIT KAMERA CCTV ===== -->
@@ -2341,6 +2367,63 @@
         </form>
       </div>
     </div>
+  <!-- Modal Tambah / Edit Paket SaaS (Admin) -->
+  <div class="modal fade modal-dark" id="modalAdminPlanForm" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content" style="background: #0b1533; border: 1px solid rgba(56,189,248,0.3); border-radius: 16px;">
+        <div class="modal-header" style="border-bottom: 1px solid rgba(255,255,255,0.08);">
+          <h5 class="modal-title font-weight-bold text-white" id="planModalTitle">
+            <i class="fas fa-cubes text-info mr-2"></i> Edit Paket SaaS
+          </h5>
+          <button type="button" class="close text-white" onclick="closeModalHelper('modalAdminPlanForm')" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <form id="formAdminPlan" onsubmit="submitSavePlan(event)">
+          <input type="hidden" id="plan-input-id" value="">
+          <div class="modal-body p-4">
+            <div class="form-group mb-3">
+              <label class="text-white" style="font-size: 13px; font-weight: 600;">Nama Paket:</label>
+              <input type="text" id="plan-input-name" class="form-control form-control-dark" placeholder="Contoh: Business Pro" required>
+            </div>
+            
+            <div class="row g-2 mb-3">
+              <div class="col-6">
+                <label class="text-white" style="font-size: 13px; font-weight: 600;">Kuota Kamera (CCTV):</label>
+                <input type="number" id="plan-input-quota" class="form-control form-control-dark" value="10" min="1" max="500" required>
+              </div>
+              <div class="col-6">
+                <label class="text-white" style="font-size: 13px; font-weight: 600;">Badge / Label Promo:</label>
+                <input type="text" id="plan-input-badge" class="form-control form-control-dark" placeholder="Contoh: POPULER / BEST">
+              </div>
+            </div>
+
+            <div class="row g-2 mb-3">
+              <div class="col-6">
+                <label class="text-white" style="font-size: 13px; font-weight: 600;">Harga Bulanan (Rp):</label>
+                <input type="number" id="plan-input-monthly" class="form-control form-control-dark" placeholder="Contoh: 299000" required>
+              </div>
+              <div class="col-6">
+                <label class="text-white" style="font-size: 13px; font-weight: 600;">Harga Tahunan (Rp):</label>
+                <input type="number" id="plan-input-annual" class="form-control form-control-dark" placeholder="Contoh: 2990000">
+                <small class="text-muted" style="font-size: 10.5px;">Otomatis x10 (Hemat 2 bln) jika kosong</small>
+              </div>
+            </div>
+
+            <div class="form-group mb-2">
+              <label class="text-white" style="font-size: 13px; font-weight: 600;">Fitur Paket (1 baris per fitur):</label>
+              <textarea id="plan-input-features" class="form-control form-control-dark" rows="4" placeholder="10 Titik Kamera Live&#10;Full HD 1080p Stream H.265&#10;WebRTC & HLS Low Latency&#10;Cloud Recording 14 Hari"></textarea>
+            </div>
+          </div>
+          <div class="modal-footer" style="border-top: 1px solid rgba(255,255,255,0.08);">
+            <button type="button" class="btn btn-secondary btn-sm" onclick="closeModalHelper('modalAdminPlanForm')">Batal</button>
+            <button type="submit" class="btn btn-info btn-sm font-weight-bold" style="background: #0284c7; border: none;">
+              <i class="fas fa-save mr-1"></i> Simpan Paket SaaS
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
   </div>
 
   <!-- Scripts -->
@@ -2543,8 +2626,11 @@
             <button type="button" class="customer-nav-tab" onclick="switchCustomerTab('tab-admin-customers')" id="nav-tab-admin-customers">
               <i class="fas fa-users-cog text-warning"></i> <span>Kelola Semua Pelanggan</span>
             </button>
+            <button type="button" class="customer-nav-tab" onclick="switchCustomerTab('tab-admin-plans')" id="nav-tab-admin-plans">
+              <i class="fas fa-cubes text-info"></i> <span>Kelola Paket SaaS & Harga</span>
+            </button>
             <button type="button" class="customer-nav-tab" onclick="switchCustomerTab('tab-admin-transactions')" id="nav-tab-admin-transactions">
-              <i class="fas fa-file-invoice-dollar text-info"></i> <span>Monitoring Transaksi SaaS</span>
+              <i class="fas fa-file-invoice-dollar" style="color: #34d399;"></i> <span>Monitoring Transaksi SaaS</span>
             </button>
             <button type="button" class="customer-nav-tab" onclick="switchCustomerTab('tab-admin-server')" id="nav-tab-admin-server">
               <i class="fas fa-server text-success"></i> <span>Status Node Server MediaMTX</span>
@@ -3543,10 +3629,181 @@
       // Load specific tab data
       if (tabId === 'tab-admin-customers') {
         loadAdminCustomersList();
+      } else if (tabId === 'tab-admin-plans') {
+        loadAdminPlansList();
       } else if (tabId === 'tab-admin-transactions') {
         loadAdminTransactionsList();
       } else if (tabId !== 'tab-cameras' && !currentBillingData) {
         loadBillingDashboardData();
+      }
+    }
+
+    // ========================================================
+    // SUPER ADMIN SAAS PLANS & PRICING CONTROLLER (SPA)
+    // ========================================================
+    let cachedAdminPlans = [];
+
+    async function loadAdminPlansList() {
+      const grid = document.getElementById('admin-plans-grid');
+      if (!grid) return;
+
+      grid.innerHTML = `
+        <div class="col-12 text-center py-5 text-muted">
+          <i class="fas fa-spinner fa-spin fa-2x mb-2 text-info"></i>
+          <div>Memuat data paket langganan SaaS...</div>
+        </div>
+      `;
+
+      try {
+        const res = await fetch('../api/payment.php?action=get_plans');
+        const data = await res.json();
+        if (data.success && Array.isArray(data.plans)) {
+          cachedAdminPlans = data.plans;
+          renderAdminPlans(cachedAdminPlans);
+        } else {
+          grid.innerHTML = `<div class="col-12 text-center py-4 text-warning">Gagal memuat paket langganan.</div>`;
+        }
+      } catch (err) {
+        grid.innerHTML = `<div class="col-12 text-center py-4 text-danger">Terjadi kesalahan koneksi ke server.</div>`;
+      }
+    }
+
+    function renderAdminPlans(plans) {
+      const grid = document.getElementById('admin-plans-grid');
+      if (!grid) return;
+      grid.innerHTML = '';
+
+      if (!plans || plans.length === 0) {
+        grid.innerHTML = `<div class="col-12 text-center py-4 text-muted">Belum ada paket langganan tersimpan.</div>`;
+        return;
+      }
+
+      plans.forEach(p => {
+        const isPopuler = p.badge && p.badge.toUpperCase().includes('POPULER');
+        const col = document.createElement('div');
+        col.className = 'col-lg-4 col-md-6 mb-4';
+        col.innerHTML = `
+          <div style="background: rgba(8, 15, 36, 0.9); border: 1.5px solid ${isPopuler ? '#f59e0b' : 'rgba(56, 189, 248, 0.35)'}; border-radius: 16px; padding: 22px; position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.5); display: flex; flex-direction: column; justify-content: space-between; height: 100%;">
+            ${p.badge ? `<span style="position: absolute; top: -11px; right: 18px; background: linear-gradient(135deg, #f59e0b, #d97706); color: #000; font-size: 10px; font-weight: 800; padding: 3px 10px; border-radius: 20px; letter-spacing: 0.5px; box-shadow: 0 2px 10px rgba(245, 158, 11, 0.5);">${p.badge}</span>` : ''}
+
+            <div>
+              <div class="d-flex align-items-center justify-content-between mb-2">
+                <h5 class="text-white font-weight-bold mb-0">${p.name}</h5>
+                <span class="badge badge-info p-2" style="background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.3); color: #38bdf8; border-radius: 8px; font-weight: 700;">
+                  <i class="fas fa-video mr-1"></i> ${p.cctv_quota} CCTV
+                </span>
+              </div>
+
+              <div class="my-3 p-3 rounded" style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.06);">
+                <div style="font-size: 11px; color: #94a3b8; text-transform: uppercase;">Tarif Langganan:</div>
+                <div style="font-size: 20px; font-weight: 800; color: #34d399; margin: 2px 0;">
+                  Rp ${Number(p.price_monthly).toLocaleString('id-ID')} <small style="font-size: 12px; color: #94a3b8;">/ bln</small>
+                </div>
+                <div style="font-size: 12.5px; color: #38bdf8; font-weight: 600;">
+                  Rp ${Number(p.price_annual || p.price_monthly * 10).toLocaleString('id-ID')} <small style="color: #94a3b8;">/ thn (Hemat 2 Bln)</small>
+                </div>
+              </div>
+
+              <div class="mb-3">
+                <div style="font-size: 11px; color: #94a3b8; font-weight: 700; text-transform: uppercase; margin-bottom: 8px;">Fitur & Kapasitas:</div>
+                <ul style="list-style: none; padding-left: 0; margin-bottom: 0; font-size: 12px; color: #cbd5e1;">
+                  ${(p.features || []).map(f => `<li style="margin-bottom: 5px; display: flex; align-items: center; gap: 6px;"><i class="fas fa-check-circle text-success" style="color: #34d399; font-size: 11px;"></i> <span>${f}</span></li>`).join('')}
+                </ul>
+              </div>
+            </div>
+
+            <div class="pt-3 border-top border-secondary d-flex justify-content-between align-items-center mt-3">
+              <button class="btn btn-outline-info btn-sm font-weight-bold px-3" onclick="openEditPlanModal('${p.id}')" style="border-radius: 8px; font-size: 12px;">
+                <i class="fas fa-edit mr-1"></i> Edit Paket & Harga
+              </button>
+              <button class="btn btn-outline-danger btn-sm" onclick="deleteAdminPlan('${p.id}')" style="border-radius: 8px; font-size: 12px;" title="Hapus Paket">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+          </div>
+        `;
+        grid.appendChild(col);
+      });
+    }
+
+    function openAddPlanModal() {
+      document.getElementById('planModalTitle').innerHTML = '<i class="fas fa-plus-circle text-info mr-2"></i> Tambah Paket SaaS Baru';
+      document.getElementById('plan-input-id').value = '';
+      document.getElementById('plan-input-name').value = '';
+      document.getElementById('plan-input-quota').value = '10';
+      document.getElementById('plan-input-badge').value = '';
+      document.getElementById('plan-input-monthly').value = '';
+      document.getElementById('plan-input-annual').value = '';
+      document.getElementById('plan-input-features').value = '10 Titik Kamera Live\nFull HD 1080p Stream H.265\nWebRTC & HLS Low Latency\nCloud Recording 14 Hari';
+      openModalHelper('modalAdminPlanForm');
+    }
+
+    function openEditPlanModal(planId) {
+      const p = cachedAdminPlans.find(item => item.id === planId);
+      if (!p) return;
+      document.getElementById('planModalTitle').innerHTML = '<i class="fas fa-edit text-warning mr-2"></i> Edit Paket SaaS';
+      document.getElementById('plan-input-id').value = p.id;
+      document.getElementById('plan-input-name').value = p.name;
+      document.getElementById('plan-input-quota').value = p.cctv_quota;
+      document.getElementById('plan-input-badge').value = p.badge || '';
+      document.getElementById('plan-input-monthly').value = p.price_monthly;
+      document.getElementById('plan-input-annual').value = p.price_annual || '';
+      document.getElementById('plan-input-features').value = (p.features || []).join('\n');
+      openModalHelper('modalAdminPlanForm');
+    }
+
+    async function submitSavePlan(e) {
+      e.preventDefault();
+      const id = document.getElementById('plan-input-id').value;
+      const name = document.getElementById('plan-input-name').value.trim();
+      const quota = document.getElementById('plan-input-quota').value;
+      const badge = document.getElementById('plan-input-badge').value.trim();
+      const monthly = document.getElementById('plan-input-monthly').value;
+      const annual = document.getElementById('plan-input-annual').value;
+      const features = document.getElementById('plan-input-features').value;
+
+      const fd = new FormData();
+      fd.append('action', 'save_plan');
+      fd.append('id', id);
+      fd.append('name', name);
+      fd.append('cctv_quota', quota);
+      fd.append('badge', badge);
+      fd.append('price_monthly', monthly);
+      fd.append('price_annual', annual);
+      fd.append('features', features);
+
+      try {
+        const res = await fetch('../api/payment.php', { method: 'POST', body: fd });
+        const data = await res.json();
+        if (data.success) {
+          alert('Paket SaaS & Harga berhasil disimpan!');
+          closeModalHelper('modalAdminPlanForm');
+          loadAdminPlansList();
+        } else {
+          alert(data.message || 'Gagal menyimpan paket.');
+        }
+      } catch (err) {
+        alert('Terjadi kesalahan koneksi ke server.');
+      }
+    }
+
+    async function deleteAdminPlan(planId) {
+      if (!confirm('Apakah Anda yakin ingin menghapus paket langganan ini?')) return;
+      const fd = new FormData();
+      fd.append('action', 'delete_plan');
+      fd.append('id', planId);
+
+      try {
+        const res = await fetch('../api/payment.php', { method: 'POST', body: fd });
+        const data = await res.json();
+        if (data.success) {
+          alert('Paket berhasil dihapus.');
+          loadAdminPlansList();
+        } else {
+          alert(data.message || 'Gagal menghapus paket.');
+        }
+      } catch (err) {
+        alert('Terjadi kesalahan koneksi ke server.');
       }
     }
 

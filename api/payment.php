@@ -22,6 +22,89 @@ if ($action === 'get_plans') {
     exit;
 }
 
+// 1B. SAVE OR UPDATE SUBSCRIPTION PLAN (SUPER ADMIN)
+if ($action === 'save_plan') {
+    $planId = trim($_POST['id'] ?? '');
+    $name = trim($_POST['name'] ?? '');
+    $quota = (int)($_POST['cctv_quota'] ?? 4);
+    $priceMonthly = (int)($_POST['price_monthly'] ?? 0);
+    $priceAnnual = (int)($_POST['price_annual'] ?? 0);
+    $badge = trim($_POST['badge'] ?? '');
+    $featuresStr = trim($_POST['features'] ?? '');
+    $features = !empty($featuresStr) ? array_map('trim', explode("\n", $featuresStr)) : [];
+
+    if (empty($name) || $priceMonthly <= 0) {
+        echo json_encode(['success' => false, 'message' => 'Nama paket dan harga bulanan wajib diisi!']);
+        exit;
+    }
+
+    if (empty($planId)) {
+        $planId = 'plan_' . strtolower(preg_replace('/[^a-zA-Z0-9]/', '_', $name)) . '_' . $quota;
+    }
+
+    $db = get_db_data();
+    if (!isset($db['plans']) || !is_array($db['plans'])) {
+        $db['plans'] = [];
+    }
+
+    $found = false;
+    foreach ($db['plans'] as &$p) {
+        if ($p['id'] === $planId) {
+            $p['name'] = $name;
+            $p['cctv_quota'] = $quota;
+            $p['price_monthly'] = $priceMonthly;
+            $p['price_annual'] = $priceAnnual > 0 ? $priceAnnual : ($priceMonthly * 10);
+            $p['badge'] = $badge;
+            if (!empty($features)) $p['features'] = $features;
+            $found = true;
+            break;
+        }
+    }
+
+    if (!$found) {
+        $db['plans'][] = [
+            'id' => $planId,
+            'name' => $name,
+            'cctv_quota' => $quota,
+            'price_monthly' => $priceMonthly,
+            'price_annual' => $priceAnnual > 0 ? $priceAnnual : ($priceMonthly * 10),
+            'badge' => $badge,
+            'features' => !empty($features) ? $features : [
+                "$quota Titik Kamera Live",
+                "Full HD 1080p Stream H.265",
+                "WebRTC & HLS Low Latency",
+                "Cloud Recording 7 Hari",
+                "Prioritas Bandwidth Relay"
+            ]
+        ];
+    }
+
+    save_db_data($db);
+    echo json_encode(['success' => true, 'message' => 'Paket langganan berhasil disimpan!', 'plans' => $db['plans']]);
+    exit;
+}
+
+// 1C. DELETE SUBSCRIPTION PLAN (SUPER ADMIN)
+if ($action === 'delete_plan') {
+    $planId = trim($_POST['id'] ?? '');
+    if (empty($planId)) {
+        echo json_encode(['success' => false, 'message' => 'ID Paket tidak valid.']);
+        exit;
+    }
+
+    $db = get_db_data();
+    $newPlans = [];
+    foreach ($db['plans'] as $p) {
+        if ($p['id'] !== $planId) {
+            $newPlans[] = $p;
+        }
+    }
+    $db['plans'] = $newPlans;
+    save_db_data($db);
+    echo json_encode(['success' => true, 'message' => 'Paket berhasil dihapus.', 'plans' => $db['plans']]);
+    exit;
+}
+
 // 2. CREATE SNAP TOKEN & TRANSACTION INVOICE
 if ($action === 'create_snap_token') {
     $planId = trim($_POST['plan_id'] ?? 'business_10');
