@@ -1054,6 +1054,130 @@
       margin-bottom: 16px;
       opacity: 0.8;
     }
+
+    /* ===== CUSTOMER HUB BILLING TABS & MODULES (TACTICAL BRUTALIST UI) ===== */
+    .customer-tabs-nav {
+      display: flex !important;
+      align-items: center !important;
+      gap: 8px !important;
+      overflow-x: auto !important;
+      padding-bottom: 8px !important;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+    }
+
+    .customer-nav-tab {
+      display: inline-flex !important;
+      align-items: center !important;
+      gap: 8px !important;
+      padding: 9px 16px !important;
+      background: rgba(13, 24, 54, 0.7) !important;
+      border: 1px solid rgba(255, 255, 255, 0.1) !important;
+      border-radius: 8px !important;
+      color: #94a3b8 !important;
+      font-size: 12.5px !important;
+      font-weight: 700 !important;
+      font-family: 'Space Grotesk', 'Plus Jakarta Sans', sans-serif !important;
+      cursor: pointer !important;
+      transition: all 0.2s ease !important;
+      white-space: nowrap !important;
+      text-transform: uppercase !important;
+      letter-spacing: 0.4px !important;
+    }
+
+    .customer-nav-tab:hover {
+      background: rgba(56, 189, 248, 0.12) !important;
+      border-color: rgba(56, 189, 248, 0.4) !important;
+      color: #ffffff !important;
+    }
+
+    .customer-nav-tab.active {
+      background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%) !important;
+      border-color: #38bdf8 !important;
+      color: #ffffff !important;
+      box-shadow: 0 4px 14px rgba(2, 132, 199, 0.4) !important;
+    }
+
+    .billing-card {
+      background: rgba(13, 24, 54, 0.85) !important;
+      border: 1px solid rgba(56, 189, 248, 0.25) !important;
+      border-radius: 12px !important;
+      padding: 24px !important;
+      margin-bottom: 24px !important;
+      backdrop-filter: blur(12px) !important;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4) !important;
+    }
+
+    .billing-card-header {
+      display: flex !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+      padding-bottom: 16px !important;
+      margin-bottom: 20px !important;
+    }
+
+    .billing-card-title {
+      font-size: 16px !important;
+      font-weight: 800 !important;
+      font-family: 'Space Grotesk', 'Plus Jakarta Sans', sans-serif !important;
+      color: #ffffff !important;
+      display: flex !important;
+      align-items: center !important;
+      gap: 10px !important;
+      margin: 0 !important;
+      text-transform: uppercase !important;
+      letter-spacing: 0.5px !important;
+    }
+
+    .billing-status-badge {
+      display: inline-flex !important;
+      align-items: center !important;
+      gap: 6px !important;
+      padding: 3px 10px !important;
+      border-radius: 4px !important;
+      font-size: 11px !important;
+      font-weight: 800 !important;
+      font-family: 'Space Grotesk', monospace !important;
+      text-transform: uppercase !important;
+      letter-spacing: 0.5px !important;
+    }
+
+    .billing-status-badge.active {
+      background: rgba(16, 185, 129, 0.15) !important;
+      border: 1px solid rgba(16, 185, 129, 0.4) !important;
+      color: #34d399 !important;
+    }
+
+    .billing-table {
+      width: 100% !important;
+      border-collapse: separate !important;
+      border-spacing: 0 !important;
+    }
+
+    .billing-table th {
+      background: rgba(8, 16, 36, 0.9) !important;
+      color: #94a3b8 !important;
+      font-size: 11px !important;
+      font-weight: 800 !important;
+      font-family: 'Space Grotesk', monospace !important;
+      text-transform: uppercase !important;
+      letter-spacing: 0.5px !important;
+      padding: 12px 16px !important;
+      border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+    }
+
+    .billing-table td {
+      padding: 14px 16px !important;
+      font-size: 13px !important;
+      color: #e2e8f0 !important;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+      vertical-align: middle !important;
+    }
+
+    .billing-table tr:hover td {
+      background: rgba(56, 189, 248, 0.04) !important;
+    }
   </style>
 </head>
 <body>

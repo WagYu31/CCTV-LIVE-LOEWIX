@@ -499,7 +499,173 @@
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
   
   <!-- Modular Loewix VMS Core Stylesheet -->
-  <link rel="stylesheet" href="assets/css/vms_core.css?v=2.6.0">
+  <link rel="stylesheet" href="assets/css/vms_core.css?v=3.2.0">
+
+  <!-- Tactical Industrial / Brutalist Telemetry Form Styling -->
+  <style>
+    .reg-pricing-section {
+      background: rgba(8, 16, 36, 0.9) !important;
+      border: 1px solid rgba(56, 189, 248, 0.35) !important;
+      border-radius: 12px !important;
+      padding: 14px !important;
+      margin-bottom: 18px !important;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45), inset 0 0 12px rgba(56, 189, 248, 0.05) !important;
+      backdrop-filter: blur(10px) !important;
+    }
+
+    .reg-cycle-toggle-wrapper {
+      display: flex !important;
+      background: rgba(3, 7, 18, 0.9) !important;
+      border: 1px solid rgba(255, 255, 255, 0.12) !important;
+      border-radius: 8px !important;
+      padding: 3px !important;
+      margin-bottom: 12px !important;
+      gap: 4px !important;
+    }
+
+    .reg-cycle-btn {
+      flex: 1 !important;
+      border: 1px solid transparent !important;
+      background: transparent !important;
+      color: #94a3b8 !important;
+      font-size: 11px !important;
+      font-weight: 700 !important;
+      font-family: 'Space Grotesk', 'Plus Jakarta Sans', sans-serif !important;
+      padding: 8px 6px !important;
+      border-radius: 6px !important;
+      cursor: pointer !important;
+      transition: all 0.2s ease !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      gap: 6px !important;
+      text-transform: uppercase !important;
+      letter-spacing: 0.4px !important;
+    }
+
+    .reg-cycle-btn:hover {
+      color: #ffffff !important;
+      background: rgba(255, 255, 255, 0.05) !important;
+    }
+
+    .reg-cycle-btn.active {
+      background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%) !important;
+      border-color: #38bdf8 !important;
+      color: #ffffff !important;
+      box-shadow: 0 2px 10px rgba(2, 132, 199, 0.5) !important;
+    }
+
+    .reg-cycle-badge {
+      font-size: 9px !important;
+      background: #10b981 !important;
+      color: #ffffff !important;
+      padding: 2px 6px !important;
+      border-radius: 4px !important;
+      font-weight: 800 !important;
+      letter-spacing: 0.3px !important;
+      text-transform: uppercase !important;
+    }
+
+    .reg-plan-cards-grid {
+      display: grid !important;
+      grid-template-columns: repeat(3, 1fr) !important;
+      gap: 8px !important;
+      margin-bottom: 12px !important;
+    }
+
+    .reg-plan-card {
+      background: rgba(15, 23, 42, 0.8) !important;
+      border: 1.5px solid rgba(255, 255, 255, 0.12) !important;
+      border-radius: 8px !important;
+      padding: 12px 6px 10px 6px !important;
+      text-align: center !important;
+      cursor: pointer !important;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+      position: relative !important;
+      display: flex !important;
+      flex-direction: column !important;
+      justify-content: center !important;
+      align-items: center !important;
+    }
+
+    .reg-plan-card:hover {
+      border-color: rgba(56, 189, 248, 0.6) !important;
+      background: rgba(15, 23, 42, 1) !important;
+      transform: translateY(-2px) !important;
+    }
+
+    .reg-plan-card.active {
+      border-color: #38bdf8 !important;
+      background: rgba(2, 132, 199, 0.18) !important;
+      box-shadow: 0 0 14px rgba(56, 189, 248, 0.35), inset 0 0 8px rgba(56, 189, 248, 0.1) !important;
+    }
+
+    .reg-plan-tag {
+      position: absolute !important;
+      top: -8px !important;
+      left: 50% !important;
+      transform: translateX(-50%) !important;
+      background: linear-gradient(135deg, #f59e0b, #d97706) !important;
+      color: #ffffff !important;
+      font-size: 8px !important;
+      font-weight: 800 !important;
+      padding: 2px 6px !important;
+      border-radius: 4px !important;
+      white-space: nowrap !important;
+      text-transform: uppercase !important;
+      letter-spacing: 0.5px !important;
+      box-shadow: 0 2px 6px rgba(245, 158, 11, 0.5) !important;
+    }
+
+    .reg-plan-title {
+      font-size: 11px !important;
+      font-weight: 800 !important;
+      color: #ffffff !important;
+      text-transform: uppercase !important;
+      letter-spacing: 0.4px !important;
+      margin-bottom: 2px !important;
+      line-height: 1.2 !important;
+    }
+
+    .reg-plan-cctv {
+      font-size: 10px !important;
+      color: #38bdf8 !important;
+      font-weight: 700 !important;
+      font-family: 'Space Grotesk', monospace !important;
+      margin-bottom: 4px !important;
+    }
+
+    .reg-plan-price {
+      font-size: 10px !important;
+      font-weight: 800 !important;
+      font-family: 'Space Grotesk', monospace !important;
+      color: #34d399 !important;
+      line-height: 1.2 !important;
+    }
+
+    .reg-order-summary {
+      background: rgba(3, 7, 18, 0.85) !important;
+      border: 1px dashed rgba(56, 189, 248, 0.35) !important;
+      border-radius: 6px !important;
+      padding: 8px 12px !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+      font-size: 11px !important;
+    }
+
+    .reg-summary-desc {
+      color: #cbd5e1 !important;
+      font-size: 11px !important;
+    }
+
+    .reg-summary-total {
+      font-size: 14px !important;
+      font-weight: 800 !important;
+      font-family: 'Space Grotesk', monospace !important;
+      color: #34d399 !important;
+    }
+  </style>
 
 <!-- Critical CSS: blocking links (preload+onload tidak menerapkan style tanpa JS; subfolder butuh path yang benar) -->
   <link rel="stylesheet" href="assets/bootstarp/bootstrap.min.css">
@@ -742,22 +908,22 @@
         <!-- 2. REGISTRATION FORM -->
         <form id="formGateRegister" onsubmit="submitGateRegister(event)" style="display: none;">
           
-          <!-- Package Selector Header -->
+          <!-- Tactical Telemetry Package Selector -->
           <div class="reg-pricing-section">
             <div class="d-flex align-items-center justify-content-between mb-2">
-              <span style="font-size: 11px; font-weight: 800; color: #38bdf8; text-transform: uppercase; letter-spacing: 0.5px;">
-                <i class="fas fa-cube mr-1"></i> PILIH PAKET CCTV
+              <span style="font-size: 10.5px; font-weight: 800; color: #38bdf8; font-family: 'Space Grotesk', monospace; text-transform: uppercase; letter-spacing: 0.8px;">
+                <i class="fas fa-microchip text-info mr-1"></i> [ CCTV_STREAM_TIER // SELECT ]
               </span>
-              <span style="font-size: 10px; color: #94a3b8;">Dapat di-upgrade kapan saja</span>
+              <span style="font-size: 9.5px; color: #64748b; font-family: monospace;">INSTANT PROVISIONING</span>
             </div>
 
             <!-- Billing Cycle Switcher (Bulanan vs Tahunan) -->
             <div class="reg-cycle-toggle-wrapper">
               <button type="button" class="reg-cycle-btn" id="reg-cycle-monthly" onclick="selectRegistrationCycle('monthly')">
-                <i class="fas fa-calendar-alt"></i> Bulanan
+                <i class="fas fa-calendar-alt"></i> BULANAN
               </button>
               <button type="button" class="reg-cycle-btn active" id="reg-cycle-annual" onclick="selectRegistrationCycle('annual')">
-                <i class="fas fa-tag"></i> Tahunan <span class="reg-cycle-badge">Hemat 2 Bln</span>
+                <i class="fas fa-bolt"></i> TAHUNAN <span class="reg-cycle-badge">HEMAT 2 BLN</span>
               </button>
             </div>
 
@@ -789,10 +955,10 @@
             <!-- Order Summary -->
             <div class="reg-order-summary">
               <div class="reg-summary-desc" id="reg-summary-text">
-                <strong>Business Pro</strong> (10 CCTV) &bull; Periode 1 Tahun (Hemat 2 Bln)
+                <strong style="color: #ffffff;">Business Pro</strong> (10 CCTV) &bull; Periode 1 Tahun
               </div>
               <div class="text-right">
-                <div style="font-size: 9px; color: #94a3b8;">Total (Inc. PPN 11%)</div>
+                <div style="font-size: 8.5px; color: #94a3b8; font-family: monospace; text-transform: uppercase;">TOTAL (INC. PPN 11%)</div>
                 <div class="reg-summary-total" id="reg-summary-total">Rp 3.318.900</div>
               </div>
             </div>
