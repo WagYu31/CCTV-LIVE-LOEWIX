@@ -2408,10 +2408,61 @@
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      background-color: rgba(0, 0, 0, 0.7);
+      background: radial-gradient(circle at center, rgba(15, 23, 42, 0.95), rgba(2, 6, 23, 0.98));
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
       color: white;
       z-index: 3;
+      padding: 14px;
+      text-align: center;
       display: none;
+    }
+
+    .offline-msg .offline-icon {
+      color: #ef4444;
+      font-size: 24px;
+      margin-bottom: 6px;
+      filter: drop-shadow(0 0 10px rgba(239, 68, 68, 0.5));
+    }
+
+    .offline-msg .offline-title {
+      font-size: 11.5px;
+      font-weight: 700;
+      color: #fca5a5;
+      letter-spacing: 0.3px;
+    }
+
+    .offline-msg .offline-subtitle {
+      font-size: 10px;
+      color: #94a3b8;
+      max-width: 90%;
+      margin-top: 3px;
+      margin-bottom: 10px;
+      line-height: 1.35;
+    }
+
+    .vms-offline-retry-btn {
+      background: rgba(14, 165, 233, 0.15);
+      border: 1px solid rgba(56, 189, 248, 0.55);
+      border-radius: 6px;
+      padding: 4px 12px;
+      font-size: 10.5px;
+      font-weight: 600;
+      color: #38bdf8;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 0 8px rgba(56, 189, 248, 0.15);
+    }
+
+    .vms-offline-retry-btn:hover {
+      background: #0284c7;
+      border-color: #38bdf8;
+      color: #ffffff;
+      transform: translateY(-1px);
+      box-shadow: 0 2px 12px rgba(56, 189, 248, 0.45);
     }
 
     .hidden-iframe {
@@ -2905,7 +2956,9 @@
       left: 0;
       width: 100%;
       height: 100%;
-      background: rgba(0, 0, 0, 0.9);
+      background: radial-gradient(circle at center, rgba(15, 23, 42, 0.95), rgba(2, 6, 23, 0.98));
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
       color: white;
       display: none;
       flex-direction: column;
@@ -2916,26 +2969,26 @@
       text-align: center;
     }
 
-    .popup-offline-msg i {
-      font-size: 48px;
-      margin-bottom: 15px;
-      color: #ffc107;
+    .popup-offline-msg .offline-icon {
+      color: #ef4444;
+      font-size: 26px;
+      margin-bottom: 8px;
+      filter: drop-shadow(0 0 10px rgba(239, 68, 68, 0.5));
     }
 
-    .popup-offline-msg div {
-      font-size: 14px;
-      margin-bottom: 10px;
+    .popup-offline-msg .offline-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #fca5a5;
     }
 
-    .popup-offline-msg button {
-      background: #091650;
-      color: white;
-      border: none;
-      padding: 8px 16px;
-      border-radius: 5px;
-      cursor: pointer;
-      font-size: 12px;
-      margin-top: 10px;
+    .popup-offline-msg .offline-subtitle {
+      font-size: 10.5px;
+      color: #94a3b8;
+      max-width: 85%;
+      margin-top: 4px;
+      margin-bottom: 12px;
+      line-height: 1.35;
     }
 
     @media (max-width: 480px) {
@@ -9884,20 +9937,32 @@
 
     // ===== END ADVANCED STREAMING OPTIMIZATION SYSTEM =====
 
-    // Function to display offline message
-    function showOfflineMessage(playerId, thumbId) {
+    // Function to display offline message (Modern Sleek Customer Hub Style)
+    function showOfflineMessage(playerId, thumbId, customTitle, customSubtitle) {
       const player = document.getElementById(playerId);
       const thumb = document.getElementById(thumbId);
-      const offlineId = 'offline-' + thumbId.split('-')[1];
+      const cid = thumbId.replace('thumb-', '').replace('popup-thumb-', '');
+      const offlineId = thumbId.startsWith('popup-') ? `popup-offline-${cid}` : `offline-${cid}`;
       const offlineMsg = document.getElementById(offlineId);
-      const bufferingId = 'buffering-' + thumbId.split('-')[1];
+      const bufferingId = thumbId.startsWith('popup-') ? `popup-buffering-${cid}` : `buffering-${cid}`;
       const bufferingOverlay = document.getElementById(bufferingId);
-      const cardId = 'card-' + thumbId.split('-')[1];
+      const cardId = 'card-' + cid;
       const card = document.getElementById(cardId);
+
+      if (offlineMsg) {
+        const titleEl = offlineMsg.querySelector('.offline-title');
+        const subEl = offlineMsg.querySelector('.offline-subtitle');
+        if (titleEl) {
+          titleEl.textContent = customTitle || 'Kamera Sedang Offline';
+        }
+        if (subEl) {
+          subEl.textContent = customSubtitle || 'Kamera sedang Offline (Mati Daya / Tidak Terhubung ke Internet)';
+        }
+        offlineMsg.style.display = 'flex';
+      }
 
       if (player) player.style.display = 'none';
       if (thumb) thumb.style.display = 'none';
-      if (offlineMsg) offlineMsg.style.display = 'flex';
       if (bufferingOverlay) bufferingOverlay.style.display = 'none';
 
       if (card) {
@@ -11197,12 +11262,15 @@
             </div>
 
             <!-- Offline Message -->
-            <div id="${popupOfflineId}" class="popup-offline-msg">
-              <i class="fas fa-exclamation-triangle"></i>
-              <div>CCTV Sedang Dalam Perbaikan</div>
-              <button onclick="${reloadFunction}">
-                <i class="fas fa-sync"></i> Refresh
-              </button>
+            <div id="${popupOfflineId}" class="popup-offline-msg offline-msg">
+              <div class="offline-icon"><i class="fas fa-video-slash"></i></div>
+              <div class="offline-title">Kamera Sedang Offline</div>
+              <div class="offline-subtitle">Kamera sedang Offline (Mati Daya / Tidak Terhubung ke Internet)</div>
+              <div class="d-flex align-items-center justify-content-center" style="gap: 6px;">
+                <button class="vms-offline-retry-btn" onclick="${reloadFunction}">
+                  <i class="fas fa-redo-alt"></i> Coba Lagi
+                </button>
+              </div>
             </div>
 
             <!-- Buffering Overlay -->
@@ -12844,11 +12912,14 @@
                   </div>
 
                   <div class="offline-msg" id="offline-${camera.id}">
-                    <i class="fas fa-exclamation-triangle fa-3x mb-3"></i>
-                    <div>CCTV Sedang Dalam Perbaikan</div>
-                    <button class="traffic-button mt-3" onclick="${reloadFunction}">
-                      <i class="fas fa-sync"></i> Refresh
-                    </button>
+                    <div class="offline-icon"><i class="fas fa-video-slash"></i></div>
+                    <div class="offline-title">Kamera Sedang Offline</div>
+                    <div class="offline-subtitle">Kamera sedang Offline (Mati Daya / Tidak Terhubung ke Internet)</div>
+                    <div class="d-flex align-items-center justify-content-center" style="gap: 6px;">
+                      <button class="vms-offline-retry-btn" onclick="${reloadFunction}">
+                        <i class="fas fa-redo-alt"></i> Coba Lagi
+                      </button>
+                    </div>
                   </div>
 
                   <div class="buffering-overlay" id="buffering-${camera.id}" style="display: none;">
@@ -13044,11 +13115,14 @@
                 </div>
 
                 <div class="offline-msg" id="offline-${camera.id}">
-                  <i class="fas fa-exclamation-triangle fa-3x mb-3"></i>
-                  <div>Kamera Sedang Dalam Perbaikan</div>
-                  <button class="traffic-button mt-3" onclick="${reloadFunction}">
-                    <i class="fas fa-sync"></i> Refresh
-                  </button>
+                  <div class="offline-icon"><i class="fas fa-video-slash"></i></div>
+                  <div class="offline-title">Kamera Sedang Offline</div>
+                  <div class="offline-subtitle">Kamera sedang Offline (Mati Daya / Tidak Terhubung ke Internet)</div>
+                  <div class="d-flex align-items-center justify-content-center" style="gap: 6px;">
+                    <button class="vms-offline-retry-btn" onclick="${reloadFunction}">
+                      <i class="fas fa-redo-alt"></i> Coba Lagi
+                    </button>
+                  </div>
                 </div>
 
                 <div class="buffering-overlay" id="buffering-${camera.id}">
@@ -13138,11 +13212,14 @@
                 </div>
 
                 <div class="offline-msg" id="offline-${camera.id}">
-                  <i class="fas fa-exclamation-triangle fa-3x mb-3"></i>
-                  <div>Kamera Sedang Dalam Perbaikan</div>
-                  <button class="traffic-button mt-3" onclick="${reloadFunction}">
-                    <i class="fas fa-sync"></i> Refresh
-                  </button>
+                  <div class="offline-icon"><i class="fas fa-video-slash"></i></div>
+                  <div class="offline-title">Kamera Sedang Offline</div>
+                  <div class="offline-subtitle">Kamera sedang Offline (Mati Daya / Tidak Terhubung ke Internet)</div>
+                  <div class="d-flex align-items-center justify-content-center" style="gap: 6px;">
+                    <button class="vms-offline-retry-btn" onclick="${reloadFunction}">
+                      <i class="fas fa-redo-alt"></i> Coba Lagi
+                    </button>
+                  </div>
                 </div>
 
                 <div class="buffering-overlay" id="buffering-${camera.id}">
