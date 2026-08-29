@@ -144,9 +144,44 @@ if ($action === 'register') {
     $db = get_db_data();
 
     // Check if email already registered
+    $existingUser = null;
     foreach ($db['users'] as $user) {
         if (strtolower($user['email']) === strtolower($email)) {
-            echo json_encode(['success' => false, 'message' => 'Email ini sudah terdaftar. Silakan gunakan email lain atau login!']);
+            $existingUser = $user;
+            break;
+        }
+    }
+
+    if ($existingUser) {
+        // Check if password matches to allow seamless continuation of checkout
+        $passwordValid = password_verify($password, $existingUser['password']) || ($password === $existingUser['password']);
+        if ($passwordValid) {
+            // Log in the user and return their session so they can proceed directly to payment
+            $_SESSION['user_id'] = $existingUser['id'];
+            $_SESSION['user_name'] = $existingUser['name'];
+            $_SESSION['user_email'] = $existingUser['email'];
+            $_SESSION['user_role'] = $existingUser['role'];
+            $_SESSION['cctv_quota'] = $existingUser['cctv_quota'];
+            $_SESSION['user_city'] = $existingUser['city'];
+
+            echo json_encode([
+                'success' => true,
+                'message' => 'Akun terverifikasi! Melanjutkan ke sesi pembayaran...',
+                'user' => [
+                    'id' => $existingUser['id'],
+                    'name' => $existingUser['name'],
+                    'email' => $existingUser['email'],
+                    'role' => $existingUser['role'],
+                    'cctv_quota' => $existingUser['cctv_quota'],
+                    'city' => $existingUser['city']
+                ]
+            ]);
+            exit;
+        } else {
+            echo json_encode([
+                'success' => false, 
+                'message' => 'Email ini sudah terdaftar. Silakan masukkan kata sandi Anda yang benar atau klik "Masuk ke Akun Anda" di bawah.'
+            ]);
             exit;
         }
     }
