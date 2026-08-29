@@ -280,11 +280,13 @@ async function submitGateRegister(e) {
       currentUser = data.user;
       localStorage.setItem('loewix_user', JSON.stringify(data.user));
 
-      // 2. Request Midtrans Snap Token
+      const activePlan = window.selectedRegPlan || (typeof selectedRegPlan !== 'undefined' ? selectedRegPlan : 'business_10');
+      const activeCycle = window.selectedRegCycle || (typeof selectedRegCycle !== 'undefined' ? selectedRegCycle : 'annual');
+
       const payData = new FormData();
       payData.append('action', 'create_snap_token');
-      payData.append('plan_id', selectedRegPlan);
-      payData.append('billing_cycle', selectedRegCycle);
+      payData.append('plan_id', activePlan);
+      payData.append('billing_cycle', activeCycle);
       payData.append('name', name);
       payData.append('email', email);
       payData.append('phone', phone);

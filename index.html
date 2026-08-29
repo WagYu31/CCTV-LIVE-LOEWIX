@@ -1959,8 +1959,8 @@
   <!-- Core App Javascript - Ultimate Version -->
 
   <!-- Core Modular VMS Application & Authentication Scripts -->
-  <script src="assets/js/vms_app.js?v=3.6.0"></script>
-  <script src="assets/js/vms_auth.js?v=3.6.0"></script>
+  <script src="assets/js/vms_app.js?v=3.7.0"></script>
+  <script src="assets/js/vms_auth.js?v=3.7.0"></script>
 
   <!-- Inline Package Selector Controller (Immune to Browser Caching) -->
   <script>

@@ -4,6 +4,8 @@
  * PT. LOEWIX INDONESIA
  */
 
+error_reporting(0);
+ini_set('display_errors', '0');
 header('Content-Type: application/json');
 require_once __DIR__ . '/../config/db.php';
 require_once __DIR__ . '/../config/mail.php';

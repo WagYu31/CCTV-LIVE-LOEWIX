@@ -77,7 +77,7 @@ function create_midtrans_snap_token($transactionDetails, $customerDetails = [], 
     $response = curl_exec($ch);
     $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     $curlError = curl_error($ch);
-    curl_close($ch);
+    if (is_resource($ch)) @curl_close($ch);
 
     if ($curlError) {
         return [
