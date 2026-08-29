@@ -1890,8 +1890,84 @@
   <!-- Core App Javascript - Ultimate Version -->
 
   <!-- Core Modular VMS Application & Authentication Scripts -->
-  <script src="assets/js/vms_app.js?v=2.6.0"></script>
-  <script src="assets/js/vms_auth.js?v=2.6.0"></script>
+  <script src="assets/js/vms_app.js?v=3.5.0"></script>
+  <script src="assets/js/vms_auth.js?v=3.5.0"></script>
+
+  <!-- Inline Package Selector Controller (Immune to Browser Caching) -->
+  <script>
+    window.selectedRegCycle = window.selectedRegCycle || 'annual';
+    window.selectedRegPlan = window.selectedRegPlan || 'business_10';
+
+    window.REG_PLAN_PRICES = {
+      starter_4: { name: 'Starter Cloud', quota: 4, monthly: 149000, annual: 1490000 },
+      business_10: { name: 'Business Pro', quota: 10, monthly: 299000, annual: 2990000 },
+      enterprise_20: { name: 'Enterprise Fleet', quota: 20, monthly: 549000, annual: 5490000 }
+    };
+
+    window.selectRegistrationCycle = function(cycle) {
+      window.selectedRegCycle = cycle;
+      const btnMonthly = document.getElementById('reg-cycle-monthly');
+      const btnAnnual = document.getElementById('reg-cycle-annual');
+      
+      if (cycle === 'annual') {
+        if (btnAnnual) btnAnnual.classList.add('active');
+        if (btnMonthly) btnMonthly.classList.remove('active');
+      } else {
+        if (btnMonthly) btnMonthly.classList.add('active');
+        if (btnAnnual) btnAnnual.classList.remove('active');
+      }
+      
+      window.updateRegPlanDisplay();
+    };
+
+    window.selectRegistrationPlan = function(planId) {
+      window.selectedRegPlan = planId;
+      document.querySelectorAll('.reg-plan-card').forEach(card => {
+        if (card.getAttribute('data-plan') === planId) {
+          card.classList.add('active');
+        } else {
+          card.classList.remove('active');
+        }
+      });
+      window.updateRegPlanDisplay();
+    };
+
+    window.updateRegPlanDisplay = function() {
+      const planInfo = window.REG_PLAN_PRICES[window.selectedRegPlan] || window.REG_PLAN_PRICES.business_10;
+      const basePrice = (window.selectedRegCycle === 'annual') ? planInfo.annual : planInfo.monthly;
+      const tax = Math.round(basePrice * 0.11);
+      const total = basePrice + tax;
+
+      const priceTagStarter = document.getElementById('price-tag-starter');
+      const priceTagBusiness = document.getElementById('price-tag-business');
+      const priceTagEnterprise = document.getElementById('price-tag-enterprise');
+      
+      if (priceTagStarter) {
+        priceTagStarter.textContent = window.selectedRegCycle === 'annual' ? 'Rp 1.490.000/thn' : 'Rp 149.000/bln';
+      }
+      if (priceTagBusiness) {
+        priceTagBusiness.textContent = window.selectedRegCycle === 'annual' ? 'Rp 2.990.000/thn' : 'Rp 299.000/bln';
+      }
+      if (priceTagEnterprise) {
+        priceTagEnterprise.textContent = window.selectedRegCycle === 'annual' ? 'Rp 5.490.000/thn' : 'Rp 549.000/bln';
+      }
+
+      const summaryText = document.getElementById('reg-summary-text');
+      const summaryTotal = document.getElementById('reg-summary-total');
+      
+      if (summaryText) {
+        summaryText.innerHTML = `<strong style="color:#ffffff;">${planInfo.name}</strong> (${planInfo.quota} CCTV) &bull; Periode ${window.selectedRegCycle === 'annual' ? '1 Tahun' : '1 Bulan'}`;
+      }
+      if (summaryTotal) {
+        summaryTotal.textContent = 'Rp ' + total.toLocaleString('id-ID');
+      }
+    };
+
+    // Initialize display on load
+    document.addEventListener('DOMContentLoaded', () => {
+      window.updateRegPlanDisplay();
+    });
+  </script>
 </body>
 
 </html>
