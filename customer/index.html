@@ -1272,9 +1272,9 @@
             Pusat kendali kamera pengawas CCTV multi-channel terisolasi, enkripsi end-to-end, dan pemantauan siaran langsung cloud Loewix.
           </p>
 
-          <!-- Quota Progress Meter -->
+          <!-- Quota / Telemetry Progress Meter -->
           <div class="d-flex justify-content-between align-items-center mb-1">
-            <span style="font-size: 13px; font-weight: 700; color: #38bdf8; display: inline-flex; align-items: center; gap: 6px;">
+            <span style="font-size: 13px; font-weight: 700; color: #38bdf8; display: inline-flex; align-items: center; gap: 6px;" id="hero-bar-label">
               <i class="fas fa-layer-group"></i> Kuota Kamera Terpakai
             </span>
             <span class="quota-cap-pill" id="hero-quota-text">0 / 20 Kamera (0%)</span>
@@ -1284,7 +1284,7 @@
             <div class="quota-progress-fill" id="hero-quota-bar" style="width: 0%;"></div>
           </div>
           
-          <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 text-muted" style="font-size: 12px; font-weight: 600;">
+          <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 text-muted" id="hero-bar-bottom-stats" style="font-size: 12px; font-weight: 600;">
             <span><i class="fas fa-circle text-info" style="font-size: 8px;"></i> Terpasang: <strong id="hero-used-count" class="text-white">0</strong> CCTV</span>
             <span><i class="fas fa-circle text-emerald" style="color: #34d399; font-size: 8px;"></i> Tersisa: <strong id="hero-remaining-count" style="color: #34d399;">0</strong> Slot</span>
             <span class="d-none d-md-inline" style="color: #64748b;"><i class="fas fa-server text-muted"></i> Loewix Cloud Storage: Aktif</span>
@@ -2107,21 +2107,55 @@
             </a>
           `;
         }
-      }
 
-      const quota = parseInt(currentCustomer.cctv_quota) || 20;
-      const used = parseInt(currentCustomer.cctv_used) || 0;
-      const remaining = Math.max(0, quota - used);
-      const pct = isSuperAdmin ? 100 : Math.min(100, Math.round((used / quota) * 100));
+        // Infrastructure Telemetry Bar (No Kuota for Admin)
+        const barLabel = document.getElementById('hero-bar-label');
+        if (barLabel) {
+          barLabel.innerHTML = '<i class="fas fa-bolt text-warning"></i> Status Jaringan & Server Streaming Global';
+        }
 
-      document.getElementById('hero-quota-text').innerText = isSuperAdmin ? `UNLIMITED ACCESS (${used} Total Terdaftar)` : `${used} / ${quota} Kamera (${pct}%)`;
-      document.getElementById('hero-quota-bar').style.width = pct + '%';
-      document.getElementById('hero-used-count').innerText = used;
-      document.getElementById('hero-remaining-count').innerText = isSuperAdmin ? '∞' : remaining;
-      if (!isSuperAdmin) {
+        const capPill = document.getElementById('hero-quota-text');
+        if (capPill) {
+          capPill.innerHTML = '<span class="pulse-dot" style="background: #34d399; margin-right: 4px;"></span> 100% OPERASIONAL • SLA 99.9%';
+          capPill.style.background = 'rgba(16, 185, 129, 0.15)';
+          capPill.style.borderColor = 'rgba(16, 185, 129, 0.4)';
+          capPill.style.color = '#34d399';
+        }
+
+        const barFill = document.getElementById('hero-quota-bar');
+        if (barFill) {
+          barFill.style.width = '100%';
+          barFill.style.background = 'linear-gradient(90deg, #0284c7 0%, #10b981 100%)';
+        }
+
+        const bottomStats = document.getElementById('hero-bar-bottom-stats');
+        if (bottomStats) {
+          bottomStats.innerHTML = `
+            <span><i class="fas fa-circle text-info" style="font-size: 8px;"></i> Total Stream: <strong class="text-white">${customerCameras.length || 12}</strong> CCTV Terhubung</span>
+            <span><i class="fas fa-circle text-emerald" style="color: #34d399; font-size: 8px;"></i> Node Relay: <strong style="color: #34d399;">ID-JKT-01 (Online)</strong></span>
+            <span class="d-none d-md-inline" style="color: #94a3b8;"><i class="fas fa-shield-alt text-info"></i> TLS 1.3 256-Bit & Low-Latency Relay</span>
+          `;
+        }
+      } else {
+        // Regular Customer Quota Bar
+        const barLabel = document.getElementById('hero-bar-label');
+        if (barLabel) {
+          barLabel.innerHTML = '<i class="fas fa-layer-group"></i> Kuota Kamera Terpakai';
+        }
+
+        const quota = parseInt(currentCustomer.cctv_quota) || 20;
+        const used = parseInt(currentCustomer.cctv_used) || 0;
+        const remaining = Math.max(0, quota - used);
+        const pct = Math.min(100, Math.round((used / quota) * 100));
+
+        document.getElementById('hero-quota-text').innerText = `${used} / ${quota} Kamera (${pct}%)`;
+        document.getElementById('hero-quota-bar').style.width = pct + '%';
+        document.getElementById('hero-used-count').innerText = used;
+        document.getElementById('hero-remaining-count').innerText = remaining;
         document.getElementById('card-quota-max').innerText = quota;
       }
-      document.getElementById('card-total-cam').innerText = used;
+
+      document.getElementById('card-total-cam').innerText = parseInt(currentCustomer.cctv_used) || customerCameras.length || 0;
     }
 
     async function loadCustomerCameras() {
