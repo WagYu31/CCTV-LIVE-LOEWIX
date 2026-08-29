@@ -4138,7 +4138,7 @@
       const tbody = document.getElementById('admin-transactions-table-body');
       if (!tbody) return;
 
-      tbody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-muted"><i class="fas fa-spinner fa-spin mr-2 text-info"></i> Memuat data transaksi...</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-muted"><i class="fas fa-spinner fa-spin mr-2 text-info"></i> Memuat data tagihan & transaksi pelanggan...</td></tr>`;
 
       try {
         const res = await fetch('../api/payment.php?action=get_billing_dashboard');
@@ -4146,21 +4146,58 @@
         const invoices = data.invoices || [];
 
         if (invoices.length === 0) {
-          tbody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-muted">Belum ada riwayat transaksi masuk.</td></tr>`;
+          tbody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-muted"><i class="fas fa-info-circle mr-1"></i> Belum ada riwayat transaksi masuk.</td></tr>`;
           return;
         }
 
         tbody.innerHTML = '';
         invoices.forEach(inv => {
+          const totalAmt = inv.total_amount || inv.amount || 0;
+          const status = (inv.status || 'settlement').toLowerCase();
+          
+          let statusBadge = `<span class="badge badge-success p-2" style="background: rgba(16,185,129,0.2); border: 1px solid #10b981; color: #34d399;"><i class="fas fa-check-circle mr-1"></i> LUNAS (SETTLEMENT)</span>`;
+          if (status === 'pending') {
+            statusBadge = `<span class="badge badge-warning p-2" style="background: rgba(245,158,11,0.2); border: 1px solid #f59e0b; color: #fbbf24;"><i class="fas fa-clock mr-1"></i> MENUNGGU PEMBAYARAN</span>`;
+          } else if (status === 'expire' || status === 'cancel' || status === 'failure') {
+            statusBadge = `<span class="badge badge-danger p-2" style="background: rgba(239,68,68,0.2); border: 1px solid #ef4444; color: #f87171;"><i class="fas fa-times-circle mr-1"></i> BATAL / EXPIRED</span>`;
+          }
+
+          let payType = inv.payment_type || 'QRIS / VA';
+          if (payType.includes('bca')) payType = 'BCA Virtual Account';
+          else if (payType.includes('mandiri')) payType = 'Mandiri Bill';
+          else if (payType.includes('bri')) payType = 'BRI Virtual Account';
+          else if (payType.includes('bni')) payType = 'BNI Virtual Account';
+          else if (payType.includes('qris')) payType = 'QRIS Instant';
+          else if (payType.includes('credit_card')) payType = 'Credit Card';
+
           const row = document.createElement('tr');
           row.innerHTML = `
-            <td style="font-family: monospace; font-weight: 700; color: #38bdf8;">${inv.invoice_number || inv.order_id}</td>
-            <td class="font-weight-bold text-white">${inv.user_name || currentCustomer.name || 'Customer'}</td>
-            <td><span class="badge badge-info p-2" style="border-radius: 6px;">${inv.plan_name || 'Business Plan'}</span></td>
-            <td class="font-weight-bold" style="color: #34d399;">Rp ${Number(inv.amount).toLocaleString('id-ID')}</td>
-            <td><span class="badge badge-dark text-uppercase p-2" style="background: rgba(255,255,255,0.08);">${inv.payment_type || 'QRIS'}</span></td>
-            <td><span class="badge badge-success p-2" style="background: rgba(16,185,129,0.2); border: 1px solid #10b981; color: #34d399;">LUNAS (SETTLEMENT)</span></td>
-            <td class="text-muted" style="font-size: 12px;">${inv.created_at || '2026-08-29'}</td>
+            <td style="font-family: monospace; font-weight: 700; color: #38bdf8; font-size: 13px;">
+              <i class="fas fa-file-invoice text-info mr-1"></i> ${inv.order_id || inv.invoice_number || 'INV-LOEWIX'}
+            </td>
+            <td>
+              <div class="font-weight-bold text-white" style="font-size: 13px;">
+                <i class="fas fa-building text-warning mr-1" style="font-size: 11px;"></i> ${inv.user_name || 'Customer PT'}
+              </div>
+              <small class="text-muted" style="font-size: 11px;">${inv.user_email || ''}</small>
+            </td>
+            <td>
+              <span class="badge badge-info p-2" style="background: rgba(56,189,248,0.15); border: 1px solid rgba(56,189,248,0.3); color: #38bdf8; border-radius: 6px; font-weight: 600;">
+                ${inv.plan_name || 'Business Plan'} (${inv.billing_cycle === 'annual' ? 'Tahunan' : 'Bulanan'})
+              </span>
+            </td>
+            <td class="font-weight-bold" style="color: #34d399; font-size: 14px;">
+              Rp ${Number(totalAmt).toLocaleString('id-ID')}
+            </td>
+            <td>
+              <span class="badge badge-dark text-uppercase p-2" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); font-size: 11px;">
+                <i class="fas fa-wallet mr-1 text-info"></i> ${payType}
+              </span>
+            </td>
+            <td>${statusBadge}</td>
+            <td class="text-muted" style="font-size: 11.5px; white-space: nowrap;">
+              <i class="fas fa-calendar-check mr-1 text-info"></i> ${inv.settlement_time || inv.transaction_time || inv.created_at || '2026-08-29 10:00'}
+            </td>
           `;
           tbody.appendChild(row);
         });

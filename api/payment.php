@@ -401,7 +401,16 @@ if ($action === 'get_billing_dashboard') {
         }
     }
 
-    $invoices = get_user_invoices($userId);
+    // Invoices list (all for super_admin, user-specific for customers)
+    if ($user['role'] === 'super_admin') {
+        $invoices = $db['invoices'] ?? [];
+        usort($invoices, function($a, $b) {
+            return strcmp($b['transaction_time'] ?? '', $a['transaction_time'] ?? '');
+        });
+    } else {
+        $invoices = get_user_invoices($userId);
+    }
+
     $profile = get_user_billing_profile($userId);
 
     echo json_encode([
