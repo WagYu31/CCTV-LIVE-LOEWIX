@@ -1211,6 +1211,11 @@
         <!-- Right User Actions -->
         <div class="d-flex align-items-center gap-3">
           
+          <!-- Super Admin Direct Switcher -->
+          <a href="../admin/index.php" id="btn-super-admin-direct" class="btn-nav-vms" style="display: none; background: linear-gradient(135deg, #f59e0b, #d97706); border-color: #f59e0b; color: #ffffff; box-shadow: 0 0 12px rgba(245, 158, 11, 0.4);" title="Buka Super Admin Master Control Center">
+            <i class="fas fa-crown"></i> <span class="d-none d-md-inline">SUPER ADMIN MASTER</span>
+          </a>
+
           <a href="../index.html" class="btn-nav-vms" title="Buka Tampilan Live Matrix Grid VMS">
             <i class="fas fa-th-large"></i> <span class="d-none d-md-inline">LIVE VMS GRID</span>
           </a>
@@ -2024,16 +2029,45 @@
       document.getElementById('hero-customer-name').innerText = currentCustomer.name || 'Enterprise Customer';
       document.getElementById('hero-customer-city').innerText = '📍 ' + (currentCustomer.city || 'Pematangsiantar').toUpperCase();
 
+      const isSuperAdmin = (currentCustomer.role === 'super_admin');
+
+      if (isSuperAdmin) {
+        const btnAdmin = document.getElementById('btn-super-admin-direct');
+        if (btnAdmin) btnAdmin.style.display = 'inline-flex';
+
+        const tierBadge = document.querySelector('.hero-tier-badge');
+        if (tierBadge) tierBadge.innerHTML = '<i class="fas fa-crown text-warning"></i> MASTER SUPER ADMIN';
+
+        // Adapt tab navigation for super admin
+        const tabsContainer = document.querySelector('.customer-tabs-nav');
+        if (tabsContainer) {
+          tabsContainer.innerHTML = `
+            <button type="button" class="customer-nav-tab active" onclick="switchCustomerTab('tab-cameras')" id="nav-tab-cameras">
+              <i class="fas fa-video"></i> <span>Kamera Semua Tenant (${customerCameras.length || 12})</span>
+            </button>
+            <a href="../admin/index.php" class="customer-nav-tab" style="text-decoration: none;">
+              <i class="fas fa-users-cog text-warning"></i> <span>Kelola Semua Pelanggan</span>
+            </a>
+            <a href="../admin/index.php" class="customer-nav-tab" style="text-decoration: none;">
+              <i class="fas fa-file-invoice-dollar text-info"></i> <span>Monitoring Transaksi SaaS</span>
+            </a>
+            <a href="../admin/index.php" class="customer-nav-tab" style="text-decoration: none;">
+              <i class="fas fa-server text-success"></i> <span>Status Node Server MediaMTX</span>
+            </a>
+          `;
+        }
+      }
+
       const quota = parseInt(currentCustomer.cctv_quota) || 20;
       const used = parseInt(currentCustomer.cctv_used) || 0;
       const remaining = Math.max(0, quota - used);
-      const pct = Math.min(100, Math.round((used / quota) * 100));
+      const pct = isSuperAdmin ? 100 : Math.min(100, Math.round((used / quota) * 100));
 
-      document.getElementById('hero-quota-text').innerText = `${used} / ${quota} Kamera (${pct}%)`;
+      document.getElementById('hero-quota-text').innerText = isSuperAdmin ? `UNLIMITED ACCESS (${used} Total Terdaftar)` : `${used} / ${quota} Kamera (${pct}%)`;
       document.getElementById('hero-quota-bar').style.width = pct + '%';
       document.getElementById('hero-used-count').innerText = used;
-      document.getElementById('hero-remaining-count').innerText = remaining;
-      document.getElementById('card-quota-max').innerText = quota;
+      document.getElementById('hero-remaining-count').innerText = isSuperAdmin ? '∞' : remaining;
+      document.getElementById('card-quota-max').innerText = isSuperAdmin ? 'UNLIMITED' : quota;
       document.getElementById('card-total-cam').innerText = used;
     }
 
