@@ -872,7 +872,7 @@
           <div class="auth-field-group">
             <div class="auth-field-label">
               <span><i class="fas fa-lock text-info mr-1"></i> Kata Sandi</span>
-              <span style="font-size: 11px; color: #38bdf8; cursor: pointer;" onclick="alert('Silakan hubungi IT Administrator atau Customer Support di support@loewixcctv.com untuk bantuan password.')">Lupa sandi?</span>
+              <span style="font-size: 11px; color: #38bdf8; cursor: pointer; text-decoration: underline;" onclick="switchGateAuthMode('forgot')">Lupa sandi?</span>
             </div>
             <div class="auth-input-wrapper">
               <input type="password" id="gate-login-password" class="auth-input-control" placeholder="Masukkan kata sandi" required autocomplete="current-password">
@@ -905,7 +905,73 @@
           </div>
         </form>
 
-        <!-- 2. REGISTRATION FORM -->
+        <!-- 2. FORGOT PASSWORD FORM -->
+        <form id="formGateForgot" onsubmit="submitGateForgot(event)" style="display: none;">
+          <div class="auth-field-group">
+            <div class="auth-field-label">
+              <span><i class="fas fa-envelope text-warning mr-1"></i> Email Terdaftar</span>
+            </div>
+            <div class="auth-input-wrapper">
+              <input type="email" id="gate-forgot-email" class="auth-input-control" placeholder="admin@perusahaan.com" required autocomplete="email">
+              <i class="fas fa-at auth-input-icon"></i>
+            </div>
+          </div>
+
+          <button type="submit" id="btn-gate-forgot-submit" class="auth-submit-btn" style="background: linear-gradient(135deg, #f59e0b, #d97706); box-shadow: 0 4px 14px rgba(245, 158, 11, 0.4);">
+            <span>KIRIM KODE OTP RESET</span>
+            <i class="fas fa-paper-plane"></i>
+          </button>
+
+          <div class="text-center mt-3" style="font-size: 11.5px; color: #94a3b8;">
+            Ingat kata sandi? <a href="javascript:void(0)" class="auth-toggle-link" onclick="switchGateAuthMode('login')">Kembali ke Login</a>
+          </div>
+        </form>
+
+        <!-- 3. RESET PASSWORD FORM (OTP VERIFICATION) -->
+        <form id="formGateReset" onsubmit="submitGateReset(event)" style="display: none;">
+          <input type="hidden" id="gate-reset-email">
+          
+          <div class="auth-field-group">
+            <div class="auth-field-label">
+              <span><i class="fas fa-shield-alt text-warning mr-1"></i> Kode OTP Verifikasi (6 Digit)</span>
+            </div>
+            <div class="auth-input-wrapper">
+              <input type="text" id="gate-reset-otp" class="auth-input-control" placeholder="123456" maxlength="6" required style="letter-spacing: 4px; font-family: monospace; font-size: 16px;">
+              <i class="fas fa-key auth-input-icon"></i>
+            </div>
+          </div>
+
+          <div class="auth-field-group">
+            <div class="auth-field-label">
+              <span><i class="fas fa-lock text-info mr-1"></i> Kata Sandi Baru</span>
+            </div>
+            <div class="auth-input-wrapper">
+              <input type="password" id="gate-reset-password" class="auth-input-control" placeholder="Min. 6 Karakter" required autocomplete="new-password">
+              <i class="fas fa-lock auth-input-icon"></i>
+            </div>
+          </div>
+
+          <div class="auth-field-group">
+            <div class="auth-field-label">
+              <span><i class="fas fa-check-circle text-info mr-1"></i> Konfirmasi Kata Sandi Baru</span>
+            </div>
+            <div class="auth-input-wrapper">
+              <input type="password" id="gate-reset-confirm-password" class="auth-input-control" placeholder="Ulangi kata sandi baru" required autocomplete="new-password">
+              <i class="fas fa-check auth-input-icon"></i>
+            </div>
+          </div>
+
+          <button type="submit" id="btn-gate-reset-submit" class="auth-submit-btn" style="background: linear-gradient(135deg, #10b981, #059669); box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4);">
+            <span>SIMPAN KATA SANDI BARU</span>
+            <i class="fas fa-save"></i>
+          </button>
+
+          <div class="text-center mt-3" style="font-size: 11.5px; color: #94a3b8;">
+            Batal? <a href="javascript:void(0)" class="auth-toggle-link" onclick="switchGateAuthMode('login')">Kembali ke Login</a>
+          </div>
+        </form>
+
+        <!-- 4. REGISTRATION FORM -->
         <form id="formGateRegister" onsubmit="submitGateRegister(event)" style="display: none;">
           
           <!-- Tactical Telemetry Package Selector -->

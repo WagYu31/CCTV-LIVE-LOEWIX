@@ -8,6 +8,7 @@
 header('Content-Type: application/json');
 require_once __DIR__ . '/../config/db.php';
 require_once __DIR__ . '/../config/midtrans.php';
+require_once __DIR__ . '/../config/mail.php';
 
 $action = $_GET['action'] ?? $_POST['action'] ?? '';
 

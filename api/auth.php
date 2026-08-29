@@ -6,8 +6,14 @@
 
 header('Content-Type: application/json');
 require_once __DIR__ . '/../config/db.php';
+require_once __DIR__ . '/../config/mail.php';
 
 $action = $_GET['action'] ?? $_POST['action'] ?? '';
+
+// Helper to get client IP
+function get_client_ip_address() {
+    return $_SERVER['HTTP_X_FORWARDED_FOR'] ?? $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1';
+}
 
 if ($action === 'login') {
     $email = trim($_POST['email'] ?? '');
@@ -63,6 +69,13 @@ if ($action === 'login') {
     $_SESSION['cctv_used'] = $usedCount;
     $_SESSION['user_city'] = $foundUser['city'];
 
+    // Send Security Login Email Alert
+    $loginIp = get_client_ip_address();
+    $loginTime = date('d M Y, H:i:s');
+    $device = $_SERVER['HTTP_USER_AGENT'] ?? 'Web Browser';
+    $loginEmailHtml = get_email_login_alert($foundUser['name'], $foundUser['email'], $loginIp, $loginTime, $device);
+    send_loewix_email($foundUser['email'], $foundUser['name'], "[Security Alert] Deteksi Login Akun Loewix CCTV", $loginEmailHtml);
+
     echo json_encode([
         'success' => true,
         'message' => 'Login Berhasil!',
@@ -89,7 +102,6 @@ if ($action === 'logout') {
 if ($action === 'check_session') {
     $user = get_logged_in_user();
     if ($user) {
-        // Count active cameras for this user
         $db = get_db_data();
         $usedCount = 0;
         foreach ($db['cameras'] as $cam) {
@@ -112,6 +124,7 @@ if ($action === 'register') {
     $password = trim($_POST['password'] ?? '');
     $phone = trim($_POST['phone'] ?? '');
     $city = trim($_POST['city'] ?? 'siantar');
+    $planId = trim($_POST['plan_id'] ?? 'business_10');
 
     if (empty($name) || empty($email) || empty($password)) {
         echo json_encode(['success' => false, 'message' => 'Nama, Email, dan Password wajib diisi!']);
@@ -138,6 +151,19 @@ if ($action === 'register') {
         }
     }
 
+    // Determine initial quota based on plan
+    $quota = 10;
+    $planName = 'Business Pro';
+    if (isset($db['plans'])) {
+        foreach ($db['plans'] as $p) {
+            if ($p['id'] === $planId) {
+                $quota = (int)$p['cctv_quota'];
+                $planName = $p['name'];
+                break;
+            }
+        }
+    }
+
     // Generate safe user ID
     $existingIds = array_column($db['users'], 'id');
     $newUserId = count($existingIds) > 0 ? max($existingIds) + 1 : 1;
@@ -148,7 +174,7 @@ if ($action === 'register') {
         'email' => $email,
         'password' => password_hash($password, PASSWORD_BCRYPT),
         'role' => 'customer',
-        'cctv_quota' => 20,
+        'cctv_quota' => $quota,
         'phone' => !empty($phone) ? $phone : '-',
         'city' => $city,
         'status' => 'active',
@@ -167,6 +193,14 @@ if ($action === 'register') {
     $_SESSION['cctv_used'] = 0;
     $_SESSION['user_city'] = $newUser['city'];
 
+    // Send Welcome & Account Activation Email
+    $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? "https://" : "http://";
+    $host = $_SERVER['HTTP_HOST'] ?? 'localhost:8000';
+    $portalUrl = $protocol . $host . '/customer/index.php';
+
+    $welcomeHtml = get_email_welcome_registration($name, $email, $planName, $quota, $portalUrl);
+    send_loewix_email($email, $name, "Selamat Datang di Loewix CCTV - Akun Berhasil Diaktivasi", $welcomeHtml);
+
     echo json_encode([
         'success' => true,
         'message' => 'Pendaftaran akun berhasil!',
@@ -183,4 +217,129 @@ if ($action === 'register') {
     exit;
 }
 
+// FORGOT PASSWORD / REQUEST RESET TOKEN & OTP
+if ($action === 'forgot_password') {
+    $email = trim($_POST['email'] ?? '');
+
+    if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        echo json_encode(['success' => false, 'message' => 'Masukkan alamat email yang valid!']);
+        exit;
+    }
+
+    $db = get_db_data();
+    $targetUser = null;
+    foreach ($db['users'] as $user) {
+        if (strtolower($user['email']) === strtolower($email)) {
+            $targetUser = $user;
+            break;
+        }
+    }
+
+    if (!$targetUser) {
+        // Return friendly message for security
+        echo json_encode([
+            'success' => true, 
+            'message' => 'Jika email terdaftar, instruksi reset kata sandi dan kode OTP telah dikirim ke email Anda.'
+        ]);
+        exit;
+    }
+
+    // Generate 6-Digit OTP and Reset Token
+    $otpCode = strval(random_int(100000, 999999));
+    $resetToken = bin2hex(random_bytes(24));
+    $expiresAt = date('Y-m-d H:i:s', time() + (15 * 60)); // 15 mins
+
+    if (!isset($db['password_resets'])) {
+        $db['password_resets'] = [];
+    }
+
+    $db['password_resets'][] = [
+        'user_id' => $targetUser['id'],
+        'email' => $targetUser['email'],
+        'otp' => $otpCode,
+        'token' => $resetToken,
+        'expires_at' => $expiresAt,
+        'created_at' => date('Y-m-d H:i:s')
+    ];
+    save_db_data($db);
+
+    // Send Email
+    $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? "https://" : "http://";
+    $host = $_SERVER['HTTP_HOST'] ?? 'localhost:8000';
+    $resetUrl = $protocol . $host . '/index.php?reset_token=' . $resetToken;
+
+    $forgotHtml = get_email_forgot_password($targetUser['name'], $targetUser['email'], $resetUrl, $otpCode);
+    send_loewix_email($targetUser['email'], $targetUser['name'], "Kode OTP & Reset Kata Sandi Akun Loewix CCTV", $forgotHtml);
+
+    echo json_encode([
+        'success' => true,
+        'message' => 'Kode OTP verifikasi dan tautan reset telah dikirim ke email ' . $email . '!',
+        'otp_simulation' => $otpCode // Provided for convenient demo test
+    ]);
+    exit;
+}
+
+// RESET PASSWORD (SUBMIT NEW PASSWORD VIA OTP / TOKEN)
+if ($action === 'reset_password') {
+    $email = trim($_POST['email'] ?? '');
+    $otp = trim($_POST['otp'] ?? '');
+    $newPassword = trim($_POST['new_password'] ?? '');
+
+    if (empty($email) || empty($otp) || empty($newPassword)) {
+        echo json_encode(['success' => false, 'message' => 'Email, Kode OTP, dan Password Baru wajib diisi!']);
+        exit;
+    }
+
+    if (strlen($newPassword) < 6) {
+        echo json_encode(['success' => false, 'message' => 'Password baru minimal 6 karakter!']);
+        exit;
+    }
+
+    $db = get_db_data();
+    $validResetIndex = null;
+
+    if (isset($db['password_resets'])) {
+        foreach ($db['password_resets'] as $idx => $reset) {
+            if (strtolower($reset['email']) === strtolower($email) && ($reset['otp'] === $otp || $reset['token'] === $otp)) {
+                if (strtotime($reset['expires_at']) >= time()) {
+                    $validResetIndex = $idx;
+                    break;
+                }
+            }
+        }
+    }
+
+    if ($validResetIndex === null) {
+        echo json_encode(['success' => false, 'message' => 'Kode OTP salah atau telah kadaluarsa!']);
+        exit;
+    }
+
+    // Update user password
+    $updated = false;
+    foreach ($db['users'] as &$u) {
+        if (strtolower($u['email']) === strtolower($email)) {
+            $u['password'] = password_hash($newPassword, PASSWORD_BCRYPT);
+            $updated = true;
+            break;
+        }
+    }
+    unset($u);
+
+    if ($updated) {
+        // Remove used reset entry
+        unset($db['password_resets'][$validResetIndex]);
+        $db['password_resets'] = array_values($db['password_resets']);
+        save_db_data($db);
+
+        echo json_encode([
+            'success' => true,
+            'message' => 'Kata sandi berhasil diperbarui! Silakan login dengan kata sandi baru Anda.'
+        ]);
+    } else {
+        echo json_encode(['success' => false, 'message' => 'Gagal memperbarui kata sandi. Pengguna tidak ditemukan.']);
+    }
+    exit;
+}
+
 echo json_encode(['success' => false, 'message' => 'Invalid Action']);
+

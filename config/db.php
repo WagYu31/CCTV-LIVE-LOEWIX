@@ -588,18 +588,42 @@ function activate_user_subscription($userId, $planId, $billingCycle, $amount, $o
     }
 
     // Update invoice status if orderId provided
+    $settledInvoice = null;
+    $targetUser = null;
     if ($orderId) {
         foreach ($db['invoices'] as &$inv) {
             if ($inv['order_id'] === $orderId) {
                 $inv['status'] = 'settlement';
                 $inv['payment_type'] = $paymentType;
                 $inv['settlement_time'] = date('Y-m-d H:i:s');
+                $settledInvoice = $inv;
                 break;
             }
         }
     }
 
+    foreach ($db['users'] as $u) {
+        if ((int)$u['id'] === (int)$userId) {
+            $targetUser = $u;
+            break;
+        }
+    }
+
     save_db_data($db);
+
+    // Send Payment Success & Kwitansi Email
+    if ($settledInvoice && $targetUser && file_exists(__DIR__ . '/mail.php')) {
+        require_once __DIR__ . '/mail.php';
+        if (function_exists('get_email_payment_success')) {
+            $receiptHtml = get_email_payment_success($settledInvoice, $targetUser, $targetPlan['name']);
+            send_loewix_email(
+                $targetUser['email'],
+                $targetUser['name'],
+                "[Kwitansi Resmi] Pembayaran Midtrans Sukses - " . $settledInvoice['order_id'],
+                $receiptHtml
+            );
+        }
+    }
 
     // Update active session quota if current user is logged in
     if (isset($_SESSION['user_id']) && (int)$_SESSION['user_id'] === (int)$userId) {

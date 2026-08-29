@@ -6,14 +6,21 @@
 function switchGateAuthMode(mode) {
   const loginForm = document.getElementById('formGateLogin');
   const registerForm = document.getElementById('formGateRegister');
+  const forgotForm = document.getElementById('formGateForgot');
+  const resetForm = document.getElementById('formGateReset');
   const tabLogin = document.getElementById('tab-btn-login');
   const tabRegister = document.getElementById('tab-btn-register');
   const headerTag = document.getElementById('gate-auth-tag-text');
   const headerTitle = document.getElementById('gate-auth-title-text');
   const headerSub = document.getElementById('gate-auth-sub-text');
 
+  // Hide all
+  if (loginForm) loginForm.style.display = 'none';
+  if (registerForm) registerForm.style.display = 'none';
+  if (forgotForm) forgotForm.style.display = 'none';
+  if (resetForm) resetForm.style.display = 'none';
+
   if (mode === 'register') {
-    if (loginForm) loginForm.style.display = 'none';
     if (registerForm) registerForm.style.display = 'block';
     if (tabLogin) tabLogin.classList.remove('active');
     if (tabRegister) tabRegister.classList.add('active');
@@ -21,15 +28,125 @@ function switchGateAuthMode(mode) {
     if (headerTag) headerTag.textContent = 'REGISTRASI AKUN';
     if (headerTitle) headerTitle.textContent = 'Daftar Akun Baru';
     if (headerSub) headerSub.textContent = 'Lengkapi formulir di bawah untuk mendaftarkan akun portal pemantauan CCTV Loewix.';
+  } else if (mode === 'forgot') {
+    if (forgotForm) forgotForm.style.display = 'block';
+    if (tabLogin) tabLogin.classList.remove('active');
+    if (tabRegister) tabRegister.classList.remove('active');
+
+    if (headerTag) headerTag.textContent = 'PEMULIHAN AKUN';
+    if (headerTitle) headerTitle.textContent = 'Lupa Kata Sandi';
+    if (headerSub) headerSub.textContent = 'Masukkan email akun Anda. Kami akan mengirimkan kode OTP & tautan reset kata sandi ke email Anda.';
+  } else if (mode === 'reset') {
+    if (resetForm) resetForm.style.display = 'block';
+    if (tabLogin) tabLogin.classList.remove('active');
+    if (tabRegister) tabRegister.classList.remove('active');
+
+    if (headerTag) headerTag.textContent = 'RESET PASSWORD';
+    if (headerTitle) headerTitle.textContent = 'Buat Kata Sandi Baru';
+    if (headerSub) headerSub.textContent = 'Masukkan kode OTP yang Anda terima di email beserta kata sandi baru Anda.';
   } else {
+    // Default login
     if (loginForm) loginForm.style.display = 'block';
-    if (registerForm) registerForm.style.display = 'none';
     if (tabLogin) tabLogin.classList.add('active');
     if (tabRegister) tabRegister.classList.remove('active');
 
     if (headerTag) headerTag.textContent = 'SELAMAT DATANG';
     if (headerTitle) headerTitle.textContent = 'Masuk ke Akun Anda';
     if (headerSub) headerSub.textContent = 'Masukkan email dan kata sandi akun Anda untuk membuka portal sistem pemantauan.';
+  }
+}
+
+async function submitGateForgot(e) {
+  e.preventDefault();
+  const email = document.getElementById('gate-forgot-email').value.trim();
+  const btn = document.getElementById('btn-gate-forgot-submit');
+
+  if (!email) {
+    alert('Silakan masukkan email akun Anda.');
+    return;
+  }
+
+  const origHtml = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> Mengirim OTP...';
+
+  try {
+    const formData = new FormData();
+    formData.append('action', 'forgot_password');
+    formData.append('email', email);
+
+    const res = await fetch('api/auth.php', { method: 'POST', body: formData });
+    const data = await res.json();
+
+    if (data.success) {
+      alert(data.message || 'Kode OTP telah dikirim ke email Anda!');
+      document.getElementById('gate-reset-email').value = email;
+      if (data.otp_simulation) {
+        document.getElementById('gate-reset-otp').value = data.otp_simulation;
+      }
+      switchGateAuthMode('reset');
+    } else {
+      alert(data.message || 'Gagal memproses permintaan lupa password.');
+    }
+  } catch (err) {
+    console.error(err);
+    alert('Terjadi kesalahan koneksi ke server.');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = origHtml;
+  }
+}
+
+async function submitGateReset(e) {
+  e.preventDefault();
+  const email = document.getElementById('gate-reset-email').value.trim();
+  const otp = document.getElementById('gate-reset-otp').value.trim();
+  const newPassword = document.getElementById('gate-reset-password').value;
+  const confirmPassword = document.getElementById('gate-reset-confirm-password').value;
+  const btn = document.getElementById('btn-gate-reset-submit');
+
+  if (!email || !otp || !newPassword) {
+    alert('Semua field wajib diisi!');
+    return;
+  }
+
+  if (newPassword !== confirmPassword) {
+    alert('Konfirmasi kata sandi tidak cocok!');
+    return;
+  }
+
+  if (newPassword.length < 6) {
+    alert('Kata sandi minimal 6 karakter!');
+    return;
+  }
+
+  const origHtml = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> Memperbarui...';
+
+  try {
+    const formData = new FormData();
+    formData.append('action', 'reset_password');
+    formData.append('email', email);
+    formData.append('otp', otp);
+    formData.append('new_password', newPassword);
+
+    const res = await fetch('api/auth.php', { method: 'POST', body: formData });
+    const data = await res.json();
+
+    if (data.success) {
+      alert(data.message || 'Kata sandi berhasil diperbarui! Silakan login.');
+      document.getElementById('gate-login-email').value = email;
+      switchGateAuthMode('login');
+    } else {
+      alert(data.message || 'Gagal mereset kata sandi.');
+    }
+  } catch (err) {
+    console.error(err);
+    alert('Terjadi kesalahan koneksi ke server.');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = origHtml;
   }
 }
 
