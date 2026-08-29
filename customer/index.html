@@ -2662,6 +2662,7 @@
           localStorage.setItem('loewix_user', JSON.stringify(currentCustomer));
           renderCustomerUI();
           loadCustomerCameras();
+          loadBillingDashboardData();
         } else {
           // Fallback to localStorage
           const localUser = localStorage.getItem('loewix_user');
@@ -2669,6 +2670,7 @@
             currentCustomer = JSON.parse(localUser);
             renderCustomerUI();
             loadCustomerCameras();
+            loadBillingDashboardData();
           } else {
             // Not logged in -> redirect to main page with login
             window.location.href = '../index.html?login=required';
@@ -2681,6 +2683,7 @@
           currentCustomer = JSON.parse(localUser);
           renderCustomerUI();
           loadCustomerCameras();
+          loadBillingDashboardData();
         } else {
           window.location.href = '../index.html?login=required';
         }
@@ -3771,7 +3774,10 @@
         loadAdminPlansList();
       } else if (tabId === 'tab-admin-transactions') {
         loadAdminTransactionsList();
-      } else if (tabId !== 'tab-cameras' && !currentBillingData) {
+      } else if (tabId !== 'tab-cameras') {
+        if (currentBillingData) {
+          renderBillingData(currentBillingData);
+        }
         loadBillingDashboardData();
       }
     }

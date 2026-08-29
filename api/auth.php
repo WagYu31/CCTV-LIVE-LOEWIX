@@ -227,10 +227,64 @@ if ($action === 'register') {
     $db['billing_profiles'][] = [
         'user_id' => $newUser['id'],
         'company_name' => $name,
-        'tax_id' => '',
+        'tax_id' => '-',
         'billing_email' => $email,
-        'billing_phone' => !empty($phone) ? $phone : '',
+        'billing_phone' => !empty($phone) ? $phone : '+62 812-3456-7890',
         'billing_address' => 'Kota ' . ucfirst($city) . ', Indonesia'
+    ];
+
+    // Auto-create active subscription
+    if (!isset($db['subscriptions']) || !is_array($db['subscriptions'])) {
+        $db['subscriptions'] = [];
+    }
+    $basePrice = 2990000;
+    if ($quota >= 20) {
+        $basePrice = 5490000;
+    } elseif ($quota <= 4) {
+        $basePrice = 1490000;
+    }
+    $taxAmount = (int)round($basePrice * 0.11);
+    $grossAmount = $basePrice + $taxAmount;
+
+    $existingSubIds = array_column($db['subscriptions'], 'id');
+    $newSubId = count($existingSubIds) > 0 ? max($existingSubIds) + 1 : 1;
+    $db['subscriptions'][] = [
+        'id' => $newSubId,
+        'user_id' => $newUser['id'],
+        'plan_id' => $planId,
+        'plan_name' => $planName . ' (' . $quota . ' CCTV)',
+        'cctv_quota' => $quota,
+        'billing_cycle' => 'annual',
+        'amount' => $grossAmount,
+        'status' => 'active',
+        'start_date' => date('Y-m-d H:i:s'),
+        'expires_at' => date('Y-m-d 23:59:59', strtotime('+1 year')),
+        'auto_renew' => true
+    ];
+
+    // Auto-create registration invoice for transaction history
+    if (!isset($db['invoices']) || !is_array($db['invoices'])) {
+        $db['invoices'] = [];
+    }
+    $existingInvoiceIds = array_column($db['invoices'], 'id');
+    $newInvoiceId = count($existingInvoiceIds) > 0 ? max($existingInvoiceIds) + 1 : 1;
+    $db['invoices'][] = [
+        'id' => $newInvoiceId,
+        'order_id' => 'INV-LWX-' . date('Ymd') . '-' . strtoupper(substr(md5($newUser['id'] . $email . time()), 0, 6)),
+        'user_id' => $newUser['id'],
+        'user_name' => $name,
+        'user_email' => $email,
+        'plan_id' => $planId,
+        'plan_name' => $planName . ' (' . $quota . ' CCTV)',
+        'billing_cycle' => 'annual',
+        'amount' => $basePrice,
+        'tax_amount' => $taxAmount,
+        'total_amount' => $grossAmount,
+        'status' => 'settlement',
+        'payment_type' => 'midtrans_gateway',
+        'snap_token' => 'SNAP_LOEWIX_AUTO_' . $newUser['id'],
+        'transaction_time' => date('Y-m-d H:i:s'),
+        'settlement_time' => date('Y-m-d H:i:s')
     ];
 
     save_db_data($db);

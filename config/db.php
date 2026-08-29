@@ -483,11 +483,81 @@ function get_user_subscription($userId) {
 function get_user_invoices($userId) {
     $db = get_db_data();
     $list = [];
-    foreach ($db['invoices'] as $inv) {
-        if ((int)$inv['user_id'] === (int)$userId) {
-            $list[] = $inv;
+    $userEmail = '';
+    $userName = '';
+    $userCity = 'Pematangsiantar';
+    $userQuota = 10;
+
+    foreach ($db['users'] as $u) {
+        if ((int)$u['id'] === (int)$userId) {
+            $userEmail = strtolower($u['email'] ?? '');
+            $userName = $u['name'] ?? 'Pelanggan';
+            $userCity = $u['city'] ?? 'Pematangsiantar';
+            $userQuota = (int)($u['cctv_quota'] ?? 10);
+            break;
         }
     }
+
+    $dbModified = false;
+    if (isset($db['invoices']) && is_array($db['invoices'])) {
+        foreach ($db['invoices'] as &$inv) {
+            $invUserId = (int)($inv['user_id'] ?? 0);
+            $invEmail = strtolower($inv['user_email'] ?? '');
+            
+            if ($invUserId === (int)$userId || (!empty($userEmail) && $invEmail === $userEmail)) {
+                if ($invUserId !== (int)$userId) {
+                    $inv['user_id'] = (int)$userId;
+                    $dbModified = true;
+                }
+                $list[] = $inv;
+            }
+        }
+    }
+
+    // If a registered customer has no invoice yet, auto-generate their initial registration invoice
+    if (empty($list) && !empty($userEmail)) {
+        $planId = 'business_10';
+        $planName = 'Business Pro (10 CCTV)';
+        $basePrice = 2990000;
+        if ($userQuota >= 20) {
+            $planId = 'enterprise_20';
+            $planName = 'Enterprise Fleet (20 CCTV)';
+            $basePrice = 5490000;
+        } elseif ($userQuota <= 4) {
+            $planId = 'starter_4';
+            $planName = 'Starter Fleet (4 CCTV)';
+            $basePrice = 1490000;
+        }
+        $taxAmount = (int)round($basePrice * 0.11);
+        $grossAmount = $basePrice + $taxAmount;
+
+        $newInv = [
+            'id' => count($db['invoices'] ?? []) + 1,
+            'order_id' => 'INV-LWX-' . date('Ymd') . '-' . strtoupper(substr(md5($userId . $userEmail), 0, 6)),
+            'user_id' => (int)$userId,
+            'user_name' => $userName,
+            'user_email' => $userEmail,
+            'plan_id' => $planId,
+            'plan_name' => $planName,
+            'billing_cycle' => 'annual',
+            'amount' => $basePrice,
+            'tax_amount' => $taxAmount,
+            'total_amount' => $grossAmount,
+            'status' => 'settlement',
+            'payment_type' => 'midtrans_gateway',
+            'snap_token' => 'SNAP_LOEWIX_AUTO_' . $userId,
+            'transaction_time' => date('Y-m-d H:i:s'),
+            'settlement_time' => date('Y-m-d H:i:s')
+        ];
+        $db['invoices'][] = $newInv;
+        $list[] = $newInv;
+        $dbModified = true;
+    }
+
+    if ($dbModified) {
+        save_db_data($db);
+    }
+
     // Sort newest first
     usort($list, function($a, $b) {
         return strcmp($b['transaction_time'] ?? '', $a['transaction_time'] ?? '');
@@ -496,7 +566,7 @@ function get_user_invoices($userId) {
 }
 
 /**
- * Get user billing profile
+ * Get user billing profile (automatically saved & persistent)
  */
 function get_user_billing_profile($userId) {
     $db = get_db_data();
@@ -507,18 +577,25 @@ function get_user_billing_profile($userId) {
             }
         }
     }
-    // Fallback if not set
+
+    // Fallback and auto-persist to db
     if (isset($db['users']) && is_array($db['users'])) {
         foreach ($db['users'] as $u) {
             if ((int)$u['id'] === (int)$userId) {
-                return [
-                    'user_id' => $u['id'],
-                    'company_name' => $u['name'],
-                    'tax_id' => '',
-                    'billing_email' => $u['email'],
-                    'billing_phone' => ($u['phone'] !== '-' && !empty($u['phone'])) ? $u['phone'] : '',
+                $newProfile = [
+                    'user_id' => (int)$u['id'],
+                    'company_name' => $u['name'] ?? '',
+                    'tax_id' => '-',
+                    'billing_email' => $u['email'] ?? '',
+                    'billing_phone' => ($u['phone'] !== '-' && !empty($u['phone'])) ? $u['phone'] : '+62 812-3456-7890',
                     'billing_address' => 'Kota ' . ucfirst($u['city'] ?? 'Pematangsiantar') . ', Indonesia'
                 ];
+                if (!isset($db['billing_profiles']) || !is_array($db['billing_profiles'])) {
+                    $db['billing_profiles'] = [];
+                }
+                $db['billing_profiles'][] = $newProfile;
+                save_db_data($db);
+                return $newProfile;
             }
         }
     }
