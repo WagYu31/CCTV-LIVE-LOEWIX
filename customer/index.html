@@ -14,6 +14,8 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+  <!-- Midtrans Snap Payment Gateway SDK (Sandbox) -->
+  <script type="text/javascript" src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="SB-Mid-client-loewix-test-demo12345"></script>
   <style>
     :root {
       --bg-dark: #060b18;
@@ -1222,68 +1224,344 @@
       </div>
     </div>
 
-    <!-- Section Header & Toolbar -->
-    <div class="customer-toolbar">
-      
-      <!-- Left: Title Group & Add Camera Action -->
-      <div class="toolbar-left-group">
-        <div class="toolbar-title-group">
-          <div class="toolbar-icon-badge">
-            <i class="fas fa-video"></i>
-          </div>
-          <div>
-            <h4 class="toolbar-heading">Daftar Channel CCTV Saya</h4>
-            <div class="toolbar-subtext">Live Stream & Monitoring Hub</div>
-          </div>
-        </div>
-
-        <button class="btn-add-camera" onclick="openAddCameraModal()" title="Tambahkan Kamera CCTV Baru">
-          <i class="fas fa-plus-circle"></i>
-          <span>Tambah Kamera CCTV</span>
-        </button>
-
-        <button class="btn-live-test-all" id="btn-live-test-all" onclick="toggleLiveTestAll()" title="Putar & Uji Siaran Langsung Semua Kamera Sekaligus">
-          <i class="fas fa-play-circle"></i>
-          <span>Live Test ALL</span>
-        </button>
-      </div>
-
-      <!-- Right: Search & Filters -->
-      <div class="toolbar-controls-group">
-        <div class="toolbar-search-box">
-          <i class="fas fa-search"></i>
-          <input type="text" id="filter-search-input" placeholder="Cari nama kamera / lokasi..." onkeyup="applyCameraFilters()">
-        </div>
-
-        <select class="toolbar-select-pill" id="filter-city-select" onchange="applyCameraFilters()">
-          <option value="all">🌐 Semua Wilayah</option>
-          <option value="siantar">📍 Pematangsiantar</option>
-          <option value="jakarta">📍 DKI Jakarta</option>
-          <option value="medan">📍 Kota Medan</option>
-          <option value="bandung">📍 Kota Bandung</option>
-          <option value="bali">📍 Bali / Denpasar</option>
-        </select>
-
-        <select class="toolbar-select-pill" id="filter-status-select" onchange="applyCameraFilters()">
-          <option value="all">⚡ Semua Status</option>
-          <option value="online">🟢 Online</option>
-          <option value="offline">🔴 Offline</option>
-        </select>
-
-        <button class="btn-toolbar-refresh" onclick="loadCustomerCameras(true)" title="Segarkan Data CCTV">
-          <i class="fas fa-rotate"></i>
-        </button>
-      </div>
-
+    <!-- Customer Hub Sub-Menu Navigation Tabs -->
+    <div class="customer-tabs-nav mb-4">
+      <button type="button" class="customer-nav-tab active" onclick="switchCustomerTab('tab-cameras')" id="nav-tab-cameras">
+        <i class="fas fa-video"></i> <span>Kamera CCTV</span>
+      </button>
+      <button type="button" class="customer-nav-tab" onclick="switchCustomerTab('tab-package')" id="nav-tab-package">
+        <i class="fas fa-box-open"></i> <span>Informasi Paket</span>
+      </button>
+      <button type="button" class="customer-nav-tab" onclick="switchCustomerTab('tab-invoices')" id="nav-tab-invoices">
+        <i class="fas fa-receipt"></i> <span>Informasi Tagihan</span>
+      </button>
+      <button type="button" class="customer-nav-tab" onclick="switchCustomerTab('tab-history')" id="nav-tab-history">
+        <i class="fas fa-history"></i> <span>Riwayat Transaksi</span>
+      </button>
+      <button type="button" class="customer-nav-tab" onclick="switchCustomerTab('tab-billing-profile')" id="nav-tab-billing-profile">
+        <i class="fas fa-id-card"></i> <span>Profil Billing</span>
+      </button>
     </div>
 
-    <!-- Cameras Grid List -->
-    <div class="cam-grid" id="customer-camera-grid">
-      <!-- Loading Skeleton Placeholder -->
-      <div class="empty-state-box">
-        <div class="spinner-border text-info mb-3" role="status"></div>
-        <h5 class="text-white">Memuat Channel Kamera CCTV Anda...</h5>
-        <p class="text-muted mb-0">Menghubungkan ke secure streaming gateway Loewix.</p>
+    <!-- ======================================================== -->
+    <!-- TAB 1: DAFTAR KAMERA CCTV (DEFAULT) -->
+    <!-- ======================================================== -->
+    <div id="tab-cameras" class="customer-tab-pane">
+      <!-- Section Header & Toolbar -->
+      <div class="customer-toolbar">
+        
+        <!-- Left: Title Group & Add Camera Action -->
+        <div class="toolbar-left-group">
+          <div class="toolbar-title-group">
+            <div class="toolbar-icon-badge">
+              <i class="fas fa-video"></i>
+            </div>
+            <div>
+              <h4 class="toolbar-heading">Daftar Channel CCTV Saya</h4>
+              <div class="toolbar-subtext">Live Stream & Monitoring Hub</div>
+            </div>
+          </div>
+
+          <button class="btn-add-camera" onclick="openAddCameraModal()" title="Tambahkan Kamera CCTV Baru">
+            <i class="fas fa-plus-circle"></i>
+            <span>Tambah Kamera CCTV</span>
+          </button>
+
+          <button class="btn-live-test-all" id="btn-live-test-all" onclick="toggleLiveTestAll()" title="Putar & Uji Siaran Langsung Semua Kamera Sekaligus">
+            <i class="fas fa-play-circle"></i>
+            <span>Live Test ALL</span>
+          </button>
+        </div>
+
+        <!-- Right: Search & Filters -->
+        <div class="toolbar-controls-group">
+          <div class="toolbar-search-box">
+            <i class="fas fa-search"></i>
+            <input type="text" id="filter-search-input" placeholder="Cari nama kamera / lokasi..." onkeyup="applyCameraFilters()">
+          </div>
+
+          <select class="toolbar-select-pill" id="filter-city-select" onchange="applyCameraFilters()">
+            <option value="all">🌐 Semua Wilayah</option>
+            <option value="siantar">📍 Pematangsiantar</option>
+            <option value="jakarta">📍 DKI Jakarta</option>
+            <option value="medan">📍 Kota Medan</option>
+            <option value="bandung">📍 Kota Bandung</option>
+            <option value="bali">📍 Bali / Denpasar</option>
+          </select>
+
+          <select class="toolbar-select-pill" id="filter-status-select" onchange="applyCameraFilters()">
+            <option value="all">⚡ Semua Status</option>
+            <option value="online">🟢 Online</option>
+            <option value="offline">🔴 Offline</option>
+          </select>
+
+          <button class="btn-toolbar-refresh" onclick="loadCustomerCameras(true)" title="Segarkan Data CCTV">
+            <i class="fas fa-rotate"></i>
+          </button>
+        </div>
+
+      </div>
+
+      <!-- Cameras Grid List -->
+      <div class="cam-grid" id="customer-camera-grid">
+        <!-- Loading Skeleton Placeholder -->
+        <div class="empty-state-box">
+          <div class="spinner-border text-info mb-3" role="status"></div>
+          <h5 class="text-white">Memuat Channel Kamera CCTV Anda...</h5>
+          <p class="text-muted mb-0">Menghubungkan ke secure streaming gateway Loewix.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ======================================================== -->
+    <!-- TAB 2: INFORMASI PAKET & UPGRADE -->
+    <!-- ======================================================== -->
+    <div id="tab-package" class="customer-tab-pane" style="display: none;">
+      <div class="row">
+        <!-- Current Active Package Card -->
+        <div class="col-lg-6 mb-4">
+          <div class="billing-card h-100">
+            <div class="billing-card-header">
+              <h5 class="billing-card-title">
+                <i class="fas fa-box-open text-info"></i> Paket Langganan Aktif
+              </h5>
+              <span class="billing-status-badge active" id="pkg-status-badge">
+                <i class="fas fa-check-circle"></i> AKTIF
+              </span>
+            </div>
+
+            <div class="mb-4">
+              <div class="d-flex align-items-center justify-content-between mb-2">
+                <h3 class="font-weight-bold text-white mb-0" id="pkg-plan-name">Business Pro Cloud</h3>
+                <span class="badge badge-info px-3 py-2" id="pkg-quota-badge" style="font-size: 13px; font-weight: 700; border-radius: 8px;">10 CCTV Kuota</span>
+              </div>
+              <p class="text-muted mb-3" style="font-size: 13px;">
+                Siklus Tagihan: <strong class="text-white" id="pkg-billing-cycle">Tahunan (Annual)</strong> &bull; Perpanjangan Otomatis
+              </p>
+              <div class="p-3 mb-3" style="background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px;">
+                <div class="d-flex justify-content-between mb-1" style="font-size: 12.5px;">
+                  <span class="text-muted">Masa Aktif Hingga:</span>
+                  <strong class="text-warning" id="pkg-expiry-date">14 Agustus 2027</strong>
+                </div>
+                <div class="d-flex justify-content-between" style="font-size: 12.5px;">
+                  <span class="text-muted">Biaya Berlangganan:</span>
+                  <strong class="text-emerald" style="color: #34d399;" id="pkg-cost-amount">Rp 2.990.000 / Tahun</strong>
+                </div>
+              </div>
+            </div>
+
+            <h6 class="text-white font-weight-bold mb-3" style="font-size: 13.5px;">Fitur & Kapabilitas Paket:</h6>
+            <ul class="list-unstyled mb-4" style="font-size: 13px; color: #cbd5e1; line-height: 2;">
+              <li><i class="fas fa-check-circle text-success mr-2"></i> Streaming Full HD / 4K Ultra H.265</li>
+              <li><i class="fas fa-check-circle text-success mr-2"></i> Low Latency WebRTC & HLS Stream</li>
+              <li><i class="fas fa-check-circle text-success mr-2"></i> AI Motion & Smart Detection Telemetry</li>
+              <li><i class="fas fa-check-circle text-success mr-2"></i> Cloud Recording & Playback 14 Hari</li>
+              <li><i class="fas fa-check-circle text-success mr-2"></i> Dedicated P2P Relay Server</li>
+            </ul>
+
+            <div class="d-flex gap-2">
+              <button class="btn btn-info font-weight-bold flex-fill py-2" onclick="renewCurrentPlan()" style="border-radius: 10px;">
+                <i class="fas fa-sync mr-1"></i> Perpanjang Paket Sekarang
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Available Upgrade Plans -->
+        <div class="col-lg-6 mb-4">
+          <div class="billing-card h-100">
+            <div class="billing-card-header">
+              <h5 class="billing-card-title">
+                <i class="fas fa-rocket text-warning"></i> Opsi Upgrade Paket
+              </h5>
+              <span class="text-muted" style="font-size: 12px;">Pilih kuota lebih besar</span>
+            </div>
+
+            <div class="upgrade-plans-list" id="upgrade-plans-container">
+              <!-- Dynamically populated from plans API -->
+              <div class="p-3 mb-3" style="background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 12px;">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <div>
+                    <h6 class="text-white font-weight-bold mb-0">Enterprise Fleet (20 CCTV)</h6>
+                    <small class="text-info font-weight-bold">4K UHD &bull; AI Telemetry &bull; 30 Hari Cloud</small>
+                  </div>
+                  <div class="text-right">
+                    <div class="text-emerald font-weight-bold" style="color: #34d399; font-size: 15px;">Rp 5.490.000<small>/thn</small></div>
+                    <small class="text-muted">Atau Rp 549.000/bln</small>
+                  </div>
+                </div>
+                <button class="btn btn-sm btn-outline-info btn-block mt-2 font-weight-bold" onclick="checkoutPlanMidtrans('enterprise_20', 'annual')">
+                  <i class="fas fa-credit-card mr-1"></i> Upgrade ke Enterprise (Midtrans)
+                </button>
+              </div>
+
+              <div class="p-3 mb-3" style="background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px;">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <div>
+                    <h6 class="text-white font-weight-bold mb-0">Corporate Custom (50 CCTV)</h6>
+                    <small class="text-muted">Dedicated Streaming Server &bull; White-label</small>
+                  </div>
+                  <div class="text-right">
+                    <div class="text-emerald font-weight-bold" style="color: #34d399; font-size: 15px;">Rp 11.990.000<small>/thn</small></div>
+                    <small class="text-muted">Atau Rp 1.199.000/bln</small>
+                  </div>
+                </div>
+                <button class="btn btn-sm btn-outline-light btn-block mt-2 font-weight-bold" onclick="checkoutPlanMidtrans('corporate_50', 'annual')">
+                  <i class="fas fa-credit-card mr-1"></i> Upgrade ke Corporate (Midtrans)
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ======================================================== -->
+    <!-- TAB 3: INFORMASI TAGIHAN -->
+    <!-- ======================================================== -->
+    <div id="tab-invoices" class="customer-tab-pane" style="display: none;">
+      <div class="billing-card">
+        <div class="billing-card-header">
+          <h5 class="billing-card-title">
+            <i class="fas fa-receipt text-info"></i> Informasi Tagihan & Status Pembayaran
+          </h5>
+          <button class="btn btn-sm btn-outline-info" onclick="loadBillingDashboardData()">
+            <i class="fas fa-sync mr-1"></i> Segarkan Tagihan
+          </button>
+        </div>
+
+        <div id="active-invoice-container">
+          <!-- Active Invoice Box -->
+          <div class="p-4 mb-4" style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 14px;">
+            <div class="row align-items-center">
+              <div class="col-md-8 mb-3 mb-md-0">
+                <div class="d-flex align-items-center gap-2 mb-2">
+                  <span class="badge badge-success px-2.5 py-1" style="font-size: 11px;">SEMUA TAGIHAN LUNAS</span>
+                  <span class="text-muted" style="font-size: 12.5px;">Invoice Terakhir: <strong class="text-white" id="inv-last-order-id">INV-LOEWIX-20260814-001</strong></span>
+                </div>
+                <h4 class="text-white font-weight-bold mb-1" id="inv-plan-title">Business Pro (10 CCTV) - Periode Tahunan</h4>
+                <p class="text-muted mb-0" style="font-size: 13px;">
+                  Tidak ada tagihan tertunggak saat ini. Layanan streaming CCTV Anda aktif dan berjalan normal.
+                </p>
+              </div>
+              <div class="col-md-4 text-md-right">
+                <div class="text-muted mb-1" style="font-size: 12px;">Total Pembayaran Terakhir</div>
+                <h3 class="text-emerald font-weight-bold mb-3" style="color: #34d399;" id="inv-total-display">Rp 3.318.900</h3>
+                <button class="btn btn-info btn-block font-weight-bold" onclick="switchCustomerTab('tab-history')">
+                  <i class="fas fa-file-invoice mr-1"></i> Lihat Rincian di Riwayat
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Payment Channels Supported -->
+        <div class="p-3" style="background: rgba(2, 6, 23, 0.5); border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 12px;">
+          <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+            <span class="text-muted" style="font-size: 12.5px;">
+              <i class="fas fa-shield-alt text-success mr-1"></i> Pembayaran resmi diproses secara otomatis & instan melalui gerbang pembayaran <strong>Midtrans</strong>:
+            </span>
+            <div class="d-flex align-items-center gap-2">
+              <span class="badge badge-dark px-2 py-1" style="background: rgba(255,255,255,0.08);">QRIS (GoPay, OVO, Dana)</span>
+              <span class="badge badge-dark px-2 py-1" style="background: rgba(255,255,255,0.08);">Virtual Account (BCA, Mandiri, BRI, BNI)</span>
+              <span class="badge badge-dark px-2 py-1" style="background: rgba(255,255,255,0.08);">Kartu Kredit / Debit</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ======================================================== -->
+    <!-- TAB 4: RIWAYAT TRANSAKSI -->
+    <!-- ======================================================== -->
+    <div id="tab-history" class="customer-tab-pane" style="display: none;">
+      <div class="billing-card">
+        <div class="billing-card-header">
+          <h5 class="billing-card-title">
+            <i class="fas fa-history text-info"></i> Riwayat Transaksi & Pembayaran
+          </h5>
+          <span class="text-muted" style="font-size: 12.5px;">Daftar seluruh pembayaran langganan</span>
+        </div>
+
+        <div class="table-responsive">
+          <table class="billing-table">
+            <thead>
+              <tr>
+                <th>No. Invoice / Order ID</th>
+                <th>Tanggal & Waktu</th>
+                <th>Paket Layanan</th>
+                <th>Metode Bayar</th>
+                <th>Nominal (Inc. PPN)</th>
+                <th>Status</th>
+                <th class="text-center">Kwitansi</th>
+              </tr>
+            </thead>
+            <tbody id="tx-history-tbody">
+              <!-- Loaded via JavaScript -->
+              <tr>
+                <td colspan="7" class="text-center py-4 text-muted">
+                  <div class="spinner-border spinner-border-sm text-info mr-2" role="status"></div>
+                  Memuat data riwayat transaksi...
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ======================================================== -->
+    <!-- TAB 5: PROFIL BILLING & FAKTUR -->
+    <!-- ======================================================== -->
+    <div id="tab-billing-profile" class="customer-tab-pane" style="display: none;">
+      <div class="billing-card">
+        <div class="billing-card-header">
+          <h5 class="billing-card-title">
+            <i class="fas fa-id-card text-info"></i> Profil Billing & Data Faktur Pajak
+          </h5>
+          <span class="text-muted" style="font-size: 12px;">Informasi penagihan resmi</span>
+        </div>
+
+        <form id="formBillingProfile" onsubmit="submitBillingProfile(event)">
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <div class="form-group-dark">
+                <label><i class="fas fa-building text-info mr-1"></i> Nama Perusahaan / Instansi Resmi</label>
+                <input type="text" id="bill-company-name" class="form-control form-control-dark" placeholder="Contoh: PT. Loewix Solusi Indonesia" required>
+              </div>
+            </div>
+            <div class="col-md-6 mb-3">
+              <div class="form-group-dark">
+                <label><i class="fas fa-file-invoice text-info mr-1"></i> Nomor NPWP / Tax ID (Opsional)</label>
+                <input type="text" id="bill-tax-id" class="form-control form-control-dark" placeholder="00.000.000.0-000.000">
+              </div>
+            </div>
+            <div class="col-md-6 mb-3">
+              <div class="form-group-dark">
+                <label><i class="fas fa-envelope text-info mr-1"></i> Email Penagihan (Billing Email)</label>
+                <input type="email" id="bill-email" class="form-control form-control-dark" placeholder="finance@perusahaan.com" required>
+              </div>
+            </div>
+            <div class="col-md-6 mb-3">
+              <div class="form-group-dark">
+                <label><i class="fas fa-phone text-info mr-1"></i> Nomor WhatsApp Finance</label>
+                <input type="tel" id="bill-phone" class="form-control form-control-dark" placeholder="+62 812-3456-7890" required>
+              </div>
+            </div>
+            <div class="col-12 mb-4">
+              <div class="form-group-dark">
+                <label><i class="fas fa-map-marker-alt text-info mr-1"></i> Alamat Lengkap Penagihan / NPWP</label>
+                <textarea id="bill-address" class="form-control form-control-dark" rows="3" placeholder="Alamat gedung, jalan, kelurahan, kecamatan, kota, kode pos"></textarea>
+              </div>
+            </div>
+          </div>
+
+          <div class="d-flex justify-content-end gap-2">
+            <button type="submit" id="btn-save-billing-profile" class="btn btn-info px-4 py-2 font-weight-bold" style="border-radius: 10px;">
+              <i class="fas fa-save mr-1"></i> Simpan Profil Billing
+            </button>
+          </div>
+        </form>
       </div>
     </div>
 
@@ -2543,7 +2821,7 @@
     }
 
     function openRequestUpgradeModal() {
-      openModalHelper('modalUpgradeQuota');
+      switchCustomerTab('tab-package');
     }
 
     function logoutCustomer() {
@@ -2552,6 +2830,386 @@
         window.location.href = '../index.html';
       });
     }
+
+    // ========================================================
+    // BILLING & SUBSCRIPTION DASHBOARD CONTROLLER
+    // ========================================================
+    let currentBillingData = null;
+
+    function switchCustomerTab(tabId) {
+      // Toggle tab buttons
+      document.querySelectorAll('.customer-nav-tab').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      const activeBtn = document.getElementById('nav-' + tabId);
+      if (activeBtn) activeBtn.classList.add('active');
+
+      // Toggle tab panes
+      document.querySelectorAll('.customer-tab-pane').forEach(pane => {
+        pane.style.display = 'none';
+      });
+      const activePane = document.getElementById(tabId);
+      if (activePane) activePane.style.display = 'block';
+
+      // Load fresh billing data if billing tabs clicked
+      if (tabId !== 'tab-cameras' && !currentBillingData) {
+        loadBillingDashboardData();
+      }
+    }
+
+    async function loadBillingDashboardData() {
+      try {
+        const res = await fetch('../api/payment.php?action=get_billing_dashboard');
+        const data = await res.json();
+        if (data.success) {
+          currentBillingData = data;
+          renderBillingData(data);
+        }
+      } catch (err) {
+        console.error('Failed to load billing dashboard:', err);
+      }
+    }
+
+    function renderBillingData(data) {
+      const sub = data.subscription || {};
+      const invoices = data.invoices || [];
+      const profile = data.billing_profile || {};
+      const plans = data.plans || [];
+
+      // 1. Render Active Package Info
+      const planNameEl = document.getElementById('pkg-plan-name');
+      const quotaBadgeEl = document.getElementById('pkg-quota-badge');
+      const cycleEl = document.getElementById('pkg-billing-cycle');
+      const expiryEl = document.getElementById('pkg-expiry-date');
+      const costEl = document.getElementById('pkg-cost-amount');
+
+      if (planNameEl) planNameEl.textContent = sub.plan_name || 'Business Pro Plan';
+      if (quotaBadgeEl) quotaBadgeEl.textContent = (sub.cctv_quota || 10) + ' CCTV Kuota';
+      if (cycleEl) cycleEl.textContent = sub.billing_cycle === 'annual' ? 'Tahunan (Annual - Hemat 2 Bln)' : 'Bulanan (Monthly)';
+      
+      if (expiryEl && sub.expires_at) {
+        const expDate = new Date(sub.expires_at.replace(/-/g, '/'));
+        expiryEl.textContent = expDate.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+      }
+      
+      if (costEl && sub.amount) {
+        costEl.textContent = 'Rp ' + Number(sub.amount).toLocaleString('id-ID') + (sub.billing_cycle === 'annual' ? ' / Tahun' : ' / Bulan');
+      }
+
+      // 2. Render Upgrade Plans
+      const upgradeContainer = document.getElementById('upgrade-plans-container');
+      if (upgradeContainer && plans.length > 0) {
+        let upgradeHtml = '';
+        plans.forEach(p => {
+          if (p.id !== sub.plan_id) {
+            upgradeHtml += `
+              <div class="p-3 mb-3" style="background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 12px;">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <div>
+                    <h6 class="text-white font-weight-bold mb-0">${p.name} (${p.cctv_quota} CCTV)</h6>
+                    <small class="text-info font-weight-bold">${p.features ? p.features[1] : 'Full Cloud Stream'}</small>
+                  </div>
+                  <div class="text-right">
+                    <div class="text-emerald font-weight-bold" style="color: #34d399; font-size: 15px;">Rp ${Number(p.price_annual).toLocaleString('id-ID')}<small>/thn</small></div>
+                    <small class="text-muted">Atau Rp ${Number(p.price_monthly).toLocaleString('id-ID')}/bln</small>
+                  </div>
+                </div>
+                <div class="d-flex gap-2 mt-2">
+                  <button class="btn btn-sm btn-outline-info flex-fill font-weight-bold" onclick="checkoutPlanMidtrans('${p.id}', 'annual')">
+                    <i class="fas fa-credit-card mr-1"></i> Upgrade Tahunan (Hemat)
+                  </button>
+                  <button class="btn btn-sm btn-outline-light font-weight-bold" onclick="checkoutPlanMidtrans('${p.id}', 'monthly')">
+                    Bulanan
+                  </button>
+                </div>
+              </div>
+            `;
+          }
+        });
+        if (upgradeHtml) upgradeContainer.innerHTML = upgradeHtml;
+      }
+
+      // 3. Render Invoices Tab
+      const lastInv = invoices[0];
+      const invOrderId = document.getElementById('inv-last-order-id');
+      const invPlanTitle = document.getElementById('inv-plan-title');
+      const invTotalDisplay = document.getElementById('inv-total-display');
+
+      if (lastInv) {
+        if (invOrderId) invOrderId.textContent = lastInv.order_id;
+        if (invPlanTitle) invPlanTitle.textContent = `${lastInv.plan_name} - Periode ${lastInv.billing_cycle === 'annual' ? 'Tahunan' : 'Bulanan'}`;
+        if (invTotalDisplay) invTotalDisplay.textContent = 'Rp ' + Number(lastInv.total_amount || lastInv.amount).toLocaleString('id-ID');
+      }
+
+      // 4. Render Transaction History Table
+      const historyTbody = document.getElementById('tx-history-tbody');
+      if (historyTbody) {
+        if (invoices.length === 0) {
+          historyTbody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-muted">Belum ada riwayat transaksi.</td></tr>';
+        } else {
+          historyTbody.innerHTML = invoices.map(inv => {
+            const isSettlement = inv.status === 'settlement' || inv.status === 'capture';
+            const statusBadge = isSettlement 
+              ? '<span class="badge badge-success px-2 py-1"><i class="fas fa-check-circle mr-1"></i> LUNAS</span>'
+              : '<span class="badge badge-warning px-2 py-1"><i class="fas fa-clock mr-1"></i> PENDING</span>';
+
+            const methodText = (inv.payment_type || 'Midtrans').toUpperCase().replace(/_/g, ' ');
+            const totalFmt = 'Rp ' + Number(inv.total_amount || inv.amount).toLocaleString('id-ID');
+
+            return `
+              <tr>
+                <td><strong class="text-info font-monospace">${inv.order_id}</strong></td>
+                <td style="font-size: 12px; color: #94a3b8;">${inv.transaction_time || '-'}</td>
+                <td><strong class="text-white">${inv.plan_name}</strong> <small class="text-muted d-block">${inv.billing_cycle === 'annual' ? '1 Tahun' : '1 Bulan'}</small></td>
+                <td><span class="badge badge-dark px-2 py-1" style="background: rgba(255,255,255,0.08);">${methodText}</span></td>
+                <td><strong class="text-emerald" style="color: #34d399;">${totalFmt}</strong></td>
+                <td>${statusBadge}</td>
+                <td class="text-center">
+                  <button class="btn btn-sm btn-outline-info" onclick="showInvoiceReceiptModal('${inv.order_id}')" title="Lihat Kwitansi / Faktur">
+                    <i class="fas fa-receipt"></i> Kwitansi
+                  </button>
+                </td>
+              </tr>
+            `;
+          }).join('');
+        }
+      }
+
+      // 5. Render Billing Profile Form
+      if (profile) {
+        const comp = document.getElementById('bill-company-name');
+        const tax = document.getElementById('bill-tax-id');
+        const email = document.getElementById('bill-email');
+        const phone = document.getElementById('bill-phone');
+        const addr = document.getElementById('bill-address');
+
+        if (comp) comp.value = profile.company_name || '';
+        if (tax) tax.value = profile.tax_id || '';
+        if (email) email.value = profile.billing_email || '';
+        if (phone) phone.value = profile.billing_phone || '';
+        if (addr) addr.value = profile.billing_address || '';
+      }
+    }
+
+    async function checkoutPlanMidtrans(planId, cycle) {
+      if (!confirm(`Konfirmasi pembelian paket CCTV (${cycle === 'annual' ? 'Tahunan' : 'Bulanan'}) via Midtrans?`)) {
+        return;
+      }
+
+      try {
+        const fd = new FormData();
+        fd.append('action', 'create_snap_token');
+        fd.append('plan_id', planId);
+        fd.append('billing_cycle', cycle);
+
+        const res = await fetch('../api/payment.php', { method: 'POST', body: fd });
+        const result = await res.json();
+
+        if (result.success && result.snap_token) {
+          if (window.snap && typeof window.snap.pay === 'function') {
+            window.snap.pay(result.snap_token, {
+              onSuccess: function(r) {
+                confirmClientPayment(result.order_id, r.payment_type || 'midtrans');
+              },
+              onPending: function(r) {
+                confirmClientPayment(result.order_id, r.payment_type || 'midtrans_pending');
+              },
+              onError: function(r) {
+                alert('Pembayaran gagal atau dibatalkan.');
+              }
+            });
+          } else {
+            // Simulated Gateway Dialog
+            if (confirm(`[SIMULASI MIDTRANS PAYMENT]\n\nOrder ID: ${result.order_id}\nPaket: ${result.plan.name}\nTotal: ${result.plan.total_formatted}\n\nKonfirmasi pembayaran instan sekarang?`)) {
+              await confirmClientPayment(result.order_id, 'midtrans_simulation');
+            }
+          }
+        } else {
+          alert(result.message || 'Gagal membuat sesi pembayaran Midtrans.');
+        }
+      } catch (err) {
+        console.error('Error during checkout:', err);
+        alert('Terjadi kesalahan saat memproses pembayaran.');
+      }
+    }
+
+    function renewCurrentPlan() {
+      const sub = currentBillingData ? currentBillingData.subscription : null;
+      const planId = sub ? sub.plan_id : 'business_10';
+      const cycle = sub ? sub.billing_cycle : 'annual';
+      checkoutPlanMidtrans(planId, cycle);
+    }
+
+    async function confirmClientPayment(orderId, paymentType) {
+      try {
+        const fd = new FormData();
+        fd.append('action', 'verify_payment');
+        fd.append('order_id', orderId);
+        fd.append('payment_type', paymentType);
+
+        const res = await fetch('../api/payment.php', { method: 'POST', body: fd });
+        const data = await res.json();
+
+        if (data.success) {
+          alert('Pembayaran Berhasil! Paket langganan dan kuota CCTV Anda telah diperbarui.');
+          loadBillingDashboardData();
+          initCustomerSession(); // Reload metrics & quota bar
+        }
+      } catch (err) {
+        console.error('Verification error:', err);
+      }
+    }
+
+    async function submitBillingProfile(e) {
+      e.preventDefault();
+      const btn = document.getElementById('btn-save-billing-profile');
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> Menyimpan...';
+      }
+
+      const fd = new FormData();
+      fd.append('action', 'update_billing_profile');
+      fd.append('company_name', document.getElementById('bill-company-name').value);
+      fd.append('tax_id', document.getElementById('bill-tax-id').value);
+      fd.append('billing_email', document.getElementById('bill-email').value);
+      fd.append('billing_phone', document.getElementById('bill-phone').value);
+      fd.append('billing_address', document.getElementById('bill-address').value);
+
+      try {
+        const res = await fetch('../api/payment.php', { method: 'POST', body: fd });
+        const data = await res.json();
+        if (data.success) {
+          alert('Profil billing dan data faktur pajak berhasil disimpan!');
+        } else {
+          alert(data.message || 'Gagal menyimpan profil billing.');
+        }
+      } catch (err) {
+        alert('Terjadi kesalahan koneksi.');
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = '<i class="fas fa-save mr-1"></i> Simpan Profil Billing';
+        }
+      }
+    }
+
+    function showInvoiceReceiptModal(orderId) {
+      if (!currentBillingData || !currentBillingData.invoices) return;
+      const inv = currentBillingData.invoices.find(i => i.order_id === orderId);
+      if (!inv) return;
+
+      const prof = currentBillingData.billing_profile || {};
+      const isSettlement = inv.status === 'settlement' || inv.status === 'capture';
+
+      const receiptBody = document.getElementById('invoice-receipt-body');
+      if (receiptBody) {
+        receiptBody.innerHTML = `
+          <div style="background: #ffffff; color: #0f172a; padding: 24px; border-radius: 12px; font-family: 'Plus Jakarta Sans', sans-serif;">
+            <!-- Receipt Header -->
+            <div class="d-flex justify-content-between align-items-start border-bottom pb-3 mb-3">
+              <div>
+                <h4 style="font-weight: 800; color: #091650; margin: 0;">PT. LOEWIX INDONESIA</h4>
+                <small style="color: #64748b; font-weight: 600;">Official Cloud CCTV Surveillance SaaS</small>
+                <div style="font-size: 11px; color: #94a3b8; margin-top: 4px;">NPWP: 01.999.888.7-012.000 &bull; www.loewixcctv.com</div>
+              </div>
+              <div class="text-right">
+                <span class="badge ${isSettlement ? 'badge-success' : 'badge-warning'} px-3 py-1" style="font-size: 12px; font-weight: 800;">
+                  ${isSettlement ? 'LUNAS (PAID)' : 'MENUNGGU PEMBAYARAN'}
+                </span>
+                <div style="font-size: 11px; color: #64748b; margin-top: 4px;">${inv.settlement_time || inv.transaction_time}</div>
+              </div>
+            </div>
+
+            <!-- Invoice Info -->
+            <div class="row mb-3" style="font-size: 12px;">
+              <div class="col-6">
+                <div style="color: #64748b;">Ditagihkan Kepada:</div>
+                <strong style="color: #0f172a; font-size: 13.5px;">${prof.company_name || inv.user_name}</strong>
+                <div style="color: #475569;">Email: ${prof.billing_email || inv.user_email}</div>
+                <div style="color: #475569;">NPWP: ${prof.tax_id || '-'}</div>
+              </div>
+              <div class="col-6 text-right">
+                <div style="color: #64748b;">No. Invoice:</div>
+                <strong style="color: #0284c7; font-family: monospace; font-size: 13.5px;">${inv.order_id}</strong>
+                <div style="color: #475569;">Metode: ${(inv.payment_type || 'Midtrans').toUpperCase()}</div>
+              </div>
+            </div>
+
+            <!-- Items Table -->
+            <table style="width: 100%; border-collapse: collapse; margin-bottom: 16px; font-size: 12.5px;">
+              <thead>
+                <tr style="background: #f8fafc; border-top: 1px solid #cbd5e1; border-bottom: 1px solid #cbd5e1;">
+                  <th style="padding: 8px; text-align: left;">Deskripsi Layanan</th>
+                  <th style="padding: 8px; text-align: center;">Periode</th>
+                  <th style="padding: 8px; text-align: right;">Jumlah</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr style="border-bottom: 1px solid #f1f5f9;">
+                  <td style="padding: 10px 8px;"><strong>Paket ${inv.plan_name}</strong><br/><small style="color: #64748b;">Akses Live Streaming & Cloud Recording</small></td>
+                  <td style="padding: 10px 8px; text-align: center;">${inv.billing_cycle === 'annual' ? '1 Tahun' : '1 Bulan'}</td>
+                  <td style="padding: 10px 8px; text-align: right; font-weight: 700;">Rp ${Number(inv.amount).toLocaleString('id-ID')}</td>
+                </tr>
+                <tr style="border-bottom: 1px solid #f1f5f9;">
+                  <td style="padding: 6px 8px; color: #64748b;" colspan="2">PPN 11%</td>
+                  <td style="padding: 6px 8px; text-align: right; color: #64748b;">Rp ${Number(inv.tax_amount || Math.round(inv.amount * 0.11)).toLocaleString('id-ID')}</td>
+                </tr>
+                <tr style="background: #f0fdf4; border-top: 2px solid #86efac;">
+                  <td style="padding: 10px 8px; font-weight: 800; font-size: 13.5px;" colspan="2">TOTAL DIBAYAR</td>
+                  <td style="padding: 10px 8px; text-align: right; font-weight: 800; font-size: 14.5px; color: #059669;">
+                    Rp ${Number(inv.total_amount || (inv.amount + Math.round(inv.amount * 0.11))).toLocaleString('id-ID')}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+
+            <div class="text-center" style="font-size: 11px; color: #94a3b8; border-top: 1px dashed #cbd5e1; padding-top: 10px;">
+              Terima kasih atas kepercayaan Anda menggunakan layanan Loewix Cloud Surveillance Platform.
+            </div>
+          </div>
+        `;
+      }
+      openModalHelper('modalInvoiceReceipt');
+    }
+
+    function printInvoiceReceipt() {
+      const content = document.getElementById('invoice-receipt-body').innerHTML;
+      const win = window.open('', '', 'height=700,width=800');
+      win.document.write('<html><head><title>Kwitansi Pembayaran Loewix</title>');
+      win.document.write('<link rel="stylesheet" href="../assets/bootstarp/bootstrap.min.css">');
+      win.document.write('</head><body style="padding: 40px;">');
+      win.document.write(content);
+      win.document.write('</body></html>');
+      win.document.close();
+      win.focus();
+      setTimeout(() => { win.print(); }, 500);
+    }
   </script>
+
+  <!-- ===== MODAL INVOICE RECEIPT ===== -->
+  <div class="modal fade modal-dark" id="modalInvoiceReceipt" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content" style="border: 1px solid rgba(56, 189, 248, 0.4);">
+        <div class="modal-header" style="background: rgba(15, 23, 42, 0.9);">
+          <h5 class="modal-title font-weight-bold text-white">
+            <i class="fas fa-receipt text-info mr-2"></i> Kwitansi Pembayaran Resmi
+          </h5>
+          <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close" onclick="closeModalHelper('modalInvoiceReceipt')">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body p-4" id="invoice-receipt-body">
+          <!-- Dynamically populated -->
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeModalHelper('modalInvoiceReceipt')">Tutup</button>
+          <button type="button" class="btn btn-info font-weight-bold" onclick="printInvoiceReceipt()">
+            <i class="fas fa-print mr-1"></i> Cetak / Simpan PDF
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 </body>
 </html>

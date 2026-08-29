@@ -5366,4 +5366,291 @@ h1, h2, h3, h4, h5, h6, .vms-heading, .gate-auth-heading, .stage-headline, .vms-
       }
     }
 
+    /* ===== REGISTRATION PACKAGE SELECTOR & MIDTRANS BILLING STYLES ===== */
+    .reg-pricing-section {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      border-radius: 14px;
+      padding: 12px;
+      margin-bottom: 16px;
+    }
+
+    .reg-cycle-toggle-wrapper {
+      display: flex;
+      background: rgba(2, 6, 23, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      padding: 3px;
+      margin-bottom: 12px;
+      gap: 4px;
+    }
+
+    .reg-cycle-btn {
+      flex: 1;
+      border: none;
+      background: transparent;
+      color: #94a3b8;
+      font-size: 11.5px;
+      font-weight: 700;
+      padding: 6px 8px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+    }
+
+    .reg-cycle-btn.active {
+      background: linear-gradient(135deg, #0284c7, #0369a1);
+      color: #ffffff;
+      box-shadow: 0 2px 8px rgba(2, 132, 199, 0.4);
+    }
+
+    .reg-cycle-badge {
+      font-size: 9.5px;
+      background: #10b981;
+      color: #ffffff;
+      padding: 2px 6px;
+      border-radius: 20px;
+      font-weight: 800;
+    }
+
+    .reg-plan-cards-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .reg-plan-card {
+      background: rgba(30, 41, 59, 0.6);
+      border: 1.5px solid rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      padding: 10px 8px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative;
+    }
+
+    .reg-plan-card:hover {
+      border-color: rgba(56, 189, 248, 0.5);
+      background: rgba(30, 41, 59, 0.9);
+      transform: translateY(-2px);
+    }
+
+    .reg-plan-card.active {
+      border-color: #38bdf8;
+      background: rgba(2, 132, 199, 0.15);
+      box-shadow: 0 0 16px rgba(56, 189, 248, 0.3);
+    }
+
+    .reg-plan-tag {
+      position: absolute;
+      top: -8px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      color: #ffffff;
+      font-size: 8px;
+      font-weight: 800;
+      padding: 2px 6px;
+      border-radius: 10px;
+      white-space: nowrap;
+      text-transform: uppercase;
+      box-shadow: 0 2px 6px rgba(245, 158, 11, 0.4);
+    }
+
+    .reg-plan-title {
+      font-size: 11.5px;
+      font-weight: 700;
+      color: #f8fafc;
+      margin-bottom: 2px;
+    }
+
+    .reg-plan-cctv {
+      font-size: 10px;
+      color: #38bdf8;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .reg-plan-price {
+      font-size: 10.5px;
+      font-weight: 800;
+      color: #10b981;
+    }
+
+    .reg-order-summary {
+      background: rgba(2, 6, 23, 0.7);
+      border: 1px dashed rgba(56, 189, 248, 0.3);
+      border-radius: 8px;
+      padding: 8px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 11px;
+    }
+
+    .reg-summary-desc {
+      color: #cbd5e1;
+    }
+
+    .reg-summary-total {
+      font-size: 13.5px;
+      font-weight: 800;
+      color: #34d399;
+    }
+
+    /* ===== CUSTOMER HUB BILLING TABS & MODULES ===== */
+    .customer-tabs-nav {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      overflow-x: auto;
+      padding-bottom: 8px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .customer-nav-tab {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 18px;
+      background: rgba(13, 27, 62, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      color: #94a3b8;
+      font-size: 13.5px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      white-space: nowrap;
+    }
+
+    .customer-nav-tab:hover {
+      background: rgba(56, 189, 248, 0.12);
+      border-color: rgba(56, 189, 248, 0.4);
+      color: #ffffff;
+      transform: translateY(-1px);
+    }
+
+    .customer-nav-tab.active {
+      background: linear-gradient(135deg, #0284c7, #0369a1);
+      border-color: #38bdf8;
+      color: #ffffff;
+      box-shadow: 0 4px 16px rgba(2, 132, 199, 0.35);
+    }
+
+    .customer-nav-tab i {
+      font-size: 14px;
+    }
+
+    /* Billing Cards & Sections */
+    .billing-card {
+      background: rgba(13, 27, 62, 0.75);
+      border: 1px solid rgba(255, 255, 255, 0.09);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 24px;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+    }
+
+    .billing-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      padding-bottom: 16px;
+      margin-bottom: 20px;
+    }
+
+    .billing-card-title {
+      font-size: 17px;
+      font-weight: 800;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 0;
+    }
+
+    .billing-status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .billing-status-badge.active {
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.4);
+      color: #34d399;
+    }
+
+    .billing-status-badge.pending {
+      background: rgba(245, 158, 11, 0.15);
+      border: 1px solid rgba(245, 158, 11, 0.4);
+      color: #fbbf24;
+    }
+
+    .billing-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+    }
+
+    .billing-table th {
+      background: rgba(15, 23, 42, 0.7);
+      color: #94a3b8;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 12px 16px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .billing-table td {
+      padding: 14px 16px;
+      font-size: 13px;
+      color: #e2e8f0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      vertical-align: middle;
+    }
+
+    .billing-table tr:hover td {
+      background: rgba(56, 189, 248, 0.04);
+    }
+
+    .btn-billing-action {
+      background: linear-gradient(135deg, #0284c7, #0369a1);
+      color: #ffffff;
+      border: none;
+      border-radius: 8px;
+      padding: 6px 14px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+
+    .btn-billing-action:hover {
+      background: linear-gradient(135deg, #38bdf8, #0284c7);
+      color: #ffffff;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(2, 132, 199, 0.4);
+    }
+
     /* ===== END VIDEO RENDERING OPTIMIZATION ===== */

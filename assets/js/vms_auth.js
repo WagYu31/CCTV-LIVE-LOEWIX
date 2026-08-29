@@ -33,6 +33,74 @@ function switchGateAuthMode(mode) {
   }
 }
 
+let selectedRegCycle = 'annual'; // 'monthly' or 'annual'
+let selectedRegPlan = 'business_10'; // 'starter_4', 'business_10', 'enterprise_20'
+
+const REG_PLAN_PRICES = {
+  starter_4: { name: 'Starter Cloud', quota: 4, monthly: 149000, annual: 1490000 },
+  business_10: { name: 'Business Pro', quota: 10, monthly: 299000, annual: 2990000 },
+  enterprise_20: { name: 'Enterprise Fleet', quota: 20, monthly: 549000, annual: 5490000 }
+};
+
+function selectRegistrationCycle(cycle) {
+  selectedRegCycle = cycle;
+  const btnMonthly = document.getElementById('reg-cycle-monthly');
+  const btnAnnual = document.getElementById('reg-cycle-annual');
+  
+  if (cycle === 'annual') {
+    if (btnAnnual) btnAnnual.classList.add('active');
+    if (btnMonthly) btnMonthly.classList.remove('active');
+  } else {
+    if (btnMonthly) btnMonthly.classList.add('active');
+    if (btnAnnual) btnAnnual.classList.remove('active');
+  }
+  
+  updateRegPlanDisplay();
+}
+
+function selectRegistrationPlan(planId) {
+  selectedRegPlan = planId;
+  document.querySelectorAll('.reg-plan-card').forEach(card => {
+    if (card.dataset.plan === planId) {
+      card.classList.add('active');
+    } else {
+      card.classList.remove('active');
+    }
+  });
+  updateRegPlanDisplay();
+}
+
+function updateRegPlanDisplay() {
+  const planInfo = REG_PLAN_PRICES[selectedRegPlan] || REG_PLAN_PRICES.business_10;
+  const basePrice = (selectedRegCycle === 'annual') ? planInfo.annual : planInfo.monthly;
+  const tax = Math.round(basePrice * 0.11);
+  const total = basePrice + tax;
+
+  const priceTagStarter = document.getElementById('price-tag-starter');
+  const priceTagBusiness = document.getElementById('price-tag-business');
+  const priceTagEnterprise = document.getElementById('price-tag-enterprise');
+  
+  if (priceTagStarter) {
+    priceTagStarter.textContent = selectedRegCycle === 'annual' ? 'Rp 1.490.000/thn' : 'Rp 149.000/bln';
+  }
+  if (priceTagBusiness) {
+    priceTagBusiness.textContent = selectedRegCycle === 'annual' ? 'Rp 2.990.000/thn' : 'Rp 299.000/bln';
+  }
+  if (priceTagEnterprise) {
+    priceTagEnterprise.textContent = selectedRegCycle === 'annual' ? 'Rp 5.490.000/thn' : 'Rp 549.000/bln';
+  }
+
+  const summaryText = document.getElementById('reg-summary-text');
+  const summaryTotal = document.getElementById('reg-summary-total');
+  
+  if (summaryText) {
+    summaryText.innerHTML = `<strong>${planInfo.name}</strong> (${planInfo.quota} CCTV) &bull; Periode ${selectedRegCycle === 'annual' ? '1 Tahun (Hemat 2 Bln)' : '1 Bulan'}`;
+  }
+  if (summaryTotal) {
+    summaryTotal.textContent = 'Rp ' + total.toLocaleString('id-ID');
+  }
+}
+
 async function submitGateRegister(e) {
   e.preventDefault();
   const name = document.getElementById('gate-reg-name').value.trim();
@@ -72,7 +140,7 @@ async function submitGateRegister(e) {
 
   if (btnSubmit) {
     btnSubmit.disabled = true;
-    btnSubmit.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Memproses Pendaftaran...';
+    btnSubmit.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Menyiapkan Pembayaran Midtrans...';
   }
 
   const formData = new FormData();
@@ -84,6 +152,7 @@ async function submitGateRegister(e) {
   formData.append('password', password);
 
   try {
+    // 1. Register User Account
     const res = await fetch('api/auth.php', {
       method: 'POST',
       body: formData
@@ -93,14 +162,54 @@ async function submitGateRegister(e) {
     if (data.success && data.user) {
       currentUser = data.user;
       localStorage.setItem('loewix_user', JSON.stringify(data.user));
-      
-      if (typeof showCCTVToast === 'function') {
-        showCCTVToast('Pendaftaran akun berhasil! Selamat datang di Loewix VMS.', 'success');
-      } else {
-        alert('Pendaftaran akun berhasil! Selamat datang di Loewix VMS.');
-      }
 
-      showDashboardView(data.user);
+      // 2. Request Midtrans Snap Token
+      const payData = new FormData();
+      payData.append('action', 'create_snap_token');
+      payData.append('plan_id', selectedRegPlan);
+      payData.append('billing_cycle', selectedRegCycle);
+      payData.append('name', name);
+      payData.append('email', email);
+      payData.append('phone', phone);
+
+      const payRes = await fetch('api/payment.php', {
+        method: 'POST',
+        body: payData
+      });
+      const payResult = await payRes.json();
+
+      if (payResult.success && payResult.snap_token) {
+        // If Midtrans Snap is loaded on window
+        if (window.snap && typeof window.snap.pay === 'function') {
+          window.snap.pay(payResult.snap_token, {
+            onSuccess: function(result) {
+              completeRegistrationPayment(payResult.order_id, result.payment_type || 'midtrans');
+            },
+            onPending: function(result) {
+              completeRegistrationPayment(payResult.order_id, result.payment_type || 'midtrans_pending');
+            },
+            onError: function(result) {
+              alert('Pembayaran gagal atau dibatalkan. Anda dapat melanjutkan pembayaran di menu Tagihan.');
+              showDashboardView(data.user);
+            },
+            onClose: function() {
+              // User closed popup without completing
+              if (confirm('Anda menutup popup pembayaran. Lanjut ke dashboard dan selesaikan pembayaran di menu Tagihan?')) {
+                showDashboardView(data.user);
+              }
+            }
+          });
+        } else {
+          // Simulation / Direct fallback mode
+          if (confirm(`[SIMULASI MIDTRANS PAYMENT]\n\nOrder ID: ${payResult.order_id}\nPaket: ${payResult.plan.name} (${payResult.plan.billing_cycle})\nTotal: ${payResult.plan.total_formatted}\n\nLanjutkan konfirmasi pembayaran instan?`)) {
+            await completeRegistrationPayment(payResult.order_id, 'midtrans_simulator');
+          } else {
+            showDashboardView(data.user);
+          }
+        }
+      } else {
+        showDashboardView(data.user);
+      }
     } else {
       if (typeof showCCTVToast === 'function') {
         showCCTVToast(data.message || 'Pendaftaran akun gagal.', 'danger');
@@ -111,15 +220,43 @@ async function submitGateRegister(e) {
   } catch (err) {
     console.error('Registration error:', err);
     if (typeof showCCTVToast === 'function') {
-      showCCTVToast('Gagal terhubung ke server autentikasi.', 'danger');
+      showCCTVToast('Gagal terhubung ke server pembayaran.', 'danger');
     } else {
-      alert('Gagal terhubung ke server autentikasi.');
+      alert('Gagal terhubung ke server pembayaran.');
     }
   } finally {
     if (btnSubmit) {
       btnSubmit.disabled = false;
-      btnSubmit.innerHTML = '<span>DAFTAR AKUN BARU</span> <i class="fas fa-arrow-right"></i>';
+      btnSubmit.innerHTML = '<span>DAFTAR & BAYAR SEKARANG</span> <i class="fas fa-arrow-right"></i>';
     }
+  }
+}
+
+async function completeRegistrationPayment(orderId, paymentType) {
+  try {
+    const fd = new FormData();
+    fd.append('action', 'verify_payment');
+    fd.append('order_id', orderId);
+    fd.append('payment_type', paymentType);
+
+    const res = await fetch('api/payment.php', { method: 'POST', body: fd });
+    const resData = await res.json();
+
+    if (resData.success) {
+      if (typeof showCCTVToast === 'function') {
+        showCCTVToast('Pembayaran Berhasil! Paket CCTV Anda telah aktif.', 'success');
+      } else {
+        alert('Pembayaran Berhasil! Paket CCTV Anda telah aktif.');
+      }
+    }
+  } catch(e) {
+    console.error('Error verifying payment:', e);
+  }
+  
+  if (currentUser) {
+    showDashboardView(currentUser);
+  } else {
+    window.location.reload();
   }
 }
 

@@ -36,6 +36,9 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
+  <!-- Midtrans Snap Payment Gateway SDK (Sandbox) -->
+  <script type="text/javascript" src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="SB-Mid-client-loewix-test-demo12345"></script>
+
   <!-- SEO Meta Tags -->
   <title>LOEWIX CCTV - Official Live Video Surveillance & Intelligent Monitoring Platform</title>
   <meta name="description" content="🔴 LIVE SURVEILLANCE: Official Loewix Security Systems live video monitoring grid. High-fidelity analytics, 4K Ultra HD streams, AI motion detection, and zero latency global endpoints.">
@@ -738,6 +741,63 @@
 
         <!-- 2. REGISTRATION FORM -->
         <form id="formGateRegister" onsubmit="submitGateRegister(event)" style="display: none;">
+          
+          <!-- Package Selector Header -->
+          <div class="reg-pricing-section">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+              <span style="font-size: 11px; font-weight: 800; color: #38bdf8; text-transform: uppercase; letter-spacing: 0.5px;">
+                <i class="fas fa-cube mr-1"></i> PILIH PAKET CCTV
+              </span>
+              <span style="font-size: 10px; color: #94a3b8;">Dapat di-upgrade kapan saja</span>
+            </div>
+
+            <!-- Billing Cycle Switcher (Bulanan vs Tahunan) -->
+            <div class="reg-cycle-toggle-wrapper">
+              <button type="button" class="reg-cycle-btn" id="reg-cycle-monthly" onclick="selectRegistrationCycle('monthly')">
+                <i class="fas fa-calendar-alt"></i> Bulanan
+              </button>
+              <button type="button" class="reg-cycle-btn active" id="reg-cycle-annual" onclick="selectRegistrationCycle('annual')">
+                <i class="fas fa-tag"></i> Tahunan <span class="reg-cycle-badge">Hemat 2 Bln</span>
+              </button>
+            </div>
+
+            <!-- 3 Plan Cards -->
+            <div class="reg-plan-cards-grid">
+              <!-- Starter 4 CCTV -->
+              <div class="reg-plan-card" data-plan="starter_4" onclick="selectRegistrationPlan('starter_4')">
+                <div class="reg-plan-title">Starter</div>
+                <div class="reg-plan-cctv">4 CCTV</div>
+                <div class="reg-plan-price" id="price-tag-starter">Rp 1.490.000/thn</div>
+              </div>
+
+              <!-- Business Pro 10 CCTV (Default) -->
+              <div class="reg-plan-card active" data-plan="business_10" onclick="selectRegistrationPlan('business_10')">
+                <div class="reg-plan-tag">POPULER</div>
+                <div class="reg-plan-title">Business Pro</div>
+                <div class="reg-plan-cctv">10 CCTV</div>
+                <div class="reg-plan-price" id="price-tag-business">Rp 2.990.000/thn</div>
+              </div>
+
+              <!-- Enterprise 20 CCTV -->
+              <div class="reg-plan-card" data-plan="enterprise_20" onclick="selectRegistrationPlan('enterprise_20')">
+                <div class="reg-plan-title">Enterprise</div>
+                <div class="reg-plan-cctv">20 CCTV</div>
+                <div class="reg-plan-price" id="price-tag-enterprise">Rp 5.490.000/thn</div>
+              </div>
+            </div>
+
+            <!-- Order Summary -->
+            <div class="reg-order-summary">
+              <div class="reg-summary-desc" id="reg-summary-text">
+                <strong>Business Pro</strong> (10 CCTV) &bull; Periode 1 Tahun (Hemat 2 Bln)
+              </div>
+              <div class="text-right">
+                <div style="font-size: 9px; color: #94a3b8;">Total (Inc. PPN 11%)</div>
+                <div class="reg-summary-total" id="reg-summary-total">Rp 3.318.900</div>
+              </div>
+            </div>
+          </div>
+
           <div class="auth-field-group">
             <div class="auth-field-label">
               <span><i class="fas fa-building text-info mr-1"></i> Nama Lengkap / Perusahaan</span>
@@ -818,8 +878,8 @@
             </div>
           </div>
 
-          <button type="submit" id="btn-gate-reg-submit" class="auth-submit-btn" style="background: linear-gradient(135deg, #10b981, #059669); box-shadow: 0 4px 16px rgba(16, 185, 129, 0.4);">
-            <span>DAFTAR AKUN BARU</span>
+          <button type="submit" id="btn-gate-reg-submit" class="auth-submit-btn" style="background: linear-gradient(135deg, #0284c7, #0369a1); box-shadow: 0 4px 16px rgba(2, 132, 199, 0.45);">
+            <span>DAFTAR & BAYAR SEKARANG</span>
             <i class="fas fa-arrow-right"></i>
           </button>
 
@@ -828,8 +888,8 @@
           </div>
 
           <div class="auth-card-footer">
-            <span><i class="fas fa-shield-alt text-success mr-1"></i> Kuota 20 CCTV Otomatis</span>
-            <span><i class="fas fa-bolt text-info mr-1"></i> Instant Provisioning</span>
+            <span><i class="fas fa-lock text-success mr-1"></i> Midtrans Secure 256-bit</span>
+            <span><i class="fas fa-bolt text-info mr-1"></i> Instant Active</span>
           </div>
         </form>
       </div>
