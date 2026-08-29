@@ -1953,11 +1953,12 @@
                 <th>Metode Bayar</th>
                 <th>Status</th>
                 <th>Waktu Transaksi</th>
+                <th class="text-right">Aksi Super Admin</th>
               </tr>
             </thead>
             <tbody id="admin-transactions-table-body">
               <tr>
-                <td colspan="7" class="text-center py-4 text-muted">
+                <td colspan="8" class="text-center py-4 text-muted">
                   <i class="fas fa-spinner fa-spin mr-2"></i> Memuat data transaksi...
                 </td>
               </tr>
@@ -4170,6 +4171,28 @@
           else if (payType.includes('qris')) payType = 'QRIS Instant';
           else if (payType.includes('credit_card')) payType = 'Credit Card';
 
+          let actionButtons = '';
+          if (status === 'pending') {
+            actionButtons = `
+              <div class="d-flex justify-content-end align-items-center gap-1" style="gap: 5px;">
+                <button class="btn btn-sm btn-info font-weight-bold d-inline-flex align-items-center" onclick="sendAdminPaymentReminder('${inv.order_id}', '${(inv.user_name || '').replace(/'/g, "\\'")}', '${inv.user_email || ''}')" title="Kirim Email Tagihan Ulang" style="border-radius: 8px; font-size: 11px; padding: 5px 10px; background: linear-gradient(135deg, #0284c7, #0369a1); border: none; white-space: nowrap;">
+                  <i class="fas fa-paper-plane mr-1"></i> <span>Kirim Email</span>
+                </button>
+                <button class="btn btn-sm btn-success font-weight-bold d-inline-flex align-items-center" onclick="markAdminInvoiceSettled('${inv.order_id}', '${(inv.user_name || '').replace(/'/g, "\\'")}')" title="Tandai Sudah Lunas Manual" style="border-radius: 8px; font-size: 11px; padding: 5px 10px; background: linear-gradient(135deg, #10b981, #059669); border: none; white-space: nowrap;">
+                  <i class="fas fa-check-double mr-1"></i> <span>Set Lunas</span>
+                </button>
+              </div>
+            `;
+          } else {
+            actionButtons = `
+              <div class="text-right">
+                <span class="badge badge-dark p-2" style="background: rgba(16,185,129,0.1); color: #34d399; font-size: 11px; border: 1px solid rgba(16,185,129,0.25); border-radius: 6px;">
+                  <i class="fas fa-check mr-1"></i> Terverifikasi
+                </span>
+              </div>
+            `;
+          }
+
           const row = document.createElement('tr');
           row.innerHTML = `
             <td style="font-family: monospace; font-weight: 700; color: #38bdf8; font-size: 13px;">
@@ -4198,11 +4221,49 @@
             <td class="text-muted" style="font-size: 11.5px; white-space: nowrap;">
               <i class="fas fa-calendar-check mr-1 text-info"></i> ${inv.settlement_time || inv.transaction_time || inv.created_at || '2026-08-29 10:00'}
             </td>
+            <td class="text-right">${actionButtons}</td>
           `;
           tbody.appendChild(row);
         });
       } catch (err) {
-        tbody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-danger">Gagal memuat data transaksi.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="8" class="text-center py-4 text-danger">Gagal memuat data transaksi.</td></tr>`;
+      }
+    }
+
+    async function sendAdminPaymentReminder(orderId, userName, userEmail) {
+      if (!confirm(`Kirim email pengingat tagihan #${orderId} ke ${userName} (${userEmail})?`)) return;
+
+      const fd = new FormData();
+      fd.append('action', 'send_payment_reminder');
+      fd.append('order_id', orderId);
+
+      try {
+        const res = await fetch('../api/payment.php', { method: 'POST', body: fd });
+        const data = await res.json();
+        alert(data.message || (data.success ? 'Email pengingat berhasil dikirim!' : 'Gagal kirim email.'));
+      } catch (err) {
+        alert('Terjadi kesalahan koneksi ke server.');
+      }
+    }
+
+    async function markAdminInvoiceSettled(orderId, userName) {
+      if (!confirm(`Tandai invoice #${orderId} milik ${userName} sebagai LUNAS (SETTLEMENT)?\nKuota CCTV pelanggan akan langsung aktif.`)) return;
+
+      const fd = new FormData();
+      fd.append('action', 'mark_invoice_settled');
+      fd.append('order_id', orderId);
+
+      try {
+        const res = await fetch('../api/payment.php', { method: 'POST', body: fd });
+        const data = await res.json();
+        if (data.success) {
+          alert(data.message || 'Invoice berhasil ditandai Lunas!');
+          loadAdminTransactionsList();
+        } else {
+          alert(data.message || 'Gagal update status invoice.');
+        }
+      } catch (err) {
+        alert('Terjadi kesalahan koneksi ke server.');
       }
     }
 

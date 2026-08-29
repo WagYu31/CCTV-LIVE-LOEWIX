@@ -473,4 +473,111 @@ if ($action === 'update_billing_profile') {
     exit;
 }
 
+// 7. SEND PAYMENT REMINDER EMAIL (SUPER ADMIN ACTION)
+if ($action === 'send_payment_reminder') {
+    $orderId = trim($_POST['order_id'] ?? '');
+    if (empty($orderId)) {
+        echo json_encode(['success' => false, 'message' => 'Order ID / No. Invoice wajib diisi!']);
+        exit;
+    }
+
+    $db = get_db_data();
+    $targetInvoice = null;
+    foreach ($db['invoices'] as $inv) {
+        if ($inv['order_id'] === $orderId) {
+            $targetInvoice = $inv;
+            break;
+        }
+    }
+
+    if (!$targetInvoice) {
+        echo json_encode(['success' => false, 'message' => 'Invoice tidak ditemukan!']);
+        exit;
+    }
+
+    // Find user
+    $targetUser = null;
+    foreach ($db['users'] as $u) {
+        if ((int)$u['id'] === (int)($targetInvoice['user_id'] ?? 0) || $u['email'] === ($targetInvoice['user_email'] ?? '')) {
+            $targetUser = $u;
+            break;
+        }
+    }
+
+    if (!$targetUser) {
+        $targetUser = [
+            'name' => $targetInvoice['user_name'] ?? 'Customer Loewix',
+            'email' => $targetInvoice['user_email'] ?? ''
+        ];
+    }
+
+    if (empty($targetUser['email'])) {
+        echo json_encode(['success' => false, 'message' => 'Alamat email pelanggan tidak ditemukan pada invoice ini.']);
+        exit;
+    }
+
+    $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? "https://" : "http://";
+    $host = $_SERVER['HTTP_HOST'] ?? 'localhost:8000';
+    $payUrl = $protocol . $host . '/customer/index.php#tab-package';
+
+    $reminderHtml = get_email_invoice_pending_reminder($targetInvoice, $targetUser, $payUrl);
+    $subject = "[Tagihan Pembayaran] Invoice #" . $targetInvoice['order_id'] . " - " . ($targetInvoice['plan_name'] ?? 'Loewix SaaS');
+
+    $sent = send_loewix_email($targetUser['email'], $targetUser['name'], $subject, $reminderHtml);
+
+    if ($sent) {
+        echo json_encode([
+            'success' => true,
+            'message' => 'Email pengingat pembayaran berhasil dikirim ke ' . $targetUser['email'] . ' (' . $targetUser['name'] . ')!'
+        ]);
+    } else {
+        echo json_encode(['success' => false, 'message' => 'Gagal mengirim email pengingat.']);
+    }
+    exit;
+}
+
+// 8. MANUAL MARK INVOICE AS SETTLED (SUPER ADMIN ACTION)
+if ($action === 'mark_invoice_settled') {
+    $orderId = trim($_POST['order_id'] ?? '');
+    if (empty($orderId)) {
+        echo json_encode(['success' => false, 'message' => 'Order ID wajib diisi!']);
+        exit;
+    }
+
+    $db = get_db_data();
+    $found = false;
+    $targetInvoice = null;
+    foreach ($db['invoices'] as &$inv) {
+        if ($inv['order_id'] === $orderId) {
+            $inv['status'] = 'settlement';
+            $inv['payment_type'] = 'manual_transfer_admin';
+            $inv['settlement_time'] = date('Y-m-d H:i:s');
+            $targetInvoice = $inv;
+            $found = true;
+            break;
+        }
+    }
+
+    if (!$found || !$targetInvoice) {
+        echo json_encode(['success' => false, 'message' => 'Invoice tidak ditemukan!']);
+        exit;
+    }
+
+    // Activate subscription
+    activate_user_subscription(
+        $targetInvoice['user_id'],
+        $targetInvoice['plan_id'] ?? 'business_10',
+        $targetInvoice['billing_cycle'] ?? 'monthly',
+        $targetInvoice['amount'] ?? 299000,
+        $orderId,
+        'manual_transfer_admin'
+    );
+
+    echo json_encode([
+        'success' => true,
+        'message' => 'Invoice ' . $orderId . ' berhasil ditandai LUNAS dan kuota CCTV pelanggan telah diperbarui!'
+    ]);
+    exit;
+}
+
 echo json_encode(['success' => false, 'message' => 'Invalid Action']);

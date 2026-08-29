@@ -324,3 +324,62 @@ HTML;
 
     return render_loewix_email_layout($title, $badgeText, $badgeColor, $content);
 }
+
+/**
+ * 6. Email Template: Pengingat Tagihan Menunggu Pembayaran (Manual / Admin Trigger)
+ */
+function get_email_invoice_pending_reminder($invoice, $user, $payUrl) {
+    $title = "Tagihan Menunggu Pembayaran: " . ($invoice['order_id'] ?? 'INV-LOEWIX');
+    $badgeText = "MENUNGGU PEMBAYARAN";
+    $badgeColor = "#f59e0b";
+
+    $amountFormatted = 'Rp ' . number_format($invoice['amount'] ?? 0, 0, ',', '.');
+    $taxFormatted = 'Rp ' . number_format($invoice['tax_amount'] ?? 0, 0, ',', '.');
+    $totalFormatted = 'Rp ' . number_format($invoice['total_amount'] ?? $invoice['amount'] ?? 0, 0, ',', '.');
+
+    $content = <<<HTML
+    <h2 style="color: #ffffff; margin-top: 0; font-size: 20px;">Tagihan Menunggu Pembayaran 💳</h2>
+    <p>Halo <strong>{$user['name']}</strong>, ini adalah pengingat untuk tagihan layanan CCTV Cloud Loewix Anda yang saat ini berstatus <strong>Menunggu Pembayaran</strong>.</p>
+    
+    <!-- Invoice Details Table -->
+    <table width="100%" style="background-color: #060b18; border: 1px solid #1e3a8a; border-radius: 8px; margin: 20px 0; padding: 15px;" cellpadding="0" cellspacing="0">
+      <tr>
+        <td style="padding: 6px 10px; color: #94a3b8; font-size: 12px; width: 40%;">Nomor Invoice:</td>
+        <td style="padding: 6px 10px; color: #38bdf8; font-weight: bold; font-family: monospace; font-size: 13px;">{$invoice['order_id']}</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 10px; color: #94a3b8; font-size: 12px;">Paket Layanan:</td>
+        <td style="padding: 6px 10px; color: #ffffff; font-weight: bold; font-size: 12px;">{$invoice['plan_name']}</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 10px; color: #94a3b8; font-size: 12px;">Siklus Tagihan:</td>
+        <td style="padding: 6px 10px; color: #ffffff; font-size: 12px; text-transform: capitalize;">{$invoice['billing_cycle']}</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 10px; color: #94a3b8; font-size: 12px;">Subtotal:</td>
+        <td style="padding: 6px 10px; color: #ffffff; font-size: 12px;">{$amountFormatted}</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 10px; color: #94a3b8; font-size: 12px;">PPN 11%:</td>
+        <td style="padding: 6px 10px; color: #ffffff; font-size: 12px;">{$taxFormatted}</td>
+      </tr>
+      <tr style="border-top: 1px solid #1e293b;">
+        <td style="padding: 10px 10px 4px 10px; color: #f59e0b; font-weight: bold; font-size: 14px;">TOTAL TAGIHAN:</td>
+        <td style="padding: 10px 10px 4px 10px; color: #34d399; font-weight: 800; font-family: monospace; font-size: 18px;">{$totalFormatted}</td>
+      </tr>
+    </table>
+
+    <p>Silakan selesaikan pembayaran Anda melalui gateway resmi kami (QRIS Instant, Virtual Account BCA/Mandiri/BRI/BNI, dll.) dengan mengklik tombol di bawah ini:</p>
+
+    <!-- CTA Button -->
+    <div style="text-align: center; margin: 25px 0;">
+      <a href="{$payUrl}" style="display: inline-block; background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); color: #ffffff; text-decoration: none; padding: 14px 32px; border-radius: 8px; font-weight: bold; font-size: 15px; letter-spacing: 0.5px; box-shadow: 0 4px 15px rgba(2, 132, 199, 0.4);">
+        💳 BAYAR TAGIHAN SEKARANG (MIDTRANS) →
+      </a>
+    </div>
+
+    <p style="font-size: 12px; color: #94a3b8; text-align: center;">Setelah pembayaran berhasil, akun dan kuota kamera Anda akan langsung aktif secara otomatis.</p>
+HTML;
+
+    return render_loewix_email_layout($title, $badgeText, $badgeColor, $content);
+}
