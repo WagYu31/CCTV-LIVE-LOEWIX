@@ -15,7 +15,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
   <!-- Midtrans Snap Payment Gateway SDK (Sandbox) -->
-  <script type="text/javascript" src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="SB-Mid-client-loewix-test-demo12345"></script>
+  <script type="text/javascript" src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="Mid-client-mGA7v04cXrux3KNF"></script>
   <style>
     :root {
       --bg-dark: #060b18;
@@ -1937,7 +1937,10 @@
               Rekap pemasukan langganan SaaS, status pembayaran QRIS / Virtual Account, dan invoice gateway.
             </p>
           </div>
-          <div class="d-flex gap-2" style="gap: 8px;">
+          <div class="d-flex gap-2 flex-wrap" style="gap: 8px;">
+            <button class="btn btn-outline-warning btn-sm" onclick="openMidtransSettingsModal()" style="border-radius: 20px; font-weight: 700; padding: 6px 14px; border-color: rgba(245,158,11,0.4); color: #f59e0b;">
+              <i class="fas fa-credit-card mr-1"></i> Pengaturan Midtrans
+            </button>
             <button class="btn btn-outline-info btn-sm" onclick="openSmtpSettingsModal()" style="border-radius: 20px; font-weight: 700; padding: 6px 14px; border-color: rgba(56,189,248,0.4); color: #38bdf8;">
               <i class="fas fa-envelope-open-text mr-1"></i> Pengaturan Email SMTP
             </button>
@@ -2430,6 +2433,59 @@
         </form>
       </div>
     </div>
+  <!-- Modal Pengaturan Midtrans Gateway (Admin) -->
+  <div class="modal fade modal-dark" id="modalMidtransSettings" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content" style="background: #0b1533; border: 1px solid rgba(245,158,11,0.3); border-radius: 16px;">
+        <div class="modal-header" style="border-bottom: 1px solid rgba(255,255,255,0.08);">
+          <h5 class="modal-title font-weight-bold text-white">
+            <i class="fas fa-credit-card text-warning mr-2"></i> Konfigurasi Midtrans Payment Gateway
+          </h5>
+          <button type="button" class="close text-white" onclick="closeModalHelper('modalMidtransSettings')" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <form id="formMidtransSettings" onsubmit="submitSaveMidtransSettings(event)">
+          <div class="modal-body p-4">
+            <div class="p-3 mb-3 rounded" style="background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.25); font-size: 12px; color: #cbd5e1;">
+              <i class="fas fa-info-circle text-warning mr-1"></i> Data Access Key otomatis terhubung dari akun Midtrans Anda (<a href="https://dashboard.midtrans.com/settings/access_keys" target="_blank" style="color: #38bdf8; text-decoration: underline;">dashboard.midtrans.com</a>).
+            </div>
+
+            <div class="form-group mb-3">
+              <label class="text-white" style="font-size: 13px; font-weight: 600;">Environment / Mode:</label>
+              <select id="midtrans-input-env" class="form-control form-control-dark">
+                <option value="false">Sandbox (Mode Testing / Uji Coba)</option>
+                <option value="true">Production (Live Pembayaran Riil)</option>
+              </select>
+            </div>
+
+            <div class="form-group mb-3">
+              <label class="text-white" style="font-size: 13px; font-weight: 600;">Merchant ID:</label>
+              <input type="text" id="midtrans-input-merchant" class="form-control form-control-dark" placeholder="G589001445" value="G589001445" required>
+            </div>
+
+            <div class="form-group mb-3">
+              <label class="text-white" style="font-size: 13px; font-weight: 600;">Client Key:</label>
+              <input type="text" id="midtrans-input-client" class="form-control form-control-dark" placeholder="Mid-client-..." value="Mid-client-mGA7v04cXrux3KNF" required>
+            </div>
+
+            <div class="form-group mb-3">
+              <label class="text-white" style="font-size: 13px; font-weight: 600;">Server Key:</label>
+              <input type="password" id="midtrans-input-server" class="form-control form-control-dark" placeholder="Masukkan Server Key Anda" required>
+            </div>
+
+          </div>
+          <div class="modal-footer" style="border-top: 1px solid rgba(255,255,255,0.08);">
+            <button type="button" class="btn btn-secondary btn-sm" onclick="closeModalHelper('modalMidtransSettings')">Tutup</button>
+            <button type="submit" class="btn btn-warning btn-sm font-weight-bold" style="background: #f59e0b; border: none; color: #000;">
+              <i class="fas fa-save mr-1"></i> Simpan Kredensial Midtrans
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
   <!-- Modal Pengaturan Email SMTP & Tes Kirim Email (Admin) -->
   <div class="modal fade modal-dark" id="modalSmtpSettings" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" role="document">
@@ -4351,6 +4407,52 @@
         }
       } catch (err) {
         alert('Terjadi kesalahan koneksi ke server.');
+      }
+    }
+
+    // ========================================================
+    // SUPER ADMIN MIDTRANS SETTINGS
+    // ========================================================
+    async function openMidtransSettingsModal() {
+      try {
+        const res = await fetch('../api/payment.php?action=get_midtrans_settings');
+        const data = await res.json();
+        if (data.success && data.midtrans) {
+          const m = data.midtrans;
+          document.getElementById('midtrans-input-env').value = m.is_production ? 'true' : 'false';
+          document.getElementById('midtrans-input-merchant').value = m.merchant_id || 'G589001445';
+          document.getElementById('midtrans-input-client').value = m.client_key || 'Mid-client-mGA7v04cXrux3KNF';
+          document.getElementById('midtrans-input-server').value = m.server_key || '';
+        }
+      } catch (err) {
+        console.error('Failed to load Midtrans settings:', err);
+      }
+      openModalHelper('modalMidtransSettings');
+    }
+
+    async function submitSaveMidtransSettings(e) {
+      e.preventDefault();
+      const isProd = document.getElementById('midtrans-input-env').value;
+      const merchantId = document.getElementById('midtrans-input-merchant').value.trim();
+      const clientKey = document.getElementById('midtrans-input-client').value.trim();
+      const serverKey = document.getElementById('midtrans-input-server').value.trim();
+
+      const fd = new FormData();
+      fd.append('action', 'save_midtrans_settings');
+      fd.append('is_production', isProd);
+      fd.append('merchant_id', merchantId);
+      fd.append('client_key', clientKey);
+      fd.append('server_key', serverKey);
+
+      try {
+        const res = await fetch('../api/payment.php', { method: 'POST', body: fd });
+        const data = await res.json();
+        alert(data.message || (data.success ? 'Kredensial Midtrans berhasil disimpan!' : 'Gagal simpan.'));
+        if (data.success) {
+          closeModalHelper('modalMidtransSettings');
+        }
+      } catch (err) {
+        alert('Terjadi kesalahan koneksi.');
       }
     }
 

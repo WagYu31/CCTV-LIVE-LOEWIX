@@ -695,4 +695,60 @@ HTML;
     exit;
 }
 
+// 12. GET MIDTRANS SETTINGS (SUPER ADMIN)
+if ($action === 'get_midtrans_settings') {
+    $midtransConfigFile = __DIR__ . '/../data/midtrans_config.json';
+    $customMidtrans = [];
+    if (file_exists($midtransConfigFile)) {
+        $customMidtrans = json_decode(file_get_contents($midtransConfigFile), true) ?: [];
+    }
+
+    echo json_encode([
+        'success' => true,
+        'midtrans' => [
+            'is_production' => $customMidtrans['is_production'] ?? false,
+            'merchant_id' => $customMidtrans['merchant_id'] ?? 'G589001445',
+            'client_key' => $customMidtrans['client_key'] ?? 'Mid-client-mGA7v04cXrux3KNF',
+            'server_key' => !empty($customMidtrans['server_key']) ? '********' : ''
+        ]
+    ]);
+    exit;
+}
+
+// 13. SAVE MIDTRANS SETTINGS (SUPER ADMIN)
+if ($action === 'save_midtrans_settings') {
+    $midtransConfigFile = __DIR__ . '/../data/midtrans_config.json';
+    $existing = [];
+    if (file_exists($midtransConfigFile)) {
+        $existing = json_decode(file_get_contents($midtransConfigFile), true) ?: [];
+    }
+
+    $isProduction = ($_POST['is_production'] ?? 'false') === 'true';
+    $merchantId = trim($_POST['merchant_id'] ?? '');
+    $clientKey = trim($_POST['client_key'] ?? '');
+    $serverKey = trim($_POST['server_key'] ?? '');
+
+    if ($serverKey === '********' || empty($serverKey)) {
+        $serverKey = $existing['server_key'] ?? '';
+    }
+
+    $newConfig = [
+        'is_production' => $isProduction,
+        'merchant_id' => $merchantId,
+        'client_key' => $clientKey,
+        'server_key' => $serverKey,
+        'updated_at' => date('Y-m-d H:i:s')
+    ];
+
+    $dataDir = __DIR__ . '/../data';
+    if (!is_dir($dataDir)) @mkdir($dataDir, 0755, true);
+    file_put_contents($midtransConfigFile, json_encode($newConfig, JSON_PRETTY_PRINT));
+
+    echo json_encode([
+        'success' => true,
+        'message' => 'Pengaturan Midtrans Payment Gateway berhasil disimpan!'
+    ]);
+    exit;
+}
+
 echo json_encode(['success' => false, 'message' => 'Invalid Action']);

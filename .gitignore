@@ -1,6 +1,8 @@
 data/loewix_db.json
 data/jf_live_cache_*.json
 data/snapshots/
+data/smtp_config.json
+data/midtrans_config.json
 .DS_Store
 *.DS_Store
 current_chunk.ts

@@ -37,7 +37,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
   <!-- Midtrans Snap Payment Gateway SDK (Sandbox) -->
-  <script type="text/javascript" src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="SB-Mid-client-loewix-test-demo12345"></script>
+  <script type="text/javascript" src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="Mid-client-mGA7v04cXrux3KNF"></script>
 
   <!-- SEO Meta Tags -->
   <title>LOEWIX CCTV - Official Live Video Surveillance & Intelligent Monitoring Platform</title>

@@ -4,14 +4,20 @@
  * PT. LOEWIX INDONESIA - CCTV SURVEILLANCE PLATFORM
  */
 
-// Configuration Settings (Sandbox by default, switch to true for production)
-define('MIDTRANS_IS_PRODUCTION', false);
+// Dynamic configuration loader from data/midtrans_config.json
+$midtransConfigFile = __DIR__ . '/../data/midtrans_config.json';
+$customMidtrans = [];
+if (file_exists($midtransConfigFile)) {
+    $customMidtrans = json_decode(file_get_contents($midtransConfigFile), true) ?: [];
+}
 
-// Midtrans API Credentials
-// Sandbox Test Keys (Replace with your actual keys from dashboard.midtrans.com)
-define('MIDTRANS_SERVER_KEY', getenv('MIDTRANS_SERVER_KEY') ?: 'SB-Mid-server-loewix-test-demo12345');
-define('MIDTRANS_CLIENT_KEY', getenv('MIDTRANS_CLIENT_KEY') ?: 'SB-Mid-client-loewix-test-demo12345');
-define('MIDTRANS_MERCHANT_ID', getenv('MIDTRANS_MERCHANT_ID') ?: 'M00012345');
+// Configuration Settings (Sandbox by default, switch to true for production)
+define('MIDTRANS_IS_PRODUCTION', $customMidtrans['is_production'] ?? false);
+
+// Midtrans API Credentials (loaded from data/midtrans_config.json or ENV)
+define('MIDTRANS_SERVER_KEY', $customMidtrans['server_key'] ?? (getenv('MIDTRANS_SERVER_KEY') ?: ''));
+define('MIDTRANS_CLIENT_KEY', $customMidtrans['client_key'] ?? (getenv('MIDTRANS_CLIENT_KEY') ?: ''));
+define('MIDTRANS_MERCHANT_ID', $customMidtrans['merchant_id'] ?? (getenv('MIDTRANS_MERCHANT_ID') ?: 'G589001445'));
 
 // Snap API Endpoint
 define('MIDTRANS_SNAP_URL', MIDTRANS_IS_PRODUCTION 
