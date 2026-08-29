@@ -1105,6 +1105,9 @@
                 <div class="auth-input-wrapper">
                   <input type="password" id="gate-reg-confirm-password" class="auth-input-control" placeholder="Konfirmasi sandi" required autocomplete="new-password">
                   <i class="fas fa-shield-alt auth-input-icon"></i>
+                  <button type="button" class="auth-pwd-toggle" onclick="toggleGatePasswordVisibility('gate-reg-confirm-password', 'gate-toggle-reg-confirm-pwd')" title="Lihat / Sembunyikan Password">
+                    <i class="fas fa-eye" id="gate-toggle-reg-confirm-pwd"></i>
+                  </button>
                 </div>
               </div>
             </div>
@@ -2026,6 +2029,28 @@
       }
       if (summaryTotal) {
         summaryTotal.textContent = 'Rp ' + total.toLocaleString('id-ID');
+      }
+    };
+
+    window.toggleGatePasswordVisibility = function(inputId = 'gate-login-password', iconId = 'gate-toggle-pwd') {
+      const pwdInput = document.getElementById(inputId);
+      const eyeIcon = document.getElementById(iconId);
+      if (!pwdInput) return;
+
+      if (pwdInput.type === 'password') {
+        pwdInput.type = 'text';
+        if (eyeIcon) {
+          eyeIcon.classList.remove('fa-eye');
+          eyeIcon.classList.add('fa-eye-slash');
+          eyeIcon.style.color = '#38bdf8';
+        }
+      } else {
+        pwdInput.type = 'password';
+        if (eyeIcon) {
+          eyeIcon.classList.remove('fa-eye-slash');
+          eyeIcon.classList.add('fa-eye');
+          eyeIcon.style.color = '#94a3b8';
+        }
       }
     };
 

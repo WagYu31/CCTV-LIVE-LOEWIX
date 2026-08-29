@@ -3130,7 +3130,9 @@
         const result = await res.json();
 
         if (result.success && result.snap_token) {
-          if (window.snap && typeof window.snap.pay === 'function') {
+          const isSim = result.is_simulation || result.snap_token.startsWith('SNAP_LOEWIX_');
+
+          if (!isSim && window.snap && typeof window.snap.pay === 'function') {
             window.snap.pay(result.snap_token, {
               onSuccess: function(r) {
                 confirmClientPayment(result.order_id, r.payment_type || 'midtrans');
@@ -3144,7 +3146,7 @@
             });
           } else {
             // Simulated Gateway Dialog
-            if (confirm(`[SIMULASI MIDTRANS PAYMENT]\n\nOrder ID: ${result.order_id}\nPaket: ${result.plan.name}\nTotal: ${result.plan.total_formatted}\n\nKonfirmasi pembayaran instan sekarang?`)) {
+            if (confirm(`[SIMULASI MIDTRANS PAYMENT]\n\nOrder ID: ${result.order_id}\nPaket: ${result.plan ? result.plan.name : planId}\nTotal: ${result.plan ? result.plan.total_formatted : 'Rp ' + Number(result.gross_amount).toLocaleString('id-ID')}\n\nKonfirmasi pembayaran instan sekarang?`)) {
               await confirmClientPayment(result.order_id, 'midtrans_simulation');
             }
           }

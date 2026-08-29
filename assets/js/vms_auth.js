@@ -296,8 +296,9 @@ async function submitGateRegister(e) {
       const payResult = await payRes.json();
 
       if (payResult.success && payResult.snap_token) {
-        // If Midtrans Snap is loaded on window
-        if (window.snap && typeof window.snap.pay === 'function') {
+        const isSimulation = payResult.is_simulation || payResult.snap_token.startsWith('SNAP_LOEWIX_');
+
+        if (!isSimulation && window.snap && typeof window.snap.pay === 'function') {
           window.snap.pay(payResult.snap_token, {
             onSuccess: function(result) {
               completeRegistrationPayment(payResult.order_id, result.payment_type || 'midtrans');
@@ -310,19 +311,14 @@ async function submitGateRegister(e) {
               showDashboardView(data.user);
             },
             onClose: function() {
-              // User closed popup without completing
               if (confirm('Anda menutup popup pembayaran. Lanjut ke dashboard dan selesaikan pembayaran di menu Tagihan?')) {
                 showDashboardView(data.user);
               }
             }
           });
         } else {
-          // Simulation / Direct fallback mode
-          if (confirm(`[SIMULASI MIDTRANS PAYMENT]\n\nOrder ID: ${payResult.order_id}\nPaket: ${payResult.plan.name} (${payResult.plan.billing_cycle})\nTotal: ${payResult.plan.total_formatted}\n\nLanjutkan konfirmasi pembayaran instan?`)) {
-            await completeRegistrationPayment(payResult.order_id, 'midtrans_simulator');
-          } else {
-            showDashboardView(data.user);
-          }
+          // Launch Loewix Simulation Checkout Modal
+          showLoewixCheckoutModal(payResult, data.user);
         }
       } else {
         showDashboardView(data.user);
@@ -347,6 +343,97 @@ async function submitGateRegister(e) {
       btnSubmit.innerHTML = '<span>DAFTAR & BAYAR SEKARANG</span> <i class="fas fa-arrow-right"></i>';
     }
   }
+}
+
+function showLoewixCheckoutModal(payResult, user) {
+  let modal = document.getElementById('modalLoewixCheckoutSim');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'modalLoewixCheckoutSim';
+    modal.style.cssText = `
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(4, 9, 24, 0.88); backdrop-filter: blur(12px);
+      z-index: 99999; display: flex; align-items: center; justify-content: center; padding: 20px;
+    `;
+    document.body.appendChild(modal);
+  }
+
+  modal.innerHTML = `
+    <div style="background: #0c1630; border: 1.5px solid #38bdf8; border-radius: 16px; max-width: 480px; width: 100%; box-shadow: 0 20px 50px rgba(0,0,0,0.8); overflow: hidden; font-family: 'Space Grotesk', sans-serif;">
+      <div style="background: linear-gradient(135deg, #091538, #0c1942); padding: 18px 24px; border-bottom: 1px solid rgba(56, 189, 248, 0.3); display: flex; align-items: center; justify-content: space-between;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <i class="fas fa-shield-alt" style="color: #38bdf8; font-size: 18px;"></i>
+          <span style="color: #ffffff; font-weight: 800; font-size: 15px; letter-spacing: 0.5px;">MIDTRANS PAYMENT GATEWAY</span>
+        </div>
+        <span style="background: rgba(16, 185, 129, 0.2); border: 1px solid #10b981; color: #34d399; font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 4px;">SANDBOX SIMULATOR</span>
+      </div>
+
+      <div style="padding: 24px;">
+        <div style="text-align: center; margin-bottom: 20px;">
+          <div style="font-size: 11px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px;">Total Tagihan (Inc. PPN 11%)</div>
+          <div style="font-size: 26px; font-weight: 800; color: #34d399; margin: 4px 0;">${payResult.plan ? payResult.plan.total_formatted : 'Rp ' + Number(payResult.gross_amount).toLocaleString('id-ID')}</div>
+          <div style="font-size: 11px; color: #64748b; font-family: monospace;">ORDER ID: ${payResult.order_id}</div>
+        </div>
+
+        <div style="background: rgba(6, 11, 24, 0.8); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 14px; margin-bottom: 20px;">
+          <div style="font-size: 11px; font-weight: 700; color: #38bdf8; margin-bottom: 10px; text-transform: uppercase;">Pilih Metode Pembayaran:</div>
+          
+          <label style="display: flex; align-items: center; gap: 10px; padding: 10px; background: rgba(255,255,255,0.04); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 8px; margin-bottom: 8px; cursor: pointer;">
+            <input type="radio" name="sim_payment_method" value="qris" checked style="accent-color: #38bdf8;">
+            <i class="fas fa-qrcode" style="color: #34d399; font-size: 16px;"></i>
+            <div style="flex: 1;">
+              <div style="color: #ffffff; font-weight: 700; font-size: 12.5px;">QRIS (Instant Settlement)</div>
+              <div style="color: #94a3b8; font-size: 10px;">GoPay, OVO, Dana, ShopeePay, BCA QR</div>
+            </div>
+          </label>
+
+          <label style="display: flex; align-items: center; gap: 10px; padding: 10px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; margin-bottom: 8px; cursor: pointer;">
+            <input type="radio" name="sim_payment_method" value="bank_transfer_bca" style="accent-color: #38bdf8;">
+            <i class="fas fa-university" style="color: #38bdf8; font-size: 16px;"></i>
+            <div style="flex: 1;">
+              <div style="color: #ffffff; font-weight: 700; font-size: 12.5px;">BCA Virtual Account</div>
+              <div style="color: #94a3b8; font-size: 10px;">Verifikasi Otomatis 24 Jam</div>
+            </div>
+          </label>
+
+          <label style="display: flex; align-items: center; gap: 10px; padding: 10px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; cursor: pointer;">
+            <input type="radio" name="sim_payment_method" value="credit_card" style="accent-color: #38bdf8;">
+            <i class="fas fa-credit-card" style="color: #f59e0b; font-size: 16px;"></i>
+            <div style="flex: 1;">
+              <div style="color: #ffffff; font-weight: 700; font-size: 12.5px;">Kartu Kredit / Debit Online</div>
+              <div style="color: #94a3b8; font-size: 10px;">Visa, Mastercard, JCB (3D Secure)</div>
+            </div>
+          </label>
+        </div>
+
+        <button type="button" id="btn-confirm-sim-payment" onclick="processLoewixSimulatedPayment('${payResult.order_id}')" style="width: 100%; padding: 13px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #ffffff; border: none; border-radius: 8px; font-weight: 800; font-size: 13.5px; letter-spacing: 0.5px; cursor: pointer; box-shadow: 0 4px 16px rgba(16, 185, 129, 0.4); display: flex; align-items: center; justify-content: center; gap: 8px;">
+          <i class="fas fa-check-circle"></i>
+          <span>BAYAR SEKARANG (SIMULASI SUKSES)</span>
+        </button>
+
+        <div style="text-align: center; margin-top: 12px;">
+          <a href="javascript:void(0)" onclick="closeLoewixSimModal()" style="font-size: 11.5px; color: #94a3b8; text-decoration: none;">Bayar Nanti di Dashboard</a>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function closeLoewixSimModal() {
+  const modal = document.getElementById('modalLoewixCheckoutSim');
+  if (modal) modal.remove();
+  window.location.href = 'customer/index.php';
+}
+
+async function processLoewixSimulatedPayment(orderId) {
+  const btn = document.getElementById('btn-confirm-sim-payment');
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Mengonfirmasi Pembayaran...';
+  }
+
+  const selectedMethod = document.querySelector('input[name="sim_payment_method"]:checked')?.value || 'qris';
+  await completeRegistrationPayment(orderId, selectedMethod);
 }
 
 async function completeRegistrationPayment(orderId, paymentType) {
@@ -539,21 +626,25 @@ function toggleGatePasswordVisibility(inputId = 'gate-login-password', iconId = 
       if (pwdInput) pwdInput.value = pwd;
     }
 
-    function toggleGatePasswordVisibility() {
-      const pwdInput = document.getElementById('gate-login-password');
-      const eyeIcon = document.getElementById('gate-toggle-pwd');
-      if (!pwdInput || !eyeIcon) return;
+    function toggleGatePasswordVisibility(inputId = 'gate-login-password', iconId = 'gate-toggle-pwd') {
+      const pwdInput = document.getElementById(inputId);
+      const eyeIcon = document.getElementById(iconId);
+      if (!pwdInput) return;
 
       if (pwdInput.type === 'password') {
         pwdInput.type = 'text';
-        eyeIcon.classList.remove('fa-eye');
-        eyeIcon.classList.add('fa-eye-slash');
-        eyeIcon.style.color = '#00d2ff';
+        if (eyeIcon) {
+          eyeIcon.classList.remove('fa-eye');
+          eyeIcon.classList.add('fa-eye-slash');
+          eyeIcon.style.color = '#38bdf8';
+        }
       } else {
         pwdInput.type = 'password';
-        eyeIcon.classList.remove('fa-eye-slash');
-        eyeIcon.classList.add('fa-eye');
-        eyeIcon.style.color = '#94a3b8';
+        if (eyeIcon) {
+          eyeIcon.classList.remove('fa-eye-slash');
+          eyeIcon.classList.add('fa-eye');
+          eyeIcon.style.color = '#94a3b8';
+        }
       }
     }
 
