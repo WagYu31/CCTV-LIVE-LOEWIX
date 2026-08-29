@@ -1322,27 +1322,27 @@
             </div>
 
             <div class="col-6">
-              <div class="metric-card">
-                <div class="metric-icon amber">
-                  <i class="fas fa-server"></i>
+              <div class="metric-card" id="card-metric3-container">
+                <div class="metric-icon amber" id="card-metric3-icon-wrap">
+                  <i class="fas fa-server" id="card-metric3-icon"></i>
                 </div>
                 <div>
                   <div class="metric-value" style="color: #fbbf24;" id="card-quota-max">20</div>
-                  <div class="metric-label">Max Kuota</div>
-                  <div class="metric-sub">Slot Kamera</div>
+                  <div class="metric-label" id="card-metric3-label">Max Kuota</div>
+                  <div class="metric-sub" id="card-metric3-sub">Slot Kamera</div>
                 </div>
               </div>
             </div>
 
             <div class="col-6">
-              <div class="metric-card" onclick="openRequestUpgradeModal()" style="cursor: pointer;" title="Klik untuk Tambah / Upgrade Kuota">
-                <div class="metric-icon purple">
-                  <i class="fas fa-circle-arrow-up"></i>
+              <div class="metric-card" id="card-metric4-container" onclick="handleMetric4Click()" style="cursor: pointer;" title="Klik untuk Aksi">
+                <div class="metric-icon purple" id="card-metric4-icon-wrap">
+                  <i class="fas fa-circle-arrow-up" id="card-metric4-icon"></i>
                 </div>
                 <div>
-                  <div class="metric-value" style="font-size: 16px; color: #c084fc; letter-spacing: 0.5px;">UPGRADE</div>
-                  <div class="metric-label">Tambah Kuota</div>
-                  <div class="metric-sub" style="color: #a855f7;">Klik Request</div>
+                  <div class="metric-value" id="card-metric4-value" style="font-size: 16px; color: #c084fc; letter-spacing: 0.5px;">UPGRADE</div>
+                  <div class="metric-label" id="card-metric4-label">Tambah Kuota</div>
+                  <div class="metric-sub" id="card-metric4-sub" style="color: #a855f7;">Klik Request</div>
                 </div>
               </div>
             </div>
@@ -2022,21 +2022,72 @@
       }
     }
 
+    function handleMetric4Click() {
+      if (currentCustomer && currentCustomer.role === 'super_admin') {
+        window.location.href = '../admin/index.php';
+      } else {
+        openRequestUpgradeModal();
+      }
+    }
+
     function renderCustomerUI() {
       if (!currentCustomer) return;
 
-      document.getElementById('nav-user-name').innerText = currentCustomer.name || 'Customer Loewix';
-      document.getElementById('hero-customer-name').innerText = currentCustomer.name || 'Enterprise Customer';
-      document.getElementById('hero-customer-city').innerText = '📍 ' + (currentCustomer.city || 'Pematangsiantar').toUpperCase();
-
       const isSuperAdmin = (currentCustomer.role === 'super_admin');
 
+      document.getElementById('nav-user-name').innerText = currentCustomer.name || 'Customer Loewix';
+      document.getElementById('hero-customer-name').innerText = isSuperAdmin ? 'Super Admin Master Center' : (currentCustomer.name || 'Enterprise Customer');
+      document.getElementById('hero-customer-city').innerHTML = isSuperAdmin ? '<i class="fas fa-network-wired text-info"></i> Global Multi-Tenant' : ('📍 ' + (currentCustomer.city || 'Pematangsiantar').toUpperCase());
+
       if (isSuperAdmin) {
+        // Top Navbar Brand Badge
+        const navBrandBadge = document.querySelector('.badge-hub-live');
+        if (navBrandBadge) {
+          navBrandBadge.innerHTML = '<span class="pulse-dot" style="background: #fbbf24;"></span> <span>MASTER COMMAND CENTER</span>';
+          navBrandBadge.style.borderColor = 'rgba(245, 158, 11, 0.5)';
+          navBrandBadge.style.color = '#fbbf24';
+        }
+
+        // Direct Super Admin Switcher Button
         const btnAdmin = document.getElementById('btn-super-admin-direct');
         if (btnAdmin) btnAdmin.style.display = 'inline-flex';
 
+        // Hero Tier Badge
         const tierBadge = document.querySelector('.hero-tier-badge');
-        if (tierBadge) tierBadge.innerHTML = '<i class="fas fa-crown text-warning"></i> MASTER SUPER ADMIN';
+        if (tierBadge) {
+          tierBadge.innerHTML = '<i class="fas fa-crown text-warning"></i> MASTER SUPER ADMIN';
+          tierBadge.style.background = 'linear-gradient(135deg, #f59e0b, #d97706)';
+        }
+
+        // Hero Description
+        const heroDesc = document.querySelector('.quota-hero-banner p.text-muted');
+        if (heroDesc) {
+          heroDesc.innerText = 'Pusat kendali ekosistem global Loewix CCTV — Manajemen Multi-Tenant, Server Node MediaMTX, & Monitoring Finansial Midtrans.';
+        }
+
+        // Metric Card 3: Total Tenants
+        const card3Val = document.getElementById('card-quota-max');
+        const card3Lbl = document.getElementById('card-metric3-label');
+        const card3Sub = document.getElementById('card-metric3-sub');
+        const card3Icon = document.getElementById('card-metric3-icon');
+        const card3IconWrap = document.getElementById('card-metric3-icon-wrap');
+        if (card3Val) card3Val.innerText = '4';
+        if (card3Lbl) card3Lbl.innerText = 'Active Tenants';
+        if (card3Sub) card3Sub.innerText = 'Perusahaan';
+        if (card3Icon) card3Icon.className = 'fas fa-building';
+        if (card3IconWrap) card3IconWrap.className = 'metric-icon cyan';
+
+        // Metric Card 4: Master Control
+        const card4Val = document.getElementById('card-metric4-value');
+        const card4Lbl = document.getElementById('card-metric4-label');
+        const card4Sub = document.getElementById('card-metric4-sub');
+        const card4Icon = document.getElementById('card-metric4-icon');
+        const card4IconWrap = document.getElementById('card-metric4-icon-wrap');
+        if (card4Val) { card4Val.innerText = 'MASTER'; card4Val.style.color = '#fbbf24'; }
+        if (card4Lbl) card4Lbl.innerText = 'Admin Center';
+        if (card4Sub) { card4Sub.innerText = 'Buka Panel →'; card4Sub.style.color = '#f59e0b'; }
+        if (card4Icon) card4Icon.className = 'fas fa-crown';
+        if (card4IconWrap) card4IconWrap.className = 'metric-icon amber';
 
         // Adapt tab navigation for super admin
         const tabsContainer = document.querySelector('.customer-tabs-nav');
@@ -2067,7 +2118,9 @@
       document.getElementById('hero-quota-bar').style.width = pct + '%';
       document.getElementById('hero-used-count').innerText = used;
       document.getElementById('hero-remaining-count').innerText = isSuperAdmin ? '∞' : remaining;
-      document.getElementById('card-quota-max').innerText = isSuperAdmin ? 'UNLIMITED' : quota;
+      if (!isSuperAdmin) {
+        document.getElementById('card-quota-max').innerText = quota;
+      }
       document.getElementById('card-total-cam').innerText = used;
     }
 
