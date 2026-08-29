@@ -1418,7 +1418,7 @@
       align-items: center;
       justify-content: space-between;
       gap: 12px;
-      padding-bottom: 10px;
+      padding-bottom: 8px;
       border-bottom: 1px solid rgba(255, 255, 255, 0.08);
     }
 
@@ -1433,33 +1433,44 @@
     /* SEARCH INPUT BOX */
     .vms-search-box {
       position: relative;
-      min-width: 180px;
-      max-width: 320px;
-      flex: 1 1 200px;
+      width: 190px;
+      max-width: 220px;
+      min-width: 130px;
       display: flex;
       align-items: center;
+      margin: 0 !important;
+      padding: 0 !important;
+      flex-shrink: 1;
+    }
+
+    .vms-search-box.cctv-search-input-wrapper {
+      padding: 0 !important;
+      margin: 0 !important;
+      height: 32px !important;
+      background: none !important;
+      border-radius: 0 !important;
     }
 
     .vms-search-icon {
       position: absolute;
-      left: 11px;
+      left: 10px;
       top: 50%;
       transform: translateY(-50%);
       color: #38bdf8;
-      font-size: 12px;
+      font-size: 11px;
       pointer-events: none;
       z-index: 3;
     }
 
     .vms-search-input {
       width: 100%;
-      height: 34px;
+      height: 32px !important;
       background: rgba(255, 255, 255, 0.06) !important;
       border: 1px solid rgba(56, 189, 248, 0.28) !important;
-      border-radius: 8px !important;
-      padding: 0 30px 0 30px !important;
+      border-radius: 6px !important;
+      padding: 0 26px 0 28px !important;
       color: #ffffff !important;
-      font-size: 12px !important;
+      font-size: 11.5px !important;
       font-weight: 500 !important;
       outline: none !important;
       box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2) !important;
@@ -1595,22 +1606,22 @@
 
     /* REFRESH ALL ACTION BUTTON */
     .vms-refresh-all-btn, .vms-livetest-action-btn {
-      height: 34px;
+      height: 32px;
       background: linear-gradient(135deg, rgba(14, 116, 144, 0.25), rgba(8, 47, 73, 0.55));
       border: 1px solid rgba(56, 189, 248, 0.45);
-      border-radius: 8px;
-      padding: 0 14px;
+      border-radius: 6px;
+      padding: 0 10px;
       color: #38bdf8;
-      font-size: 11.5px;
+      font-size: 11px;
       font-weight: 700;
-      letter-spacing: 0.3px;
+      letter-spacing: 0.2px;
       display: inline-flex;
       align-items: center;
-      gap: 7px;
+      gap: 5px;
       cursor: pointer;
       white-space: nowrap;
       transition: all 0.2s ease;
-      box-shadow: 0 0 12px rgba(56, 189, 248, 0.2);
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.2);
     }
 
     .vms-refresh-all-btn:hover, .vms-livetest-action-btn:hover {
@@ -1618,30 +1629,30 @@
       border-color: #38bdf8;
       color: #ffffff;
       transform: translateY(-1px);
-      box-shadow: 0 4px 16px rgba(56, 189, 248, 0.55);
+      box-shadow: 0 4px 14px rgba(56, 189, 248, 0.5);
     }
 
     .vms-refresh-all-btn.is-refreshing {
       background: linear-gradient(135deg, #059669, #10b981) !important;
       border-color: #34d399 !important;
       color: #ffffff !important;
-      box-shadow: 0 0 16px rgba(16, 185, 129, 0.5) !important;
+      box-shadow: 0 0 14px rgba(16, 185, 129, 0.5) !important;
     }
 
     /* DEVICES ACTION BUTTON */
     .vms-devices-action-btn {
-      height: 34px;
+      height: 32px;
       background: rgba(56, 189, 248, 0.12);
       border: 1px solid rgba(56, 189, 248, 0.35);
-      border-radius: 8px;
-      padding: 0 12px;
+      border-radius: 6px;
+      padding: 0 9px;
       color: #38bdf8;
-      font-size: 11.5px;
+      font-size: 11px;
       font-weight: 700;
-      letter-spacing: 0.3px;
+      letter-spacing: 0.2px;
       display: inline-flex;
       align-items: center;
-      gap: 6px;
+      gap: 5px;
       cursor: pointer;
       white-space: nowrap;
       transition: all 0.2s ease;
@@ -1657,25 +1668,25 @@
 
     /* ENCODE ACTION BUTTON */
     .vms-encode-action-btn {
-      height: 34px;
-      background: rgba(56, 189, 248, 0.12);
-      border: 1px solid rgba(56, 189, 248, 0.35);
-      border-radius: 8px;
-      padding: 0 12px;
+      height: 32px;
+      background: rgba(56, 189, 248, 0.1);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      border-radius: 6px;
+      padding: 0 9px;
       color: #38bdf8;
-      font-size: 11.5px;
+      font-size: 11px;
       font-weight: 700;
-      letter-spacing: 0.3px;
+      letter-spacing: 0.2px;
       display: inline-flex;
       align-items: center;
-      gap: 6px;
+      gap: 5px;
       cursor: pointer;
       white-space: nowrap;
       transition: all 0.2s ease;
     }
 
     .vms-encode-action-btn:hover {
-      background: rgba(56, 189, 248, 0.25);
+      background: rgba(56, 189, 248, 0.22);
       border-color: #38bdf8;
       color: #ffffff;
       transform: translateY(-1px);
@@ -6144,13 +6155,13 @@
       <div class="vms-bar-top">
         
         <!-- Left: Brand Logo + Search Input -->
-        <div class="d-flex align-items-center" style="gap: 12px; flex: 1 1 auto; max-width: 450px;">
+        <div class="d-flex align-items-center" style="gap: 10px; flex-shrink: 0;">
           <!-- Brand Logo -->
           <a href="index.html" class="vms-brand-logo" title="LOEWIX Enterprise CCTV">
-            <img src="assets/image/logo-loewix-white.png" alt="LOEWIX CCTV">
+            <img src="assets/image/logo-loewix-white.png" alt="LOEWIX CCTV" style="height: 28px; width: auto;">
           </a>
 
-          <div class="d-none d-sm-block" style="width: 1px; height: 24px; background: rgba(255,255,255,0.15); margin: 0 2px;"></div>
+          <div class="d-none d-sm-block" style="width: 1px; height: 20px; background: rgba(255,255,255,0.15); margin: 0 1px;"></div>
           
           <!-- Search Box -->
           <div class="vms-search-box cctv-search-input-wrapper">
@@ -6176,25 +6187,25 @@
         </div>
 
         <!-- Right: Refresh ALL, Devices Action, Encode Settings, Dark Mode Toggle & User Auth Area -->
-        <div class="d-flex align-items-center ml-auto" style="gap: 8px; flex-shrink: 0;">
+        <div class="d-flex align-items-center ml-auto" style="gap: 6px; flex-shrink: 0;">
           <button class="vms-refresh-all-btn vms-tool-btn" id="vms-btn-refresh-all" onclick="refreshAllVMSCCTV()" title="Segarkan & Hubungkan Ulang Semua Kamera CCTV di Layar">
             <i class="fas fa-rotate"></i> <span>Refresh ALL</span>
           </button>
 
           <button class="vms-devices-action-btn vms-tool-btn" onclick="toggleVMSDeviceSidebar()" title="Buka Daftar Kamera (Devices)">
-            <i class="fas fa-video"></i> <span>Devices (Camera Tree)</span>
+            <i class="fas fa-video"></i> <span>Devices</span>
           </button>
 
           <button class="vms-encode-action-btn vms-tool-btn" onclick="openEncodeModal(1)" title="Buka Menu Encode (Stream & Compression Settings)">
             <i class="fas fa-sliders-h"></i> <span>Encode</span>
           </button>
 
-          <button id="dark-mode-toggle" class="btn btn-sm text-white" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.2); border-radius: 50%; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; padding: 0;" title="Toggle Dark Mode">
-            <i class="fas fa-moon" id="dark-mode-icon" style="font-size: 13px;"></i>
+          <button id="dark-mode-toggle" class="btn btn-sm text-white" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.2); border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; padding: 0;" title="Toggle Dark Mode">
+            <i class="fas fa-moon" id="dark-mode-icon" style="font-size: 12px;"></i>
           </button>
 
-          <div id="nav-user-area" class="d-flex align-items-center" style="gap: 6px;">
-            <button class="btn btn-sm" onclick="showLoginGateView()" style="background: linear-gradient(135deg, #00d2ff, #0066ff); border: none; font-weight: 700; border-radius: 20px; padding: 5px 16px; color: #fff; box-shadow: 0 4px 12px rgba(0, 102, 255, 0.4); text-transform: uppercase; font-size: 11.5px; letter-spacing: 0.5px;">
+          <div id="nav-user-area" class="d-flex align-items-center" style="gap: 5px;">
+            <button class="btn btn-sm" onclick="showLoginGateView()" style="background: linear-gradient(135deg, #00d2ff, #0066ff); border: none; font-weight: 700; border-radius: 20px; padding: 4px 14px; color: #fff; box-shadow: 0 4px 12px rgba(0, 102, 255, 0.4); text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px;">
               <i class="fas fa-sign-in-alt mr-1"></i> LOGIN
             </button>
           </div>
