@@ -1808,16 +1808,10 @@
 
         <form id="formBillingProfile" onsubmit="submitBillingProfile(event)">
           <div class="row">
-            <div class="col-md-6 mb-3">
+            <div class="col-12 mb-3">
               <div class="form-group-dark">
                 <label><i class="fas fa-building text-info mr-1"></i> Nama Perusahaan / Instansi Resmi</label>
                 <input type="text" id="bill-company-name" class="form-control form-control-dark" placeholder="Contoh: PT. Loewix Solusi Indonesia" required>
-              </div>
-            </div>
-            <div class="col-md-6 mb-3">
-              <div class="form-group-dark">
-                <label><i class="fas fa-file-invoice text-info mr-1"></i> Nomor NPWP / Tax ID (Opsional)</label>
-                <input type="text" id="bill-tax-id" class="form-control form-control-dark" placeholder="00.000.000.0-000.000">
               </div>
             </div>
             <div class="col-md-6 mb-3">
@@ -1834,7 +1828,7 @@
             </div>
             <div class="col-12 mb-4">
               <div class="form-group-dark">
-                <label><i class="fas fa-map-marker-alt text-info mr-1"></i> Alamat Lengkap Penagihan / NPWP</label>
+                <label><i class="fas fa-map-marker-alt text-info mr-1"></i> Alamat Lengkap Penagihan</label>
                 <textarea id="bill-address" class="form-control form-control-dark" rows="3" placeholder="Alamat gedung, jalan, kelurahan, kecamatan, kota, kode pos"></textarea>
               </div>
             </div>
@@ -4686,7 +4680,6 @@
 
       // 5. Render Billing Profile Form (Auto prefilled with user registration data)
       const comp = document.getElementById('bill-company-name');
-      const tax = document.getElementById('bill-tax-id');
       const email = document.getElementById('bill-email');
       const phone = document.getElementById('bill-phone');
       const addr = document.getElementById('bill-address');
@@ -4695,10 +4688,8 @@
       const defEmail = (profile && profile.billing_email) ? profile.billing_email : (currentUser ? currentUser.email : '');
       const defPhone = (profile && profile.billing_phone) ? profile.billing_phone : (currentUser ? (currentUser.phone || '') : '');
       const defAddr = (profile && profile.billing_address) ? profile.billing_address : (currentUser ? ('Kota ' + (currentUser.city || 'Pematangsiantar') + ', Indonesia') : '');
-      const defTax = (profile && profile.tax_id && profile.tax_id !== '-') ? profile.tax_id : '';
 
       if (comp) comp.value = defName;
-      if (tax) tax.value = defTax;
       if (email) email.value = defEmail;
       if (phone) phone.value = defPhone;
       if (addr) addr.value = defAddr;
@@ -4964,7 +4955,7 @@
       const fd = new FormData();
       fd.append('action', 'update_billing_profile');
       fd.append('company_name', document.getElementById('bill-company-name').value);
-      fd.append('tax_id', document.getElementById('bill-tax-id').value);
+      fd.append('tax_id', '-');
       fd.append('billing_email', document.getElementById('bill-email').value);
       fd.append('billing_phone', document.getElementById('bill-phone').value);
       fd.append('billing_address', document.getElementById('bill-address').value);
