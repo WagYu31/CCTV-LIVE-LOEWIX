@@ -4,6 +4,8 @@ data/snapshots/
 data/smtp_config.json
 data/midtrans_config.json
 data/logs/
+data/keys/
+*.key
 *.log
 .DS_Store
 *.DS_Store
