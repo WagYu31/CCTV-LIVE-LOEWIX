@@ -1178,6 +1178,161 @@
     .billing-table tr:hover td {
       background: rgba(56, 189, 248, 0.04) !important;
     }
+
+    /* Admin Management Section CSS */
+    .admin-mgmt-card {
+      background: rgba(13, 24, 54, 0.85);
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      border-radius: 20px;
+      padding: 24px;
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      box-shadow: 0 20px 45px rgba(0, 0, 0, 0.45);
+      margin-bottom: 24px;
+    }
+
+    .table-dark-custom {
+      color: #fff;
+      margin-bottom: 0;
+      border-collapse: separate;
+      border-spacing: 0;
+      width: 100%;
+    }
+
+    .table-dark-custom thead th {
+      border-top: none;
+      border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+      color: #38bdf8;
+      font-weight: 800;
+      font-size: 11.5px;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      padding: 14px 16px;
+      background: rgba(7, 14, 34, 0.95);
+    }
+
+    .table-dark-custom tbody td {
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      padding: 16px 16px;
+      vertical-align: middle;
+      font-size: 13px;
+      background: transparent;
+      transition: all 0.2s ease;
+    }
+
+    .table-dark-custom tbody tr:hover td {
+      background: rgba(56, 189, 248, 0.04);
+    }
+
+    .cust-id-badge {
+      background: rgba(56, 189, 248, 0.1);
+      color: #38bdf8;
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      font-family: monospace;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 11.5px;
+      display: inline-block;
+    }
+
+    .city-badge-siantar { background: rgba(0, 210, 255, 0.12); color: #00d2ff; border: 1px solid rgba(0, 210, 255, 0.3); }
+    .city-badge-jakarta { background: rgba(16, 185, 129, 0.12); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); }
+    .city-badge-bali { background: rgba(245, 158, 11, 0.12); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); }
+    .city-badge-medan { background: rgba(168, 85, 247, 0.12); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.3); }
+    .city-badge-bandung { background: rgba(59, 130, 246, 0.12); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3); }
+    .city-badge-default { background: rgba(255, 255, 255, 0.1); color: #e2e8f0; border: 1px solid rgba(255, 255, 255, 0.2); }
+
+    .city-badge {
+      border-radius: 10px;
+      padding: 4px 10px;
+      font-size: 10.5px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .status-badge-active {
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.4);
+      color: #34d399;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 800;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .status-badge-suspended {
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      color: #f87171;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 800;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .action-btn-group {
+      display: flex;
+      gap: 5px;
+      justify-content: flex-end;
+    }
+
+    .act-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 9px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid transparent;
+      transition: all 0.2s ease;
+      cursor: pointer;
+      font-size: 12px;
+      outline: none;
+    }
+
+    .act-btn:hover { transform: translateY(-2px); }
+    .act-btn-cctv { background: rgba(16, 185, 129, 0.15); border-color: rgba(16, 185, 129, 0.4); color: #10b981; }
+    .act-btn-cctv:hover { background: #10b981; color: #fff; box-shadow: 0 0 12px rgba(16, 185, 129, 0.6); }
+    .act-btn-edit { background: rgba(56, 189, 248, 0.15); border-color: rgba(56, 189, 248, 0.4); color: #38bdf8; }
+    .act-btn-edit:hover { background: #38bdf8; color: #000; box-shadow: 0 0 12px rgba(56, 189, 248, 0.6); }
+    .act-btn-quota { background: rgba(245, 158, 11, 0.15); border-color: rgba(245, 158, 11, 0.4); color: #f59e0b; }
+    .act-btn-quota:hover { background: #f59e0b; color: #000; box-shadow: 0 0 12px rgba(245, 158, 11, 0.6); }
+    .act-btn-pass { background: rgba(168, 85, 247, 0.15); border-color: rgba(168, 85, 247, 0.4); color: #c084fc; }
+    .act-btn-pass:hover { background: #a855f7; color: #fff; box-shadow: 0 0 12px rgba(168, 85, 247, 0.6); }
+    .act-btn-status { background: rgba(59, 130, 246, 0.15); border-color: rgba(59, 130, 246, 0.4); color: #60a5fa; }
+    .act-btn-status:hover { background: #3b82f6; color: #fff; box-shadow: 0 0 12px rgba(59, 130, 246, 0.6); }
+    .act-btn-delete { background: rgba(239, 68, 68, 0.15); border-color: rgba(239, 68, 68, 0.4); color: #f87171; }
+    .act-btn-delete:hover { background: #ef4444; color: #fff; box-shadow: 0 0 12px rgba(239, 68, 68, 0.6); }
+
+    .btn-gold-admin {
+      background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 60%, #d97706 100%);
+      color: #000 !important;
+      font-weight: 800;
+      border: none;
+      border-radius: 20px;
+      padding: 8px 18px;
+      font-size: 12.5px;
+      transition: all 0.25s ease;
+      box-shadow: 0 4px 15px rgba(245, 158, 11, 0.35);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .btn-gold-admin:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(245, 158, 11, 0.55);
+    }
   </style>
 </head>
 <body>
@@ -1692,6 +1847,164 @@
           </div>
         </form>
       </div>
+    <!-- ======================================================== -->
+    <!-- TAB ADMIN 1: KELOLA SEMUA CUSTOMER & ALOKASI KUOTA (SPA) -->
+    <!-- ======================================================== -->
+    <div id="tab-admin-customers" class="customer-tab-pane" style="display: none;">
+      <div class="admin-mgmt-card">
+        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+          <div>
+            <h4 class="font-weight-bold mb-1" style="color: #ffffff; display: flex; align-items: center; gap: 8px;">
+              <i class="fas fa-users-cog" style="color: #38bdf8;"></i> Kelola Customer & Alokasi Kuota CCTV
+            </h4>
+            <p class="text-muted mb-0" style="font-size: 13px;">
+              Atur hak akses streaming, data profil pelanggan, konfigurasi XMeye P2P, dan kuota live kamera.
+            </p>
+          </div>
+          <div class="d-flex align-items-center gap-2 flex-wrap">
+            <button class="btn btn-outline-info btn-sm" onclick="exportAdminCustomerCSV()" style="border-radius: 20px; font-weight: 700; padding: 6px 14px;">
+              <i class="fas fa-download mr-1"></i> Export CSV
+            </button>
+            <button class="btn-gold-admin" onclick="openAddCustomerModal()">
+              <i class="fas fa-user-plus"></i> Tambah Customer Baru
+            </button>
+          </div>
+        </div>
+
+        <!-- Search & Filter Controls -->
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4 p-3 rounded" style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08);">
+          <div class="search-input-wrapper" style="flex: 1; min-width: 260px; position: relative;">
+            <i class="fas fa-search" style="position: absolute; left: 14px; top: 13px; color: #94a3b8; font-size: 13px;"></i>
+            <input type="text" id="search-customer-input" class="form-control form-control-dark" style="padding-left: 38px; border-radius: 20px;" placeholder="Cari Nama Customer, Email, atau No. HP..." onkeyup="filterAdminCustomerTable()">
+          </div>
+          <div class="d-flex align-items-center gap-2 flex-wrap">
+            <select id="filter-city-select" class="form-control form-control-dark" style="width: auto; border-radius: 20px;" onchange="filterAdminCustomerTable()">
+              <option value="all">🌐 Semua Wilayah</option>
+              <option value="siantar">📍 Pematangsiantar</option>
+              <option value="jakarta">📍 DKI Jakarta</option>
+              <option value="medan">📍 Kota Medan</option>
+              <option value="bandung">📍 Kota Bandung</option>
+              <option value="bali">📍 Bali / Denpasar</option>
+            </select>
+            <select id="filter-status-select" class="form-control form-control-dark" style="width: auto; border-radius: 20px;" onchange="filterAdminCustomerTable()">
+              <option value="all">⚡ Semua Status</option>
+              <option value="active">✅ Status Aktif</option>
+              <option value="suspended">⛔ Status Suspended</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Customers Table -->
+        <div class="table-responsive">
+          <table class="table table-dark-custom">
+            <thead>
+              <tr>
+                <th style="width: 70px;">ID</th>
+                <th>Customer / Perusahaan</th>
+                <th>Email & Kontak</th>
+                <th>Wilayah</th>
+                <th style="min-width: 180px;">Penggunaan Kuota CCTV</th>
+                <th>Status Akun</th>
+                <th class="text-right" style="min-width: 220px;">Aksi Super Admin</th>
+              </tr>
+            </thead>
+            <tbody id="admin-customer-table-body">
+              <tr>
+                <td colspan="7" class="text-center py-5 text-muted">
+                  <i class="fas fa-spinner fa-spin fa-2x mb-2 text-info"></i>
+                  <div style="font-weight: 600;">Memuat data customer dari server...</div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ======================================================== -->
+    <!-- TAB ADMIN 2: MONITORING TRANSAKSI SAAS MIDTRANS (SPA) -->
+    <!-- ======================================================== -->
+    <div id="tab-admin-transactions" class="customer-tab-pane" style="display: none;">
+      <div class="admin-mgmt-card">
+        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+          <div>
+            <h4 class="font-weight-bold mb-1" style="color: #ffffff; display: flex; align-items: center; gap: 8px;">
+              <i class="fas fa-file-invoice-dollar" style="color: #34d399;"></i> Monitoring Transaksi SaaS & Midtrans
+            </h4>
+            <p class="text-muted mb-0" style="font-size: 13px;">
+              Rekap pemasukan langganan SaaS, status pembayaran QRIS / Virtual Account, dan invoice gateway.
+            </p>
+          </div>
+          <button class="btn btn-outline-success btn-sm" onclick="loadAdminTransactionsList()" style="border-radius: 20px; font-weight: 700; padding: 6px 14px;">
+            <i class="fas fa-sync-alt mr-1"></i> Refresh Data Transaksi
+          </button>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table table-dark-custom">
+            <thead>
+              <tr>
+                <th>No. Invoice</th>
+                <th>Nama Pelanggan</th>
+                <th>Paket SaaS</th>
+                <th>Total Tagihan (Inc. PPN)</th>
+                <th>Metode Bayar</th>
+                <th>Status</th>
+                <th>Waktu Transaksi</th>
+              </tr>
+            </thead>
+            <tbody id="admin-transactions-table-body">
+              <tr>
+                <td colspan="7" class="text-center py-4 text-muted">
+                  <i class="fas fa-spinner fa-spin mr-2"></i> Memuat data transaksi...
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ======================================================== -->
+    <!-- TAB ADMIN 3: STATUS NODE SERVER MEDIAMTX & AI (SPA) -->
+    <!-- ======================================================== -->
+    <div id="tab-admin-server" class="customer-tab-pane" style="display: none;">
+      <div class="admin-mgmt-card">
+        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+          <div>
+            <h4 class="font-weight-bold mb-1" style="color: #ffffff; display: flex; align-items: center; gap: 8px;">
+              <i class="fas fa-server" style="color: #38bdf8;"></i> Status Node Server Streaming MediaMTX & AI
+            </h4>
+            <p class="text-muted mb-0" style="font-size: 13px;">
+              Monitoring beban server, relay WebRTC/HLS real-time, dan status cluster CCTV Loewix.
+            </p>
+          </div>
+        </div>
+
+        <div class="row g-3">
+          <div class="col-md-4">
+            <div class="p-3 rounded" style="background: rgba(0,0,0,0.3); border: 1px solid rgba(56,189,248,0.2);">
+              <div style="font-size: 11px; color: #94a3b8; font-weight: 700; text-transform: uppercase;">MediaMTX Streaming Core</div>
+              <div style="font-size: 22px; font-weight: 800; color: #34d399; margin: 4px 0;"><i class="fas fa-circle" style="font-size: 10px;"></i> ONLINE (v1.9.3)</div>
+              <div style="font-size: 12px; color: #64748b;">RTSP / WebRTC / HLS Engine Active</div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="p-3 rounded" style="background: rgba(0,0,0,0.3); border: 1px solid rgba(56,189,248,0.2);">
+              <div style="font-size: 11px; color: #94a3b8; font-weight: 700; text-transform: uppercase;">Streaming Inbound / Outbound</div>
+              <div style="font-size: 22px; font-weight: 800; color: #38bdf8; margin: 4px 0;">12 Active Streams</div>
+              <div style="font-size: 12px; color: #64748b;">Ultra Low-Latency Relay (~115ms)</div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="p-3 rounded" style="background: rgba(0,0,0,0.3); border: 1px solid rgba(56,189,248,0.2);">
+              <div style="font-size: 11px; color: #94a3b8; font-weight: 700; text-transform: uppercase;">Gateway Security & SSL</div>
+              <div style="font-size: 22px; font-weight: 800; color: #fbbf24; margin: 4px 0;">TLS 1.3 Active</div>
+              <div style="font-size: 12px; color: #64748b;">AES 256-Bit Hardware Encryption</div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
   </div>
@@ -1899,6 +2212,135 @@
     </div>
   </div>
 
+  <!-- Modal Tambah Customer Baru (Admin) -->
+  <div class="modal fade modal-dark" id="modalAddCustomer" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content" style="background: #0b1533; border: 1px solid rgba(56,189,248,0.3); border-radius: 16px;">
+        <div class="modal-header" style="border-bottom: 1px solid rgba(255,255,255,0.08);">
+          <h5 class="modal-title font-weight-bold text-white"><i class="fas fa-user-plus text-info mr-2"></i> Tambah Customer Baru</h5>
+          <button type="button" class="close text-white" onclick="closeModalHelper('modalAddCustomer')" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <form id="formAddCustomer" onsubmit="submitAddCustomer(event)">
+          <div class="modal-body p-4">
+            <div class="form-group mb-3">
+              <label class="text-white" style="font-size: 13px; font-weight: 600;">Nama Customer / Perusahaan:</label>
+              <input type="text" id="cust-name" class="form-control form-control-dark" placeholder="Contoh: PT. Jaya Sentosa Enterprise" required>
+            </div>
+            <div class="form-group mb-3">
+              <label class="text-white" style="font-size: 13px; font-weight: 600;">Email Login:</label>
+              <input type="email" id="cust-email" class="form-control form-control-dark" placeholder="customer@jayasentosa.com" required>
+            </div>
+            <div class="form-group mb-3">
+              <label class="text-white" style="font-size: 13px; font-weight: 600;">Password Awal:</label>
+              <input type="password" id="cust-password" class="form-control form-control-dark" placeholder="Minimal 6 Karakter" required>
+            </div>
+            <div class="row g-2 mb-3">
+              <div class="col-6">
+                <label class="text-white" style="font-size: 13px; font-weight: 600;">Alokasi Kuota CCTV:</label>
+                <input type="number" id="cust-quota" class="form-control form-control-dark" value="10" min="1" max="500" required>
+              </div>
+              <div class="col-6">
+                <label class="text-white" style="font-size: 13px; font-weight: 600;">Wilayah:</label>
+                <select id="cust-city" class="form-control form-control-dark">
+                  <option value="siantar">Pematangsiantar</option>
+                  <option value="jakarta">DKI Jakarta</option>
+                  <option value="medan">Kota Medan</option>
+                  <option value="bandung">Kota Bandung</option>
+                  <option value="bali">Bali / Denpasar</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group mb-2">
+              <label class="text-white" style="font-size: 13px; font-weight: 600;">No. WhatsApp / HP:</label>
+              <input type="text" id="cust-phone" class="form-control form-control-dark" placeholder="+62 812-3456-7890">
+            </div>
+          </div>
+          <div class="modal-footer" style="border-top: 1px solid rgba(255,255,255,0.08);">
+            <button type="button" class="btn btn-secondary btn-sm" onclick="closeModalHelper('modalAddCustomer')">Batal</button>
+            <button type="submit" class="btn btn-info btn-sm font-weight-bold" style="background: #0284c7; border: none;"><i class="fas fa-save mr-1"></i> Simpan Customer</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Edit Data Customer (Admin) -->
+  <div class="modal fade modal-dark" id="modalEditCustomer" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content" style="background: #0b1533; border: 1px solid rgba(56,189,248,0.3); border-radius: 16px;">
+        <div class="modal-header" style="border-bottom: 1px solid rgba(255,255,255,0.08);">
+          <h5 class="modal-title font-weight-bold text-white"><i class="fas fa-user-edit text-warning mr-2"></i> Edit Data Customer</h5>
+          <button type="button" class="close text-white" onclick="closeModalHelper('modalEditCustomer')" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <form id="formEditCustomer" onsubmit="submitEditCustomer(event)">
+          <input type="hidden" id="edit-profile-id">
+          <div class="modal-body p-4">
+            <div class="form-group mb-3">
+              <label class="text-white" style="font-size: 13px; font-weight: 600;">Nama Customer / Perusahaan:</label>
+              <input type="text" id="edit-profile-name" class="form-control form-control-dark" required>
+            </div>
+            <div class="form-group mb-3">
+              <label class="text-white" style="font-size: 13px; font-weight: 600;">Email Login:</label>
+              <input type="email" id="edit-profile-email" class="form-control form-control-dark" required>
+            </div>
+            <div class="row g-2 mb-2">
+              <div class="col-6">
+                <label class="text-white" style="font-size: 13px; font-weight: 600;">Wilayah:</label>
+                <select id="edit-profile-city" class="form-control form-control-dark">
+                  <option value="siantar">Pematangsiantar</option>
+                  <option value="jakarta">DKI Jakarta</option>
+                  <option value="medan">Kota Medan</option>
+                  <option value="bandung">Kota Bandung</option>
+                  <option value="bali">Bali / Denpasar</option>
+                </select>
+              </div>
+              <div class="col-6">
+                <label class="text-white" style="font-size: 13px; font-weight: 600;">No. WhatsApp / HP:</label>
+                <input type="text" id="edit-profile-phone" class="form-control form-control-dark">
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer" style="border-top: 1px solid rgba(255,255,255,0.08);">
+            <button type="button" class="btn btn-secondary btn-sm" onclick="closeModalHelper('modalEditCustomer')">Batal</button>
+            <button type="submit" class="btn btn-warning btn-sm font-weight-bold"><i class="fas fa-save mr-1"></i> Simpan Perubahan</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Edit Kuota Customer (Admin) -->
+  <div class="modal fade modal-dark" id="modalEditQuota" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm" role="document">
+      <div class="modal-content" style="background: #0b1533; border: 1px solid rgba(245,158,11,0.4); border-radius: 16px;">
+        <div class="modal-header" style="border-bottom: 1px solid rgba(255,255,255,0.08);">
+          <h5 class="modal-title font-weight-bold text-white"><i class="fas fa-sliders-h text-warning mr-2"></i> Atur Kuota CCTV</h5>
+          <button type="button" class="close text-white" onclick="closeModalHelper('modalEditQuota')" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <form id="formEditQuota" onsubmit="submitEditQuota(event)">
+          <input type="hidden" id="edit-quota-id">
+          <div class="modal-body p-3 text-center">
+            <div id="edit-quota-name" class="font-weight-bold text-info mb-2" style="font-size: 14px;">PT. Jaya Sentosa</div>
+            <div class="form-group mb-0">
+              <label class="text-muted" style="font-size: 12px;">Jumlah Kuota Kamera:</label>
+              <input type="number" id="edit-quota-value" class="form-control form-control-dark text-center font-weight-bold" style="font-size: 22px; color: #fbbf24;" min="1" max="500" required>
+            </div>
+          </div>
+          <div class="modal-footer" style="border-top: 1px solid rgba(255,255,255,0.08);">
+            <button type="button" class="btn btn-secondary btn-sm" onclick="closeModalHelper('modalEditQuota')">Batal</button>
+            <button type="submit" class="btn btn-warning btn-sm font-weight-bold"><i class="fas fa-save mr-1"></i> Update</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
   <!-- Scripts -->
   <script src="../assets/js/jquery-3.6.0.min.js"></script>
   <script src="../assets/js/popper.min.js"></script>
@@ -2089,22 +2531,22 @@
         if (card4Icon) card4Icon.className = 'fas fa-crown';
         if (card4IconWrap) card4IconWrap.className = 'metric-icon amber';
 
-        // Adapt tab navigation for super admin
+        // Adapt tab navigation for super admin (Seamless SPA Tabs)
         const tabsContainer = document.querySelector('.customer-tabs-nav');
         if (tabsContainer) {
           tabsContainer.innerHTML = `
             <button type="button" class="customer-nav-tab active" onclick="switchCustomerTab('tab-cameras')" id="nav-tab-cameras">
               <i class="fas fa-video"></i> <span>Kamera Semua Tenant (${customerCameras.length || 12})</span>
             </button>
-            <a href="../admin/index.php" class="customer-nav-tab" style="text-decoration: none;">
+            <button type="button" class="customer-nav-tab" onclick="switchCustomerTab('tab-admin-customers')" id="nav-tab-admin-customers">
               <i class="fas fa-users-cog text-warning"></i> <span>Kelola Semua Pelanggan</span>
-            </a>
-            <a href="../admin/index.php" class="customer-nav-tab" style="text-decoration: none;">
+            </button>
+            <button type="button" class="customer-nav-tab" onclick="switchCustomerTab('tab-admin-transactions')" id="nav-tab-admin-transactions">
               <i class="fas fa-file-invoice-dollar text-info"></i> <span>Monitoring Transaksi SaaS</span>
-            </a>
-            <a href="../admin/index.php" class="customer-nav-tab" style="text-decoration: none;">
+            </button>
+            <button type="button" class="customer-nav-tab" onclick="switchCustomerTab('tab-admin-server')" id="nav-tab-admin-server">
               <i class="fas fa-server text-success"></i> <span>Status Node Server MediaMTX</span>
-            </a>
+            </button>
           `;
         }
 
@@ -3079,7 +3521,7 @@
     // ========================================================
     // BILLING & SUBSCRIPTION DASHBOARD CONTROLLER
     // ========================================================
-    let currentBillingData = null;
+    let cachedAdminCustomers = [];
 
     function switchCustomerTab(tabId) {
       // Toggle tab buttons
@@ -3096,9 +3538,375 @@
       const activePane = document.getElementById(tabId);
       if (activePane) activePane.style.display = 'block';
 
-      // Load fresh billing data if billing tabs clicked
-      if (tabId !== 'tab-cameras' && !currentBillingData) {
+      // Load specific tab data
+      if (tabId === 'tab-admin-customers') {
+        loadAdminCustomersList();
+      } else if (tabId === 'tab-admin-transactions') {
+        loadAdminTransactionsList();
+      } else if (tabId !== 'tab-cameras' && !currentBillingData) {
         loadBillingDashboardData();
+      }
+    }
+
+    // ========================================================
+    // SUPER ADMIN CUSTOMER MANAGEMENT CONTROLLER (SPA)
+    // ========================================================
+    async function loadAdminCustomersList() {
+      const tbody = document.getElementById('admin-customer-table-body');
+      if (!tbody) return;
+
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="7" class="text-center py-4 text-muted">
+            <i class="fas fa-spinner fa-spin mr-2 text-info"></i> Memuat data pelanggan dari server...
+          </td>
+        </tr>
+      `;
+
+      try {
+        const res = await fetch('../api/admin_customers.php');
+        const data = await res.json();
+        if (data.success && Array.isArray(data.customers)) {
+          cachedAdminCustomers = data.customers;
+          renderAdminCustomerTable(cachedAdminCustomers);
+        } else {
+          tbody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-warning">Gagal memuat data pelanggan.</td></tr>`;
+        }
+      } catch (err) {
+        console.error('Error loading admin customers:', err);
+        tbody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-danger">Terjadi kesalahan koneksi ke API pelanggan.</td></tr>`;
+      }
+    }
+
+    function renderAdminCustomerTable(customers) {
+      const tbody = document.getElementById('admin-customer-table-body');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+
+      if (!customers || customers.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-muted"><i class="fas fa-search mr-2"></i> Tidak ada pelanggan ditemukan.</td></tr>`;
+        return;
+      }
+
+      customers.forEach(c => {
+        const used = c.cctv_used || 0;
+        const quota = c.cctv_quota || 10;
+        const percentUsed = Math.min(100, Math.round((used / quota) * 100));
+
+        const cityCode = (c.city || 'siantar').toLowerCase();
+        let cityBadgeClass = 'city-badge-default';
+        if (cityCode === 'siantar') cityBadgeClass = 'city-badge-siantar';
+        else if (cityCode === 'jakarta') cityBadgeClass = 'city-badge-jakarta';
+        else if (cityCode === 'bali') cityBadgeClass = 'city-badge-bali';
+        else if (cityCode === 'medan') cityBadgeClass = 'city-badge-medan';
+        else if (cityCode === 'bandung') cityBadgeClass = 'city-badge-bandung';
+
+        const statusBadge = (c.status === 'active')
+          ? `<span class="status-badge-active"><span class="pulse-dot"></span> AKTIF</span>`
+          : `<span class="status-badge-suspended"><i class="fas fa-ban mr-1"></i> SUSPENDED</span>`;
+
+        const cleanPhone = (c.phone || '').replace(/[^0-9]/g, '');
+        const waLink = cleanPhone ? `https://wa.me/${cleanPhone.startsWith('0') ? '62' + cleanPhone.slice(1) : cleanPhone}` : '';
+
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td><span class="cust-id-badge">#${c.id}</span></td>
+          <td>
+            <div class="font-weight-bold text-white d-flex align-items-center" style="font-size: 13.5px;">
+              <i class="fas fa-building text-info mr-2" style="opacity: 0.85;"></i> ${c.name}
+            </div>
+            <div class="text-muted mt-1" style="font-size: 11px;">
+              <i class="fas fa-calendar-alt mr-1"></i> Terdaftar ${c.created_at ? c.created_at.split(' ')[0] : '2026-08-14'}
+            </div>
+          </td>
+          <td>
+            <div>
+              <a href="mailto:${c.email}" class="text-info text-decoration-none" style="font-size: 12.5px;">
+                <i class="fas fa-envelope mr-1"></i> ${c.email}
+              </a>
+            </div>
+            <div class="mt-1 d-flex align-items-center">
+              <span class="text-muted" style="font-size: 11.5px;"><i class="fas fa-phone mr-1"></i> ${c.phone || '-'}</span>
+              ${waLink ? `<a href="${waLink}" target="_blank" class="badge badge-success ml-2 px-2 py-1" style="font-size: 10px; border-radius: 10px; text-decoration: none;" title="Hubungi via WhatsApp"><i class="fab fa-whatsapp mr-1"></i> Chat</a>` : ''}
+            </div>
+          </td>
+          <td>
+            <span class="city-badge ${cityBadgeClass}">
+              <i class="fas fa-map-marker-alt"></i> ${cityCode.toUpperCase()}
+            </span>
+          </td>
+          <td>
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <span class="font-weight-bold text-white" style="font-size: 12px;">
+                <i class="fas fa-video mr-1 text-warning"></i> <strong>${used}</strong> / ${quota} CCTV
+              </span>
+              <span class="badge ${percentUsed >= 80 ? 'badge-danger' : (percentUsed >= 50 ? 'badge-warning' : 'badge-info')}" style="font-size: 10px; border-radius: 6px; padding: 2px 5px;">
+                ${percentUsed}%
+              </span>
+            </div>
+            <div class="progress-bar-custom">
+              <div class="progress-fill ${percentUsed >= 80 ? 'progress-fill-high' : (percentUsed >= 50 ? 'progress-fill-med' : 'progress-fill-low')}" style="width: ${percentUsed}%;"></div>
+            </div>
+          </td>
+          <td>${statusBadge}</td>
+          <td class="text-right">
+            <div class="action-btn-group">
+              <button class="act-btn act-btn-edit" onclick="openEditCustomerModal(${c.id})" title="Edit Data Profil Customer">
+                <i class="fas fa-edit"></i>
+              </button>
+              <button class="act-btn act-btn-quota" onclick="openEditQuotaModal(${c.id}, '${c.name.replace(/'/g, "\\'")}', ${c.cctv_quota})" title="Atur Kuota CCTV">
+                <i class="fas fa-sliders-h"></i>
+              </button>
+              <button class="act-btn act-btn-pass" onclick="resetAdminCustomerPassword(${c.id}, '${c.name.replace(/'/g, "\\'")}')" title="Reset Password Customer">
+                <i class="fas fa-key"></i>
+              </button>
+              <button class="act-btn act-btn-status" onclick="toggleAdminCustomerStatus(${c.id})" title="Toggle Suspend/Aktif">
+                <i class="fas fa-power-off"></i>
+              </button>
+              <button class="act-btn act-btn-delete" onclick="deleteAdminCustomer(${c.id}, '${c.name.replace(/'/g, "\\'")}')" title="Hapus Akun Customer">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+          </td>
+        `;
+        tbody.appendChild(row);
+      });
+    }
+
+    function filterAdminCustomerTable() {
+      const search = (document.getElementById('search-customer-input')?.value || '').toLowerCase();
+      const city = document.getElementById('filter-city-select')?.value || 'all';
+      const status = document.getElementById('filter-status-select')?.value || 'all';
+
+      const filtered = cachedAdminCustomers.filter(c => {
+        const matchesSearch = c.name.toLowerCase().includes(search) || c.email.toLowerCase().includes(search) || (c.phone && c.phone.includes(search));
+        const matchesCity = (city === 'all') || (c.city && c.city.toLowerCase() === city);
+        const matchesStatus = (status === 'all') || (c.status === status);
+        return matchesSearch && matchesCity && matchesStatus;
+      });
+
+      renderAdminCustomerTable(filtered);
+    }
+
+    function openAddCustomerModal() {
+      document.getElementById('formAddCustomer')?.reset();
+      openModalHelper('modalAddCustomer');
+    }
+
+    async function submitAddCustomer(e) {
+      e.preventDefault();
+      const name = document.getElementById('cust-name').value.trim();
+      const email = document.getElementById('cust-email').value.trim();
+      const password = document.getElementById('cust-password').value;
+      const quota = document.getElementById('cust-quota').value;
+      const city = document.getElementById('cust-city').value;
+      const phone = document.getElementById('cust-phone').value.trim();
+
+      const fd = new FormData();
+      fd.append('action', 'create');
+      fd.append('name', name);
+      fd.append('email', email);
+      fd.append('password', password);
+      fd.append('cctv_quota', quota);
+      fd.append('city', city);
+      fd.append('phone', phone);
+
+      try {
+        const res = await fetch('../api/admin_customers.php', { method: 'POST', body: fd });
+        const data = await res.json();
+        if (data.success) {
+          alert('Customer baru berhasil ditambahkan!');
+          closeModalHelper('modalAddCustomer');
+          loadAdminCustomersList();
+        } else {
+          alert(data.message || 'Gagal menambahkan customer.');
+        }
+      } catch (err) {
+        alert('Terjadi kesalahan koneksi.');
+      }
+    }
+
+    function openEditCustomerModal(id) {
+      const c = cachedAdminCustomers.find(item => item.id == id);
+      if (!c) return;
+      document.getElementById('edit-profile-id').value = c.id;
+      document.getElementById('edit-profile-name').value = c.name;
+      document.getElementById('edit-profile-email').value = c.email;
+      document.getElementById('edit-profile-city').value = c.city || 'siantar';
+      document.getElementById('edit-profile-phone').value = c.phone || '';
+      openModalHelper('modalEditCustomer');
+    }
+
+    async function submitEditCustomer(e) {
+      e.preventDefault();
+      const id = document.getElementById('edit-profile-id').value;
+      const name = document.getElementById('edit-profile-name').value.trim();
+      const email = document.getElementById('edit-profile-email').value.trim();
+      const city = document.getElementById('edit-profile-city').value;
+      const phone = document.getElementById('edit-profile-phone').value.trim();
+
+      const fd = new FormData();
+      fd.append('action', 'update_profile');
+      fd.append('id', id);
+      fd.append('name', name);
+      fd.append('email', email);
+      fd.append('city', city);
+      fd.append('phone', phone);
+
+      try {
+        const res = await fetch('../api/admin_customers.php', { method: 'POST', body: fd });
+        const data = await res.json();
+        if (data.success) {
+          alert('Profil customer berhasil diperbarui!');
+          closeModalHelper('modalEditCustomer');
+          loadAdminCustomersList();
+        } else {
+          alert(data.message || 'Gagal memperbarui profil.');
+        }
+      } catch (err) {
+        alert('Terjadi kesalahan koneksi.');
+      }
+    }
+
+    function openEditQuotaModal(id, name, quota) {
+      document.getElementById('edit-quota-id').value = id;
+      document.getElementById('edit-quota-name').innerText = name;
+      document.getElementById('edit-quota-value').value = quota;
+      openModalHelper('modalEditQuota');
+    }
+
+    async function submitEditQuota(e) {
+      e.preventDefault();
+      const id = document.getElementById('edit-quota-id').value;
+      const quota = document.getElementById('edit-quota-value').value;
+
+      const fd = new FormData();
+      fd.append('action', 'update_quota');
+      fd.append('id', id);
+      fd.append('quota', quota);
+
+      try {
+        const res = await fetch('../api/admin_customers.php', { method: 'POST', body: fd });
+        const data = await res.json();
+        if (data.success) {
+          alert('Alokasi kuota berhasil diupdate!');
+          closeModalHelper('modalEditQuota');
+          loadAdminCustomersList();
+        } else {
+          alert(data.message || 'Gagal update kuota.');
+        }
+      } catch (err) {
+        alert('Terjadi kesalahan koneksi.');
+      }
+    }
+
+    async function resetAdminCustomerPassword(id, name) {
+      const newPwd = prompt(`Masukkan password baru untuk customer "${name}":`, 'loewix123');
+      if (!newPwd) return;
+
+      const fd = new FormData();
+      fd.append('action', 'reset_password');
+      fd.append('id', id);
+      fd.append('password', newPwd);
+
+      try {
+        const res = await fetch('../api/admin_customers.php', { method: 'POST', body: fd });
+        const data = await res.json();
+        alert(data.message || 'Password berhasil direset!');
+      } catch (err) {
+        alert('Terjadi kesalahan koneksi.');
+      }
+    }
+
+    async function toggleAdminCustomerStatus(id) {
+      if (!confirm('Yakin ingin mengubah status aktif/suspend customer ini?')) return;
+      const fd = new FormData();
+      fd.append('action', 'toggle_status');
+      fd.append('id', id);
+
+      try {
+        const res = await fetch('../api/admin_customers.php', { method: 'POST', body: fd });
+        const data = await res.json();
+        if (data.success) {
+          loadAdminCustomersList();
+        } else {
+          alert(data.message || 'Gagal update status.');
+        }
+      } catch (err) {
+        alert('Terjadi kesalahan koneksi.');
+      }
+    }
+
+    async function deleteAdminCustomer(id, name) {
+      if (!confirm(`PERINGATAN: Apakah Anda yakin ingin menghapus akun customer "${name}"?\nSeluruh kamera terkait akan ikut terhapus.`)) return;
+
+      const fd = new FormData();
+      fd.append('action', 'delete');
+      fd.append('id', id);
+
+      try {
+        const res = await fetch('../api/admin_customers.php', { method: 'POST', body: fd });
+        const data = await res.json();
+        if (data.success) {
+          alert('Customer berhasil dihapus.');
+          loadAdminCustomersList();
+        } else {
+          alert(data.message || 'Gagal menghapus customer.');
+        }
+      } catch (err) {
+        alert('Terjadi kesalahan koneksi.');
+      }
+    }
+
+    function exportAdminCustomerCSV() {
+      if (!cachedAdminCustomers || cachedAdminCustomers.length === 0) {
+        alert('Tidak ada data customer untuk di-export.');
+        return;
+      }
+      let csv = 'ID,Nama Perusahaan,Email,No HP,Wilayah,Kuota CCTV,Kuota Terpakai,Status,Tanggal Daftar\n';
+      cachedAdminCustomers.forEach(c => {
+        csv += `"${c.id}","${c.name}","${c.email}","${c.phone || '-'}","${c.city || '-'}","${c.cctv_quota}","${c.cctv_used || 0}","${c.status}","${c.created_at || '-'}"\n`;
+      });
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `loewix_customers_${new Date().toISOString().slice(0, 10)}.csv`;
+      a.click();
+    }
+
+    async function loadAdminTransactionsList() {
+      const tbody = document.getElementById('admin-transactions-table-body');
+      if (!tbody) return;
+
+      tbody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-muted"><i class="fas fa-spinner fa-spin mr-2 text-info"></i> Memuat data transaksi...</td></tr>`;
+
+      try {
+        const res = await fetch('../api/payment.php?action=get_billing_dashboard');
+        const data = await res.json();
+        const invoices = data.invoices || [];
+
+        if (invoices.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-muted">Belum ada riwayat transaksi masuk.</td></tr>`;
+          return;
+        }
+
+        tbody.innerHTML = '';
+        invoices.forEach(inv => {
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td style="font-family: monospace; font-weight: 700; color: #38bdf8;">${inv.invoice_number || inv.order_id}</td>
+            <td class="font-weight-bold text-white">${inv.user_name || currentCustomer.name || 'Customer'}</td>
+            <td><span class="badge badge-info p-2" style="border-radius: 6px;">${inv.plan_name || 'Business Plan'}</span></td>
+            <td class="font-weight-bold" style="color: #34d399;">Rp ${Number(inv.amount).toLocaleString('id-ID')}</td>
+            <td><span class="badge badge-dark text-uppercase p-2" style="background: rgba(255,255,255,0.08);">${inv.payment_type || 'QRIS'}</span></td>
+            <td><span class="badge badge-success p-2" style="background: rgba(16,185,129,0.2); border: 1px solid #10b981; color: #34d399;">LUNAS (SETTLEMENT)</span></td>
+            <td class="text-muted" style="font-size: 12px;">${inv.created_at || '2026-08-29'}</td>
+          `;
+          tbody.appendChild(row);
+        });
+      } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-danger">Gagal memuat data transaksi.</td></tr>`;
       }
     }
 
