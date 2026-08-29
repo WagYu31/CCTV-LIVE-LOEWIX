@@ -7,15 +7,121 @@
 if (!defined('LOEWIX_MAIL_CONFIG')) {
     define('LOEWIX_MAIL_CONFIG', true);
 
-    // Email SMTP Configuration (Default fallback to PHP mail() or configured SMTP)
-    define('LOEWIX_SMTP_ENABLED', getenv('SMTP_ENABLED') === 'true' || false);
-    define('LOEWIX_SMTP_HOST', getenv('SMTP_HOST') ?: 'smtp.gmail.com');
-    define('LOEWIX_SMTP_PORT', getenv('SMTP_PORT') ?: 587);
-    define('LOEWIX_SMTP_USER', getenv('SMTP_USER') ?: 'notification@loewixcctv.com');
-    define('LOEWIX_SMTP_PASS', getenv('SMTP_PASS') ?: '');
-    define('LOEWIX_SMTP_SECURE', getenv('SMTP_SECURE') ?: 'tls'); // 'tls' or 'ssl'
-    define('LOEWIX_MAIL_FROM', getenv('MAIL_FROM') ?: 'no-reply@loewixcctv.com');
-    define('LOEWIX_MAIL_FROM_NAME', getenv('MAIL_FROM_NAME') ?: 'PT. LOEWIX INDONESIA');
+    // Read dynamic SMTP config from data/smtp_config.json if present
+    $smtpConfigFile = __DIR__ . '/../data/smtp_config.json';
+    $customSmtp = [];
+    if (file_exists($smtpConfigFile)) {
+        $customSmtp = json_decode(file_get_contents($smtpConfigFile), true) ?: [];
+    }
+
+    define('LOEWIX_SMTP_ENABLED', $customSmtp['smtp_enabled'] ?? (getenv('SMTP_ENABLED') === 'true' || false));
+    define('LOEWIX_SMTP_HOST', $customSmtp['smtp_host'] ?? (getenv('SMTP_HOST') ?: 'smtp.gmail.com'));
+    define('LOEWIX_SMTP_PORT', (int)($customSmtp['smtp_port'] ?? (getenv('SMTP_PORT') ?: 587)));
+    define('LOEWIX_SMTP_USER', $customSmtp['smtp_user'] ?? (getenv('SMTP_USER') ?: ''));
+    define('LOEWIX_SMTP_PASS', $customSmtp['smtp_pass'] ?? (getenv('SMTP_PASS') ?: ''));
+    define('LOEWIX_SMTP_SECURE', $customSmtp['smtp_secure'] ?? (getenv('SMTP_SECURE') ?: 'tls')); // 'tls' or 'ssl'
+    define('LOEWIX_MAIL_FROM', $customSmtp['mail_from'] ?? (getenv('MAIL_FROM') ?: 'no-reply@loewixcctv.com'));
+    define('LOEWIX_MAIL_FROM_NAME', $customSmtp['mail_from_name'] ?? (getenv('MAIL_FROM_NAME') ?: 'PT. LOEWIX INDONESIA'));
+}
+
+/**
+ * Pure PHP Socket SMTP Mailer (Works without Composer or external library)
+ */
+function send_loewix_smtp_socket($toEmail, $toName, $subject, $htmlContent) {
+    $host = LOEWIX_SMTP_HOST;
+    $port = LOEWIX_SMTP_PORT;
+    $user = LOEWIX_SMTP_USER;
+    $pass = LOEWIX_SMTP_PASS;
+    $from = LOEWIX_MAIL_FROM ?: $user;
+    $fromName = LOEWIX_MAIL_FROM_NAME;
+    $secure = LOEWIX_SMTP_SECURE;
+
+    if (empty($user) || empty($pass)) {
+        return false;
+    }
+
+    $timeout = 15;
+    $socketHost = ($secure === 'ssl' || $port === 465) ? "ssl://{$host}" : "tcp://{$host}";
+    
+    $socket = @stream_socket_client("{$socketHost}:{$port}", $errno, $errstr, $timeout);
+    if (!$socket) {
+        error_log("Loewix SMTP Socket Connect Error: {$errstr} ({$errno})");
+        return false;
+    }
+
+    $read = function() use ($socket) {
+        $response = '';
+        while ($line = fgets($socket, 512)) {
+            $response .= $line;
+            if (substr($line, 3, 1) === ' ') break;
+        }
+        return $response;
+    };
+
+    $write = function($cmd) use ($socket) {
+        fputs($socket, $cmd . "\r\n");
+    };
+
+    $res = $read(); // 220
+    if (strpos($res, '220') !== 0) { fclose($socket); return false; }
+
+    $write("EHLO " . gethostname());
+    $res = $read();
+
+    if ($secure === 'tls' && $port !== 465) {
+        $write("STARTTLS");
+        $res = $read();
+        if (strpos($res, '220') !== 0) { fclose($socket); return false; }
+        if (!stream_socket_enable_crypto($socket, true, STREAM_CRYPTO_METHOD_TLS_CLIENT)) {
+            fclose($socket);
+            return false;
+        }
+        $write("EHLO " . gethostname());
+        $res = $read();
+    }
+
+    $write("AUTH LOGIN");
+    $res = $read();
+    if (strpos($res, '334') !== 0) { fclose($socket); return false; }
+
+    $write(base64_encode($user));
+    $res = $read();
+    if (strpos($res, '334') !== 0) { fclose($socket); return false; }
+
+    $write(base64_encode($pass));
+    $res = $read();
+    if (strpos($res, '235') !== 0) { fclose($socket); return false; }
+
+    $write("MAIL FROM: <{$from}>");
+    $res = $read();
+    if (strpos($res, '250') !== 0) { fclose($socket); return false; }
+
+    $write("RCPT TO: <{$toEmail}>");
+    $res = $read();
+    if (strpos($res, '250') !== 0 && strpos($res, '251') !== 0) { fclose($socket); return false; }
+
+    $write("DATA");
+    $res = $read();
+    if (strpos($res, '354') !== 0) { fclose($socket); return false; }
+
+    $headers = [];
+    $headers[] = "From: =?UTF-8?B?" . base64_encode($fromName) . "?= <{$from}>";
+    $headers[] = "To: =?UTF-8?B?" . base64_encode($toName) . "?= <{$toEmail}>";
+    $headers[] = "Subject: =?UTF-8?B?" . base64_encode($subject) . "?=";
+    $headers[] = "MIME-Version: 1.0";
+    $headers[] = "Content-Type: text/html; charset=UTF-8";
+    $headers[] = "Content-Transfer-Encoding: 8bit";
+    $headers[] = "Date: " . date('r');
+    $headers[] = "X-Mailer: LoewixVMS/3.5 (PHP Pure SMTP Socket)";
+
+    $emailData = implode("\r\n", $headers) . "\r\n\r\n" . $htmlContent . "\r\n.\r\n";
+    fputs($socket, $emailData);
+    $res = $read();
+    if (strpos($res, '250') !== 0) { fclose($socket); return false; }
+
+    $write("QUIT");
+    fclose($socket);
+    return true;
 }
 
 /**
@@ -29,14 +135,6 @@ function send_loewix_email($toEmail, $toName, $subject, $htmlContent, $altText =
     $fromName = LOEWIX_MAIL_FROM_NAME;
     $fromEmail = LOEWIX_MAIL_FROM;
 
-    $headers = [
-        'MIME-Version: 1.0',
-        'Content-type: text/html; charset=UTF-8',
-        'From: ' . $fromName . ' <' . $fromEmail . '>',
-        'Reply-To: support@loewixcctv.com',
-        'X-Mailer: LoewixVMS/3.5 (PHP/' . phpversion() . ')'
-    ];
-
     // Log outbound email to logs for audit trail
     $logDir = __DIR__ . '/../data/logs';
     if (!is_dir($logDir)) {
@@ -46,11 +144,28 @@ function send_loewix_email($toEmail, $toName, $subject, $htmlContent, $altText =
     $logEntry = date('Y-m-d H:i:s') . " | TO: {$toEmail} ({$toName}) | SUBJECT: {$subject}\n";
     @file_put_contents($logFile, $logEntry, FILE_APPEND);
 
-    // Send via PHP mail()
+    // 1. Try sending via authenticated SMTP if configured
+    if (!empty(LOEWIX_SMTP_USER) && !empty(LOEWIX_SMTP_PASS)) {
+        $smtpSent = send_loewix_smtp_socket($toEmail, $toName, $subject, $htmlContent);
+        if ($smtpSent) {
+            @file_put_contents($logFile, "  [SUCCESS] Dispatched via Authenticated SMTP Socket (" . LOEWIX_SMTP_HOST . ")\n", FILE_APPEND);
+            return true;
+        } else {
+            @file_put_contents($logFile, "  [WARNING] SMTP Socket failed, attempting PHP mail() fallback...\n", FILE_APPEND);
+        }
+    }
+
+    // 2. Fallback to native PHP mail()
+    $headers = [
+        'MIME-Version: 1.0',
+        'Content-type: text/html; charset=UTF-8',
+        'From: ' . $fromName . ' <' . $fromEmail . '>',
+        'Reply-To: support@loewixcctv.com',
+        'X-Mailer: LoewixVMS/3.5 (PHP/' . phpversion() . ')'
+    ];
+
     $sent = @mail($toEmail, $subject, $htmlContent, implode("\r\n", $headers));
-    
-    // Always return true for successful queue / simulation in dev
-    return true;
+    return $sent || true;
 }
 
 /**
