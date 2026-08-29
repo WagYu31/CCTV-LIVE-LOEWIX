@@ -1937,9 +1937,14 @@
               Rekap pemasukan langganan SaaS, status pembayaran QRIS / Virtual Account, dan invoice gateway.
             </p>
           </div>
-          <button class="btn btn-outline-success btn-sm" onclick="loadAdminTransactionsList()" style="border-radius: 20px; font-weight: 700; padding: 6px 14px;">
-            <i class="fas fa-sync-alt mr-1"></i> Refresh Data Transaksi
-          </button>
+          <div class="d-flex gap-2" style="gap: 8px;">
+            <button class="btn btn-outline-info btn-sm" onclick="openSmtpSettingsModal()" style="border-radius: 20px; font-weight: 700; padding: 6px 14px; border-color: rgba(56,189,248,0.4); color: #38bdf8;">
+              <i class="fas fa-envelope-open-text mr-1"></i> Pengaturan Email SMTP
+            </button>
+            <button class="btn btn-outline-success btn-sm" onclick="loadAdminTransactionsList()" style="border-radius: 20px; font-weight: 700; padding: 6px 14px;">
+              <i class="fas fa-sync-alt mr-1"></i> Refresh Data Transaksi
+            </button>
+          </div>
         </div>
 
         <div class="table-responsive">
@@ -2420,6 +2425,88 @@
             <button type="button" class="btn btn-secondary btn-sm" onclick="closeModalHelper('modalAdminPlanForm')">Batal</button>
             <button type="submit" class="btn btn-info btn-sm font-weight-bold" style="background: #0284c7; border: none;">
               <i class="fas fa-save mr-1"></i> Simpan Paket SaaS
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  <!-- Modal Pengaturan Email SMTP & Tes Kirim Email (Admin) -->
+  <div class="modal fade modal-dark" id="modalSmtpSettings" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content" style="background: #0b1533; border: 1px solid rgba(56,189,248,0.3); border-radius: 16px;">
+        <div class="modal-header" style="border-bottom: 1px solid rgba(255,255,255,0.08);">
+          <h5 class="modal-title font-weight-bold text-white">
+            <i class="fas fa-envelope-open-text text-info mr-2"></i> Konfigurasi Email SMTP Loewix
+          </h5>
+          <button type="button" class="close text-white" onclick="closeModalHelper('modalSmtpSettings')" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <form id="formSmtpSettings" onsubmit="submitSaveSmtpSettings(event)">
+          <div class="modal-body p-4">
+            <div class="p-3 mb-3 rounded" style="background: rgba(2, 132, 199, 0.1); border: 1px solid rgba(56, 189, 248, 0.25); font-size: 12px; color: #cbd5e1;">
+              <i class="fas fa-info-circle text-info mr-1"></i> Hubungkan akun <strong>Gmail SMTP</strong> (dengan Google App Password 16 digit) atau Mail Server domain Anda agar email tagihan 100% langsung masuk ke Inbox utama customer.
+            </div>
+
+            <div class="row g-2 mb-3">
+              <div class="col-8">
+                <label class="text-white" style="font-size: 13px; font-weight: 600;">SMTP Host:</label>
+                <input type="text" id="smtp-input-host" class="form-control form-control-dark" placeholder="smtp.gmail.com" value="smtp.gmail.com" required>
+              </div>
+              <div class="col-4">
+                <label class="text-white" style="font-size: 13px; font-weight: 600;">Port:</label>
+                <input type="number" id="smtp-input-port" class="form-control form-control-dark" placeholder="587" value="587" required>
+              </div>
+            </div>
+
+            <div class="form-group mb-3">
+              <label class="text-white" style="font-size: 13px; font-weight: 600;">Email Pengirim / Username SMTP:</label>
+              <input type="email" id="smtp-input-user" class="form-control form-control-dark" placeholder="contoh: akunloewix@gmail.com" required>
+            </div>
+
+            <div class="form-group mb-3">
+              <label class="text-white" style="font-size: 13px; font-weight: 600;">
+                Sandi / Google App Password: 
+                <small class="text-warning" style="font-size: 11px;">(Gunakan 16 digit Sandi Aplikasi Google)</small>
+              </label>
+              <input type="password" id="smtp-input-pass" class="form-control form-control-dark" placeholder="Contoh: abcd efgh ijkl mnop" required>
+            </div>
+
+            <div class="row g-2 mb-3">
+              <div class="col-6">
+                <label class="text-white" style="font-size: 13px; font-weight: 600;">Enkripsi:</label>
+                <select id="smtp-input-secure" class="form-control form-control-dark">
+                  <option value="tls">TLS (Port 587 - Default)</option>
+                  <option value="ssl">SSL (Port 465)</option>
+                </select>
+              </div>
+              <div class="col-6">
+                <label class="text-white" style="font-size: 13px; font-weight: 600;">Nama Pengirim:</label>
+                <input type="text" id="smtp-input-name" class="form-control form-control-dark" value="PT. LOEWIX INDONESIA">
+              </div>
+            </div>
+
+            <!-- Test Email Section -->
+            <div class="p-3 mt-3 rounded" style="background: rgba(0, 0, 0, 0.3); border: 1px dashed rgba(56, 189, 248, 0.3);">
+              <label class="text-white font-weight-bold mb-2" style="font-size: 12.5px;">
+                <i class="fas fa-vial text-warning mr-1"></i> Uji Coba Kirim Email Langsung:
+              </label>
+              <div class="input-group input-group-sm">
+                <input type="email" id="smtp-test-recipient" class="form-control form-control-dark" placeholder="Email tujuan uji coba...">
+                <div class="input-group-append">
+                  <button type="button" class="btn btn-warning font-weight-bold px-3" onclick="runTestSmtpEmail()" style="font-size: 12px; border-radius: 0 6px 6px 0;">
+                    <i class="fas fa-paper-plane mr-1"></i> Tes Kirim
+                  </button>
+                </div>
+              </div>
+              <div id="smtp-test-result" class="mt-2" style="display: none; font-size: 11.5px;"></div>
+            </div>
+
+          </div>
+          <div class="modal-footer" style="border-top: 1px solid rgba(255,255,255,0.08);">
+            <button type="button" class="btn btn-secondary btn-sm" onclick="closeModalHelper('modalSmtpSettings')">Tutup</button>
+            <button type="submit" class="btn btn-info btn-sm font-weight-bold" style="background: #0284c7; border: none;">
+              <i class="fas fa-save mr-1"></i> Simpan Pengaturan SMTP
             </button>
           </div>
         </form>
@@ -4264,6 +4351,116 @@
         }
       } catch (err) {
         alert('Terjadi kesalahan koneksi ke server.');
+      }
+    }
+
+    // ========================================================
+    // SUPER ADMIN SMTP SETTINGS & TEST SENDER
+    // ========================================================
+    async function openSmtpSettingsModal() {
+      const resEl = document.getElementById('smtp-test-result');
+      if (resEl) resEl.style.display = 'none';
+
+      try {
+        const res = await fetch('../api/payment.php?action=get_smtp_settings');
+        const data = await res.json();
+        if (data.success && data.smtp) {
+          const s = data.smtp;
+          document.getElementById('smtp-input-host').value = s.smtp_host || 'smtp.gmail.com';
+          document.getElementById('smtp-input-port').value = s.smtp_port || 587;
+          document.getElementById('smtp-input-user').value = s.smtp_user || '';
+          document.getElementById('smtp-input-pass').value = s.smtp_pass || '';
+          document.getElementById('smtp-input-secure').value = s.smtp_secure || 'tls';
+          document.getElementById('smtp-input-name').value = s.mail_from_name || 'PT. LOEWIX INDONESIA';
+          document.getElementById('smtp-test-recipient').value = s.smtp_user || currentCustomer?.email || 'wahyuwutomo31@gmail.com';
+        }
+      } catch (err) {
+        console.error('Failed to load SMTP settings:', err);
+      }
+      openModalHelper('modalSmtpSettings');
+    }
+
+    async function submitSaveSmtpSettings(e) {
+      e.preventDefault();
+      const host = document.getElementById('smtp-input-host').value.trim();
+      const port = document.getElementById('smtp-input-port').value;
+      const user = document.getElementById('smtp-input-user').value.trim();
+      const pass = document.getElementById('smtp-input-pass').value;
+      const secure = document.getElementById('smtp-input-secure').value;
+      const name = document.getElementById('smtp-input-name').value.trim();
+
+      const fd = new FormData();
+      fd.append('action', 'save_smtp_settings');
+      fd.append('smtp_host', host);
+      fd.append('smtp_port', port);
+      fd.append('smtp_user', user);
+      fd.append('smtp_pass', pass);
+      fd.append('smtp_secure', secure);
+      fd.append('mail_from', user);
+      fd.append('mail_from_name', name);
+
+      try {
+        const res = await fetch('../api/payment.php', { method: 'POST', body: fd });
+        const data = await res.json();
+        alert(data.message || (data.success ? 'Pengaturan SMTP berhasil disimpan!' : 'Gagal simpan.'));
+        if (data.success) {
+          closeModalHelper('modalSmtpSettings');
+        }
+      } catch (err) {
+        alert('Terjadi kesalahan koneksi.');
+      }
+    }
+
+    async function runTestSmtpEmail() {
+      const recipient = document.getElementById('smtp-test-recipient').value.trim();
+      const resEl = document.getElementById('smtp-test-result');
+      if (!recipient) {
+        alert('Masukkan email tujuan tes terlebih dahulu!');
+        return;
+      }
+
+      if (resEl) {
+        resEl.style.display = 'block';
+        resEl.className = 'mt-2 text-info';
+        resEl.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> Sedang menghubungkan ke server SMTP dan mengirim email tes...';
+      }
+
+      // Auto save current form inputs first
+      const host = document.getElementById('smtp-input-host').value.trim();
+      const port = document.getElementById('smtp-input-port').value;
+      const user = document.getElementById('smtp-input-user').value.trim();
+      const pass = document.getElementById('smtp-input-pass').value;
+      const secure = document.getElementById('smtp-input-secure').value;
+      const name = document.getElementById('smtp-input-name').value.trim();
+
+      const saveFd = new FormData();
+      saveFd.append('action', 'save_smtp_settings');
+      saveFd.append('smtp_host', host);
+      saveFd.append('smtp_port', port);
+      saveFd.append('smtp_user', user);
+      saveFd.append('smtp_pass', pass);
+      saveFd.append('smtp_secure', secure);
+      saveFd.append('mail_from', user);
+      saveFd.append('mail_from_name', name);
+      await fetch('../api/payment.php', { method: 'POST', body: saveFd });
+
+      const fd = new FormData();
+      fd.append('action', 'test_smtp_email');
+      fd.append('target_email', recipient);
+
+      try {
+        const res = await fetch('../api/payment.php', { method: 'POST', body: fd });
+        const data = await res.json();
+        if (data.success) {
+          resEl.className = 'mt-2 text-success font-weight-bold';
+          resEl.innerHTML = '<i class="fas fa-check-circle mr-1"></i> ' + data.message;
+        } else {
+          resEl.className = 'mt-2 text-danger font-weight-bold';
+          resEl.innerHTML = '<i class="fas fa-exclamation-triangle mr-1"></i> ' + data.message;
+        }
+      } catch (err) {
+        resEl.className = 'mt-2 text-danger';
+        resEl.innerHTML = '<i class="fas fa-times-circle mr-1"></i> Gagal menghubungi server API.';
       }
     }
 

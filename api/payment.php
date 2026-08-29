@@ -580,4 +580,119 @@ if ($action === 'mark_invoice_settled') {
     exit;
 }
 
+// 9. GET SMTP SETTINGS (SUPER ADMIN)
+if ($action === 'get_smtp_settings') {
+    $smtpConfigFile = __DIR__ . '/../data/smtp_config.json';
+    $customSmtp = [];
+    if (file_exists($smtpConfigFile)) {
+        $customSmtp = json_decode(file_get_contents($smtpConfigFile), true) ?: [];
+    }
+
+    echo json_encode([
+        'success' => true,
+        'smtp' => [
+            'smtp_enabled' => $customSmtp['smtp_enabled'] ?? false,
+            'smtp_host' => $customSmtp['smtp_host'] ?? 'smtp.gmail.com',
+            'smtp_port' => $customSmtp['smtp_port'] ?? 587,
+            'smtp_user' => $customSmtp['smtp_user'] ?? '',
+            'smtp_pass' => !empty($customSmtp['smtp_pass']) ? '********' : '',
+            'smtp_secure' => $customSmtp['smtp_secure'] ?? 'tls',
+            'mail_from' => $customSmtp['mail_from'] ?? '',
+            'mail_from_name' => $customSmtp['mail_from_name'] ?? 'PT. LOEWIX INDONESIA'
+        ]
+    ]);
+    exit;
+}
+
+// 10. SAVE SMTP SETTINGS (SUPER ADMIN)
+if ($action === 'save_smtp_settings') {
+    $smtpConfigFile = __DIR__ . '/../data/smtp_config.json';
+    $existing = [];
+    if (file_exists($smtpConfigFile)) {
+        $existing = json_decode(file_get_contents($smtpConfigFile), true) ?: [];
+    }
+
+    $smtpHost = trim($_POST['smtp_host'] ?? 'smtp.gmail.com');
+    $smtpPort = (int)($_POST['smtp_port'] ?? 587);
+    $smtpUser = trim($_POST['smtp_user'] ?? '');
+    $smtpPass = trim($_POST['smtp_pass'] ?? '');
+    $smtpSecure = trim($_POST['smtp_secure'] ?? 'tls');
+    $mailFrom = trim($_POST['mail_from'] ?? $smtpUser);
+    $mailFromName = trim($_POST['mail_from_name'] ?? 'PT. LOEWIX INDONESIA');
+
+    if ($smtpPass === '********' || empty($smtpPass)) {
+        $smtpPass = $existing['smtp_pass'] ?? '';
+    }
+
+    $newConfig = [
+        'smtp_enabled' => true,
+        'smtp_host' => $smtpHost,
+        'smtp_port' => $smtpPort,
+        'smtp_user' => $smtpUser,
+        'smtp_pass' => $smtpPass,
+        'smtp_secure' => $smtpSecure,
+        'mail_from' => $mailFrom,
+        'mail_from_name' => $mailFromName,
+        'updated_at' => date('Y-m-d H:i:s')
+    ];
+
+    $dataDir = __DIR__ . '/../data';
+    if (!is_dir($dataDir)) @mkdir($dataDir, 0755, true);
+    file_put_contents($smtpConfigFile, json_encode($newConfig, JSON_PRETTY_PRINT));
+
+    echo json_encode([
+        'success' => true,
+        'message' => 'Pengaturan SMTP berhasil disimpan!'
+    ]);
+    exit;
+}
+
+// 11. TEST SEND SMTP EMAIL (SUPER ADMIN)
+if ($action === 'test_smtp_email') {
+    $targetEmail = trim($_POST['target_email'] ?? '');
+    if (empty($targetEmail) || !filter_var($targetEmail, FILTER_VALIDATE_EMAIL)) {
+        echo json_encode(['success' => false, 'message' => 'Alamat email uji coba tidak valid!']);
+        exit;
+    }
+
+    $smtpConfigFile = __DIR__ . '/../data/smtp_config.json';
+    if (!file_exists($smtpConfigFile)) {
+        echo json_encode(['success' => false, 'message' => 'Konfigurasi SMTP belum disimpan! Harap simpan email & password SMTP Anda terlebih dahulu.']);
+        exit;
+    }
+
+    $testContent = <<<HTML
+    <h2 style="color: #34d399; margin-top: 0; font-size: 20px;">Tes Koneksi SMTP Berhasil! 🎉</h2>
+    <p>Halo Administrator, ini adalah email tes verifikasi dari <strong>Loewix CCTV Enterprise Cloud</strong>.</p>
+    <p>Jika Anda menerima email ini di Inbox utama, berarti koneksi server ke <strong>SMTP Gateway</strong> telah terkonfigurasi dengan sempurna dan siap mengirimkan notifikasi tagihan serta kwitansi pembayaran ke seluruh customer.</p>
+    <div style="background-color: #060b18; border: 1px solid #10b981; border-radius: 8px; padding: 12px; font-family: monospace; font-size: 12px; color: #cbd5e1; margin: 15px 0;">
+      Waktu Uji: <strong>date('Y-m-d H:i:s')</strong><br>
+      Host SMTP: <strong>LOEWIX_SMTP_HOST</strong> (Port LOEWIX_SMTP_PORT)<br>
+      Pengirim: <strong>LOEWIX_MAIL_FROM</strong>
+    </div>
+HTML;
+
+    $errorMsg = '';
+    $sent = send_loewix_smtp_socket(
+        $targetEmail,
+        'Administrator Loewix',
+        '[Uji Coba SMTP] Verifikasi Pengiriman Email Server Loewix',
+        render_loewix_email_layout('Tes SMTP Berhasil', 'SMTP TERVERIFIKASI', '#10b981', $testContent),
+        $errorMsg
+    );
+
+    if ($sent) {
+        echo json_encode([
+            'success' => true,
+            'message' => 'Email uji coba berhasil dikirim ke ' . $targetEmail . '! Silakan periksa Kotak Masuk (Inbox) Anda.'
+        ]);
+    } else {
+        echo json_encode([
+            'success' => false,
+            'message' => 'Gagal mengirim email: ' . ($errorMsg ?: 'Koneksi ke server SMTP gagal. Pastikan email dan password/App Password sudah benar.')
+        ]);
+    }
+    exit;
+}
+
 echo json_encode(['success' => false, 'message' => 'Invalid Action']);

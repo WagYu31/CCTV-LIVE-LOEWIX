@@ -27,7 +27,7 @@ if (!defined('LOEWIX_MAIL_CONFIG')) {
 /**
  * Pure PHP Socket SMTP Mailer (Works without Composer or external library)
  */
-function send_loewix_smtp_socket($toEmail, $toName, $subject, $htmlContent) {
+function send_loewix_smtp_socket($toEmail, $toName, $subject, $htmlContent, &$errorMsg = '') {
     $host = LOEWIX_SMTP_HOST;
     $port = LOEWIX_SMTP_PORT;
     $user = LOEWIX_SMTP_USER;
@@ -37,6 +37,7 @@ function send_loewix_smtp_socket($toEmail, $toName, $subject, $htmlContent) {
     $secure = LOEWIX_SMTP_SECURE;
 
     if (empty($user) || empty($pass)) {
+        $errorMsg = 'SMTP User atau Password masih kosong. Silakan atur di Pengaturan SMTP.';
         return false;
     }
 
@@ -45,6 +46,7 @@ function send_loewix_smtp_socket($toEmail, $toName, $subject, $htmlContent) {
     
     $socket = @stream_socket_client("{$socketHost}:{$port}", $errno, $errstr, $timeout);
     if (!$socket) {
+        $errorMsg = "Koneksi ke server SMTP {$socketHost}:{$port} gagal: {$errstr} ({$errno})";
         error_log("Loewix SMTP Socket Connect Error: {$errstr} ({$errno})");
         return false;
     }
@@ -63,7 +65,10 @@ function send_loewix_smtp_socket($toEmail, $toName, $subject, $htmlContent) {
     };
 
     $res = $read(); // 220
-    if (strpos($res, '220') !== 0) { fclose($socket); return false; }
+    if (strpos($res, '220') !== 0) { 
+        $errorMsg = "Server tidak merespon 220 Greeting: {$res}";
+        fclose($socket); return false; 
+    }
 
     $write("EHLO " . gethostname());
     $res = $read();
@@ -71,8 +76,12 @@ function send_loewix_smtp_socket($toEmail, $toName, $subject, $htmlContent) {
     if ($secure === 'tls' && $port !== 465) {
         $write("STARTTLS");
         $res = $read();
-        if (strpos($res, '220') !== 0) { fclose($socket); return false; }
+        if (strpos($res, '220') !== 0) { 
+            $errorMsg = "STARTTLS gagal: {$res}";
+            fclose($socket); return false; 
+        }
         if (!stream_socket_enable_crypto($socket, true, STREAM_CRYPTO_METHOD_TLS_CLIENT)) {
+            $errorMsg = "Gagal mengaktifkan enkripsi TLS pada socket.";
             fclose($socket);
             return false;
         }
@@ -82,27 +91,45 @@ function send_loewix_smtp_socket($toEmail, $toName, $subject, $htmlContent) {
 
     $write("AUTH LOGIN");
     $res = $read();
-    if (strpos($res, '334') !== 0) { fclose($socket); return false; }
+    if (strpos($res, '334') !== 0) { 
+        $errorMsg = "Server menolak AUTH LOGIN: {$res}";
+        fclose($socket); return false; 
+    }
 
     $write(base64_encode($user));
     $res = $read();
-    if (strpos($res, '334') !== 0) { fclose($socket); return false; }
+    if (strpos($res, '334') !== 0) { 
+        $errorMsg = "Username SMTP ditolak: {$res}";
+        fclose($socket); return false; 
+    }
 
     $write(base64_encode($pass));
     $res = $read();
-    if (strpos($res, '235') !== 0) { fclose($socket); return false; }
+    if (strpos($res, '235') !== 0) { 
+        $errorMsg = "Password / App Password SMTP ditolak Google (Pastikan gunakan App Password 16 digit): {$res}";
+        fclose($socket); return false; 
+    }
 
     $write("MAIL FROM: <{$from}>");
     $res = $read();
-    if (strpos($res, '250') !== 0) { fclose($socket); return false; }
+    if (strpos($res, '250') !== 0) { 
+        $errorMsg = "MAIL FROM ditolak: {$res}";
+        fclose($socket); return false; 
+    }
 
     $write("RCPT TO: <{$toEmail}>");
     $res = $read();
-    if (strpos($res, '250') !== 0 && strpos($res, '251') !== 0) { fclose($socket); return false; }
+    if (strpos($res, '250') !== 0 && strpos($res, '251') !== 0) { 
+        $errorMsg = "Alamat tujuan <{$toEmail}> ditolak: {$res}";
+        fclose($socket); return false; 
+    }
 
     $write("DATA");
     $res = $read();
-    if (strpos($res, '354') !== 0) { fclose($socket); return false; }
+    if (strpos($res, '354') !== 0) { 
+        $errorMsg = "Perintah DATA ditolak: {$res}";
+        fclose($socket); return false; 
+    }
 
     $headers = [];
     $headers[] = "From: =?UTF-8?B?" . base64_encode($fromName) . "?= <{$from}>";
@@ -117,7 +144,10 @@ function send_loewix_smtp_socket($toEmail, $toName, $subject, $htmlContent) {
     $emailData = implode("\r\n", $headers) . "\r\n\r\n" . $htmlContent . "\r\n.\r\n";
     fputs($socket, $emailData);
     $res = $read();
-    if (strpos($res, '250') !== 0) { fclose($socket); return false; }
+    if (strpos($res, '250') !== 0) { 
+        $errorMsg = "Pengiriman isi email gagal: {$res}";
+        fclose($socket); return false; 
+    }
 
     $write("QUIT");
     fclose($socket);
@@ -127,7 +157,7 @@ function send_loewix_smtp_socket($toEmail, $toName, $subject, $htmlContent) {
 /**
  * Send Transactional Email with Loewix HTML Template
  */
-function send_loewix_email($toEmail, $toName, $subject, $htmlContent, $altText = '') {
+function send_loewix_email($toEmail, $toName, $subject, $htmlContent, $altText = '', &$errorMsg = '') {
     if (empty($toEmail) || !filter_var($toEmail, FILTER_VALIDATE_EMAIL)) {
         return false;
     }
