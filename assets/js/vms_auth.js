@@ -585,7 +585,7 @@ function toggleGatePasswordVisibility(inputId = 'gate-login-password', iconId = 
           currentUser = res.user;
           localStorage.setItem('loewix_user', JSON.stringify(res.user));
           if (res.user && res.user.role === 'super_admin') {
-            window.location.href = 'admin/index.html';
+            window.location.href = 'customer/index.php';
           } else {
             showDashboardView(res.user);
           }
@@ -603,7 +603,7 @@ function toggleGatePasswordVisibility(inputId = 'gate-login-password', iconId = 
           const user = { id: 1, name: 'Super Admin Loewix', email: email, role: 'super_admin', cctv_quota: 9999, cctv_used: 0 };
           currentUser = user;
           localStorage.setItem('loewix_user', JSON.stringify(user));
-          window.location.href = 'admin/index.html';
+          window.location.href = 'customer/index.php';
         } else if (email === 'customer@jayasentosa.com' && password === 'customer123') {
           const user = { id: 2, name: 'PT. Jaya Sentosa Enterprise', email: email, role: 'customer', cctv_quota: 10, cctv_used: 0 };
           currentUser = user;
@@ -662,8 +662,8 @@ function toggleGatePasswordVisibility(inputId = 'gate-login-password', iconId = 
 
         if (user.role === 'super_admin') {
           userArea.innerHTML = `
-            <a href="admin/index.html" class="btn btn-sm btn-outline-warning font-weight-bold d-inline-flex align-items-center" style="border-radius: 20px; font-size: 11px; white-space: nowrap; padding: 5px 12px; gap: 5px;" title="Buka Super Admin Control Center">
-              <i class="fas fa-user-shield"></i> <span>ADMIN PANEL</span>
+            <a href="customer/index.php" class="btn btn-sm btn-outline-warning font-weight-bold d-inline-flex align-items-center" style="border-radius: 20px; font-size: 11px; white-space: nowrap; padding: 5px 12px; gap: 5px; background: rgba(245, 158, 11, 0.15); border-color: rgba(245, 158, 11, 0.4); color: #fbbf24;" title="Buka Super Admin Master Control Center">
+              <i class="fas fa-crown"></i> <span>MASTER COMMAND CENTER</span>
             </a>
             <a href="customer/index.html" class="btn btn-sm btn-outline-info font-weight-bold d-inline-flex align-items-center" style="border-radius: 20px; font-size: 11px; white-space: nowrap; padding: 5px 12px; gap: 5px; background: rgba(56, 189, 248, 0.1); border-color: rgba(56, 189, 248, 0.35); color: #38bdf8;" title="Buka Dashboard Customer">
               <i class="fas fa-columns"></i> <span>DASHBOARD</span>

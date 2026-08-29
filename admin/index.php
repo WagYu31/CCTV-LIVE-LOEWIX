@@ -2,6 +2,9 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
+  <script>
+    window.location.replace('../customer/index.php');
+  </script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Super Admin Control Center - PT. LOEWIX INDONESIA</title>
   <!-- Favicons & App Icons (Loewix Official) -->

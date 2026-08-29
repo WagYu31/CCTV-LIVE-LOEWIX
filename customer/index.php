@@ -1367,9 +1367,9 @@
         <div class="d-flex align-items-center gap-3">
           
           <!-- Super Admin Direct Switcher -->
-          <a href="../admin/index.php" id="btn-super-admin-direct" class="btn-nav-vms" style="display: none; background: linear-gradient(135deg, #f59e0b, #d97706); border-color: #f59e0b; color: #ffffff; box-shadow: 0 0 12px rgba(245, 158, 11, 0.4);" title="Buka Super Admin Master Control Center">
+          <button type="button" onclick="switchCustomerTab('tab-admin-customers')" id="btn-super-admin-direct" class="btn-nav-vms" style="display: none; background: linear-gradient(135deg, #f59e0b, #d97706); border-color: #f59e0b; color: #ffffff; box-shadow: 0 0 12px rgba(245, 158, 11, 0.4);" title="Buka Super Admin Master Control Center">
             <i class="fas fa-crown"></i> <span class="d-none d-md-inline">SUPER ADMIN MASTER</span>
-          </a>
+          </button>
 
           <a href="../index.html" class="btn-nav-vms" title="Buka Tampilan Live Matrix Grid VMS">
             <i class="fas fa-th-large"></i> <span class="d-none d-md-inline">LIVE VMS GRID</span>
@@ -2551,7 +2551,7 @@
 
     function handleMetric4Click() {
       if (currentCustomer && currentCustomer.role === 'super_admin') {
-        window.location.href = '../admin/index.php';
+        switchCustomerTab('tab-admin-customers');
       } else {
         openRequestUpgradeModal();
       }
