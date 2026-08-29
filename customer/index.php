@@ -4715,7 +4715,8 @@
         const result = await res.json();
 
         if (result.success && result.snap_token) {
-          const isSim = result.is_simulation || result.snap_token.startsWith('SNAP_LOEWIX_');
+          const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(result.snap_token);
+          const isSim = result.is_simulation === true || result.snap_token.startsWith('SNAP_LOEWIX_') || !isUuid;
 
           if (!isSim && window.snap && typeof window.snap.pay === 'function') {
             window.snap.pay(result.snap_token, {

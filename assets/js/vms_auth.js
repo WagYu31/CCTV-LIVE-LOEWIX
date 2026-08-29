@@ -296,7 +296,9 @@ async function submitGateRegister(e) {
       const payResult = await payRes.json();
 
       if (payResult.success && payResult.snap_token) {
-        const isSimulation = payResult.is_simulation || payResult.snap_token.startsWith('SNAP_LOEWIX_');
+        // Genuine Midtrans Snap tokens are UUID strings (36 characters). If not, fallback to Loewix Checkout Modal
+        const isUuidToken = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(payResult.snap_token);
+        const isSimulation = payResult.is_simulation === true || payResult.snap_token.startsWith('SNAP_LOEWIX_') || !isUuidToken;
 
         if (!isSimulation && window.snap && typeof window.snap.pay === 'function') {
           window.snap.pay(payResult.snap_token, {
@@ -317,7 +319,7 @@ async function submitGateRegister(e) {
             }
           });
         } else {
-          // Launch Loewix Simulation Checkout Modal
+          // Launch Loewix Simulation Checkout Modal (Interactive QRIS & VA Simulator)
           showLoewixCheckoutModal(payResult, data.user);
         }
       } else {
