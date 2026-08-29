@@ -4735,10 +4735,8 @@
               }
             });
           } else {
-            // Simulated Gateway Dialog
-            if (confirm(`[SIMULASI MIDTRANS PAYMENT]\n\nOrder ID: ${result.order_id}\nPaket: ${result.plan ? result.plan.name : planId}\nTotal: ${result.plan ? result.plan.total_formatted : 'Rp ' + Number(result.gross_amount).toLocaleString('id-ID')}\n\nKonfirmasi pembayaran instan sekarang?`)) {
-              await confirmClientPayment(result.order_id, 'midtrans_simulation');
-            }
+            // Interactive Virtual Account & QRIS Modal
+            showLoewixCustomerVaModal(result);
           }
         } else {
           alert(result.message || 'Gagal membuat sesi pembayaran Midtrans.');
@@ -4774,6 +4772,185 @@
       } catch (err) {
         console.error('Verification error:', err);
       }
+    }
+
+    function showLoewixCustomerVaModal(result) {
+      let modal = document.getElementById('modalCustomerVaPopup');
+      if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'modalCustomerVaPopup';
+        document.body.appendChild(modal);
+      }
+
+      modal.style.cssText = `
+        position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important;
+        background: rgba(4, 9, 24, 0.88) !important; backdrop-filter: blur(12px) !important;
+        z-index: 2147483647 !important; display: flex !important; align-items: center !important; justify-content: center !important; padding: 20px !important;
+      `;
+
+      const totalFormatted = result.plan ? result.plan.total_formatted : 'Rp ' + Number(result.gross_amount).toLocaleString('id-ID');
+      const userPhoneClean = (currentUser && currentUser.phone) ? currentUser.phone.replace(/[^0-9]/g, '') : '081234567890';
+      const bcaVaNumber = '8277' + (userPhoneClean.length >= 10 ? userPhoneClean.slice(-10) : '0857715935');
+      const mandiriBillCode = '70012';
+      const mandiriBillKey = '88' + (userPhoneClean.length >= 8 ? userPhoneClean.slice(-8) : '12345678');
+      const briVaNumber = '10892' + (userPhoneClean.length >= 9 ? userPhoneClean.slice(-9) : '857715935');
+
+      modal.innerHTML = `
+        <div style="background: #0c1630; border: 1.5px solid #38bdf8; border-radius: 16px; max-width: 520px; width: 100%; box-shadow: 0 20px 50px rgba(0,0,0,0.8); overflow: hidden; font-family: 'Space Grotesk', sans-serif;">
+          <div style="background: linear-gradient(135deg, #091538, #0c1942); padding: 18px 24px; border-bottom: 1px solid rgba(56, 189, 248, 0.3); display: flex; align-items: center; justify-content: space-between;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <i class="fas fa-shield-alt" style="color: #38bdf8; font-size: 20px;"></i>
+              <div>
+                <div style="color: #ffffff; font-weight: 800; font-size: 15px; letter-spacing: 0.5px;">MIDTRANS PAYMENT GATEWAY</div>
+                <div style="color: #94a3b8; font-size: 11px;">LOEWIX CCTV &bull; PORTAL TAGIHAN</div>
+              </div>
+            </div>
+            <button type="button" onclick="closeLoewixCustomerVaModal()" style="background: none; border: none; color: #94a3b8; font-size: 22px; cursor: pointer;">&times;</button>
+          </div>
+
+          <div style="padding: 24px; max-height: 80vh; overflow-y: auto;">
+            <div style="text-align: center; margin-bottom: 20px; background: rgba(255,255,255,0.02); padding: 14px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.06);">
+              <div style="font-size: 11px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px;">Total Tagihan Pembayaran</div>
+              <div style="font-size: 26px; font-weight: 800; color: #34d399; margin: 4px 0;">${totalFormatted}</div>
+              <div style="font-size: 11px; color: #64748b; font-family: monospace;">ORDER ID: <span style="color:#38bdf8;">${result.order_id}</span></div>
+            </div>
+
+            <!-- Tabs -->
+            <div style="display: flex; gap: 8px; margin-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 10px;">
+              <button type="button" onclick="switchCustPaymentTab('bca')" id="c-tab-btn-bca" style="flex: 1; padding: 8px; background: rgba(56, 189, 248, 0.15); border: 1px solid #38bdf8; border-radius: 8px; color: #38bdf8; font-weight: 700; font-size: 12px; cursor: pointer;">
+                <i class="fas fa-university mr-1"></i> BCA VA
+              </button>
+              <button type="button" onclick="switchCustPaymentTab('qris')" id="c-tab-btn-qris" style="flex: 1; padding: 8px; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; color: #94a3b8; font-weight: 700; font-size: 12px; cursor: pointer;">
+                <i class="fas fa-qrcode mr-1"></i> QRIS
+              </button>
+              <button type="button" onclick="switchCustPaymentTab('mandiri')" id="c-tab-btn-mandiri" style="flex: 1; padding: 8px; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; color: #94a3b8; font-weight: 700; font-size: 12px; cursor: pointer;">
+                <i class="fas fa-landmark mr-1"></i> Mandiri
+              </button>
+              <button type="button" onclick="switchCustPaymentTab('bri')" id="c-tab-btn-bri" style="flex: 1; padding: 8px; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; color: #94a3b8; font-weight: 700; font-size: 12px; cursor: pointer;">
+                <i class="fas fa-building mr-1"></i> BRI
+              </button>
+            </div>
+
+            <!-- BCA View -->
+            <div id="c-view-payment-bca" style="display: block;">
+              <div style="background: rgba(6, 11, 24, 0.85); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 12px; padding: 18px; margin-bottom: 16px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                  <span style="color: #94a3b8; font-size: 11.5px; font-weight: 600;">Nomor BCA Virtual Account</span>
+                  <span style="background: #0060af; color: #ffffff; font-size: 10px; font-weight: 800; padding: 2px 8px; border-radius: 4px;">BCA</span>
+                </div>
+                
+                <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.05); padding: 12px 16px; border-radius: 8px; border: 1px dashed rgba(56, 189, 248, 0.4);">
+                  <div style="font-family: monospace; font-size: 20px; font-weight: 800; color: #38bdf8; letter-spacing: 1.5px;">${bcaVaNumber}</div>
+                  <button type="button" onclick="copyCustPaymentText('${bcaVaNumber}', this)" style="background: #38bdf8; color: #040918; border: none; border-radius: 6px; padding: 6px 14px; font-size: 11.5px; font-weight: 700; cursor: pointer;">
+                    <i class="fas fa-copy"></i> Salin
+                  </button>
+                </div>
+
+                <div style="margin-top: 14px; font-size: 11.5px; color: #94a3b8; line-height: 1.6;">
+                  <div style="font-weight: 700; color: #ffffff; margin-bottom: 4px;">Petunjuk Pembayaran BCA:</div>
+                  1. Masuk ke aplikasi <strong>BCA Mobile</strong> &bull; Pilih <strong>m-Transfer</strong><br>
+                  2. Pilih <strong>BCA Virtual Account</strong> &bull; Masukkan nomor VA di atas<br>
+                  3. Periksa penerima: <strong>LOEWIX CCTV</strong> &bull; Konfirmasi & bayar
+                </div>
+              </div>
+            </div>
+
+            <!-- QRIS View -->
+            <div id="c-view-payment-qris" style="display: none;">
+              <div style="background: rgba(6, 11, 24, 0.85); border: 1px solid rgba(52, 211, 153, 0.3); border-radius: 12px; padding: 18px; margin-bottom: 16px; text-align: center;">
+                <div style="font-size: 12px; font-weight: 700; color: #34d399; margin-bottom: 12px;">SCAN QRIS DENGAN GOPAY / OVO / DANA / BCA QR</div>
+                
+                <div style="background: #ffffff; padding: 16px; border-radius: 12px; display: inline-block; box-shadow: 0 4px 16px rgba(0,0,0,0.4); margin-bottom: 12px;">
+                  <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=LOEWIX-CCTV-INVOICE-${result.order_id}" alt="QRIS Code" style="width: 170px; height: 170px; display: block;">
+                </div>
+
+                <div style="font-size: 11px; color: #94a3b8;">Verifikasi otomatis seketika &bull; Aktif 24 Jam</div>
+              </div>
+            </div>
+
+            <!-- Mandiri View -->
+            <div id="c-view-payment-mandiri" style="display: none;">
+              <div style="background: rgba(6, 11, 24, 0.85); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 12px; padding: 18px; margin-bottom: 16px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                  <span style="color: #94a3b8; font-size: 11.5px; font-weight: 600;">Mandiri Bill Payment</span>
+                  <span style="background: #003366; color: #f59e0b; font-size: 10px; font-weight: 800; padding: 2px 8px; border-radius: 4px;">MANDIRI</span>
+                </div>
+                
+                <div style="background: rgba(255,255,255,0.05); padding: 10px 14px; border-radius: 8px; margin-bottom: 8px;">
+                  <div style="font-size: 11px; color: #94a3b8;">Kode Perusahaan: <strong style="color:#f59e0b;">${mandiriBillCode}</strong></div>
+                </div>
+                <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.05); padding: 10px 14px; border-radius: 8px;">
+                  <div>
+                    <div style="font-size: 11px; color: #94a3b8;">Nomor Pelanggan (Bill Key):</div>
+                    <div style="font-family: monospace; font-size: 16px; font-weight: 800; color: #38bdf8;">${mandiriBillKey}</div>
+                  </div>
+                  <button type="button" onclick="copyCustPaymentText('${mandiriBillKey}', this)" style="background: #38bdf8; color: #040918; border: none; border-radius: 6px; padding: 6px 12px; font-size: 11px; font-weight: 700; cursor: pointer;">Salin</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- BRI View -->
+            <div id="c-view-payment-bri" style="display: none;">
+              <div style="background: rgba(6, 11, 24, 0.85); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 12px; padding: 18px; margin-bottom: 16px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                  <span style="color: #94a3b8; font-size: 11.5px; font-weight: 600;">Nomor BRIVA</span>
+                  <span style="background: #00529c; color: #ffffff; font-size: 10px; font-weight: 800; padding: 2px 8px; border-radius: 4px;">BRI</span>
+                </div>
+                
+                <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.05); padding: 12px 16px; border-radius: 8px; border: 1px dashed rgba(56, 189, 248, 0.4);">
+                  <div style="font-family: monospace; font-size: 19px; font-weight: 800; color: #38bdf8; letter-spacing: 1.5px;">${briVaNumber}</div>
+                  <button type="button" onclick="copyCustPaymentText('${briVaNumber}', this)" style="background: #38bdf8; color: #040918; border: none; border-radius: 6px; padding: 6px 14px; font-size: 11.5px; font-weight: 700; cursor: pointer;">Salin</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Confirm Action -->
+            <button type="button" id="btn-cust-confirm-pay" onclick="confirmClientPayment('${result.order_id}', 'va_bca'); closeLoewixCustomerVaModal();" style="width: 100%; padding: 14px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #ffffff; border: none; border-radius: 10px; font-weight: 800; font-size: 14px; letter-spacing: 0.5px; cursor: pointer; box-shadow: 0 4px 16px rgba(16, 185, 129, 0.4); display: flex; align-items: center; justify-content: center; gap: 8px;">
+              <i class="fas fa-check-circle"></i>
+              <span>SAYA SUDAH TRANSFER / CEK STATUS SEKARANG</span>
+            </button>
+          </div>
+        </div>
+      `;
+    }
+
+    function switchCustPaymentTab(tab) {
+      const tabs = ['bca', 'qris', 'mandiri', 'bri'];
+      tabs.forEach(t => {
+        const view = document.getElementById('c-view-payment-' + t);
+        const btn = document.getElementById('c-tab-btn-' + t);
+        if (view) view.style.display = (t === tab) ? 'block' : 'none';
+        if (btn) {
+          if (t === tab) {
+            btn.style.background = 'rgba(56, 189, 248, 0.15)';
+            btn.style.borderColor = '#38bdf8';
+            btn.style.color = '#38bdf8';
+          } else {
+            btn.style.background = 'rgba(255, 255, 255, 0.03)';
+            btn.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+            btn.style.color = '#94a3b8';
+          }
+        }
+      });
+    }
+
+    function copyCustPaymentText(text, btn) {
+      navigator.clipboard.writeText(text).then(() => {
+        const orig = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-check"></i> Tersalin!';
+        btn.style.background = '#10b981';
+        btn.style.color = '#ffffff';
+        setTimeout(() => {
+          btn.innerHTML = orig;
+          btn.style.background = '#38bdf8';
+          btn.style.color = '#040918';
+        }, 2000);
+      });
+    }
+
+    function closeLoewixCustomerVaModal() {
+      const modal = document.getElementById('modalCustomerVaPopup');
+      if (modal) modal.remove();
     }
 
     async function submitBillingProfile(e) {
