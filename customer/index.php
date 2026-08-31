@@ -1032,10 +1032,35 @@
       border: 1px solid rgba(255, 255, 255, 0.14) !important;
       border-radius: 12px !important;
       color: #ffffff !important;
-      padding: 11px 15px;
+      padding: 9px 15px;
       font-size: 13.5px !important;
+      min-height: 42px !important;
+      line-height: 1.5 !important;
       transition: all 0.25s ease !important;
       outline: none !important;
+    }
+
+    select.form-control-dark, select.form-control {
+      height: 42px !important;
+      min-height: 42px !important;
+      line-height: 1.5 !important;
+      padding: 8px 36px 8px 14px !important;
+      appearance: none !important;
+      -webkit-appearance: none !important;
+      background-color: #0d1527 !important;
+      background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%2338bdf8' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e") !important;
+      background-repeat: no-repeat !important;
+      background-position: right 14px center !important;
+      background-size: 12px 10px !important;
+      color: #ffffff !important;
+      cursor: pointer !important;
+    }
+
+    select.form-control-dark option {
+      background: #0b132b !important;
+      color: #ffffff !important;
+      padding: 10px 14px !important;
+      font-size: 13.5px !important;
     }
 
     .form-control-dark:focus {
@@ -2034,27 +2059,27 @@
         </div>
 
         <!-- Search & Filter Controls -->
-        <div class="row g-2 mb-3 align-items-center" style="gap: 8px; margin-bottom: 20px !important;">
-          <div class="col-md-5">
-            <div class="input-group">
-              <div class="input-group-prepend"><span class="input-group-text" style="background: rgba(255,255,255,0.05); color: #94a3b8; border-color: rgba(255,255,255,0.1);"><i class="fas fa-search"></i></span></div>
-              <input type="text" id="search-transaction-input" class="form-control form-control-dark" style="padding-left: 14px !important;" placeholder="Cari No. Invoice, Nama Customer, Email..." oninput="filterAdminTransactionsTable()">
+        <div class="row g-3 mb-4 align-items-center" style="margin-bottom: 24px !important;">
+          <div class="col-lg-5 col-md-12">
+            <div class="input-group" style="height: 42px;">
+              <div class="input-group-prepend"><span class="input-group-text" style="background: rgba(255,255,255,0.05); color: #94a3b8; border-color: rgba(255,255,255,0.14); border-radius: 12px 0 0 12px; font-size: 13px;"><i class="fas fa-search"></i></span></div>
+              <input type="text" id="search-transaction-input" class="form-control form-control-dark" style="height: 42px !important; padding-left: 14px !important; border-radius: 0 12px 12px 0 !important;" placeholder="Cari No. Invoice, Nama Customer, Email..." oninput="filterAdminTransactionsTable()">
             </div>
           </div>
-          <div class="col-md-3">
-            <select id="filter-transaction-status" class="form-control form-control-dark" onchange="filterAdminTransactionsTable()">
+          <div class="col-lg-3 col-md-6">
+            <select id="filter-transaction-status" class="form-control form-control-dark" style="height: 42px !important; border-radius: 12px !important;" onchange="filterAdminTransactionsTable()">
               <option value="all">⚡ Semua Status Transaksi</option>
               <option value="settlement">🟢 Lunas (Settlement)</option>
               <option value="pending">🟡 Menunggu Bayar (Pending)</option>
               <option value="expire">🔴 Batal / Expired</option>
             </select>
           </div>
-          <div class="col-md-3">
-            <select id="filter-transaction-payment" class="form-control form-control-dark" onchange="filterAdminTransactionsTable()">
+          <div class="col-lg-4 col-md-6">
+            <select id="filter-transaction-payment" class="form-control form-control-dark" style="height: 42px !important; border-radius: 12px !important;" onchange="filterAdminTransactionsTable()">
               <option value="all">💳 Semua Metode Bayar</option>
-              <option value="va">Virtual Account (BCA/Mandiri/BRI/BNI)</option>
-              <option value="qris">QRIS Instant</option>
-              <option value="manual">Transfer Bank Manual</option>
+              <option value="va">🏦 Virtual Account (BCA/Mandiri/BRI/BNI)</option>
+              <option value="qris">📱 QRIS Instant</option>
+              <option value="manual">💵 Transfer Bank Manual</option>
             </select>
           </div>
         </div>
