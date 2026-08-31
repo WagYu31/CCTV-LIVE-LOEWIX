@@ -997,45 +997,51 @@
     }
 
     /* Modal Form Dark Theme */
+    /* Modal Form Dark Theme (Ultra-Premium Glassmorphism) */
     .modal-dark .modal-content {
-      background: #0d1b3e;
-      border: 1px solid rgba(56, 189, 248, 0.35);
-      border-radius: 18px;
-      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.75);
-      color: #ffffff;
+      background: linear-gradient(155deg, #0d1b3e 0%, #060c20 100%) !important;
+      border: 1px solid rgba(56, 189, 248, 0.35) !important;
+      border-radius: 20px !important;
+      box-shadow: 0 30px 80px rgba(0, 0, 0, 0.85), 0 0 35px rgba(56, 189, 248, 0.15) !important;
+      color: #ffffff !important;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
     }
 
     .modal-dark .modal-header {
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-      padding: 18px 24px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+      padding: 20px 26px !important;
+      background: rgba(15, 23, 42, 0.95);
     }
 
     .modal-dark .modal-footer {
-      border-top: 1px solid rgba(255, 255, 255, 0.1);
-      padding: 16px 24px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
+      padding: 16px 26px !important;
+      background: rgba(15, 23, 42, 0.95);
     }
 
     .form-group-dark label {
-      font-size: 13px;
+      font-size: 12.5px;
       font-weight: 600;
-      color: #94a3b8;
+      color: #cbd5e1;
       margin-bottom: 6px;
     }
 
     .form-control-dark {
-      background: rgba(255, 255, 255, 0.06);
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.05) !important;
+      border: 1px solid rgba(255, 255, 255, 0.14) !important;
+      border-radius: 12px !important;
       color: #ffffff !important;
-      padding: 10px 14px;
-      font-size: 13.5px;
-      outline: none;
+      padding: 11px 15px !important;
+      font-size: 13.5px !important;
+      transition: all 0.25s ease !important;
+      outline: none !important;
     }
 
     .form-control-dark:focus {
-      background: rgba(255, 255, 255, 0.1);
-      border-color: #38bdf8;
-      box-shadow: 0 0 10px rgba(56, 189, 248, 0.35);
+      background: rgba(255, 255, 255, 0.09) !important;
+      border-color: #38bdf8 !important;
+      box-shadow: 0 0 16px rgba(56, 189, 248, 0.3) !important;
     }
 
     /* Empty state */
@@ -2154,59 +2160,151 @@
     </div>
   </div>
 
-  <!-- ===== MODAL PROFIL & GANTI PASSWORD ===== -->
-  <div class="modal fade modal-dark" id="modalProfile" tabindex="-1" role="dialog" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered" role="document">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title font-weight-bold text-white">
-            <i class="fas fa-user-cog text-info mr-2"></i> Pengaturan Akun & Keamanan
-          </h5>
-          <button type="button" class="close text-white" onclick="closeModalHelper('modalProfile')">
+  <!-- ===== MODAL PROFIL & GANTI PASSWORD (PREMIUM GLASSMORPHIC EDITION) ===== -->
+  <div class="modal fade modal-dark" id="modalProfile" tabindex="-1" role="dialog" aria-labelledby="modalProfileTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document" style="max-width: 580px;">
+      <div class="modal-content" style="background: linear-gradient(160deg, #0b1533 0%, #070d22 100%); border: 1px solid rgba(56, 189, 248, 0.35); border-radius: 22px; box-shadow: 0 30px 80px rgba(0, 0, 0, 0.85), 0 0 30px rgba(56, 189, 248, 0.12); overflow: hidden;">
+        
+        <!-- Header -->
+        <div class="modal-header" style="background: rgba(15, 23, 42, 0.98); border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding: 20px 26px;">
+          <div class="d-flex align-items-center gap-3">
+            <div style="width: 44px; height: 44px; border-radius: 12px; background: linear-gradient(135deg, rgba(56, 189, 248, 0.2), rgba(2, 132, 199, 0.2)); border: 1px solid rgba(56, 189, 248, 0.4); display: flex; align-items: center; justify-content: center; font-size: 20px; color: #38bdf8; box-shadow: 0 0 15px rgba(56, 189, 248, 0.25);">
+              <i class="fas fa-shield-alt"></i>
+            </div>
+            <div>
+              <h5 class="modal-title font-weight-bold text-white mb-0" id="modalProfileTitle" style="font-size: 17px; letter-spacing: -0.3px;">
+                Pengaturan Akun & Keamanan
+              </h5>
+              <small style="color: #94a3b8; font-size: 11.5px;">Kelola profil identitas dan proteksi akses akun Loewix</small>
+            </div>
+          </div>
+          <button type="button" class="close text-white" onclick="closeModalHelper('modalProfile')" aria-label="Close" style="background: rgba(255,255,255,0.08); border: none; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; opacity: 0.8; transition: all 0.2s;">
             <span aria-hidden="true">&times;</span>
           </button>
         </div>
-        <div class="modal-body px-4 py-3">
-          
-          <form id="formUpdateProfile" onsubmit="submitUpdateProfile(event)" class="mb-4 pb-3 border-bottom border-secondary">
-            <h6 class="text-info font-weight-bold mb-3"><i class="fas fa-id-card mr-1"></i> Data Profil Perusahaan</h6>
-            <div class="form-group form-group-dark">
-              <label>Nama Customer / Perusahaan:</label>
-              <input type="text" id="prof-name" class="form-control form-control-dark" required>
-            </div>
-            <div class="form-group form-group-dark">
-              <label>Email Akun (Read-only):</label>
-              <input type="email" id="prof-email" class="form-control form-control-dark" disabled style="opacity: 0.7;">
-            </div>
-            <div class="form-row">
-              <div class="form-group col-md-6 form-group-dark">
-                <label>No. HP / WhatsApp:</label>
-                <input type="text" id="prof-phone" class="form-control form-control-dark">
-              </div>
-              <div class="form-group col-md-6 form-group-dark">
-                <label>Kota / Wilayah:</label>
-                <input type="text" id="prof-city" class="form-control form-control-dark">
-              </div>
-            </div>
-            <button type="submit" class="btn btn-sm btn-info font-weight-bold" style="background: #0284c7;">
-              Simpan Profil
-            </button>
-          </form>
 
-          <form id="formChangePassword" onsubmit="submitChangePassword(event)">
-            <h6 class="text-warning font-weight-bold mb-3"><i class="fas fa-key mr-1"></i> Ganti Password Akun</h6>
-            <div class="form-group form-group-dark">
-              <label>Password Baru:</label>
-              <input type="password" id="new-password" class="form-control form-control-dark" placeholder="Minimal 6 karakter" required>
-            </div>
-            <div class="form-group form-group-dark">
-              <label>Konfirmasi Password Baru:</label>
-              <input type="password" id="confirm-password" class="form-control form-control-dark" placeholder="Ulangi password baru" required>
-            </div>
-            <button type="submit" class="btn btn-sm btn-warning font-weight-bold text-dark">
-              Update Password
-            </button>
-          </form>
+        <!-- Body -->
+        <div class="modal-body px-4 py-4" style="max-height: 78vh; overflow-y: auto;">
+          
+          <!-- SECTION 1: PROFIL PERUSAHAAN -->
+          <div class="p-3 mb-4 rounded-3" style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 16px;">
+            <form id="formUpdateProfile" onsubmit="submitUpdateProfile(event)">
+              <div class="d-flex align-items-center justify-content-between mb-3">
+                <span class="badge" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3); padding: 5px 12px; border-radius: 8px; font-weight: 700; font-size: 11px; letter-spacing: 0.5px;">
+                  <i class="fas fa-id-card mr-1"></i> DATA PROFIL PERUSAHAAN
+                </span>
+                <span style="font-size: 10px; color: #64748b; font-family: monospace;">PORTAL IDENTITY</span>
+              </div>
+
+              <div class="form-group mb-3">
+                <label style="font-size: 12px; font-weight: 600; color: #cbd5e1; margin-bottom: 6px; display: block;">
+                  Nama Customer / Perusahaan:
+                </label>
+                <div class="input-group" style="position: relative;">
+                  <div style="position: absolute; left: 14px; top: 12px; z-index: 10; color: #38bdf8;">
+                    <i class="fas fa-building"></i>
+                  </div>
+                  <input type="text" id="prof-name" class="form-control" style="background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 12px; color: #ffffff !important; padding: 10px 14px 10px 40px; font-size: 13.5px;" required>
+                </div>
+              </div>
+
+              <div class="form-group mb-3">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                  <label style="font-size: 12px; font-weight: 600; color: #cbd5e1; margin-bottom: 6px; display: block;">
+                    Email Akun Terdaftar:
+                  </label>
+                  <span class="badge" style="background: rgba(255, 255, 255, 0.08); color: #94a3b8; font-size: 10px; padding: 3px 8px; border-radius: 6px;">
+                    <i class="fas fa-lock mr-1"></i> Read-only
+                  </span>
+                </div>
+                <div class="input-group" style="position: relative;">
+                  <div style="position: absolute; left: 14px; top: 12px; z-index: 10; color: #64748b;">
+                    <i class="fas fa-envelope"></i>
+                  </div>
+                  <input type="email" id="prof-email" class="form-control" disabled style="background: rgba(15, 23, 42, 0.4); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; color: #94a3b8 !important; padding: 10px 14px 10px 40px; font-size: 13.5px; opacity: 0.85;">
+                </div>
+              </div>
+
+              <div class="row g-2 mb-3">
+                <div class="col-md-6">
+                  <label style="font-size: 12px; font-weight: 600; color: #cbd5e1; margin-bottom: 6px; display: block;">
+                    No. WhatsApp:
+                  </label>
+                  <div class="input-group" style="position: relative;">
+                    <div style="position: absolute; left: 14px; top: 12px; z-index: 10; color: #34d399;">
+                      <i class="fab fa-whatsapp"></i>
+                    </div>
+                    <input type="text" id="prof-phone" class="form-control" style="background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 12px; color: #ffffff !important; padding: 10px 14px 10px 40px; font-size: 13.5px;" placeholder="+62 812-xxxx">
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <label style="font-size: 12px; font-weight: 600; color: #cbd5e1; margin-bottom: 6px; display: block;">
+                    Kota / Wilayah:
+                  </label>
+                  <div class="input-group" style="position: relative;">
+                    <div style="position: absolute; left: 14px; top: 12px; z-index: 10; color: #f43f5e;">
+                      <i class="fas fa-map-marker-alt"></i>
+                    </div>
+                    <input type="text" id="prof-city" class="form-control" style="background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 12px; color: #ffffff !important; padding: 10px 14px 10px 40px; font-size: 13.5px;" placeholder="Contoh: Bandung">
+                  </div>
+                </div>
+              </div>
+
+              <div class="text-right pt-2">
+                <button type="submit" class="btn btn-sm text-white font-weight-bold px-3 py-2" style="background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); border: none; border-radius: 10px; box-shadow: 0 4px 14px rgba(2, 132, 199, 0.4); font-size: 12.5px; transition: all 0.2s;">
+                  <i class="fas fa-save mr-1.5"></i> Simpan Profil
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <!-- SECTION 2: GANTI PASSWORD AKUN -->
+          <div class="p-3 rounded-3" style="background: rgba(245, 158, 11, 0.04); border: 1px solid rgba(245, 158, 11, 0.2); border-radius: 16px;">
+            <form id="formChangePassword" onsubmit="submitChangePassword(event)">
+              <div class="d-flex align-items-center justify-content-between mb-3">
+                <span class="badge" style="background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); padding: 5px 12px; border-radius: 8px; font-weight: 700; font-size: 11px; letter-spacing: 0.5px;">
+                  <i class="fas fa-key mr-1"></i> GANTI PASSWORD AKUN
+                </span>
+                <span style="font-size: 10px; color: #94a3b8; font-family: monospace;">SECURITY ENCRYPTION</span>
+              </div>
+
+              <div class="form-group mb-3">
+                <label style="font-size: 12px; font-weight: 600; color: #cbd5e1; margin-bottom: 6px; display: block;">
+                  Password Baru:
+                </label>
+                <div class="input-group" style="position: relative;">
+                  <div style="position: absolute; left: 14px; top: 12px; z-index: 10; color: #fbbf24;">
+                    <i class="fas fa-lock"></i>
+                  </div>
+                  <input type="password" id="new-password" class="form-control" style="background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 12px; color: #ffffff !important; padding: 10px 40px 10px 40px; font-size: 13.5px;" placeholder="Minimal 6 karakter" required>
+                  <button type="button" onclick="toggleProfilePasswordVisibility('new-password', 'eye-new-pwd')" style="position: absolute; right: 12px; top: 10px; z-index: 10; background: none; border: none; color: #94a3b8; cursor: pointer;">
+                    <i class="fas fa-eye" id="eye-new-pwd"></i>
+                  </button>
+                </div>
+              </div>
+
+              <div class="form-group mb-3">
+                <label style="font-size: 12px; font-weight: 600; color: #cbd5e1; margin-bottom: 6px; display: block;">
+                  Konfirmasi Password Baru:
+                </label>
+                <div class="input-group" style="position: relative;">
+                  <div style="position: absolute; left: 14px; top: 12px; z-index: 10; color: #fbbf24;">
+                    <i class="fas fa-shield-alt"></i>
+                  </div>
+                  <input type="password" id="confirm-password" class="form-control" style="background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 12px; color: #ffffff !important; padding: 10px 40px 10px 40px; font-size: 13.5px;" placeholder="Ulangi password baru" required>
+                  <button type="button" onclick="toggleProfilePasswordVisibility('confirm-password', 'eye-conf-pwd')" style="position: absolute; right: 12px; top: 10px; z-index: 10; background: none; border: none; color: #94a3b8; cursor: pointer;">
+                    <i class="fas fa-eye" id="eye-conf-pwd"></i>
+                  </button>
+                </div>
+              </div>
+
+              <div class="text-right pt-2">
+                <button type="submit" class="btn btn-sm font-weight-bold px-3 py-2 text-dark" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); border: none; border-radius: 10px; box-shadow: 0 4px 14px rgba(245, 158, 11, 0.35); font-size: 12.5px; transition: all 0.2s;">
+                  <i class="fas fa-key mr-1.5"></i> Update Password
+                </button>
+              </div>
+            </form>
+          </div>
 
         </div>
       </div>
@@ -5157,7 +5255,6 @@
       const win = window.open('', '', 'height=750,width=850');
       win.document.write('<html><head><title>Kwitansi Pembayaran Resmi - Loewix</title>');
       win.document.write('<link rel="stylesheet" href="../assets/bootstarp/bootstrap.min.css">');
-      win.document.write('<style>body { font-family: sans-serif; background: #f8fafc; padding: 30px; } @media print { body { padding: 0; background: #fff; } }</style>');
       win.document.write('</head><body>');
       win.document.write(content);
       win.document.write('</body></html>');
@@ -5165,6 +5262,27 @@
       win.focus();
       setTimeout(() => { win.print(); }, 400);
     }
+
+    window.toggleProfilePasswordVisibility = function(inputId, iconId) {
+      const input = document.getElementById(inputId);
+      const icon = document.getElementById(iconId);
+      if (!input) return;
+      if (input.type === 'password') {
+        input.type = 'text';
+        if (icon) {
+          icon.classList.remove('fa-eye');
+          icon.classList.add('fa-eye-slash');
+          icon.style.color = '#38bdf8';
+        }
+      } else {
+        input.type = 'password';
+        if (icon) {
+          icon.classList.remove('fa-eye-slash');
+          icon.classList.add('fa-eye');
+          icon.style.color = '#94a3b8';
+        }
+      }
+    };
 
     window.showInvoiceReceiptModal = showInvoiceReceiptModal;
     window.closeLoewixReceiptOverlay = closeLoewixReceiptOverlay;
