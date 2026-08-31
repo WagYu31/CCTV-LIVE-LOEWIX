@@ -2404,6 +2404,55 @@
     </div>
   </div>
 
+  <!-- Modal Universal Action Confirmation (Ultra-Premium Glassmorphic Dialog) -->
+  <div class="modal fade modal-dark" id="modalActionConfirm" tabindex="-1" role="dialog" aria-hidden="true" style="z-index: 1065;">
+    <div class="modal-dialog modal-dialog-centered" role="document" style="max-width: 480px;">
+      <div class="modal-content" style="background: linear-gradient(160deg, #0f172a 0%, #080e21 100%); border: 1px solid rgba(56, 189, 248, 0.35); border-radius: 22px; box-shadow: 0 30px 80px rgba(0,0,0,0.9), 0 0 35px rgba(56, 189, 248, 0.15); overflow: hidden;">
+        
+        <div class="modal-header" style="background: rgba(15, 23, 42, 0.98); border-bottom: 1px solid rgba(255,255,255,0.08); padding: 18px 24px;">
+          <div class="d-flex align-items-center gap-3">
+            <div id="confirm-modal-icon-badge" style="width: 42px; height: 42px; border-radius: 12px; background: rgba(56, 189, 248, 0.2); border: 1px solid rgba(56, 189, 248, 0.4); display: flex; align-items: center; justify-content: center; font-size: 19px; color: #38bdf8; box-shadow: 0 0 15px rgba(56, 189, 248, 0.25);">
+              <i class="fas fa-question-circle" id="confirm-modal-icon"></i>
+            </div>
+            <div>
+              <h5 class="modal-title font-weight-bold text-white mb-0" id="confirm-modal-title" style="font-size: 16px;">Konfirmasi Aksi</h5>
+              <small style="color: #94a3b8; font-size: 11px;" id="confirm-modal-subtitle">Pusat Validasi Operasional Sistem</small>
+            </div>
+          </div>
+          <button type="button" class="close text-white" onclick="resolveLoewixConfirm(false)" aria-label="Close" style="background: rgba(255,255,255,0.08); border: none; border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center;">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+
+        <div class="modal-body p-4">
+          <!-- Target Display Card -->
+          <div id="confirm-modal-target-box" class="p-3 mb-3 rounded-3" style="background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 14px;">
+            <div class="d-flex align-items-center justify-content-between mb-1">
+              <span style="font-size: 10px; font-weight: 700; color: #38bdf8; font-family: monospace; letter-spacing: 0.5px;">TARGET ENTITAS</span>
+              <span class="badge badge-pill" id="confirm-modal-meta" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8; font-size: 10px;">ID: #0</span>
+            </div>
+            <div id="confirm-modal-target-name" class="font-weight-bold text-white" style="font-size: 15px;">
+              -
+            </div>
+          </div>
+
+          <!-- Message -->
+          <p id="confirm-modal-message" class="text-light mb-0" style="font-size: 13.5px; line-height: 1.6; color: #cbd5e1 !important;">
+            Apakah Anda yakin ingin melanjutkan tindakan ini?
+          </p>
+        </div>
+
+        <div class="modal-footer" style="border-top: 1px solid rgba(255,255,255,0.08); background: rgba(15, 23, 42, 0.95); padding: 14px 24px;">
+          <button type="button" class="btn btn-secondary btn-sm px-3" onclick="resolveLoewixConfirm(false)" style="border-radius: 10px; font-size: 12.5px;">Batal</button>
+          <button type="button" class="btn btn-sm font-weight-bold px-4 text-white" id="confirm-modal-btn-ok" onclick="resolveLoewixConfirm(true)" style="background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); border: none; border-radius: 10px; box-shadow: 0 4px 15px rgba(2, 132, 199, 0.4); font-size: 12.5px;">
+            <span id="confirm-modal-btn-text">Ya, Lanjutkan</span>
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
   <!-- Modal Tambah Customer Baru (Admin) -->
   <div class="modal fade modal-dark" id="modalAddCustomer" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" role="document">
@@ -3320,9 +3369,19 @@
     }
 
     async function deleteCustomerCamera(camId, title) {
-      if (!confirm(`Apakah Anda yakin ingin menghapus kamera '${title}' dari channel Anda?`)) {
-        return;
-      }
+      const ok = await showLoewixConfirmModal({
+        title: 'Hapus Kamera CCTV',
+        subtitle: 'Konfirmasi Penghapusan Channel Streaming',
+        icon: 'fas fa-trash-alt',
+        iconColor: '#f43f5e',
+        isDanger: true,
+        targetName: title,
+        targetMeta: 'Kamera CCTV • Channel #' + camId,
+        message: `Apakah Anda yakin ingin menghapus kamera "<strong>${title}</strong>" dari portal live stream Anda?`,
+        confirmText: 'Ya, Hapus Kamera',
+        confirmGradient: 'linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)'
+      });
+      if (!ok) return;
 
       const formData = new FormData();
       formData.append('action', 'delete_camera');
@@ -4116,7 +4175,23 @@
     }
 
     async function deleteAdminPlan(planId) {
-      if (!confirm('Apakah Anda yakin ingin menghapus paket langganan ini?')) return;
+      const p = (typeof cachedAdminPlans !== 'undefined' ? cachedAdminPlans : []).find(item => item.id === planId);
+      const planName = p ? p.name : planId;
+
+      const ok = await showLoewixConfirmModal({
+        title: 'Hapus Paket SaaS',
+        subtitle: 'Konfigurasi Paket Langganan',
+        icon: 'fas fa-trash-alt',
+        iconColor: '#f43f5e',
+        isDanger: true,
+        targetName: planName,
+        targetMeta: 'Paket ID: ' + planId,
+        message: `Apakah Anda yakin ingin menghapus paket langganan "<strong>${planName}</strong>"? Paket ini tidak akan lagi tersedia di halaman registrasi.`,
+        confirmText: 'Ya, Hapus Paket',
+        confirmGradient: 'linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)'
+      });
+      if (!ok) return;
+
       const fd = new FormData();
       fd.append('action', 'delete_plan');
       fd.append('id', planId);
@@ -4247,7 +4322,7 @@
               <button class="act-btn act-btn-pass" onclick="resetAdminCustomerPassword(${c.id}, '${c.name.replace(/'/g, "\\'")}')" title="Reset Password Customer">
                 <i class="fas fa-key"></i>
               </button>
-              <button class="act-btn act-btn-status" onclick="toggleAdminCustomerStatus(${c.id})" title="Toggle Suspend/Aktif">
+              <button class="act-btn act-btn-status" onclick="toggleAdminCustomerStatus(${c.id}, '${c.name.replace(/'/g, "\\'")}', '${c.status}')" title="Toggle Suspend/Aktif">
                 <i class="fas fa-power-off"></i>
               </button>
               <button class="act-btn act-btn-delete" onclick="deleteAdminCustomer(${c.id}, '${c.name.replace(/'/g, "\\'")}')" title="Hapus Akun Customer">
@@ -4442,8 +4517,26 @@
       });
     }
 
-    async function toggleAdminCustomerStatus(id) {
-      if (!confirm('Yakin ingin mengubah status aktif/suspend customer ini?')) return;
+    async function toggleAdminCustomerStatus(id, name, currentStatus) {
+      const isCurrentlyActive = (currentStatus === 'active' || currentStatus === 'aktif');
+      const nextStatus = isCurrentlyActive ? 'SUSPEND' : 'AKTIF';
+
+      const ok = await showLoewixConfirmModal({
+        title: 'Ubah Status Customer',
+        subtitle: 'Kontrol Hak Akses & Operasional Tenant',
+        icon: 'fas fa-power-off',
+        iconColor: isCurrentlyActive ? '#f59e0b' : '#10b981',
+        isDanger: isCurrentlyActive,
+        targetName: name || 'Customer #' + id,
+        targetMeta: 'ID: #' + id + ` • Status saat ini: ${isCurrentlyActive ? 'AKTIF' : 'SUSPEND'}`,
+        message: `Apakah Anda yakin ingin mengubah status akun ini menjadi <strong>${nextStatus}</strong>?<br><small class="text-muted">Customer yang berstatus Suspend tidak dapat mengakses portal pemantauan dan streaming CCTV.</small>`,
+        confirmText: `Ya, Jadikan ${nextStatus}`,
+        confirmGradient: isCurrentlyActive 
+          ? 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)' 
+          : 'linear-gradient(135deg, #10b981 0%, #059669 100%)'
+      });
+      if (!ok) return;
+
       const fd = new FormData();
       fd.append('action', 'toggle_status');
       fd.append('id', id);
@@ -4462,7 +4555,19 @@
     }
 
     async function deleteAdminCustomer(id, name) {
-      if (!confirm(`PERINGATAN: Apakah Anda yakin ingin menghapus akun customer "${name}"?\nSeluruh kamera terkait akan ikut terhapus.`)) return;
+      const ok = await showLoewixConfirmModal({
+        title: 'Hapus Akun Customer',
+        subtitle: 'Peringatan Penghapusan Data Permanen',
+        icon: 'fas fa-triangle-exclamation',
+        iconColor: '#f43f5e',
+        isDanger: true,
+        targetName: name,
+        targetMeta: 'ID: #' + id + ' • Seluruh kamera terkait akan ikut terhapus',
+        message: `PERINGATAN: Apakah Anda yakin ingin menghapus akun customer "<strong>${name}</strong>"? Seluruh konfigurasi RTSP dan kamera yang terdaftar pada akun ini akan dihapus permanen.`,
+        confirmText: 'Ya, Hapus Permanen',
+        confirmGradient: 'linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)'
+      });
+      if (!ok) return;
 
       const fd = new FormData();
       fd.append('action', 'delete');
@@ -4595,7 +4700,18 @@
     }
 
     async function sendAdminPaymentReminder(orderId, userName, userEmail) {
-      if (!confirm(`Kirim email pengingat tagihan #${orderId} ke ${userName} (${userEmail})?`)) return;
+      const ok = await showLoewixConfirmModal({
+        title: 'Kirim Email Reminder Tagihan',
+        subtitle: 'Notifikasi Otomatis Pembayaran',
+        icon: 'fas fa-paper-plane',
+        iconColor: '#38bdf8',
+        targetName: `${userName} (${userEmail})`,
+        targetMeta: 'Invoice Order: #' + orderId,
+        message: `Kirimkan email pengingat pembayaran otomatis tagihan invoice <strong>#${orderId}</strong> ke alamat <strong>${userEmail}</strong>?`,
+        confirmText: 'Ya, Kirim Email',
+        confirmGradient: 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)'
+      });
+      if (!ok) return;
 
       const fd = new FormData();
       fd.append('action', 'send_payment_reminder');
@@ -4611,7 +4727,18 @@
     }
 
     async function markAdminInvoiceSettled(orderId, userName) {
-      if (!confirm(`Tandai invoice #${orderId} milik ${userName} sebagai LUNAS (SETTLEMENT)?\nKuota CCTV pelanggan akan langsung aktif.`)) return;
+      const ok = await showLoewixConfirmModal({
+        title: 'Aktivasi Manual Tagihan',
+        subtitle: 'Konfirmasi Pembayaran Lunas',
+        icon: 'fas fa-check-circle',
+        iconColor: '#10b981',
+        targetName: userName,
+        targetMeta: 'Invoice Order: #' + orderId,
+        message: `Tandai invoice <strong>#${orderId}</strong> milik <strong>${userName}</strong> sebagai <strong>LUNAS (SETTLEMENT)</strong>?<br><small class="text-muted">Kuota CCTV pelanggan akan langsung aktif seketika.</small>`,
+        confirmText: 'Konfirmasi Lunas',
+        confirmGradient: 'linear-gradient(135deg, #10b981 0%, #059669 100%)'
+      });
+      if (!ok) return;
 
       const fd = new FormData();
       fd.append('action', 'mark_invoice_settled');
@@ -5363,6 +5490,56 @@
       setTimeout(() => { win.print(); }, 400);
     }
 
+    let _confirmResolve = null;
+
+    window.showLoewixConfirmModal = function(options) {
+      return new Promise((resolve) => {
+        _confirmResolve = resolve;
+
+        const titleEl = document.getElementById('confirm-modal-title');
+        const subEl = document.getElementById('confirm-modal-subtitle');
+        const iconEl = document.getElementById('confirm-modal-icon');
+        const iconBadge = document.getElementById('confirm-modal-icon-badge');
+        const targetNameEl = document.getElementById('confirm-modal-target-name');
+        const metaEl = document.getElementById('confirm-modal-meta');
+        const msgEl = document.getElementById('confirm-modal-message');
+        const btnOk = document.getElementById('confirm-modal-btn-ok');
+        const btnText = document.getElementById('confirm-modal-btn-text');
+
+        if (titleEl) titleEl.textContent = options.title || 'Konfirmasi Aksi';
+        if (subEl) subEl.textContent = options.subtitle || 'Pusat Validasi Operasional Sistem';
+        if (msgEl) msgEl.innerHTML = options.message || 'Apakah Anda yakin ingin melanjutkan tindakan ini?';
+        if (targetNameEl) targetNameEl.innerHTML = options.targetName || '-';
+        if (metaEl) metaEl.textContent = options.targetMeta || 'Sistem Loewix';
+        if (btnText) btnText.textContent = options.confirmText || 'Ya, Lanjutkan';
+
+        const color = options.iconColor || '#38bdf8';
+        if (iconEl) iconEl.className = options.icon || 'fas fa-question-circle';
+        if (iconBadge) {
+          iconBadge.style.color = color;
+          iconBadge.style.background = options.isDanger ? 'rgba(244, 63, 94, 0.2)' : 'rgba(56, 189, 248, 0.2)';
+          iconBadge.style.borderColor = color;
+          iconBadge.style.boxShadow = `0 0 15px ${color}40`;
+        }
+
+        if (btnOk) {
+          btnOk.style.background = options.confirmGradient || (options.isDanger ? 'linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)' : 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)');
+          btnOk.style.boxShadow = options.isDanger ? '0 4px 15px rgba(239, 68, 68, 0.4)' : '0 4px 15px rgba(2, 132, 199, 0.4)';
+        }
+
+        openModalHelper('modalActionConfirm');
+      });
+    };
+
+    window.resolveLoewixConfirm = function(val) {
+      closeModalHelper('modalActionConfirm');
+      if (typeof _confirmResolve === 'function') {
+        const fn = _confirmResolve;
+        _confirmResolve = null;
+        fn(val);
+      }
+    };
+
     window.toggleProfilePasswordVisibility = function(inputId, iconId) {
       const input = document.getElementById(inputId);
       const icon = document.getElementById(iconId);
@@ -5395,6 +5572,11 @@
     window.submitResetCustomerPassword = submitResetCustomerPassword;
     window.generateRandomPassword = generateRandomPassword;
     window.copyPasswordToClipboard = copyPasswordToClipboard;
+    window.toggleAdminCustomerStatus = toggleAdminCustomerStatus;
+    window.deleteAdminCustomer = deleteAdminCustomer;
+    window.deleteCustomerCamera = deleteCustomerCamera;
+    window.sendAdminPaymentReminder = sendAdminPaymentReminder;
+    window.markAdminInvoiceSettled = markAdminInvoiceSettled;
   </script>
 </body>
 </html>
