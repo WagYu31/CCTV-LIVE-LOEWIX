@@ -4699,9 +4699,9 @@
                 <td><strong class="text-emerald" style="color: #34d399;">${totalFmt}</strong></td>
                 <td>${statusBadge}</td>
                 <td class="text-center">
-                  <button type="button" class="btn btn-sm btn-info font-weight-bold px-3 py-1" onclick="window.showInvoiceReceiptModal('${inv.order_id}')" style="background: #0284c7; border: none; border-radius: 6px; cursor: pointer; z-index: 10; position: relative;" title="Lihat Kwitansi / Faktur Resmi">
-                    <i class="fas fa-receipt mr-1"></i> Kwitansi
-                  </button>
+                  <a href="receipt.php?order_id=${encodeURIComponent(inv.order_id)}" target="_blank" class="btn btn-sm btn-info font-weight-bold px-3 py-1 text-white" style="background: #0284c7; border: none; border-radius: 6px; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 4px; box-shadow: 0 2px 8px rgba(2, 132, 199, 0.4);" title="Buka & Cetak Kwitansi Resmi PT. Loewix Indonesia">
+                    <i class="fas fa-receipt"></i> Kwitansi
+                  </a>
                 </td>
               </tr>
             `;
