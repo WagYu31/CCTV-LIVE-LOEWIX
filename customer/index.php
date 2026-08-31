@@ -4699,8 +4699,8 @@
                 <td><strong class="text-emerald" style="color: #34d399;">${totalFmt}</strong></td>
                 <td>${statusBadge}</td>
                 <td class="text-center">
-                  <button class="btn btn-sm btn-outline-info" onclick="showInvoiceReceiptModal('${inv.order_id}')" title="Lihat Kwitansi / Faktur">
-                    <i class="fas fa-receipt"></i> Kwitansi
+                  <button type="button" class="btn btn-sm btn-info font-weight-bold px-3 py-1" onclick="window.showInvoiceReceiptModal('${inv.order_id}')" style="background: #0284c7; border: none; border-radius: 6px; cursor: pointer; z-index: 10; position: relative;" title="Lihat Kwitansi / Faktur Resmi">
+                    <i class="fas fa-receipt mr-1"></i> Kwitansi
                   </button>
                 </td>
               </tr>
@@ -5136,6 +5136,10 @@
       win.focus();
       setTimeout(() => { win.print(); }, 400);
     }
+
+    window.showInvoiceReceiptModal = showInvoiceReceiptModal;
+    window.closeLoewixReceiptOverlay = closeLoewixReceiptOverlay;
+    window.printInvoiceReceipt = printInvoiceReceipt;
   </script>
 </body>
 </html>
