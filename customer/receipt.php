@@ -4,7 +4,7 @@ require_once __DIR__ . '/../config/db.php';
 
 $orderId = isset($_GET['order_id']) ? trim($_GET['order_id']) : '';
 
-$db = load_db();
+$db = function_exists('get_db_data') ? get_db_data() : (file_exists(__DIR__ . '/../data/loewix_db.json') ? json_decode(file_get_contents(__DIR__ . '/../data/loewix_db.json'), true) : []);
 $invoices = $db['invoices'] ?? [];
 $users = $db['users'] ?? [];
 $billingProfiles = $db['billing_profiles'] ?? [];
