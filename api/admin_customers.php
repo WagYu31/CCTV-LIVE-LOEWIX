@@ -95,11 +95,11 @@ if ($method === 'POST') {
         $id = (int) ($_POST['id'] ?? 0);
         $newQuota = (int) ($_POST['cctv_quota'] ?? 10);
 
-        foreach ($db['users'] as &$u) {
-            if ($u['id'] === $id && $u['role'] === 'customer') {
-                $u['cctv_quota'] = max(1, $newQuota);
+        foreach ($db['users'] as $k => $u) {
+            if ((int)$u['id'] === $id && $u['role'] === 'customer') {
+                $db['users'][$k]['cctv_quota'] = max(1, $newQuota);
                 save_db_data($db);
-                echo json_encode(['success' => true, 'message' => 'Kuota Customer ' . $u['name'] . ' berhasil diperbarui menjadi ' . $u['cctv_quota'] . ' CCTV!']);
+                echo json_encode(['success' => true, 'message' => 'Kuota Customer ' . $u['name'] . ' berhasil diperbarui menjadi ' . max(1, $newQuota) . ' CCTV!']);
                 exit;
             }
         }
@@ -110,11 +110,12 @@ if ($method === 'POST') {
     if ($action === 'toggle_status') {
         $id = (int) ($_POST['id'] ?? 0);
 
-        foreach ($db['users'] as &$u) {
-            if ($u['id'] === $id && $u['role'] === 'customer') {
-                $u['status'] = ($u['status'] === 'active') ? 'suspended' : 'active';
+        foreach ($db['users'] as $k => $u) {
+            if ((int)$u['id'] === $id && $u['role'] === 'customer') {
+                $newStatus = ($u['status'] === 'active') ? 'suspended' : 'active';
+                $db['users'][$k]['status'] = $newStatus;
                 save_db_data($db);
-                echo json_encode(['success' => true, 'message' => 'Status Customer ' . $u['name'] . ' diubah menjadi ' . strtoupper($u['status']) . '!']);
+                echo json_encode(['success' => true, 'message' => 'Status Customer ' . $u['name'] . ' diubah menjadi ' . strtoupper($newStatus) . '!']);
                 exit;
             }
         }
@@ -122,7 +123,7 @@ if ($method === 'POST') {
         exit;
     }
 
-    if ($action === 'update_customer') {
+    if ($action === 'update_customer' || $action === 'update_profile') {
         $id = (int) ($_POST['id'] ?? 0);
         $name = trim($_POST['name'] ?? '');
         $email = trim($_POST['email'] ?? '');
@@ -134,12 +135,12 @@ if ($method === 'POST') {
             exit;
         }
 
-        foreach ($db['users'] as &$u) {
-            if ($u['id'] === $id && $u['role'] === 'customer') {
-                $u['name'] = $name;
-                $u['email'] = $email;
-                $u['phone'] = $phone;
-                $u['city'] = $city;
+        foreach ($db['users'] as $k => $u) {
+            if ((int)$u['id'] === $id && $u['role'] === 'customer') {
+                $db['users'][$k]['name'] = $name;
+                $db['users'][$k]['email'] = $email;
+                $db['users'][$k]['phone'] = $phone;
+                $db['users'][$k]['city'] = $city;
                 save_db_data($db);
                 echo json_encode(['success' => true, 'message' => 'Data Customer ' . $name . ' berhasil diperbarui!']);
                 exit;
@@ -158,9 +159,9 @@ if ($method === 'POST') {
             exit;
         }
 
-        foreach ($db['users'] as &$u) {
-            if ($u['id'] === $id && $u['role'] === 'customer') {
-                $u['password'] = password_hash($newPassword, PASSWORD_BCRYPT);
+        foreach ($db['users'] as $k => $u) {
+            if ((int)$u['id'] === $id && $u['role'] === 'customer') {
+                $db['users'][$k]['password'] = password_hash($newPassword, PASSWORD_BCRYPT);
                 save_db_data($db);
                 echo json_encode(['success' => true, 'message' => 'Password Customer ' . $u['name'] . ' berhasil direset!']);
                 exit;

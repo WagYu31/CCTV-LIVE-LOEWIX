@@ -288,18 +288,18 @@ if ($action === 'update_profile') {
         exit;
     }
 
-    foreach ($db['users'] as &$u) {
+    foreach ($db['users'] as $k => $u) {
         if ((int)$u['id'] === $customerId) {
-            $u['name'] = $name;
-            if (!empty($phone)) $u['phone'] = $phone;
-            if (!empty($city)) $u['city'] = $city;
+            $db['users'][$k]['name'] = $name;
+            if (!empty($phone)) $db['users'][$k]['phone'] = $phone;
+            if (!empty($city)) $db['users'][$k]['city'] = $city;
             save_db_data($db);
 
             // Update session
             $_SESSION['user_name'] = $name;
             if (!empty($city)) $_SESSION['user_city'] = $city;
 
-            echo json_encode(['success' => true, 'message' => 'Profil berhasil diperbarui!', 'user' => $u]);
+            echo json_encode(['success' => true, 'message' => 'Profil berhasil diperbarui!', 'user' => $db['users'][$k]]);
             exit;
         }
     }
@@ -316,7 +316,7 @@ if ($action === 'change_password') {
         exit;
     }
 
-    foreach ($db['users'] as &$u) {
+    foreach ($db['users'] as $k => $u) {
         if ((int)$u['id'] === $customerId) {
             // Verify old password if provided
             if (!empty($oldPass)) {
@@ -326,7 +326,7 @@ if ($action === 'change_password') {
                     exit;
                 }
             }
-            $u['password'] = password_hash($newPass, PASSWORD_BCRYPT);
+            $db['users'][$k]['password'] = password_hash($newPass, PASSWORD_BCRYPT);
             save_db_data($db);
             echo json_encode(['success' => true, 'message' => 'Password Anda berhasil diperbarui!']);
             exit;
