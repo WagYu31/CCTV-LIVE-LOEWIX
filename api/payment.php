@@ -116,17 +116,27 @@ if ($action === 'create_snap_token') {
     $customPhone = trim($_POST['phone'] ?? '');
 
     $user = get_logged_in_user();
-    $userId = $user ? $user['id'] : null;
+    $db = get_db_data();
+    $userId = $user ? (int)$user['id'] : null;
     $userName = $user ? $user['name'] : $customName;
     $userEmail = $user ? $user['email'] : $customEmail;
     $userPhone = $user ? ($user['phone'] ?? '+62 812-3456-7890') : $customPhone;
+
+    // If userId not from session, look up user from database by email
+    if (!$userId && !empty($userEmail) && isset($db['users'])) {
+        foreach ($db['users'] as $u) {
+            if (strtolower(trim($u['email'])) === strtolower(trim($userEmail))) {
+                $userId = (int)$u['id'];
+                if (empty($userName)) $userName = $u['name'];
+                break;
+            }
+        }
+    }
 
     if (empty($userName) || empty($userEmail)) {
         echo json_encode(['success' => false, 'message' => 'Nama dan Email pembeli wajib diisi!']);
         exit;
     }
-
-    $db = get_db_data();
     $selectedPlan = null;
     foreach ($db['plans'] as $p) {
         if ($p['id'] === $planId) {

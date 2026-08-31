@@ -262,31 +262,6 @@ if ($action === 'register') {
         'auto_renew' => true
     ];
 
-    // Auto-create registration invoice for transaction history
-    if (!isset($db['invoices']) || !is_array($db['invoices'])) {
-        $db['invoices'] = [];
-    }
-    $existingInvoiceIds = array_column($db['invoices'], 'id');
-    $newInvoiceId = count($existingInvoiceIds) > 0 ? max($existingInvoiceIds) + 1 : 1;
-    $db['invoices'][] = [
-        'id' => $newInvoiceId,
-        'order_id' => 'INV-LWX-' . date('Ymd') . '-' . strtoupper(substr(md5($newUser['id'] . $email . time()), 0, 6)),
-        'user_id' => $newUser['id'],
-        'user_name' => $name,
-        'user_email' => $email,
-        'plan_id' => $planId,
-        'plan_name' => $planName . ' (' . $quota . ' CCTV)',
-        'billing_cycle' => 'annual',
-        'amount' => $basePrice,
-        'tax_amount' => $taxAmount,
-        'total_amount' => $grossAmount,
-        'status' => 'settlement',
-        'payment_type' => 'midtrans_gateway',
-        'snap_token' => 'SNAP_LOEWIX_AUTO_' . $newUser['id'],
-        'transaction_time' => date('Y-m-d H:i:s'),
-        'settlement_time' => date('Y-m-d H:i:s')
-    ];
-
     save_db_data($db);
 
     // Auto-login newly registered user

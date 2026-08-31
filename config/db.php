@@ -478,84 +478,43 @@ function get_user_subscription($userId) {
 }
 
 /**
- * Get user invoices list
+ * Get user invoices list (Strict Multi-Tenant Isolation)
  */
 function get_user_invoices($userId) {
-    $db = get_db_data();
-    $list = [];
-    $userEmail = '';
-    $userName = '';
-    $userCity = 'Pematangsiantar';
-    $userQuota = 10;
+    $userId = (int)$userId;
+    if ($userId <= 0) return [];
 
+    $db = get_db_data();
+    $targetUser = null;
     foreach ($db['users'] as $u) {
-        if ((int)$u['id'] === (int)$userId) {
-            $userEmail = strtolower($u['email'] ?? '');
-            $userName = $u['name'] ?? 'Pelanggan';
-            $userCity = $u['city'] ?? 'Pematangsiantar';
-            $userQuota = (int)($u['cctv_quota'] ?? 10);
+        if ((int)$u['id'] === $userId) {
+            $targetUser = $u;
             break;
         }
     }
 
-    $dbModified = false;
+    if (!$targetUser) return [];
+
+    $userEmail = strtolower(trim($targetUser['email'] ?? ''));
+    $list = [];
+
     if (isset($db['invoices']) && is_array($db['invoices'])) {
-        foreach ($db['invoices'] as &$inv) {
-            $invUserId = (int)($inv['user_id'] ?? 0);
-            $invEmail = strtolower($inv['user_email'] ?? '');
-            
-            if ($invUserId === (int)$userId || (!empty($userEmail) && $invEmail === $userEmail)) {
-                if ($invUserId !== (int)$userId) {
-                    $inv['user_id'] = (int)$userId;
-                    $dbModified = true;
-                }
+        foreach ($db['invoices'] as $inv) {
+            $invEmail = strtolower(trim($inv['user_email'] ?? ''));
+            $invUserId = (isset($inv['user_id']) && $inv['user_id'] !== null && $inv['user_id'] !== '') ? (int)$inv['user_id'] : null;
+
+            // Strict Tenant Isolation: Must match user's exact email or exact user_id
+            $isMatch = false;
+            if (!empty($userEmail) && !empty($invEmail)) {
+                $isMatch = ($invEmail === $userEmail);
+            } elseif ($invUserId !== null && $invUserId > 0) {
+                $isMatch = ($invUserId === $userId);
+            }
+
+            if ($isMatch) {
                 $list[] = $inv;
             }
         }
-    }
-
-    // If a registered customer has no invoice yet, auto-generate their initial registration invoice
-    if (empty($list) && !empty($userEmail)) {
-        $planId = 'business_10';
-        $planName = 'Business Pro (10 CCTV)';
-        $basePrice = 2990000;
-        if ($userQuota >= 20) {
-            $planId = 'enterprise_20';
-            $planName = 'Enterprise Fleet (20 CCTV)';
-            $basePrice = 5490000;
-        } elseif ($userQuota <= 4) {
-            $planId = 'starter_4';
-            $planName = 'Starter Fleet (4 CCTV)';
-            $basePrice = 1490000;
-        }
-        $taxAmount = (int)round($basePrice * 0.11);
-        $grossAmount = $basePrice + $taxAmount;
-
-        $newInv = [
-            'id' => count($db['invoices'] ?? []) + 1,
-            'order_id' => 'INV-LWX-' . date('Ymd') . '-' . strtoupper(substr(md5($userId . $userEmail), 0, 6)),
-            'user_id' => (int)$userId,
-            'user_name' => $userName,
-            'user_email' => $userEmail,
-            'plan_id' => $planId,
-            'plan_name' => $planName,
-            'billing_cycle' => 'annual',
-            'amount' => $basePrice,
-            'tax_amount' => $taxAmount,
-            'total_amount' => $grossAmount,
-            'status' => 'settlement',
-            'payment_type' => 'midtrans_gateway',
-            'snap_token' => 'SNAP_LOEWIX_AUTO_' . $userId,
-            'transaction_time' => date('Y-m-d H:i:s'),
-            'settlement_time' => date('Y-m-d H:i:s')
-        ];
-        $db['invoices'][] = $newInv;
-        $list[] = $newInv;
-        $dbModified = true;
-    }
-
-    if ($dbModified) {
-        save_db_data($db);
     }
 
     // Sort newest first
