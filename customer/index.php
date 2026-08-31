@@ -2564,27 +2564,28 @@
     </div>
   </div>
 
-  <!-- ===== MODAL INVOICE RECEIPT ===== -->
-  <div class="modal fade modal-dark" id="modalInvoiceReceipt" tabindex="-1" role="dialog" aria-labelledby="receiptModalTitle" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered" role="document" style="max-width: 620px;">
-      <div class="modal-content" style="border: 1px solid rgba(56, 189, 248, 0.4); background: #0f172a; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);">
-        <div class="modal-header" style="background: rgba(15, 23, 42, 0.95); border-bottom: 1px solid rgba(255,255,255,0.1);">
-          <h5 class="modal-title font-weight-bold text-white" id="receiptModalTitle" style="font-size: 16px;">
-            <i class="fas fa-receipt text-info mr-2"></i> Kwitansi Pembayaran Resmi Loewix
-          </h5>
-          <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-          </button>
-        </div>
-        <div class="modal-body p-3 p-md-4" id="invoice-receipt-body">
-          <!-- Dynamically populated -->
-        </div>
-        <div class="modal-footer" style="border-top: 1px solid rgba(255,255,255,0.1);">
-          <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Tutup</button>
-          <button type="button" class="btn btn-info btn-sm font-weight-bold" onclick="printInvoiceReceipt()" style="background: #0284c7; border: none;">
-            <i class="fas fa-print mr-1"></i> Cetak / Simpan PDF
-          </button>
-        </div>
+  <!-- ===== DEDICATED LOEWIX RECEIPT OVERLAY ===== -->
+  <div id="modalLoewixReceiptOverlay" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; width: 100vw; height: 100vh; z-index: 9999999; background: rgba(5, 11, 26, 0.88); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); align-items: center; justify-content: center; padding: 20px; overflow-y: auto;">
+    <div style="background: #0f172a; border: 1px solid rgba(56, 189, 248, 0.4); border-radius: 16px; width: 100%; max-width: 620px; box-shadow: 0 25px 60px rgba(0, 0, 0, 0.85); overflow: hidden; margin: auto;">
+      <!-- Overlay Header -->
+      <div style="background: rgba(15, 23, 42, 0.98); border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding: 16px 20px; display: flex; justify-content: space-between; align-items: center;">
+        <h5 style="margin: 0; color: #ffffff; font-weight: 700; font-size: 16px; display: flex; align-items: center;">
+          <i class="fas fa-receipt" style="color: #38bdf8; margin-right: 8px;"></i> Kwitansi Pembayaran Resmi Loewix
+        </h5>
+        <button type="button" onclick="closeLoewixReceiptOverlay()" style="background: rgba(255,255,255,0.08); border: none; color: #ffffff; font-size: 18px; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s;">
+          &times;
+        </button>
+      </div>
+      <!-- Overlay Content Body -->
+      <div id="loewix-receipt-content" style="padding: 20px; max-height: 75vh; overflow-y: auto;">
+        <!-- Dynamically populated receipt -->
+      </div>
+      <!-- Overlay Footer -->
+      <div style="background: rgba(15, 23, 42, 0.98); border-top: 1px solid rgba(255, 255, 255, 0.1); padding: 14px 20px; display: flex; justify-content: flex-end; gap: 10px;">
+        <button type="button" class="btn btn-secondary btn-sm px-3" onclick="closeLoewixReceiptOverlay()" style="border-radius: 8px;">Tutup</button>
+        <button type="button" class="btn btn-info btn-sm font-weight-bold px-3" onclick="printInvoiceReceipt()" style="background: #0284c7; border: none; border-radius: 8px;">
+          <i class="fas fa-print mr-1"></i> Cetak / Simpan PDF
+        </button>
       </div>
     </div>
   </div>
@@ -5010,6 +5011,10 @@
     }
 
     function showInvoiceReceiptModal(orderId) {
+      const overlay = document.getElementById('modalLoewixReceiptOverlay');
+      const contentEl = document.getElementById('loewix-receipt-content');
+      if (!overlay || !contentEl) return;
+
       const activeUser = currentCustomer || (localStorage.getItem('loewix_user') ? JSON.parse(localStorage.getItem('loewix_user')) : null);
       let inv = null;
       let prof = {};
@@ -5037,84 +5042,88 @@
       }
 
       const isSettlement = (inv.status === 'settlement' || inv.status === 'capture' || inv.status === 'paid');
-      const receiptBody = document.getElementById('invoice-receipt-body');
-      
-      if (receiptBody) {
-        receiptBody.innerHTML = `
-          <div style="background: #ffffff; color: #0f172a; padding: 22px; border-radius: 10px; font-family: 'Plus Jakarta Sans', sans-serif;">
-            <!-- Receipt Header -->
-            <div class="d-flex justify-content-between align-items-start border-bottom pb-3 mb-3">
-              <div>
-                <h4 style="font-weight: 800; color: #091650; margin: 0; font-size: 18px;">PT. LOEWIX INDONESIA</h4>
-                <div style="color: #0284c7; font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;">Cloud CCTV Surveillance SaaS Platform</div>
-                <div style="font-size: 11px; color: #64748b; margin-top: 3px;">NPWP: 01.999.888.7-012.000 &bull; www.loewixcctv.com</div>
-              </div>
-              <div class="text-right">
-                <span class="badge ${isSettlement ? 'badge-success' : 'badge-warning'} px-3 py-1" style="font-size: 12px; font-weight: 800; border-radius: 6px;">
-                  ${isSettlement ? '✓ LUNAS (PAID)' : 'MENUNGGU PEMBAYARAN'}
-                </span>
-                <div style="font-size: 11px; color: #64748b; margin-top: 4px;">${inv.settlement_time || inv.transaction_time || '-'}</div>
-              </div>
+
+      contentEl.innerHTML = `
+        <div id="invoice-printable-area" style="background: #ffffff; color: #0f172a; padding: 22px; border-radius: 10px; font-family: 'Plus Jakarta Sans', sans-serif;">
+          <!-- Receipt Header -->
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid #e2e8f0; padding-bottom: 12px; margin-bottom: 12px;">
+            <div>
+              <h4 style="font-weight: 800; color: #091650; margin: 0; font-size: 18px;">PT. LOEWIX INDONESIA</h4>
+              <div style="color: #0284c7; font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;">Cloud CCTV Surveillance SaaS Platform</div>
+              <div style="font-size: 11px; color: #64748b; margin-top: 3px;">NPWP: 01.999.888.7-012.000 &bull; www.loewixcctv.com</div>
             </div>
-
-            <!-- Invoice Info -->
-            <div class="row mb-3" style="font-size: 12px;">
-              <div class="col-6">
-                <div style="color: #64748b; font-size: 11px;">Ditagihkan Kepada:</div>
-                <strong style="color: #0f172a; font-size: 13.5px; display: block; margin-top: 2px;">${prof.company_name || inv.user_name || (activeUser ? activeUser.name : 'Customer')}</strong>
-                <div style="color: #475569;">Email: ${prof.billing_email || inv.user_email || (activeUser ? activeUser.email : '-')}</div>
-                <div style="color: #475569;">Lokasi: ${prof.billing_address || ('Kota ' + (activeUser ? activeUser.city : 'Bandung') + ', Indonesia')}</div>
-              </div>
-              <div class="col-6 text-right">
-                <div style="color: #64748b; font-size: 11px;">Nomor Invoice / Order:</div>
-                <strong style="color: #0284c7; font-family: monospace; font-size: 13.5px; display: block; margin-top: 2px;">${inv.order_id}</strong>
-                <div style="color: #475569;">Metode: ${(inv.payment_type || 'Bank Transfer BCA').toUpperCase().replace(/_/g, ' ')}</div>
-              </div>
-            </div>
-
-            <!-- Items Table -->
-            <table style="width: 100%; border-collapse: collapse; margin-bottom: 16px; font-size: 12px;">
-              <thead>
-                <tr style="background: #f8fafc; border-top: 1px solid #cbd5e1; border-bottom: 1px solid #cbd5e1;">
-                  <th style="padding: 8px; text-align: left; color: #475569;">Deskripsi Layanan</th>
-                  <th style="padding: 8px; text-align: center; color: #475569;">Periode</th>
-                  <th style="padding: 8px; text-align: right; color: #475569;">Jumlah</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr style="border-bottom: 1px solid #f1f5f9;">
-                  <td style="padding: 10px 8px;">
-                    <strong style="color: #0f172a;">Paket ${inv.plan_name || 'Business Pro (10 CCTV)'}</strong><br/>
-                    <small style="color: #64748b;">Akses Multi-Stream Live CCTV & Cloud Relay MediaMTX</small>
-                  </td>
-                  <td style="padding: 10px 8px; text-align: center; color: #334155;">${inv.billing_cycle === 'annual' ? '1 Tahun' : '1 Bulan'}</td>
-                  <td style="padding: 10px 8px; text-align: right; font-weight: 700; color: #0f172a;">Rp ${Number(inv.amount || 2990000).toLocaleString('id-ID')}</td>
-                </tr>
-                <tr style="border-bottom: 1px solid #f1f5f9;">
-                  <td style="padding: 6px 8px; color: #64748b;" colspan="2">PPN 11% (Pajak Pertambahan Nilai)</td>
-                  <td style="padding: 6px 8px; text-align: right; color: #64748b;">Rp ${Number(inv.tax_amount || Math.round((inv.amount || 2990000) * 0.11)).toLocaleString('id-ID')}</td>
-                </tr>
-                <tr style="background: #f0fdf4; border-top: 2px solid #86efac;">
-                  <td style="padding: 10px 8px; font-weight: 800; font-size: 13px; color: #166534;" colspan="2">TOTAL PEMBAYARAN</td>
-                  <td style="padding: 10px 8px; text-align: right; font-weight: 800; font-size: 14px; color: #059669;">
-                    Rp ${Number(inv.total_amount || (inv.amount + Math.round(inv.amount * 0.11))).toLocaleString('id-ID')}
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-
-            <div class="text-center" style="font-size: 10.5px; color: #94a3b8; border-top: 1px dashed #cbd5e1; padding-top: 8px;">
-              Dokumen ini merupakan bukti pembayaran elektronik yang sah yang diterbitkan oleh PT. Loewix Indonesia.
+            <div style="text-align: right;">
+              <span style="font-size: 12px; font-weight: 800; border-radius: 6px; padding: 4px 10px; background: ${isSettlement ? '#10b981' : '#f59e0b'}; color: #ffffff; display: inline-block;">
+                ${isSettlement ? '✓ LUNAS (PAID)' : 'MENUNGGU PEMBAYARAN'}
+              </span>
+              <div style="font-size: 11px; color: #64748b; margin-top: 4px;">${inv.settlement_time || inv.transaction_time || '-'}</div>
             </div>
           </div>
-        `;
-      }
-      
-      openModalHelper('modalInvoiceReceipt');
+
+          <!-- Invoice Info -->
+          <div style="display: flex; justify-content: space-between; margin-bottom: 14px; font-size: 12px;">
+            <div style="flex: 1;">
+              <div style="color: #64748b; font-size: 11px;">Ditagihkan Kepada:</div>
+              <strong style="color: #0f172a; font-size: 13.5px; display: block; margin-top: 2px;">${prof.company_name || inv.user_name || (activeUser ? activeUser.name : 'Customer')}</strong>
+              <div style="color: #475569;">Email: ${prof.billing_email || inv.user_email || (activeUser ? activeUser.email : '-')}</div>
+              <div style="color: #475569;">Lokasi: ${prof.billing_address || ('Kota ' + (activeUser ? activeUser.city : 'Bandung') + ', Indonesia')}</div>
+            </div>
+            <div style="flex: 1; text-align: right;">
+              <div style="color: #64748b; font-size: 11px;">Nomor Invoice / Order:</div>
+              <strong style="color: #0284c7; font-family: monospace; font-size: 13.5px; display: block; margin-top: 2px;">${inv.order_id}</strong>
+              <div style="color: #475569;">Metode: ${(inv.payment_type || 'Bank Transfer BCA').toUpperCase().replace(/_/g, ' ')}</div>
+            </div>
+          </div>
+
+          <!-- Items Table -->
+          <table style="width: 100%; border-collapse: collapse; margin-bottom: 14px; font-size: 12px;">
+            <thead>
+              <tr style="background: #f8fafc; border-top: 1px solid #cbd5e1; border-bottom: 1px solid #cbd5e1;">
+                <th style="padding: 8px; text-align: left; color: #475569;">Deskripsi Layanan</th>
+                <th style="padding: 8px; text-align: center; color: #475569;">Periode</th>
+                <th style="padding: 8px; text-align: right; color: #475569;">Jumlah</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr style="border-bottom: 1px solid #f1f5f9;">
+                <td style="padding: 10px 8px;">
+                  <strong style="color: #0f172a;">Paket ${inv.plan_name || 'Business Pro (10 CCTV)'}</strong><br/>
+                  <small style="color: #64748b;">Akses Multi-Stream Live CCTV & Cloud Relay MediaMTX</small>
+                </td>
+                <td style="padding: 10px 8px; text-align: center; color: #334155;">${inv.billing_cycle === 'annual' ? '1 Tahun' : '1 Bulan'}</td>
+                <td style="padding: 10px 8px; text-align: right; font-weight: 700; color: #0f172a;">Rp ${Number(inv.amount || 2990000).toLocaleString('id-ID')}</td>
+              </tr>
+              <tr style="border-bottom: 1px solid #f1f5f9;">
+                <td style="padding: 6px 8px; color: #64748b;" colspan="2">PPN 11% (Pajak Pertambahan Nilai)</td>
+                <td style="padding: 6px 8px; text-align: right; color: #64748b;">Rp ${Number(inv.tax_amount || Math.round((inv.amount || 2990000) * 0.11)).toLocaleString('id-ID')}</td>
+              </tr>
+              <tr style="background: #f0fdf4; border-top: 2px solid #86efac;">
+                <td style="padding: 10px 8px; font-weight: 800; font-size: 13px; color: #166534;" colspan="2">TOTAL PEMBAYARAN</td>
+                <td style="padding: 10px 8px; text-align: right; font-weight: 800; font-size: 14px; color: #059669;">
+                  Rp ${Number(inv.total_amount || (inv.amount + Math.round(inv.amount * 0.11))).toLocaleString('id-ID')}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div style="text-align: center; font-size: 10.5px; color: #94a3b8; border-top: 1px dashed #cbd5e1; padding-top: 8px;">
+            Dokumen ini merupakan bukti pembayaran elektronik yang sah yang diterbitkan oleh PT. Loewix Indonesia.
+          </div>
+        </div>
+      `;
+
+      overlay.style.display = 'flex';
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeLoewixReceiptOverlay() {
+      const overlay = document.getElementById('modalLoewixReceiptOverlay');
+      if (overlay) overlay.style.display = 'none';
+      document.body.style.overflow = '';
     }
 
     function printInvoiceReceipt() {
-      const content = document.getElementById('invoice-receipt-body')?.innerHTML;
+      const content = document.getElementById('invoice-printable-area')?.innerHTML;
       if (!content) return;
       const win = window.open('', '', 'height=750,width=850');
       win.document.write('<html><head><title>Kwitansi Pembayaran Resmi - Loewix</title>');
