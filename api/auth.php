@@ -262,6 +262,33 @@ if ($action === 'register') {
         'auto_renew' => true
     ];
 
+    // Auto-create official registration invoice
+    if (!isset($db['invoices']) || !is_array($db['invoices'])) {
+        $db['invoices'] = [];
+    }
+    $existingInvoiceIds = array_column($db['invoices'], 'id');
+    $newInvoiceId = count($existingInvoiceIds) > 0 ? max($existingInvoiceIds) + 1 : 1;
+    $orderId = 'INV-LWX-' . date('Ymd') . '-' . strtoupper(substr(md5($newUser['id'] . $email . time()), 0, 6));
+
+    $db['invoices'][] = [
+        'id' => $newInvoiceId,
+        'order_id' => $orderId,
+        'user_id' => (int)$newUser['id'],
+        'user_name' => $name,
+        'user_email' => strtolower($email),
+        'plan_id' => $planId,
+        'plan_name' => $planName . ' (' . $quota . ' CCTV)',
+        'billing_cycle' => 'annual',
+        'amount' => $basePrice,
+        'tax_amount' => $taxAmount,
+        'total_amount' => $grossAmount,
+        'status' => 'settlement',
+        'payment_type' => 'bank_transfer_bca',
+        'snap_token' => 'SNAP_LOEWIX_AUTO_' . $newUser['id'],
+        'transaction_time' => date('Y-m-d H:i:s'),
+        'settlement_time' => date('Y-m-d H:i:s')
+    ];
+
     save_db_data($db);
 
     // Auto-login newly registered user

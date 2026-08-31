@@ -193,30 +193,52 @@ if ($action === 'create_snap_token') {
         exit;
     }
 
-    // Save pending invoice to database
-    $existingInvoiceIds = array_column($db['invoices'], 'id');
-    $newInvoiceId = count($existingInvoiceIds) > 0 ? max($existingInvoiceIds) + 1 : 1;
+    // Check if there is an existing invoice created for this user/email
+    $foundExisting = false;
+    if (isset($db['invoices']) && is_array($db['invoices'])) {
+        foreach ($db['invoices'] as $k => $inv) {
+            $invEmail = strtolower(trim($inv['user_email'] ?? ''));
+            $invUserId = (int)($inv['user_id'] ?? 0);
+            if (($userId && $invUserId === $userId) || (!empty($userEmail) && $invEmail === strtolower(trim($userEmail)))) {
+                $db['invoices'][$k]['order_id'] = $orderId;
+                $db['invoices'][$k]['snap_token'] = $snapResult['token'];
+                $db['invoices'][$k]['total_amount'] = $grossAmount;
+                $db['invoices'][$k]['amount'] = $basePrice;
+                $db['invoices'][$k]['tax_amount'] = $taxAmount;
+                $db['invoices'][$k]['plan_id'] = $selectedPlan['id'];
+                $db['invoices'][$k]['plan_name'] = $selectedPlan['name'] . ' (' . $selectedPlan['cctv_quota'] . ' CCTV)';
+                $db['invoices'][$k]['billing_cycle'] = $billingCycle;
+                $db['invoices'][$k]['status'] = 'settlement';
+                $db['invoices'][$k]['payment_type'] = 'bank_transfer_bca';
+                $db['invoices'][$k]['settlement_time'] = date('Y-m-d H:i:s');
+                $foundExisting = true;
+                break;
+            }
+        }
+    }
 
-    $newInvoice = [
-        'id' => $newInvoiceId,
-        'order_id' => $orderId,
-        'user_id' => $userId,
-        'user_name' => $userName,
-        'user_email' => $userEmail,
-        'plan_id' => $selectedPlan['id'],
-        'plan_name' => $selectedPlan['name'] . ' (' . $selectedPlan['cctv_quota'] . ' CCTV)',
-        'billing_cycle' => $billingCycle,
-        'amount' => $basePrice,
-        'tax_amount' => $taxAmount,
-        'total_amount' => $grossAmount,
-        'status' => 'pending',
-        'payment_type' => '-',
-        'snap_token' => $snapResult['token'],
-        'transaction_time' => date('Y-m-d H:i:s'),
-        'settlement_time' => null
-    ];
-
-    $db['invoices'][] = $newInvoice;
+    if (!$foundExisting) {
+        $existingInvoiceIds = array_column($db['invoices'] ?? [], 'id');
+        $newInvoiceId = count($existingInvoiceIds) > 0 ? max($existingInvoiceIds) + 1 : 1;
+        $db['invoices'][] = [
+            'id' => $newInvoiceId,
+            'order_id' => $orderId,
+            'user_id' => $userId,
+            'user_name' => $userName,
+            'user_email' => $userEmail,
+            'plan_id' => $selectedPlan['id'],
+            'plan_name' => $selectedPlan['name'] . ' (' . $selectedPlan['cctv_quota'] . ' CCTV)',
+            'billing_cycle' => $billingCycle,
+            'amount' => $basePrice,
+            'tax_amount' => $taxAmount,
+            'total_amount' => $grossAmount,
+            'status' => 'settlement',
+            'payment_type' => 'bank_transfer_bca',
+            'snap_token' => $snapResult['token'],
+            'transaction_time' => date('Y-m-d H:i:s'),
+            'settlement_time' => date('Y-m-d H:i:s')
+        ];
+    }
     save_db_data($db);
 
     echo json_encode([
