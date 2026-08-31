@@ -1962,15 +1962,57 @@
   <script src="assets/js/vms_app.js?v=3.9.0"></script>
   <script src="assets/js/vms_auth.js?v=3.9.0"></script>
 
-  <!-- Inline Package Selector Controller (Immune to Browser Caching) -->
+  <!-- Dynamic Package Selector Controller (Real-time Synced with Super Admin) -->
   <script>
     window.selectedRegCycle = window.selectedRegCycle || 'annual';
     window.selectedRegPlan = window.selectedRegPlan || 'business_10';
+    window.REG_PLANS_DATA = [
+      { id: 'starter_4', name: 'Starter Cloud', cctv_quota: 4, price_monthly: 149000, price_annual: 1490000 },
+      { id: 'business_10', name: 'Business Pro', cctv_quota: 10, price_monthly: 299000, price_annual: 2990000, badge: 'POPULER' },
+      { id: 'enterprise_20', name: 'Enterprise Fleet', cctv_quota: 20, price_monthly: 549000, price_annual: 5490000, badge: 'ENTERPRISE' }
+    ];
 
-    window.REG_PLAN_PRICES = {
-      starter_4: { name: 'Starter Cloud', quota: 4, monthly: 149000, annual: 1490000 },
-      business_10: { name: 'Business Pro', quota: 10, monthly: 299000, annual: 2990000 },
-      enterprise_20: { name: 'Enterprise Fleet', quota: 20, monthly: 549000, annual: 5490000 }
+    window.loadRegistrationPlans = async function() {
+      try {
+        const res = await fetch('api/payment.php?action=get_plans');
+        const data = await res.json();
+        if (data.success && Array.isArray(data.plans) && data.plans.length > 0) {
+          window.REG_PLANS_DATA = data.plans;
+          window.renderRegistrationPlanCards();
+        }
+      } catch (e) {
+        console.warn('Live plans fetch fallback:', e);
+      }
+    };
+
+    window.renderRegistrationPlanCards = function() {
+      const container = document.querySelector('.reg-plan-cards-grid');
+      if (!container || !window.REG_PLANS_DATA || window.REG_PLANS_DATA.length === 0) return;
+
+      const isAnnual = (window.selectedRegCycle === 'annual');
+      
+      const planExists = window.REG_PLANS_DATA.some(p => p.id === window.selectedRegPlan);
+      if (!planExists) {
+        const pop = window.REG_PLANS_DATA.find(p => p.badge && p.badge.toUpperCase().includes('POPULER'));
+        window.selectedRegPlan = pop ? pop.id : window.REG_PLANS_DATA[0].id;
+      }
+
+      container.innerHTML = window.REG_PLANS_DATA.map(p => {
+        const isActive = (p.id === window.selectedRegPlan);
+        const priceNum = isAnnual ? (p.price_annual || (p.price_monthly * 10)) : p.price_monthly;
+        const priceStr = 'Rp ' + Number(priceNum).toLocaleString('id-ID') + (isAnnual ? '/thn' : '/bln');
+        
+        return `
+          <div class="reg-plan-card ${isActive ? 'active' : ''}" data-plan="${p.id}" onclick="selectRegistrationPlan('${p.id}')">
+            ${p.badge ? `<div class="reg-plan-tag">${p.badge}</div>` : ''}
+            <div class="reg-plan-title">${p.name}</div>
+            <div class="reg-plan-cctv">${p.cctv_quota} CCTV</div>
+            <div class="reg-plan-price">${priceStr}</div>
+          </div>
+        `;
+      }).join('');
+
+      window.updateRegPlanDisplay();
     };
 
     window.selectRegistrationCycle = function(cycle) {
@@ -1986,7 +2028,11 @@
         if (btnAnnual) btnAnnual.classList.remove('active');
       }
       
-      window.updateRegPlanDisplay();
+      if (window.REG_PLANS_DATA && window.REG_PLANS_DATA.length > 0) {
+        window.renderRegistrationPlanCards();
+      } else {
+        window.updateRegPlanDisplay();
+      }
     };
 
     window.selectRegistrationPlan = function(planId) {
@@ -2002,30 +2048,31 @@
     };
 
     window.updateRegPlanDisplay = function() {
-      const planInfo = window.REG_PLAN_PRICES[window.selectedRegPlan] || window.REG_PLAN_PRICES.business_10;
-      const basePrice = (window.selectedRegCycle === 'annual') ? planInfo.annual : planInfo.monthly;
+      let plan = null;
+      if (window.REG_PLANS_DATA && window.REG_PLANS_DATA.length > 0) {
+        plan = window.REG_PLANS_DATA.find(p => p.id === window.selectedRegPlan) || window.REG_PLANS_DATA[0];
+      }
+      
+      if (!plan) {
+        plan = {
+          id: 'business_10',
+          name: 'Business Pro',
+          cctv_quota: 10,
+          price_monthly: 299000,
+          price_annual: 2990000
+        };
+      }
+
+      const isAnnual = (window.selectedRegCycle === 'annual');
+      const basePrice = isAnnual ? (plan.price_annual || (plan.price_monthly * 10)) : plan.price_monthly;
       const tax = Math.round(basePrice * 0.11);
       const total = basePrice + tax;
-
-      const priceTagStarter = document.getElementById('price-tag-starter');
-      const priceTagBusiness = document.getElementById('price-tag-business');
-      const priceTagEnterprise = document.getElementById('price-tag-enterprise');
-      
-      if (priceTagStarter) {
-        priceTagStarter.textContent = window.selectedRegCycle === 'annual' ? 'Rp 1.490.000/thn' : 'Rp 149.000/bln';
-      }
-      if (priceTagBusiness) {
-        priceTagBusiness.textContent = window.selectedRegCycle === 'annual' ? 'Rp 2.990.000/thn' : 'Rp 299.000/bln';
-      }
-      if (priceTagEnterprise) {
-        priceTagEnterprise.textContent = window.selectedRegCycle === 'annual' ? 'Rp 5.490.000/thn' : 'Rp 549.000/bln';
-      }
 
       const summaryText = document.getElementById('reg-summary-text');
       const summaryTotal = document.getElementById('reg-summary-total');
       
       if (summaryText) {
-        summaryText.innerHTML = `<strong style="color:#ffffff;">${planInfo.name}</strong> (${planInfo.quota} CCTV) &bull; Periode ${window.selectedRegCycle === 'annual' ? '1 Tahun' : '1 Bulan'}`;
+        summaryText.innerHTML = `<strong style="color:#ffffff;">${plan.name}</strong> (${plan.cctv_quota} CCTV) &bull; Periode ${isAnnual ? '1 Tahun' : '1 Bulan'}`;
       }
       if (summaryTotal) {
         summaryTotal.textContent = 'Rp ' + total.toLocaleString('id-ID');
@@ -2054,8 +2101,9 @@
       }
     };
 
-    // Initialize display on load
+    // Initialize real-time plan sync on load
     document.addEventListener('DOMContentLoaded', () => {
+      window.loadRegistrationPlans();
       window.updateRegPlanDisplay();
     });
   </script>
