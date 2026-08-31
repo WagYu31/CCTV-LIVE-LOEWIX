@@ -524,21 +524,21 @@ function get_user_invoices($userId) {
     if (isset($db['invoices']) && is_array($db['invoices'])) {
         foreach ($db['invoices'] as $inv) {
             $invEmail = strtolower(trim($inv['user_email'] ?? ''));
-            $invUserId = (isset($inv['user_id']) && $inv['user_id'] !== null && $inv['user_id'] !== '') ? (int)$inv['user_id'] : null;
+            $invUserId = (isset($inv['user_id']) && $inv['user_id'] !== null && $inv['user_id'] !== '') ? (int)$inv['user_id'] : 0;
 
-            // Strict Tenant Isolation: Match exact user_id or exact user_email
-            $isMatch = false;
-            if ($invUserId !== null && $invUserId > 0 && $invUserId === $userId) {
-                $isMatch = true;
-            } elseif (!empty($userEmail) && !empty($invEmail) && $invEmail === $userEmail) {
-                $isMatch = true;
-            }
-
-            if ($isMatch) {
+            // Invoice MUST belong to this specific user ID AND email
+            if ($invUserId === $userId && (empty($invEmail) || $invEmail === $userEmail)) {
+                $list[] = $inv;
+            } elseif ($invUserId === 0 && !empty($userEmail) && $invEmail === $userEmail) {
                 $list[] = $inv;
             }
         }
     }
+
+    // Sort newest first
+    usort($list, function($a, $b) {
+        return strcmp($b['transaction_time'] ?? '', $a['transaction_time'] ?? '');
+    });
 
     // If user has no invoice yet, auto-create their 1 official registration invoice
     if (empty($list)) {
@@ -588,10 +588,6 @@ function get_user_invoices($userId) {
         $list[] = $newInv;
     }
 
-    // Sort newest first
-    usort($list, function($a, $b) {
-        return strcmp($b['transaction_time'] ?? '', $a['transaction_time'] ?? '');
-    });
     return $list;
 }
 

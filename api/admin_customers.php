@@ -175,10 +175,12 @@ if ($method === 'POST') {
         $id = (int) ($_POST['id'] ?? 0);
         $newUsers = [];
         $deletedName = '';
+        $deletedEmail = '';
 
         foreach ($db['users'] as $u) {
             if ($u['id'] === $id && $u['role'] === 'customer') {
                 $deletedName = $u['name'];
+                $deletedEmail = strtolower(trim($u['email'] ?? ''));
             } else {
                 $newUsers[] = $u;
             }
@@ -187,10 +189,10 @@ if ($method === 'POST') {
         if ($deletedName) {
             $db['users'] = $newUsers;
 
-            // Also delete all cameras associated with this customer
+            // 1. Cascade delete all cameras
             $newCameras = [];
             $deletedCamCount = 0;
-            foreach ($db['cameras'] as $c) {
+            foreach ($db['cameras'] ?? [] as $c) {
                 if ((int)($c['user_id'] ?? 0) === $id) {
                     $deletedCamCount++;
                 } else {
@@ -198,10 +200,40 @@ if ($method === 'POST') {
                 }
             }
             $db['cameras'] = $newCameras;
+
+            // 2. Cascade delete all invoices
+            $newInvoices = [];
+            foreach ($db['invoices'] ?? [] as $inv) {
+                $invEmail = strtolower(trim($inv['user_email'] ?? ''));
+                $invUserId = (int)($inv['user_id'] ?? 0);
+                if ($invUserId !== $id && (empty($deletedEmail) || $invEmail !== $deletedEmail)) {
+                    $newInvoices[] = $inv;
+                }
+            }
+            $db['invoices'] = $newInvoices;
+
+            // 3. Cascade delete subscriptions
+            $newSubs = [];
+            foreach ($db['subscriptions'] ?? [] as $sub) {
+                if ((int)($sub['user_id'] ?? 0) !== $id) {
+                    $newSubs[] = $sub;
+                }
+            }
+            $db['subscriptions'] = $newSubs;
+
+            // 4. Cascade delete billing profiles
+            $newProfiles = [];
+            foreach ($db['billing_profiles'] ?? [] as $prof) {
+                if ((int)($prof['user_id'] ?? 0) !== $id) {
+                    $newProfiles[] = $prof;
+                }
+            }
+            $db['billing_profiles'] = $newProfiles;
+
             save_db_data($db);
 
             $camInfo = $deletedCamCount > 0 ? " beserta {$deletedCamCount} channel kameranya" : "";
-            echo json_encode(['success' => true, 'message' => "Akun Customer '{$deletedName}'{$camInfo} berhasil dihapus permanen!"]);
+            echo json_encode(['success' => true, 'message' => "Akun Customer '{$deletedName}'{$camInfo} beserta riwayat transaksinya berhasil dihapus bersih!"]);
         } else {
             echo json_encode(['success' => false, 'message' => 'Customer tidak ditemukan!']);
         }

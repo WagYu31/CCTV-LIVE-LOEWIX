@@ -262,11 +262,21 @@ if ($action === 'register') {
         'auto_renew' => true
     ];
 
-    // Auto-create official registration invoice
-    if (!isset($db['invoices']) || !is_array($db['invoices'])) {
-        $db['invoices'] = [];
+    // Purge any stale invoices from previously deleted accounts with the same email
+    if (isset($db['invoices']) && is_array($db['invoices'])) {
+        $cleanInvoices = [];
+        foreach ($db['invoices'] as $inv) {
+            $invEmail = strtolower(trim($inv['user_email'] ?? ''));
+            $invUserId = (int)($inv['user_id'] ?? 0);
+            if ($invEmail !== strtolower(trim($email)) && $invUserId !== (int)$newUser['id']) {
+                $cleanInvoices[] = $inv;
+            }
+        }
+        $db['invoices'] = $cleanInvoices;
     }
-    $existingInvoiceIds = array_column($db['invoices'], 'id');
+
+    // Auto-create official registration invoice
+    $existingInvoiceIds = array_column($db['invoices'] ?? [], 'id');
     $newInvoiceId = count($existingInvoiceIds) > 0 ? max($existingInvoiceIds) + 1 : 1;
     $orderId = 'INV-LWX-' . date('Ymd') . '-' . strtoupper(substr(md5($newUser['id'] . $email . time()), 0, 6));
 
