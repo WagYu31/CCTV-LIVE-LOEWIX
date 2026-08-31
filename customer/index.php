@@ -2602,34 +2602,53 @@
     function openModalHelper(modalId) {
       const modalEl = document.getElementById(modalId);
       if (!modalEl) return;
+      
+      // Clean up any stale backdrops first
+      document.querySelectorAll('.modal-backdrop').forEach(b => b.remove());
+      
       if (window.$ && typeof $(modalEl).modal === 'function') {
-        $(modalEl).modal('show');
-      } else {
-        modalEl.classList.add('show');
-        modalEl.style.display = 'block';
-        document.body.classList.add('modal-open');
-        let backdrop = document.getElementById('custom-modal-backdrop');
-        if (!backdrop) {
-          backdrop = document.createElement('div');
+        try { $(modalEl).modal('show'); } catch(e) {}
+      }
+      
+      // Force direct visibility safety guarantee
+      modalEl.classList.add('show');
+      modalEl.style.display = 'block';
+      modalEl.style.opacity = '1';
+      modalEl.style.zIndex = '100050';
+      document.body.classList.add('modal-open');
+      
+      setTimeout(() => {
+        let backdrops = document.querySelectorAll('.modal-backdrop');
+        if (backdrops.length === 0) {
+          const backdrop = document.createElement('div');
           backdrop.id = 'custom-modal-backdrop';
           backdrop.className = 'modal-backdrop fade show';
+          backdrop.style.zIndex = '100040';
+          backdrop.onclick = () => closeModalHelper(modalId);
           document.body.appendChild(backdrop);
+        } else {
+          backdrops.forEach(b => {
+            b.style.zIndex = '100040';
+            b.onclick = () => closeModalHelper(modalId);
+          });
         }
-      }
+      }, 50);
     }
 
     function closeModalHelper(modalId) {
       const modalEl = document.getElementById(modalId);
-      if (!modalEl) return;
-      if (window.$ && typeof $(modalEl).modal === 'function') {
-        $(modalEl).modal('hide');
-      } else {
+      if (modalEl) {
+        if (window.$ && typeof $(modalEl).modal === 'function') {
+          try { $(modalEl).modal('hide'); } catch(e) {}
+        }
         modalEl.classList.remove('show');
         modalEl.style.display = 'none';
-        document.body.classList.remove('modal-open');
-        const backdrop = document.getElementById('custom-modal-backdrop');
-        if (backdrop) backdrop.remove();
+        modalEl.style.opacity = '0';
       }
+      document.body.classList.remove('modal-open');
+      document.querySelectorAll('.modal-backdrop').forEach(b => b.remove());
+      const customBackdrop = document.getElementById('custom-modal-backdrop');
+      if (customBackdrop) customBackdrop.remove();
     }
 
     // ===== LIVE NETWORK SPEED & LATENCY TELEMETRY ENGINE =====
