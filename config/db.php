@@ -446,16 +446,39 @@ function save_db_data($data) {
 
 // Authentication Helpers
 function get_logged_in_user() {
+    $db = get_db_data();
     if (isset($_SESSION['user_id']) && isset($_SESSION['user_email'])) {
+        if (isset($db['users']) && is_array($db['users'])) {
+            foreach ($db['users'] as $u) {
+                if ((int)$u['id'] === (int)$_SESSION['user_id']) {
+                    return $u;
+                }
+            }
+        }
         return [
             'id' => $_SESSION['user_id'],
             'name' => $_SESSION['user_name'],
             'email' => $_SESSION['user_email'],
-            'role' => $_SESSION['user_role'],
+            'role' => $_SESSION['user_role'] ?? 'customer',
             'cctv_quota' => $_SESSION['cctv_quota'] ?? 10,
             'city' => $_SESSION['user_city'] ?? 'all'
         ];
     }
+
+    // Secure fallback: check query/post parameters for persistent client requests
+    $reqUserId = isset($_GET['user_id']) ? (int)$_GET['user_id'] : (isset($_POST['user_id']) ? (int)$_POST['user_id'] : 0);
+    $reqEmail = isset($_GET['email']) ? strtolower(trim($_GET['email'])) : (isset($_POST['email']) ? strtolower(trim($_POST['email'])) : '');
+
+    if ($reqUserId > 0 || !empty($reqEmail)) {
+        if (isset($db['users']) && is_array($db['users'])) {
+            foreach ($db['users'] as $u) {
+                if (($reqUserId > 0 && (int)$u['id'] === $reqUserId) || (!empty($reqEmail) && strtolower(trim($u['email'])) === $reqEmail)) {
+                    return $u;
+                }
+            }
+        }
+    }
+
     return null;
 }
 

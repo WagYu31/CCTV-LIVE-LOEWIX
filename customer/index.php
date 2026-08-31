@@ -4568,7 +4568,12 @@
 
     async function loadBillingDashboardData() {
       try {
-        const res = await fetch('../api/payment.php?action=get_billing_dashboard');
+        const u = currentCustomer || (localStorage.getItem('loewix_user') ? JSON.parse(localStorage.getItem('loewix_user')) : null);
+        const url = (u && u.id) 
+          ? `../api/payment.php?action=get_billing_dashboard&user_id=${u.id}&email=${encodeURIComponent(u.email || '')}` 
+          : '../api/payment.php?action=get_billing_dashboard';
+
+        const res = await fetch(url);
         const data = await res.json();
         if (data.success) {
           currentBillingData = data;
