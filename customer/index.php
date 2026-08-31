@@ -1935,7 +1935,76 @@
     <!-- TAB ADMIN 2: MONITORING TRANSAKSI SAAS MIDTRANS (SPA) -->
     <!-- ======================================================== -->
     <div id="tab-admin-transactions" class="customer-tab-pane" style="display: none;">
+      
+      <!-- Top Financial Summary Cards -->
+      <div class="row g-3 mb-4">
+        <div class="col-xl-3 col-md-6 mb-3">
+          <div class="p-3.5 rounded-4 h-100" style="background: linear-gradient(145deg, rgba(16, 185, 129, 0.12) 0%, rgba(5, 150, 105, 0.04) 100%); border: 1px solid rgba(16, 185, 129, 0.35); box-shadow: 0 10px 30px rgba(0,0,0,0.35); border-radius: 16px; padding: 18px;">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span style="font-size: 11px; font-weight: 700; color: #6ee7b7; text-transform: uppercase; letter-spacing: 0.5px;">TOTAL PENDAPATAN (OMSET)</span>
+              <div style="width: 32px; height: 32px; border-radius: 8px; background: rgba(16, 185, 129, 0.2); display: flex; align-items: center; justify-content: center; color: #34d399; font-size: 14px;">
+                <i class="fas fa-coins"></i>
+              </div>
+            </div>
+            <div id="stat-trans-total-revenue" style="font-size: 22px; font-weight: 800; color: #ffffff; letter-spacing: -0.5px;">Rp 0</div>
+            <div class="d-flex align-items-center gap-1 mt-1 text-muted" style="font-size: 11px;">
+              <span class="badge badge-success px-1.5 py-0.5" style="background: rgba(16,185,129,0.2); color: #34d399; font-size: 9.5px; border-radius: 4px;"><i class="fas fa-arrow-up"></i> Real-time</span>
+              <span>Akumulasi transaksi lunas</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-3">
+          <div class="p-3.5 rounded-4 h-100" style="background: linear-gradient(145deg, rgba(56, 189, 248, 0.12) 0%, rgba(2, 132, 199, 0.04) 100%); border: 1px solid rgba(56, 189, 248, 0.35); box-shadow: 0 10px 30px rgba(0,0,0,0.35); border-radius: 16px; padding: 18px;">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span style="font-size: 11px; font-weight: 700; color: #7dd3fc; text-transform: uppercase; letter-spacing: 0.5px;">TRANSAKSI LUNAS (SETTLED)</span>
+              <div style="width: 32px; height: 32px; border-radius: 8px; background: rgba(56, 189, 248, 0.2); display: flex; align-items: center; justify-content: center; color: #38bdf8; font-size: 14px;">
+                <i class="fas fa-check-circle"></i>
+              </div>
+            </div>
+            <div id="stat-trans-settled-count" style="font-size: 22px; font-weight: 800; color: #ffffff; letter-spacing: -0.5px;">0 Tagihan</div>
+            <div class="d-flex align-items-center gap-1 mt-1 text-muted" style="font-size: 11px;">
+              <span id="stat-trans-settled-rate" class="badge badge-info px-1.5 py-0.5" style="background: rgba(56,189,248,0.2); color: #38bdf8; font-size: 9.5px; border-radius: 4px;">100% Success</span>
+              <span>Verifikasi otomatis & manual</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-3">
+          <div class="p-3.5 rounded-4 h-100" style="background: linear-gradient(145deg, rgba(245, 158, 11, 0.12) 0%, rgba(217, 119, 6, 0.04) 100%); border: 1px solid rgba(245, 158, 11, 0.35); box-shadow: 0 10px 30px rgba(0,0,0,0.35); border-radius: 16px; padding: 18px;">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span style="font-size: 11px; font-weight: 700; color: #fcd34d; text-transform: uppercase; letter-spacing: 0.5px;">MENUNGGU BAYAR (PENDING)</span>
+              <div style="width: 32px; height: 32px; border-radius: 8px; background: rgba(245, 158, 11, 0.2); display: flex; align-items: center; justify-content: center; color: #fbbf24; font-size: 14px;">
+                <i class="fas fa-clock"></i>
+              </div>
+            </div>
+            <div id="stat-trans-pending-amount" style="font-size: 22px; font-weight: 800; color: #ffffff; letter-spacing: -0.5px;">Rp 0</div>
+            <div class="d-flex align-items-center gap-1 mt-1 text-muted" style="font-size: 11px;">
+              <span id="stat-trans-pending-count" class="badge badge-warning px-1.5 py-0.5" style="background: rgba(245,158,11,0.2); color: #fbbf24; font-size: 9.5px; border-radius: 4px;">0 Invoice</span>
+              <span>Menunggu checkout user</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-3">
+          <div class="p-3.5 rounded-4 h-100" style="background: linear-gradient(145deg, rgba(168, 85, 247, 0.12) 0%, rgba(126, 34, 206, 0.04) 100%); border: 1px solid rgba(168, 85, 247, 0.35); box-shadow: 0 10px 30px rgba(0,0,0,0.35); border-radius: 16px; padding: 18px;">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span style="font-size: 11px; font-weight: 700; color: #d8b4fe; text-transform: uppercase; letter-spacing: 0.5px;">RATA-RATA ORDER (ARPU)</span>
+              <div style="width: 32px; height: 32px; border-radius: 8px; background: rgba(168, 85, 247, 0.2); display: flex; align-items: center; justify-content: center; color: #c084fc; font-size: 14px;">
+                <i class="fas fa-chart-line"></i>
+              </div>
+            </div>
+            <div id="stat-trans-arpu" style="font-size: 22px; font-weight: 800; color: #ffffff; letter-spacing: -0.5px;">Rp 0</div>
+            <div class="d-flex align-items-center gap-1 mt-1 text-muted" style="font-size: 11px;">
+              <span class="badge px-1.5 py-0.5" style="background: rgba(168,85,247,0.2); color: #c084fc; font-size: 9.5px; border-radius: 4px;">Average Revenue</span>
+              <span>Per transaksi sukses</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div class="admin-mgmt-card">
+        <!-- Header & Action Buttons -->
         <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
           <div>
             <h4 class="font-weight-bold mb-1" style="color: #ffffff; display: flex; align-items: center; gap: 8px;">
@@ -1946,6 +2015,12 @@
             </p>
           </div>
           <div class="d-flex gap-2 flex-wrap" style="gap: 8px;">
+            <button class="btn btn-sm text-white font-weight-bold" onclick="openCreateManualInvoiceModal()" style="border-radius: 20px; padding: 6px 15px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); border: none; box-shadow: 0 4px 15px rgba(16,185,129,0.35);">
+              <i class="fas fa-plus-circle mr-1"></i> Terbitkan Invoice
+            </button>
+            <button class="btn btn-outline-info btn-sm font-weight-bold" onclick="exportAdminTransactionsCSV()" style="border-radius: 20px; padding: 6px 14px; border-color: rgba(56,189,248,0.4); color: #38bdf8;">
+              <i class="fas fa-download mr-1"></i> Export CSV
+            </button>
             <button class="btn btn-outline-warning btn-sm" onclick="openMidtransSettingsModal()" style="border-radius: 20px; font-weight: 700; padding: 6px 14px; border-color: rgba(245,158,11,0.4); color: #f59e0b;">
               <i class="fas fa-credit-card mr-1"></i> Pengaturan Midtrans
             </button>
@@ -1953,8 +2028,34 @@
               <i class="fas fa-envelope-open-text mr-1"></i> Pengaturan Email SMTP
             </button>
             <button class="btn btn-outline-success btn-sm" onclick="loadAdminTransactionsList()" style="border-radius: 20px; font-weight: 700; padding: 6px 14px;">
-              <i class="fas fa-sync-alt mr-1"></i> Refresh Data Transaksi
+              <i class="fas fa-sync-alt mr-1"></i> Refresh Data
             </button>
+          </div>
+        </div>
+
+        <!-- Search & Filter Controls -->
+        <div class="row g-2 mb-3 align-items-center" style="gap: 8px; margin-bottom: 20px !important;">
+          <div class="col-md-5">
+            <div class="input-group">
+              <div class="input-group-prepend"><span class="input-group-text" style="background: rgba(255,255,255,0.05); color: #94a3b8; border-color: rgba(255,255,255,0.1);"><i class="fas fa-search"></i></span></div>
+              <input type="text" id="search-transaction-input" class="form-control form-control-dark" style="padding-left: 14px !important;" placeholder="Cari No. Invoice, Nama Customer, Email..." oninput="filterAdminTransactionsTable()">
+            </div>
+          </div>
+          <div class="col-md-3">
+            <select id="filter-transaction-status" class="form-control form-control-dark" onchange="filterAdminTransactionsTable()">
+              <option value="all">⚡ Semua Status Transaksi</option>
+              <option value="settlement">🟢 Lunas (Settlement)</option>
+              <option value="pending">🟡 Menunggu Bayar (Pending)</option>
+              <option value="expire">🔴 Batal / Expired</option>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <select id="filter-transaction-payment" class="form-control form-control-dark" onchange="filterAdminTransactionsTable()">
+              <option value="all">💳 Semua Metode Bayar</option>
+              <option value="va">Virtual Account (BCA/Mandiri/BRI/BNI)</option>
+              <option value="qris">QRIS Instant</option>
+              <option value="manual">Transfer Bank Manual</option>
+            </select>
           </div>
         </div>
 
@@ -2781,6 +2882,111 @@
             </button>
           </div>
         </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Terbitkan Invoice Manual (Super Admin) -->
+  <div class="modal fade modal-dark" id="modalCreateManualInvoice" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document" style="max-width: 520px;">
+      <div class="modal-content" style="background: linear-gradient(160deg, #0b1533 0%, #070d22 100%); border: 1px solid rgba(52, 211, 153, 0.4); border-radius: 20px; box-shadow: 0 30px 80px rgba(0,0,0,0.9); overflow: hidden;">
+        <div class="modal-header" style="background: rgba(15, 23, 42, 0.98); border-bottom: 1px solid rgba(255,255,255,0.08); padding: 18px 24px;">
+          <h5 class="modal-title font-weight-bold text-white mb-0" style="font-size: 16px;"><i class="fas fa-file-invoice-dollar text-success mr-2"></i> Terbitkan Invoice SaaS Baru</h5>
+          <button type="button" class="close text-white" onclick="closeModalHelper('modalCreateManualInvoice')" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <form id="formCreateManualInvoice" onsubmit="submitCreateManualInvoice(event)">
+          <div class="modal-body p-4">
+            <div class="form-group mb-3">
+              <label class="text-white" style="font-size: 12.5px; font-weight: 600;">Pilih Customer Penerima Tagihan:</label>
+              <select id="manual-inv-customer" class="form-control form-control-dark" required>
+                <!-- Populated dynamically -->
+              </select>
+            </div>
+            <div class="row g-2 mb-3">
+              <div class="col-md-7">
+                <label class="text-white" style="font-size: 12.5px; font-weight: 600;">Pilih Paket SaaS:</label>
+                <select id="manual-inv-plan" class="form-control form-control-dark" onchange="autoCalculateManualInvoiceTotal()" required>
+                  <!-- Populated from cached plans -->
+                </select>
+              </div>
+              <div class="col-md-5">
+                <label class="text-white" style="font-size: 12.5px; font-weight: 600;">Siklus Tagihan:</label>
+                <select id="manual-inv-cycle" class="form-control form-control-dark" onchange="autoCalculateManualInvoiceTotal()">
+                  <option value="monthly">Bulanan</option>
+                  <option value="annual" selected>Tahunan</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group mb-3">
+              <label class="text-white" style="font-size: 12.5px; font-weight: 600;">Nominal Harga Paket (Sebelum PPN 11%):</label>
+              <div class="input-group">
+                <div class="input-group-prepend"><span class="input-group-text" style="background: rgba(255,255,255,0.05); color: #94a3b8; border-color: rgba(255,255,255,0.15);">Rp</span></div>
+                <input type="number" id="manual-inv-amount" class="form-control form-control-dark" style="padding-left: 15px !important;" placeholder="2990000" oninput="autoCalculateManualInvoiceTotal()" required>
+              </div>
+            </div>
+            <div class="p-3 mb-3 rounded" style="background: rgba(52, 211, 153, 0.08); border: 1px solid rgba(52, 211, 153, 0.25);">
+              <div class="d-flex justify-content-between text-muted" style="font-size: 12px;">
+                <span>PPN 11% (Pajak):</span>
+                <span id="manual-inv-tax-text" class="text-white">Rp 328.900</span>
+              </div>
+              <div class="d-flex justify-content-between font-weight-bold mt-1" style="font-size: 14px; color: #34d399;">
+                <span>Total Tagihan (Inc. PPN):</span>
+                <span id="manual-inv-total-text">Rp 3.318.900</span>
+              </div>
+            </div>
+            <div class="row g-2 mb-2">
+              <div class="col-md-6">
+                <label class="text-white" style="font-size: 12.5px; font-weight: 600;">Metode Pembayaran:</label>
+                <select id="manual-inv-method" class="form-control form-control-dark">
+                  <option value="bca_va">BCA Virtual Account</option>
+                  <option value="mandiri_bill">Mandiri Bill</option>
+                  <option value="bri_va">BRI Virtual Account</option>
+                  <option value="bni_va">BNI Virtual Account</option>
+                  <option value="qris">QRIS Instant</option>
+                  <option value="manual_transfer_admin" selected>Transfer Bank Manual</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label class="text-white" style="font-size: 12.5px; font-weight: 600;">Status Invoice Awal:</label>
+                <select id="manual-inv-status" class="form-control form-control-dark">
+                  <option value="settlement" selected>Lunas (Settlement) - Langsung Aktif</option>
+                  <option value="pending">Menunggu Pembayaran (Pending)</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer" style="border-top: 1px solid rgba(255,255,255,0.08); background: rgba(15, 23, 42, 0.95); padding: 14px 24px;">
+            <button type="button" class="btn btn-secondary btn-sm px-3" onclick="closeModalHelper('modalCreateManualInvoice')" style="border-radius: 10px;">Batal</button>
+            <button type="submit" class="btn btn-sm font-weight-bold px-4 text-white" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); border: none; border-radius: 10px; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);">
+              <i class="fas fa-check mr-1.5"></i> Terbitkan Invoice
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Detail Transaksi & Log Midtrans (Super Admin) -->
+  <div class="modal fade modal-dark" id="modalInvoiceDetail" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document" style="max-width: 580px;">
+      <div class="modal-content" style="background: linear-gradient(160deg, #0f172a 0%, #080e21 100%); border: 1px solid rgba(56, 189, 248, 0.4); border-radius: 20px; box-shadow: 0 30px 80px rgba(0,0,0,0.9); overflow: hidden;">
+        <div class="modal-header" style="background: rgba(15, 23, 42, 0.98); border-bottom: 1px solid rgba(255,255,255,0.08); padding: 18px 24px;">
+          <h5 class="modal-title font-weight-bold text-white mb-0" style="font-size: 16px;"><i class="fas fa-info-circle text-info mr-2"></i> Rincian Lengkap Transaksi SaaS</h5>
+          <button type="button" class="close text-white" onclick="closeModalHelper('modalInvoiceDetail')" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body p-4" id="invoice-detail-content">
+          <!-- Populated dynamically -->
+        </div>
+        <div class="modal-footer" style="border-top: 1px solid rgba(255,255,255,0.08); background: rgba(15, 23, 42, 0.95); padding: 14px 24px;">
+          <button type="button" class="btn btn-secondary btn-sm px-3" onclick="closeModalHelper('modalInvoiceDetail')" style="border-radius: 10px;">Tutup</button>
+          <button type="button" class="btn btn-info btn-sm font-weight-bold px-3" id="btn-detail-print-receipt" style="background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); border: none; border-radius: 10px;">
+            <i class="fas fa-receipt mr-1"></i> Cetak Kwitansi Resmi
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -4618,98 +4824,384 @@
       a.click();
     }
 
+    let cachedAdminTransactions = [];
+
     async function loadAdminTransactionsList() {
       const tbody = document.getElementById('admin-transactions-table-body');
       if (!tbody) return;
 
-      tbody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-muted"><i class="fas fa-spinner fa-spin mr-2 text-info"></i> Memuat data tagihan & transaksi pelanggan...</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="8" class="text-center py-4 text-muted"><i class="fas fa-spinner fa-spin mr-2 text-info"></i> Memuat data transaksi & laporan keuangan...</td></tr>`;
 
       try {
         const res = await fetch('../api/payment.php?action=get_billing_dashboard');
         const data = await res.json();
-        const invoices = data.invoices || [];
+        cachedAdminTransactions = data.invoices || [];
 
-        if (invoices.length === 0) {
-          tbody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-muted"><i class="fas fa-info-circle mr-1"></i> Belum ada riwayat transaksi masuk.</td></tr>`;
-          return;
+        // Calculate Financial KPI Metrics
+        let totalRevenue = 0;
+        let settledCount = 0;
+        let pendingAmount = 0;
+        let pendingCount = 0;
+
+        cachedAdminTransactions.forEach(inv => {
+          const amt = Number(inv.total_amount || inv.amount || 0);
+          const st = (inv.status || '').toLowerCase();
+          if (st === 'settlement' || st === 'capture' || st === 'success') {
+            totalRevenue += amt;
+            settledCount++;
+          } else if (st === 'pending') {
+            pendingAmount += amt;
+            pendingCount++;
+          }
+        });
+
+        const totalInvoices = cachedAdminTransactions.length;
+        const settledRate = totalInvoices > 0 ? Math.round((settledCount / totalInvoices) * 100) : 100;
+        const arpu = settledCount > 0 ? Math.round(totalRevenue / settledCount) : 0;
+
+        const revEl = document.getElementById('stat-trans-total-revenue');
+        const setCntEl = document.getElementById('stat-trans-settled-count');
+        const setRateEl = document.getElementById('stat-trans-settled-rate');
+        const pendAmtEl = document.getElementById('stat-trans-pending-amount');
+        const pendCntEl = document.getElementById('stat-trans-pending-count');
+        const arpuEl = document.getElementById('stat-trans-arpu');
+
+        if (revEl) revEl.textContent = 'Rp ' + totalRevenue.toLocaleString('id-ID');
+        if (setCntEl) setCntEl.textContent = settledCount + ' Tagihan';
+        if (setRateEl) setRateEl.textContent = settledRate + '% Success';
+        if (pendAmtEl) pendAmtEl.textContent = 'Rp ' + pendingAmount.toLocaleString('id-ID');
+        if (pendCntEl) pendCntEl.textContent = pendingCount + ' Invoice';
+        if (arpuEl) arpuEl.textContent = 'Rp ' + arpu.toLocaleString('id-ID');
+
+        renderAdminTransactionsTable(cachedAdminTransactions);
+      } catch (err) {
+        console.error('Failed to load transactions:', err);
+        tbody.innerHTML = `<tr><td colspan="8" class="text-center py-4 text-danger">Gagal memuat data transaksi.</td></tr>`;
+      }
+    }
+
+    function renderAdminTransactionsTable(invoices) {
+      const tbody = document.getElementById('admin-transactions-table-body');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+
+      if (!invoices || invoices.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8" class="text-center py-4 text-muted"><i class="fas fa-search mr-1"></i> Tidak ada data transaksi yang sesuai filter.</td></tr>`;
+        return;
+      }
+
+      invoices.forEach(inv => {
+        const totalAmt = inv.total_amount || inv.amount || 0;
+        const status = (inv.status || 'settlement').toLowerCase();
+        
+        let statusBadge = `<span class="badge badge-success p-2" style="background: rgba(16,185,129,0.2); border: 1px solid #10b981; color: #34d399;"><i class="fas fa-check-circle mr-1"></i> LUNAS (SETTLEMENT)</span>`;
+        if (status === 'pending') {
+          statusBadge = `<span class="badge badge-warning p-2" style="background: rgba(245,158,11,0.2); border: 1px solid #f59e0b; color: #fbbf24;"><i class="fas fa-clock mr-1"></i> MENUNGGU PEMBAYARAN</span>`;
+        } else if (status === 'expire' || status === 'cancel' || status === 'failure') {
+          statusBadge = `<span class="badge badge-danger p-2" style="background: rgba(239,68,68,0.2); border: 1px solid #ef4444; color: #f87171;"><i class="fas fa-times-circle mr-1"></i> BATAL / EXPIRED</span>`;
         }
 
-        tbody.innerHTML = '';
-        invoices.forEach(inv => {
-          const totalAmt = inv.total_amount || inv.amount || 0;
-          const status = (inv.status || 'settlement').toLowerCase();
-          
-          let statusBadge = `<span class="badge badge-success p-2" style="background: rgba(16,185,129,0.2); border: 1px solid #10b981; color: #34d399;"><i class="fas fa-check-circle mr-1"></i> LUNAS (SETTLEMENT)</span>`;
-          if (status === 'pending') {
-            statusBadge = `<span class="badge badge-warning p-2" style="background: rgba(245,158,11,0.2); border: 1px solid #f59e0b; color: #fbbf24;"><i class="fas fa-clock mr-1"></i> MENUNGGU PEMBAYARAN</span>`;
-          } else if (status === 'expire' || status === 'cancel' || status === 'failure') {
-            statusBadge = `<span class="badge badge-danger p-2" style="background: rgba(239,68,68,0.2); border: 1px solid #ef4444; color: #f87171;"><i class="fas fa-times-circle mr-1"></i> BATAL / EXPIRED</span>`;
-          }
+        let payType = inv.payment_type || 'QRIS / VA';
+        if (payType.includes('bca')) payType = 'BCA Virtual Account';
+        else if (payType.includes('mandiri')) payType = 'Mandiri Bill';
+        else if (payType.includes('bri')) payType = 'BRI Virtual Account';
+        else if (payType.includes('bni')) payType = 'BNI Virtual Account';
+        else if (payType.includes('qris')) payType = 'QRIS Instant';
+        else if (payType.includes('credit_card')) payType = 'Credit Card';
+        else if (payType.includes('manual')) payType = 'Transfer Bank Admin';
 
-          let payType = inv.payment_type || 'QRIS / VA';
-          if (payType.includes('bca')) payType = 'BCA Virtual Account';
-          else if (payType.includes('mandiri')) payType = 'Mandiri Bill';
-          else if (payType.includes('bri')) payType = 'BRI Virtual Account';
-          else if (payType.includes('bni')) payType = 'BNI Virtual Account';
-          else if (payType.includes('qris')) payType = 'QRIS Instant';
-          else if (payType.includes('credit_card')) payType = 'Credit Card';
+        const orderIdSafe = (inv.order_id || inv.invoice_number || 'INV-LOEWIX').replace(/'/g, "\\'");
+        const userNameSafe = (inv.user_name || 'Customer').replace(/'/g, "\\'");
 
-          let actionButtons = '';
-          if (status === 'pending') {
-            actionButtons = `
-              <div class="d-flex justify-content-end align-items-center gap-1" style="gap: 5px;">
-                <button class="btn btn-sm btn-info font-weight-bold d-inline-flex align-items-center" onclick="sendAdminPaymentReminder('${inv.order_id}', '${(inv.user_name || '').replace(/'/g, "\\'")}', '${inv.user_email || ''}')" title="Kirim Email Tagihan Ulang" style="border-radius: 8px; font-size: 11px; padding: 5px 10px; background: linear-gradient(135deg, #0284c7, #0369a1); border: none; white-space: nowrap;">
-                  <i class="fas fa-paper-plane mr-1"></i> <span>Kirim Email</span>
-                </button>
-                <button class="btn btn-sm btn-success font-weight-bold d-inline-flex align-items-center" onclick="markAdminInvoiceSettled('${inv.order_id}', '${(inv.user_name || '').replace(/'/g, "\\'")}')" title="Tandai Sudah Lunas Manual" style="border-radius: 8px; font-size: 11px; padding: 5px 10px; background: linear-gradient(135deg, #10b981, #059669); border: none; white-space: nowrap;">
-                  <i class="fas fa-check-double mr-1"></i> <span>Set Lunas</span>
-                </button>
-              </div>
-            `;
-          } else {
-            actionButtons = `
-              <div class="text-right">
-                <span class="badge badge-dark p-2" style="background: rgba(16,185,129,0.1); color: #34d399; font-size: 11px; border: 1px solid rgba(16,185,129,0.25); border-radius: 6px;">
-                  <i class="fas fa-check mr-1"></i> Terverifikasi
-                </span>
-              </div>
-            `;
-          }
+        let actionButtons = `
+          <div class="action-btn-group">
+            <button class="act-btn" onclick="showInvoiceReceiptModal('${orderIdSafe}')" title="Lihat / Cetak Kwitansi Resmi" style="background: rgba(56, 189, 248, 0.15); border-color: rgba(56, 189, 248, 0.4); color: #38bdf8;">
+              <i class="fas fa-receipt"></i>
+            </button>
+            <button class="act-btn" onclick="openInvoiceDetailModal('${orderIdSafe}')" title="Lihat Rincian & Log Midtrans" style="background: rgba(168, 85, 247, 0.15); border-color: rgba(168, 85, 247, 0.4); color: #c084fc;">
+              <i class="fas fa-eye"></i>
+            </button>
+        `;
 
-          const row = document.createElement('tr');
-          row.innerHTML = `
-            <td style="font-family: monospace; font-weight: 700; color: #38bdf8; font-size: 13px;">
-              <i class="fas fa-file-invoice text-info mr-1"></i> ${inv.order_id || inv.invoice_number || 'INV-LOEWIX'}
-            </td>
-            <td>
-              <div class="font-weight-bold text-white" style="font-size: 13px;">
-                <i class="fas fa-building text-warning mr-1" style="font-size: 11px;"></i> ${inv.user_name || 'Customer PT'}
-              </div>
-              <small class="text-muted" style="font-size: 11px;">${inv.user_email || ''}</small>
-            </td>
-            <td>
-              <span class="badge badge-info p-2" style="background: rgba(56,189,248,0.15); border: 1px solid rgba(56,189,248,0.3); color: #38bdf8; border-radius: 6px; font-weight: 600;">
-                ${inv.plan_name || 'Business Plan'} (${inv.billing_cycle === 'annual' ? 'Tahunan' : 'Bulanan'})
-              </span>
-            </td>
-            <td class="font-weight-bold" style="color: #34d399; font-size: 14px;">
-              Rp ${Number(totalAmt).toLocaleString('id-ID')}
-            </td>
-            <td>
-              <span class="badge badge-dark text-uppercase p-2" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); font-size: 11px;">
-                <i class="fas fa-wallet mr-1 text-info"></i> ${payType}
-              </span>
-            </td>
-            <td>${statusBadge}</td>
-            <td class="text-muted" style="font-size: 11.5px; white-space: nowrap;">
-              <i class="fas fa-calendar-check mr-1 text-info"></i> ${inv.settlement_time || inv.transaction_time || inv.created_at || '2026-08-29 10:00'}
-            </td>
-            <td class="text-right">${actionButtons}</td>
+        if (status === 'pending') {
+          actionButtons += `
+            <button class="act-btn" onclick="sendAdminPaymentReminder('${orderIdSafe}', '${userNameSafe}', '${inv.user_email || ''}')" title="Kirim Ulang Email Tagihan" style="background: rgba(245, 158, 11, 0.15); border-color: rgba(245, 158, 11, 0.4); color: #fbbf24;">
+              <i class="fas fa-paper-plane"></i>
+            </button>
+            <button class="act-btn" onclick="markAdminInvoiceSettled('${orderIdSafe}', '${userNameSafe}')" title="Tandai Sudah Lunas Manual" style="background: rgba(16, 185, 129, 0.2); border-color: #10b981; color: #34d399;">
+              <i class="fas fa-check"></i>
+            </button>
           `;
-          tbody.appendChild(row);
-        });
+        }
+
+        actionButtons += `
+            <button class="act-btn act-btn-delete" onclick="deleteAdminInvoice('${orderIdSafe}')" title="Hapus Invoice Ini">
+              <i class="fas fa-trash"></i>
+            </button>
+          </div>
+        `;
+
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td style="font-family: monospace; font-weight: 700; font-size: 13px;">
+            <a href="javascript:void(0)" onclick="openInvoiceDetailModal('${orderIdSafe}')" style="color: #38bdf8; text-decoration: none;" title="Klik untuk melihat rincian transaksi">
+              <i class="fas fa-file-invoice mr-1"></i> ${inv.order_id || inv.invoice_number || 'INV-LOEWIX'}
+            </a>
+          </td>
+          <td>
+            <div class="font-weight-bold text-white" style="font-size: 13px;">
+              <i class="fas fa-building text-info mr-1" style="font-size: 11px;"></i> ${inv.user_name || 'Customer PT'}
+            </div>
+            <small class="text-muted" style="font-size: 11px;">${inv.user_email || ''}</small>
+          </td>
+          <td>
+            <span class="badge badge-info p-2" style="background: rgba(56,189,248,0.15); border: 1px solid rgba(56,189,248,0.3); color: #38bdf8; border-radius: 6px; font-weight: 600;">
+              ${inv.plan_name || 'Business Plan'} (${inv.billing_cycle === 'annual' ? 'Tahunan' : 'Bulanan'})
+            </span>
+          </td>
+          <td class="font-weight-bold" style="color: #34d399; font-size: 14px;">
+            Rp ${Number(totalAmt).toLocaleString('id-ID')}
+          </td>
+          <td>
+            <span class="badge badge-dark text-uppercase p-2" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); font-size: 11px;">
+              <i class="fas fa-wallet mr-1 text-info"></i> ${payType}
+            </span>
+          </td>
+          <td>${statusBadge}</td>
+          <td class="text-muted" style="font-size: 11.5px; white-space: nowrap;">
+            <i class="fas fa-calendar-check mr-1 text-info"></i> ${inv.settlement_time || inv.transaction_time || inv.created_at || '2026-08-29 10:00'}
+          </td>
+          <td class="text-right">${actionButtons}</td>
+        `;
+        tbody.appendChild(row);
+      });
+    }
+
+    function filterAdminTransactionsTable() {
+      const search = (document.getElementById('search-transaction-input')?.value || '').toLowerCase();
+      const statusFilter = document.getElementById('filter-transaction-status')?.value || 'all';
+      const payFilter = document.getElementById('filter-transaction-payment')?.value || 'all';
+
+      const filtered = cachedAdminTransactions.filter(inv => {
+        const orderId = (inv.order_id || inv.invoice_number || '').toLowerCase();
+        const userName = (inv.user_name || '').toLowerCase();
+        const userEmail = (inv.user_email || '').toLowerCase();
+        const planName = (inv.plan_name || '').toLowerCase();
+        const payType = (inv.payment_type || '').toLowerCase();
+        const status = (inv.status || 'settlement').toLowerCase();
+
+        const matchSearch = orderId.includes(search) || userName.includes(search) || userEmail.includes(search) || planName.includes(search);
+        
+        let matchStatus = true;
+        if (statusFilter === 'settlement') matchStatus = (status === 'settlement' || status === 'capture' || status === 'success');
+        else if (statusFilter === 'pending') matchStatus = (status === 'pending');
+        else if (statusFilter === 'expire') matchStatus = (status === 'expire' || status === 'cancel' || status === 'failure');
+
+        let matchPay = true;
+        if (payFilter === 'va') matchPay = payType.includes('va') || payType.includes('bill') || payType.includes('bank');
+        else if (payFilter === 'qris') matchPay = payType.includes('qris') || payType.includes('gopay');
+        else if (payFilter === 'manual') matchPay = payType.includes('manual');
+
+        return matchSearch && matchStatus && matchPay;
+      });
+
+      renderAdminTransactionsTable(filtered);
+    }
+
+    function exportAdminTransactionsCSV() {
+      if (!cachedAdminTransactions || cachedAdminTransactions.length === 0) {
+        alert('Tidak ada data transaksi untuk diexport.');
+        return;
+      }
+      let csv = 'No Invoice,Nama Pelanggan,Email,Paket SaaS,Siklus,Harga Paket,PPN 11%,Total Bayar,Metode Bayar,Status,Waktu Transaksi\n';
+      cachedAdminTransactions.forEach(inv => {
+        const amt = inv.amount || 0;
+        const tax = inv.tax_amount || Math.round(amt * 0.11);
+        const tot = inv.total_amount || (amt + tax);
+        csv += `"${inv.order_id}","${inv.user_name || '-'}","${inv.user_email || '-'}","${inv.plan_name || '-'}","${inv.billing_cycle || '-'}","${amt}","${tax}","${tot}","${inv.payment_type || '-'}","${inv.status || '-'}","${inv.settlement_time || inv.created_at || '-'}"\n`;
+      });
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `loewix_transaksi_saas_${new Date().toISOString().slice(0, 10)}.csv`;
+      a.click();
+    }
+
+    function openCreateManualInvoiceModal() {
+      const custSelect = document.getElementById('manual-inv-customer');
+      if (custSelect) {
+        custSelect.innerHTML = (cachedAdminCustomers || []).map(c => 
+          `<option value="${c.id}">${c.name} (${c.email}) - Kuota: ${c.cctv_quota} CCTV</option>`
+        ).join('');
+      }
+
+      const planSelect = document.getElementById('manual-inv-plan');
+      if (planSelect && typeof cachedAdminPlans !== 'undefined') {
+        planSelect.innerHTML = cachedAdminPlans.map(p => 
+          `<option value="${p.id}" data-monthly="${p.price}" data-annual="${p.price_annual || p.price * 12}">${p.name} (Rp ${Number(p.price).toLocaleString('id-ID')}/bln)</option>`
+        ).join('');
+      }
+
+      autoCalculateManualInvoiceTotal();
+      openModalHelper('modalCreateManualInvoice');
+    }
+
+    function autoCalculateManualInvoiceTotal() {
+      const planSelect = document.getElementById('manual-inv-plan');
+      const cycleSelect = document.getElementById('manual-inv-cycle');
+      const amountInput = document.getElementById('manual-inv-amount');
+      const taxEl = document.getElementById('manual-inv-tax-text');
+      const totalEl = document.getElementById('manual-inv-total-text');
+
+      if (!planSelect || !cycleSelect || !amountInput) return;
+
+      const opt = planSelect.options[planSelect.selectedIndex];
+      if (opt && (!amountInput.value || document.activeElement !== amountInput)) {
+        const cycle = cycleSelect.value;
+        const base = (cycle === 'annual') 
+          ? (Number(opt.getAttribute('data-annual')) || 2990000)
+          : (Number(opt.getAttribute('data-monthly')) || 299000);
+        amountInput.value = base;
+      }
+
+      const amt = Number(amountInput.value) || 0;
+      const tax = Math.round(amt * 0.11);
+      const tot = amt + tax;
+
+      if (taxEl) taxEl.textContent = 'Rp ' + tax.toLocaleString('id-ID');
+      if (totalEl) totalEl.textContent = 'Rp ' + tot.toLocaleString('id-ID');
+    }
+
+    async function submitCreateManualInvoice(e) {
+      e.preventDefault();
+      const userId = document.getElementById('manual-inv-customer').value;
+      const planId = document.getElementById('manual-inv-plan').value;
+      const billingCycle = document.getElementById('manual-inv-cycle').value;
+      const amount = document.getElementById('manual-inv-amount').value;
+      const paymentMethod = document.getElementById('manual-inv-method').value;
+      const status = document.getElementById('manual-inv-status').value;
+
+      const fd = new FormData();
+      fd.append('action', 'create_manual_invoice');
+      fd.append('user_id', userId);
+      fd.append('plan_id', planId);
+      fd.append('billing_cycle', billingCycle);
+      fd.append('amount', amount);
+      fd.append('payment_method', paymentMethod);
+      fd.append('status', status);
+
+      try {
+        const res = await fetch('../api/payment.php', { method: 'POST', body: fd });
+        const data = await res.json();
+        if (data.success) {
+          alert(data.message || 'Invoice manual berhasil diterbitkan!');
+          closeModalHelper('modalCreateManualInvoice');
+          loadAdminTransactionsList();
+          loadAdminCustomersList();
+        } else {
+          alert(data.message || 'Gagal menerbitkan invoice.');
+        }
       } catch (err) {
-        tbody.innerHTML = `<tr><td colspan="8" class="text-center py-4 text-danger">Gagal memuat data transaksi.</td></tr>`;
+        alert('Terjadi kesalahan koneksi ke server.');
+      }
+    }
+
+    function openInvoiceDetailModal(orderId) {
+      const inv = (cachedAdminTransactions || []).find(item => item.order_id === orderId);
+      if (!inv) return;
+
+      const content = document.getElementById('invoice-detail-content');
+      if (!content) return;
+
+      const amt = inv.amount || 0;
+      const tax = inv.tax_amount || Math.round(amt * 0.11);
+      const tot = inv.total_amount || (amt + tax);
+      const st = (inv.status || 'settlement').toLowerCase();
+
+      let stText = '<span class="badge badge-success px-2 py-1"><i class="fas fa-check-circle mr-1"></i> LUNAS (SETTLEMENT)</span>';
+      if (st === 'pending') stText = '<span class="badge badge-warning px-2 py-1"><i class="fas fa-clock mr-1"></i> MENUNGGU PEMBAYARAN</span>';
+      else if (st === 'expire' || st === 'cancel') stText = '<span class="badge badge-danger px-2 py-1"><i class="fas fa-times-circle mr-1"></i> EXPIRED / CANCELLED</span>';
+
+      content.innerHTML = `
+        <div class="p-3 mb-3 rounded" style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1);">
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <span style="font-size: 11px; font-weight: 700; color: #38bdf8; font-family: monospace;">INVOICE ID</span>
+            ${stText}
+          </div>
+          <div class="font-weight-bold text-white" style="font-size: 17px; font-family: monospace;">${inv.order_id}</div>
+          <small class="text-muted"><i class="fas fa-clock mr-1"></i> Dibuat: ${inv.created_at || '2026-08-31 10:00'}</small>
+        </div>
+
+        <div class="row g-2 mb-3 text-white" style="font-size: 13px;">
+          <div class="col-6">
+            <small class="text-muted d-block">Pelanggan / Tenant:</small>
+            <strong>${inv.user_name || 'Customer'}</strong>
+            <div class="text-muted" style="font-size: 11px;">${inv.user_email || '-'}</div>
+          </div>
+          <div class="col-6">
+            <small class="text-muted d-block">Metode Pembayaran:</small>
+            <strong class="text-uppercase" style="color: #38bdf8;">${inv.payment_type || 'Virtual Account'}</strong>
+            <div class="text-muted" style="font-size: 11px;">Gateway: Midtrans Snap API</div>
+          </div>
+        </div>
+
+        <div class="p-3 rounded" style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08);">
+          <div class="d-flex justify-content-between py-1 text-light" style="font-size: 12.5px;">
+            <span>Paket: <strong>${inv.plan_name || 'Business Plan'}</strong> (${inv.billing_cycle === 'annual' ? 'Tahunan' : 'Bulanan'})</span>
+            <span>Rp ${Number(amt).toLocaleString('id-ID')}</span>
+          </div>
+          <div class="d-flex justify-content-between py-1 text-muted" style="font-size: 12px; border-bottom: 1px dashed rgba(255,255,255,0.15);">
+            <span>PPN 11% (Pajak Pertambahan Nilai)</span>
+            <span>Rp ${Number(tax).toLocaleString('id-ID')}</span>
+          </div>
+          <div class="d-flex justify-content-between pt-2 font-weight-bold" style="font-size: 15px; color: #34d399;">
+            <span>TOTAL TAGIHAN</span>
+            <span>Rp ${Number(tot).toLocaleString('id-ID')}</span>
+          </div>
+        </div>
+      `;
+
+      const btnPrint = document.getElementById('btn-detail-print-receipt');
+      if (btnPrint) {
+        btnPrint.onclick = function() {
+          closeModalHelper('modalInvoiceDetail');
+          showInvoiceReceiptModal(orderId);
+        };
+      }
+
+      openModalHelper('modalInvoiceDetail');
+    }
+
+    async function deleteAdminInvoice(orderId) {
+      const ok = await showLoewixConfirmModal({
+        title: 'Hapus Data Invoice',
+        subtitle: 'Konfirmasi Penghapusan Rekam Transaksi',
+        icon: 'fas fa-trash-alt',
+        iconColor: '#f43f5e',
+        isDanger: true,
+        targetName: 'Invoice #' + orderId,
+        targetMeta: 'Log Transaksi Finansial SaaS',
+        message: `Apakah Anda yakin ingin menghapus data invoice <strong>#${orderId}</strong>?<br><small class="text-muted">Data yang dihapus tidak dapat dipulihkan kembali.</small>`,
+        confirmText: 'Ya, Hapus Invoice',
+        confirmGradient: 'linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)'
+      });
+      if (!ok) return;
+
+      const fd = new FormData();
+      fd.append('action', 'delete_invoice');
+      fd.append('order_id', orderId);
+
+      try {
+        const res = await fetch('../api/payment.php', { method: 'POST', body: fd });
+        const data = await res.json();
+        if (data.success) {
+          loadAdminTransactionsList();
+        } else {
+          alert(data.message || 'Gagal menghapus invoice.');
+        }
+      } catch (err) {
+        alert('Terjadi kesalahan koneksi ke server.');
       }
     }
 
@@ -5591,6 +6083,13 @@
     window.deleteCustomerCamera = deleteCustomerCamera;
     window.sendAdminPaymentReminder = sendAdminPaymentReminder;
     window.markAdminInvoiceSettled = markAdminInvoiceSettled;
+    window.openCreateManualInvoiceModal = openCreateManualInvoiceModal;
+    window.autoCalculateManualInvoiceTotal = autoCalculateManualInvoiceTotal;
+    window.submitCreateManualInvoice = submitCreateManualInvoice;
+    window.openInvoiceDetailModal = openInvoiceDetailModal;
+    window.deleteAdminInvoice = deleteAdminInvoice;
+    window.filterAdminTransactionsTable = filterAdminTransactionsTable;
+    window.exportAdminTransactionsCSV = exportAdminTransactionsCSV;
   </script>
 </body>
 </html>

@@ -616,6 +616,111 @@ if ($action === 'mark_invoice_settled') {
     exit;
 }
 
+// 8b. CREATE MANUAL INVOICE (SUPER ADMIN)
+if ($action === 'create_manual_invoice') {
+    $userId = (int) ($_POST['user_id'] ?? 0);
+    $planId = trim($_POST['plan_id'] ?? 'business_10');
+    $billingCycle = trim($_POST['billing_cycle'] ?? 'monthly');
+    $customAmount = (int) ($_POST['amount'] ?? 0);
+    $paymentMethod = trim($_POST['payment_method'] ?? 'manual_transfer_admin');
+    $status = trim($_POST['status'] ?? 'settlement');
+
+    $db = get_db_data();
+    $targetUser = null;
+    foreach ($db['users'] as $u) {
+        if ((int)$u['id'] === $userId) {
+            $targetUser = $u;
+            break;
+        }
+    }
+
+    if (!$targetUser) {
+        echo json_encode(['success' => false, 'message' => 'Customer tidak ditemukan!']);
+        exit;
+    }
+
+    $planName = 'Business Plan';
+    $amount = $customAmount;
+    if ($amount <= 0) {
+        $plans = $db['plans'] ?? [];
+        foreach ($plans as $p) {
+            if ($p['id'] === $planId) {
+                $planName = $p['name'];
+                $amount = ($billingCycle === 'annual') ? ($p['price_annual'] ?? $p['price'] * 12) : $p['price'];
+                break;
+            }
+        }
+        if ($amount <= 0) $amount = 299000;
+    }
+
+    $tax = round($amount * 0.11);
+    $totalAmount = $amount + $tax;
+    $orderId = 'INV-LWX-' . date('Ymd') . '-' . strtoupper(substr(md5(uniqid()), 0, 6));
+
+    $newInvoice = [
+        'order_id' => $orderId,
+        'user_id' => $userId,
+        'user_name' => $targetUser['name'],
+        'user_email' => $targetUser['email'],
+        'plan_id' => $planId,
+        'plan_name' => $planName,
+        'billing_cycle' => $billingCycle,
+        'amount' => $amount,
+        'tax_amount' => $tax,
+        'total_amount' => $totalAmount,
+        'payment_type' => $paymentMethod,
+        'status' => $status,
+        'created_at' => date('Y-m-d H:i:s'),
+        'settlement_time' => ($status === 'settlement') ? date('Y-m-d H:i:s') : null,
+        'transaction_time' => date('Y-m-d H:i:s')
+    ];
+
+    $db['invoices'] = $db['invoices'] ?? [];
+    array_unshift($db['invoices'], $newInvoice);
+    save_db_data($db);
+
+    if ($status === 'settlement') {
+        activate_user_subscription(
+            $userId,
+            $planId,
+            $billingCycle,
+            $amount,
+            $orderId,
+            $paymentMethod
+        );
+    }
+
+    echo json_encode([
+        'success' => true,
+        'message' => 'Invoice manual ' . $orderId . ' berhasil diterbitkan!',
+        'invoice' => $newInvoice
+    ]);
+    exit;
+}
+
+// 8c. DELETE INVOICE (SUPER ADMIN)
+if ($action === 'delete_invoice') {
+    $orderId = trim($_POST['order_id'] ?? '');
+    if (empty($orderId)) {
+        echo json_encode(['success' => false, 'message' => 'Order ID wajib diisi!']);
+        exit;
+    }
+
+    $db = get_db_data();
+    $initialCount = count($db['invoices'] ?? []);
+    $db['invoices'] = array_values(array_filter($db['invoices'] ?? [], function($inv) use ($orderId) {
+        return ($inv['order_id'] !== $orderId);
+    }));
+
+    if (count($db['invoices']) < $initialCount) {
+        save_db_data($db);
+        echo json_encode(['success' => true, 'message' => 'Invoice ' . $orderId . ' berhasil dihapus.']);
+    } else {
+        echo json_encode(['success' => false, 'message' => 'Invoice tidak ditemukan.']);
+    }
+    exit;
+}
+
 // 9. GET SMTP SETTINGS (SUPER ADMIN)
 if ($action === 'get_smtp_settings') {
     $smtpConfigFile = __DIR__ . '/../data/smtp_config.json';
