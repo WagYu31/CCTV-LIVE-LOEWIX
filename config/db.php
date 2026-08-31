@@ -592,40 +592,73 @@ function get_user_invoices($userId) {
 }
 
 /**
- * Get user billing profile (automatically saved & persistent)
+ * Get user billing profile (strictly verified & synchronized per user)
  */
 function get_user_billing_profile($userId) {
+    $userId = (int)$userId;
+    if ($userId <= 0) return null;
+
     $db = get_db_data();
-    if (isset($db['billing_profiles']) && is_array($db['billing_profiles'])) {
-        foreach ($db['billing_profiles'] as $prof) {
-            if ((int)$prof['user_id'] === (int)$userId) {
-                return $prof;
+    $targetUser = null;
+    if (isset($db['users']) && is_array($db['users'])) {
+        foreach ($db['users'] as $u) {
+            if ((int)$u['id'] === $userId) {
+                $targetUser = $u;
+                break;
             }
         }
     }
 
-    // Fallback and auto-persist to db
-    if (isset($db['users']) && is_array($db['users'])) {
-        foreach ($db['users'] as $u) {
-            if ((int)$u['id'] === (int)$userId) {
-                $newProfile = [
-                    'user_id' => (int)$u['id'],
-                    'company_name' => $u['name'] ?? '',
-                    'tax_id' => '-',
-                    'billing_email' => $u['email'] ?? '',
-                    'billing_phone' => ($u['phone'] !== '-' && !empty($u['phone'])) ? $u['phone'] : '+62 812-3456-7890',
-                    'billing_address' => 'Kota ' . ucfirst($u['city'] ?? 'Pematangsiantar') . ', Indonesia'
-                ];
-                if (!isset($db['billing_profiles']) || !is_array($db['billing_profiles'])) {
-                    $db['billing_profiles'] = [];
+    if (!$targetUser) return null;
+
+    $userEmail = strtolower(trim($targetUser['email'] ?? ''));
+    $userName = $targetUser['name'] ?? 'Pelanggan';
+    $userPhone = ($targetUser['phone'] !== '-' && !empty($targetUser['phone'])) ? $targetUser['phone'] : '+62 812-3456-7890';
+    $userCity = ucfirst($targetUser['city'] ?? 'Bandung');
+
+    if (isset($db['billing_profiles']) && is_array($db['billing_profiles'])) {
+        foreach ($db['billing_profiles'] as $prof) {
+            if ((int)$prof['user_id'] === $userId) {
+                // Verify email matches active account to avoid showing stale profile from deleted accounts
+                $profEmail = strtolower(trim($prof['billing_email'] ?? ''));
+                if (!empty($profEmail) && $profEmail === $userEmail) {
+                    return $prof;
                 }
-                $db['billing_profiles'][] = $newProfile;
-                save_db_data($db);
-                return $newProfile;
             }
         }
     }
-    return null;
+
+    // Auto-create/sync fresh profile matching active user
+    $newProfile = [
+        'user_id' => $userId,
+        'company_name' => $userName,
+        'tax_id' => '-',
+        'billing_email' => $userEmail,
+        'billing_phone' => $userPhone,
+        'billing_address' => 'Kota ' . $userCity . ', Indonesia'
+    ];
+
+    if (!isset($db['billing_profiles']) || !is_array($db['billing_profiles'])) {
+        $db['billing_profiles'] = [];
+    }
+
+    // Replace any stale entry with same user_id
+    $foundIndex = -1;
+    foreach ($db['billing_profiles'] as $k => $p) {
+        if ((int)$p['user_id'] === $userId) {
+            $foundIndex = $k;
+            break;
+        }
+    }
+
+    if ($foundIndex >= 0) {
+        $db['billing_profiles'][$foundIndex] = $newProfile;
+    } else {
+        $db['billing_profiles'][] = $newProfile;
+    }
+
+    save_db_data($db);
+    return $newProfile;
 }
 
 /**

@@ -4695,10 +4695,11 @@
       const phone = document.getElementById('bill-phone');
       const addr = document.getElementById('bill-address');
 
-      const defName = (profile && profile.company_name) ? profile.company_name : (currentUser ? currentUser.name : '');
-      const defEmail = (profile && profile.billing_email) ? profile.billing_email : (currentUser ? currentUser.email : '');
-      const defPhone = (profile && profile.billing_phone) ? profile.billing_phone : (currentUser ? (currentUser.phone || '') : '');
-      const defAddr = (profile && profile.billing_address) ? profile.billing_address : (currentUser ? ('Kota ' + (currentUser.city || 'Pematangsiantar') + ', Indonesia') : '');
+      const activeUser = currentCustomer || (localStorage.getItem('loewix_user') ? JSON.parse(localStorage.getItem('loewix_user')) : null);
+      const defName = (profile && profile.company_name) ? profile.company_name : (activeUser ? activeUser.name : '');
+      const defEmail = (profile && profile.billing_email) ? profile.billing_email : (activeUser ? activeUser.email : '');
+      const defPhone = (profile && profile.billing_phone) ? profile.billing_phone : (activeUser ? (activeUser.phone || '') : '');
+      const defAddr = (profile && profile.billing_address) ? profile.billing_address : (activeUser ? ('Kota ' + (activeUser.city || 'Bandung') + ', Indonesia') : '');
 
       if (comp) comp.value = defName;
       if (email) email.value = defEmail;
