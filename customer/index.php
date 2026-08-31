@@ -2341,12 +2341,75 @@
     </div>
   </div>
 
+  <!-- Modal Reset Password Customer (Admin) - Premium Dark Glassmorphic Dialog -->
+  <div class="modal fade modal-dark" id="modalResetCustomerPassword" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document" style="max-width: 480px;">
+      <div class="modal-content" style="background: linear-gradient(160deg, #0f172a 0%, #080e21 100%); border: 1px solid rgba(168, 85, 247, 0.4); border-radius: 20px; box-shadow: 0 25px 70px rgba(0,0,0,0.8), 0 0 30px rgba(168, 85, 247, 0.15); overflow: hidden;">
+        <div class="modal-header" style="background: rgba(15, 23, 42, 0.98); border-bottom: 1px solid rgba(255,255,255,0.08); padding: 18px 24px;">
+          <div class="d-flex align-items-center gap-3">
+            <div style="width: 42px; height: 42px; border-radius: 12px; background: linear-gradient(135deg, rgba(168, 85, 247, 0.25), rgba(126, 34, 206, 0.25)); border: 1px solid rgba(168, 85, 247, 0.5); display: flex; align-items: center; justify-content: center; font-size: 19px; color: #c084fc; box-shadow: 0 0 15px rgba(168, 85, 247, 0.3);">
+              <i class="fas fa-key"></i>
+            </div>
+            <div>
+              <h5 class="modal-title font-weight-bold text-white mb-0" style="font-size: 16px;">Reset Password Customer</h5>
+              <small style="color: #94a3b8; font-size: 11px;">Perbarui kata sandi login untuk akun customer</small>
+            </div>
+          </div>
+          <button type="button" class="close text-white" onclick="closeModalHelper('modalResetCustomerPassword')" aria-label="Close" style="background: rgba(255,255,255,0.08); border: none; border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center;">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <form id="formResetCustomerPassword" onsubmit="submitResetCustomerPassword(event)">
+          <input type="hidden" id="reset-cust-id">
+          <div class="modal-body p-4">
+            
+            <div class="p-3 mb-3 rounded-3" style="background: rgba(168, 85, 247, 0.08); border: 1px solid rgba(168, 85, 247, 0.25); border-radius: 12px;">
+              <div class="d-flex align-items-center justify-content-between mb-1">
+                <span style="font-size: 10px; font-weight: 700; color: #c084fc; font-family: monospace; letter-spacing: 0.5px;">TARGET CUSTOMER</span>
+                <span class="badge badge-pill" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8; font-size: 10px;">ID: #<span id="reset-cust-id-display">0</span></span>
+              </div>
+              <div id="reset-cust-name-display" class="font-weight-bold text-white" style="font-size: 15px;">
+                BATAGOR BANDUNG
+              </div>
+            </div>
+
+            <div class="form-group mb-2">
+              <div class="d-flex justify-content-between align-items-center mb-1">
+                <label style="font-size: 12px; font-weight: 600; color: #cbd5e1; margin-bottom: 0;">Password Baru:</label>
+                <button type="button" class="btn btn-link p-0 text-decoration-none" onclick="generateRandomPassword('reset-cust-password-input')" style="font-size: 11px; color: #c084fc;">
+                  <i class="fas fa-dice mr-1"></i> Acak Password
+                </button>
+              </div>
+              <div class="input-group" style="position: relative;">
+                <div style="position: absolute; left: 14px; top: 12px; z-index: 10; color: #c084fc;">
+                  <i class="fas fa-lock"></i>
+                </div>
+                <input type="text" id="reset-cust-password-input" class="form-control form-control-dark font-weight-bold" style="padding-left: 40px; padding-right: 40px; color: #fbbf24 !important; font-size: 14.5px; letter-spacing: 0.5px;" value="loewix123" required>
+                <button type="button" onclick="copyPasswordToClipboard('reset-cust-password-input')" title="Salin Password" style="position: absolute; right: 12px; top: 10px; z-index: 10; background: none; border: none; color: #94a3b8; cursor: pointer;">
+                  <i class="fas fa-copy"></i>
+                </button>
+              </div>
+              <small class="text-muted d-block mt-1" style="font-size: 11px;">Customer dapat langsung login menggunakan password baru ini.</small>
+            </div>
+
+          </div>
+          <div class="modal-footer" style="border-top: 1px solid rgba(255,255,255,0.08); background: rgba(15, 23, 42, 0.95); padding: 14px 24px;">
+            <button type="button" class="btn btn-secondary btn-sm px-3" onclick="closeModalHelper('modalResetCustomerPassword')">Batal</button>
+            <button type="submit" class="btn btn-sm font-weight-bold px-4 text-white" style="background: linear-gradient(135deg, #a855f7 0%, #7e22ce 100%); border: none; border-radius: 10px; box-shadow: 0 4px 15px rgba(168, 85, 247, 0.4);">
+              <i class="fas fa-check mr-1.5"></i> Terapkan Password
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
   <!-- Modal Tambah Customer Baru (Admin) -->
   <div class="modal fade modal-dark" id="modalAddCustomer" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" role="document">
-      <div class="modal-content" style="background: #0b1533; border: 1px solid rgba(56,189,248,0.3); border-radius: 16px;">
-        <div class="modal-header" style="border-bottom: 1px solid rgba(255,255,255,0.08);">
-          <h5 class="modal-title font-weight-bold text-white"><i class="fas fa-user-plus text-info mr-2"></i> Tambah Customer Baru</h5>
+      <div class="modal-content" style="background: linear-gradient(160deg, #0b1533 0%, #070d22 100%); border: 1px solid rgba(56,189,248,0.35); border-radius: 20px; box-shadow: 0 30px 80px rgba(0,0,0,0.85); overflow: hidden;">
+        <div class="modal-header" style="background: rgba(15, 23, 42, 0.98); border-bottom: 1px solid rgba(255,255,255,0.08); padding: 18px 24px;">
+          <h5 class="modal-title font-weight-bold text-white mb-0" style="font-size: 16px;"><i class="fas fa-user-plus text-info mr-2"></i> Tambah Customer Baru</h5>
           <button type="button" class="close text-white" onclick="closeModalHelper('modalAddCustomer')" aria-label="Close">
             <span aria-hidden="true">&times;</span>
           </button>
@@ -2354,24 +2417,24 @@
         <form id="formAddCustomer" onsubmit="submitAddCustomer(event)">
           <div class="modal-body p-4">
             <div class="form-group mb-3">
-              <label class="text-white" style="font-size: 13px; font-weight: 600;">Nama Customer / Perusahaan:</label>
+              <label class="text-white" style="font-size: 12.5px; font-weight: 600;">Nama Customer / Perusahaan:</label>
               <input type="text" id="cust-name" class="form-control form-control-dark" placeholder="Contoh: PT. Jaya Sentosa Enterprise" required>
             </div>
             <div class="form-group mb-3">
-              <label class="text-white" style="font-size: 13px; font-weight: 600;">Email Login:</label>
+              <label class="text-white" style="font-size: 12.5px; font-weight: 600;">Email Login:</label>
               <input type="email" id="cust-email" class="form-control form-control-dark" placeholder="customer@jayasentosa.com" required>
             </div>
             <div class="form-group mb-3">
-              <label class="text-white" style="font-size: 13px; font-weight: 600;">Password Awal:</label>
+              <label class="text-white" style="font-size: 12.5px; font-weight: 600;">Password Awal:</label>
               <input type="password" id="cust-password" class="form-control form-control-dark" placeholder="Minimal 6 Karakter" required>
             </div>
             <div class="row g-2 mb-3">
               <div class="col-6">
-                <label class="text-white" style="font-size: 13px; font-weight: 600;">Alokasi Kuota CCTV:</label>
+                <label class="text-white" style="font-size: 12.5px; font-weight: 600;">Alokasi Kuota CCTV:</label>
                 <input type="number" id="cust-quota" class="form-control form-control-dark" value="10" min="1" max="500" required>
               </div>
               <div class="col-6">
-                <label class="text-white" style="font-size: 13px; font-weight: 600;">Wilayah:</label>
+                <label class="text-white" style="font-size: 12.5px; font-weight: 600;">Wilayah:</label>
                 <select id="cust-city" class="form-control form-control-dark">
                   <option value="siantar">Pematangsiantar</option>
                   <option value="jakarta">DKI Jakarta</option>
@@ -2382,13 +2445,13 @@
               </div>
             </div>
             <div class="form-group mb-2">
-              <label class="text-white" style="font-size: 13px; font-weight: 600;">No. WhatsApp / HP:</label>
+              <label class="text-white" style="font-size: 12.5px; font-weight: 600;">No. WhatsApp / HP:</label>
               <input type="text" id="cust-phone" class="form-control form-control-dark" placeholder="+62 812-3456-7890">
             </div>
           </div>
-          <div class="modal-footer" style="border-top: 1px solid rgba(255,255,255,0.08);">
+          <div class="modal-footer" style="border-top: 1px solid rgba(255,255,255,0.08); background: rgba(15, 23, 42, 0.95); padding: 14px 24px;">
             <button type="button" class="btn btn-secondary btn-sm" onclick="closeModalHelper('modalAddCustomer')">Batal</button>
-            <button type="submit" class="btn btn-info btn-sm font-weight-bold" style="background: #0284c7; border: none;"><i class="fas fa-save mr-1"></i> Simpan Customer</button>
+            <button type="submit" class="btn btn-info btn-sm font-weight-bold px-3" style="background: #0284c7; border: none; border-radius: 10px; box-shadow: 0 4px 14px rgba(2, 132, 199, 0.4);"><i class="fas fa-save mr-1"></i> Simpan Customer</button>
           </div>
         </form>
       </div>
@@ -2398,9 +2461,9 @@
   <!-- Modal Edit Data Customer (Admin) -->
   <div class="modal fade modal-dark" id="modalEditCustomer" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" role="document">
-      <div class="modal-content" style="background: #0b1533; border: 1px solid rgba(56,189,248,0.3); border-radius: 16px;">
-        <div class="modal-header" style="border-bottom: 1px solid rgba(255,255,255,0.08);">
-          <h5 class="modal-title font-weight-bold text-white"><i class="fas fa-user-edit text-warning mr-2"></i> Edit Data Customer</h5>
+      <div class="modal-content" style="background: linear-gradient(160deg, #0b1533 0%, #070d22 100%); border: 1px solid rgba(56,189,248,0.35); border-radius: 20px; box-shadow: 0 30px 80px rgba(0,0,0,0.85); overflow: hidden;">
+        <div class="modal-header" style="background: rgba(15, 23, 42, 0.98); border-bottom: 1px solid rgba(255,255,255,0.08); padding: 18px 24px;">
+          <h5 class="modal-title font-weight-bold text-white mb-0" style="font-size: 16px;"><i class="fas fa-user-edit text-warning mr-2"></i> Edit Data Customer</h5>
           <button type="button" class="close text-white" onclick="closeModalHelper('modalEditCustomer')" aria-label="Close">
             <span aria-hidden="true">&times;</span>
           </button>
@@ -2409,16 +2472,16 @@
           <input type="hidden" id="edit-profile-id">
           <div class="modal-body p-4">
             <div class="form-group mb-3">
-              <label class="text-white" style="font-size: 13px; font-weight: 600;">Nama Customer / Perusahaan:</label>
+              <label class="text-white" style="font-size: 12.5px; font-weight: 600;">Nama Customer / Perusahaan:</label>
               <input type="text" id="edit-profile-name" class="form-control form-control-dark" required>
             </div>
             <div class="form-group mb-3">
-              <label class="text-white" style="font-size: 13px; font-weight: 600;">Email Login:</label>
+              <label class="text-white" style="font-size: 12.5px; font-weight: 600;">Email Login:</label>
               <input type="email" id="edit-profile-email" class="form-control form-control-dark" required>
             </div>
             <div class="row g-2 mb-2">
               <div class="col-6">
-                <label class="text-white" style="font-size: 13px; font-weight: 600;">Wilayah:</label>
+                <label class="text-white" style="font-size: 12.5px; font-weight: 600;">Wilayah:</label>
                 <select id="edit-profile-city" class="form-control form-control-dark">
                   <option value="siantar">Pematangsiantar</option>
                   <option value="jakarta">DKI Jakarta</option>
@@ -2428,14 +2491,14 @@
                 </select>
               </div>
               <div class="col-6">
-                <label class="text-white" style="font-size: 13px; font-weight: 600;">No. WhatsApp / HP:</label>
+                <label class="text-white" style="font-size: 12.5px; font-weight: 600;">No. WhatsApp / HP:</label>
                 <input type="text" id="edit-profile-phone" class="form-control form-control-dark">
               </div>
             </div>
           </div>
-          <div class="modal-footer" style="border-top: 1px solid rgba(255,255,255,0.08);">
+          <div class="modal-footer" style="border-top: 1px solid rgba(255,255,255,0.08); background: rgba(15, 23, 42, 0.95); padding: 14px 24px;">
             <button type="button" class="btn btn-secondary btn-sm" onclick="closeModalHelper('modalEditCustomer')">Batal</button>
-            <button type="submit" class="btn btn-warning btn-sm font-weight-bold"><i class="fas fa-save mr-1"></i> Simpan Perubahan</button>
+            <button type="submit" class="btn btn-warning btn-sm font-weight-bold px-3" style="border-radius: 10px; box-shadow: 0 4px 14px rgba(245, 158, 11, 0.35);"><i class="fas fa-save mr-1"></i> Simpan Perubahan</button>
           </div>
         </form>
       </div>
@@ -2445,25 +2508,25 @@
   <!-- Modal Edit Kuota Customer (Admin) -->
   <div class="modal fade modal-dark" id="modalEditQuota" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-sm" role="document">
-      <div class="modal-content" style="background: #0b1533; border: 1px solid rgba(245,158,11,0.4); border-radius: 16px;">
-        <div class="modal-header" style="border-bottom: 1px solid rgba(255,255,255,0.08);">
-          <h5 class="modal-title font-weight-bold text-white"><i class="fas fa-sliders-h text-warning mr-2"></i> Atur Kuota CCTV</h5>
+      <div class="modal-content" style="background: linear-gradient(160deg, #0b1533 0%, #070d22 100%); border: 1px solid rgba(245,158,11,0.4); border-radius: 20px; box-shadow: 0 30px 80px rgba(0,0,0,0.85); overflow: hidden;">
+        <div class="modal-header" style="background: rgba(15, 23, 42, 0.98); border-bottom: 1px solid rgba(255,255,255,0.08); padding: 16px 20px;">
+          <h5 class="modal-title font-weight-bold text-white mb-0" style="font-size: 15px;"><i class="fas fa-sliders-h text-warning mr-2"></i> Atur Kuota CCTV</h5>
           <button type="button" class="close text-white" onclick="closeModalHelper('modalEditQuota')" aria-label="Close">
             <span aria-hidden="true">&times;</span>
           </button>
         </div>
         <form id="formEditQuota" onsubmit="submitEditQuota(event)">
           <input type="hidden" id="edit-quota-id">
-          <div class="modal-body p-3 text-center">
-            <div id="edit-quota-name" class="font-weight-bold text-info mb-2" style="font-size: 14px;">PT. Jaya Sentosa</div>
+          <div class="modal-body p-4 text-center">
+            <div id="edit-quota-name" class="font-weight-bold text-info mb-2" style="font-size: 14.5px;">PT. Jaya Sentosa</div>
             <div class="form-group mb-0">
               <label class="text-muted" style="font-size: 12px;">Jumlah Kuota Kamera:</label>
-              <input type="number" id="edit-quota-value" class="form-control form-control-dark text-center font-weight-bold" style="font-size: 22px; color: #fbbf24;" min="1" max="500" required>
+              <input type="number" id="edit-quota-value" class="form-control form-control-dark text-center font-weight-bold" style="font-size: 24px; color: #fbbf24; border-radius: 14px;" min="1" max="500" required>
             </div>
           </div>
-          <div class="modal-footer" style="border-top: 1px solid rgba(255,255,255,0.08);">
+          <div class="modal-footer" style="border-top: 1px solid rgba(255,255,255,0.08); background: rgba(15, 23, 42, 0.95); padding: 12px 20px;">
             <button type="button" class="btn btn-secondary btn-sm" onclick="closeModalHelper('modalEditQuota')">Batal</button>
-            <button type="submit" class="btn btn-warning btn-sm font-weight-bold"><i class="fas fa-save mr-1"></i> Update</button>
+            <button type="submit" class="btn btn-warning btn-sm font-weight-bold px-3" style="border-radius: 10px; box-shadow: 0 4px 14px rgba(245, 158, 11, 0.35);"><i class="fas fa-save mr-1"></i> Update</button>
           </div>
         </form>
       </div>
@@ -4324,8 +4387,18 @@
       }
     }
 
-    async function resetAdminCustomerPassword(id, name) {
-      const newPwd = prompt(`Masukkan password baru untuk customer "${name}":`, 'loewix123');
+    function resetAdminCustomerPassword(id, name) {
+      document.getElementById('reset-cust-id').value = id;
+      document.getElementById('reset-cust-id-display').textContent = id;
+      document.getElementById('reset-cust-name-display').textContent = name;
+      document.getElementById('reset-cust-password-input').value = 'loewix' + Math.floor(100 + Math.random() * 900);
+      openModalHelper('modalResetCustomerPassword');
+    }
+
+    async function submitResetCustomerPassword(e) {
+      e.preventDefault();
+      const id = document.getElementById('reset-cust-id').value;
+      const newPwd = document.getElementById('reset-cust-password-input').value.trim();
       if (!newPwd) return;
 
       const fd = new FormData();
@@ -4336,10 +4409,37 @@
       try {
         const res = await fetch('../api/admin_customers.php', { method: 'POST', body: fd });
         const data = await res.json();
-        alert(data.message || 'Password berhasil direset!');
+        if (data.success) {
+          alert('✓ ' + (data.message || 'Password customer berhasil diperbarui!'));
+          closeModalHelper('modalResetCustomerPassword');
+          loadAdminCustomersList();
+        } else {
+          alert(data.message || 'Gagal reset password.');
+        }
       } catch (err) {
         alert('Terjadi kesalahan koneksi.');
       }
+    }
+
+    function generateRandomPassword(inputId) {
+      const chars = 'abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ23456789!@#$';
+      let pass = 'Lwx_';
+      for (let i = 0; i < 6; i++) {
+        pass += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      const el = document.getElementById(inputId);
+      if (el) el.value = pass;
+    }
+
+    function copyPasswordToClipboard(inputId) {
+      const el = document.getElementById(inputId);
+      if (!el) return;
+      el.select();
+      navigator.clipboard.writeText(el.value).then(() => {
+        alert('Password disalin ke clipboard: ' + el.value);
+      }).catch(() => {
+        alert('Password: ' + el.value);
+      });
     }
 
     async function toggleAdminCustomerStatus(id) {
@@ -5291,6 +5391,10 @@
     window.openEditPlanModal = openEditPlanModal;
     window.submitSavePlan = submitSavePlan;
     window.deleteAdminPlan = deleteAdminPlan;
+    window.resetAdminCustomerPassword = resetAdminCustomerPassword;
+    window.submitResetCustomerPassword = submitResetCustomerPassword;
+    window.generateRandomPassword = generateRandomPassword;
+    window.copyPasswordToClipboard = copyPasswordToClipboard;
   </script>
 </body>
 </html>
