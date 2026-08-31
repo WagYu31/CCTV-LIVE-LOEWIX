@@ -2370,6 +2370,8 @@
         </form>
       </div>
     </div>
+  </div>
+
   <!-- Modal Tambah / Edit Paket SaaS (Admin) -->
   <div class="modal fade modal-dark" id="modalAdminPlanForm" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" role="document">
@@ -2427,6 +2429,7 @@
         </form>
       </div>
     </div>
+  </div>
   <!-- Modal Pengaturan Midtrans Gateway (Admin) -->
   <div class="modal fade modal-dark" id="modalMidtransSettings" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" role="document">
@@ -5166,6 +5169,10 @@
     window.showInvoiceReceiptModal = showInvoiceReceiptModal;
     window.closeLoewixReceiptOverlay = closeLoewixReceiptOverlay;
     window.printInvoiceReceipt = printInvoiceReceipt;
+    window.openAddPlanModal = openAddPlanModal;
+    window.openEditPlanModal = openEditPlanModal;
+    window.submitSavePlan = submitSavePlan;
+    window.deleteAdminPlan = deleteAdminPlan;
   </script>
 </body>
 </html>

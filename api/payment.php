@@ -33,7 +33,7 @@ if ($action === 'save_plan') {
     $priceAnnual = (int)($_POST['price_annual'] ?? 0);
     $badge = trim($_POST['badge'] ?? '');
     $featuresStr = trim($_POST['features'] ?? '');
-    $features = !empty($featuresStr) ? array_map('trim', explode("\n", $featuresStr)) : [];
+    $features = !empty($featuresStr) ? array_filter(array_map('trim', explode("\n", $featuresStr))) : [];
 
     if (empty($name) || $priceMonthly <= 0) {
         echo json_encode(['success' => false, 'message' => 'Nama paket dan harga bulanan wajib diisi!']);
@@ -41,7 +41,7 @@ if ($action === 'save_plan') {
     }
 
     if (empty($planId)) {
-        $planId = 'plan_' . strtolower(preg_replace('/[^a-zA-Z0-9]/', '_', $name)) . '_' . $quota;
+        $planId = 'plan_' . strtolower(preg_replace('/[^a-zA-Z0-9]/', '_', $name)) . '_' . substr(md5(uniqid()), 0, 6);
     }
 
     $db = get_db_data();
@@ -50,14 +50,16 @@ if ($action === 'save_plan') {
     }
 
     $found = false;
-    foreach ($db['plans'] as &$p) {
-        if ($p['id'] === $planId) {
-            $p['name'] = $name;
-            $p['cctv_quota'] = $quota;
-            $p['price_monthly'] = $priceMonthly;
-            $p['price_annual'] = $priceAnnual > 0 ? $priceAnnual : ($priceMonthly * 10);
-            $p['badge'] = $badge;
-            if (!empty($features)) $p['features'] = $features;
+    foreach ($db['plans'] as $k => $p) {
+        if (($p['id'] ?? '') === $planId) {
+            $db['plans'][$k]['name'] = $name;
+            $db['plans'][$k]['cctv_quota'] = $quota;
+            $db['plans'][$k]['price_monthly'] = $priceMonthly;
+            $db['plans'][$k]['price_annual'] = $priceAnnual > 0 ? $priceAnnual : ($priceMonthly * 10);
+            $db['plans'][$k]['badge'] = $badge;
+            if (!empty($features)) {
+                $db['plans'][$k]['features'] = array_values($features);
+            }
             $found = true;
             break;
         }
@@ -71,11 +73,11 @@ if ($action === 'save_plan') {
             'price_monthly' => $priceMonthly,
             'price_annual' => $priceAnnual > 0 ? $priceAnnual : ($priceMonthly * 10),
             'badge' => $badge,
-            'features' => !empty($features) ? $features : [
+            'features' => !empty($features) ? array_values($features) : [
                 "$quota Titik Kamera Live",
                 "Full HD 1080p Stream H.265",
                 "WebRTC & HLS Low Latency",
-                "Cloud Recording 7 Hari",
+                "Cloud Recording 14 Hari",
                 "Prioritas Bandwidth Relay"
             ]
         ];
@@ -97,11 +99,11 @@ if ($action === 'delete_plan') {
     $db = get_db_data();
     $newPlans = [];
     foreach ($db['plans'] as $p) {
-        if ($p['id'] !== $planId) {
+        if (($p['id'] ?? '') !== $planId) {
             $newPlans[] = $p;
         }
     }
-    $db['plans'] = $newPlans;
+    $db['plans'] = array_values($newPlans);
     save_db_data($db);
     echo json_encode(['success' => true, 'message' => 'Paket berhasil dihapus.', 'plans' => $db['plans']]);
     exit;
