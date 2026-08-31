@@ -1275,8 +1275,8 @@
     }
 
     .status-badge-suspended {
-      background: rgba(239, 68, 68, 0.15);
-      border: 1px solid rgba(239, 68, 68, 0.4);
+      background: rgba(239, 68, 68, 0.2);
+      border: 1px solid rgba(239, 68, 68, 0.5);
       color: #f87171;
       padding: 4px 10px;
       border-radius: 12px;
@@ -1285,6 +1285,12 @@
       display: inline-flex;
       align-items: center;
       gap: 5px;
+      box-shadow: 0 0 12px rgba(239, 68, 68, 0.25);
+    }
+
+    .table-row-suspended {
+      background: rgba(239, 68, 68, 0.06) !important;
+      border-left: 4px solid #ef4444 !important;
     }
 
     .action-btn-group {
@@ -1318,6 +1324,8 @@
     .act-btn-pass:hover { background: #a855f7; color: #fff; box-shadow: 0 0 12px rgba(168, 85, 247, 0.6); }
     .act-btn-status { background: rgba(59, 130, 246, 0.15); border-color: rgba(59, 130, 246, 0.4); color: #60a5fa; }
     .act-btn-status:hover { background: #3b82f6; color: #fff; box-shadow: 0 0 12px rgba(59, 130, 246, 0.6); }
+    .act-btn-status-resume { background: rgba(16, 185, 129, 0.2); border-color: #10b981; color: #34d399; }
+    .act-btn-status-resume:hover { background: #10b981; color: #fff; box-shadow: 0 0 14px rgba(16, 185, 129, 0.7); }
     .act-btn-delete { background: rgba(239, 68, 68, 0.15); border-color: rgba(239, 68, 68, 0.4); color: #f87171; }
     .act-btn-delete:hover { background: #ef4444; color: #fff; box-shadow: 0 0 12px rgba(239, 68, 68, 0.6); }
 
@@ -4251,6 +4259,7 @@
       }
 
       customers.forEach(c => {
+        const isSuspended = (c.status !== 'active');
         const used = c.cctv_used || 0;
         const quota = c.cctv_quota || 10;
         const percentUsed = Math.min(100, Math.round((used / quota) * 100));
@@ -4263,7 +4272,7 @@
         else if (cityCode === 'medan') cityBadgeClass = 'city-badge-medan';
         else if (cityCode === 'bandung') cityBadgeClass = 'city-badge-bandung';
 
-        const statusBadge = (c.status === 'active')
+        const statusBadge = !isSuspended
           ? `<span class="status-badge-active"><span class="pulse-dot"></span> AKTIF</span>`
           : `<span class="status-badge-suspended"><i class="fas fa-ban mr-1"></i> SUSPENDED</span>`;
 
@@ -4271,11 +4280,15 @@
         const waLink = cleanPhone ? `https://wa.me/${cleanPhone.startsWith('0') ? '62' + cleanPhone.slice(1) : cleanPhone}` : '';
 
         const row = document.createElement('tr');
+        if (isSuspended) {
+          row.className = 'table-row-suspended';
+        }
         row.innerHTML = `
-          <td><span class="cust-id-badge">#${c.id}</span></td>
+          <td><span class="cust-id-badge" style="${isSuspended ? 'border-color: rgba(239,68,68,0.5); color: #f87171;' : ''}">#${c.id}</span></td>
           <td>
             <div class="font-weight-bold text-white d-flex align-items-center" style="font-size: 13.5px;">
-              <i class="fas fa-building text-info mr-2" style="opacity: 0.85;"></i> ${c.name}
+              <i class="fas fa-building ${isSuspended ? 'text-danger' : 'text-info'} mr-2" style="opacity: 0.85;"></i> ${c.name}
+              ${isSuspended ? `<span class="badge ml-2" style="font-size: 9.5px; background: rgba(239,68,68,0.25); border: 1px solid rgba(239,68,68,0.5); color: #fca5a5; font-weight: 700;"><i class="fas fa-ban mr-1"></i> DIBEKUKAN</span>` : ''}
             </div>
             <div class="text-muted mt-1" style="font-size: 11px;">
               <i class="fas fa-calendar-alt mr-1"></i> Terdaftar ${c.created_at ? c.created_at.split(' ')[0] : '2026-08-14'}
@@ -4283,7 +4296,7 @@
           </td>
           <td>
             <div>
-              <a href="mailto:${c.email}" class="text-info text-decoration-none" style="font-size: 12.5px;">
+              <a href="mailto:${c.email}" class="text-info text-decoration-none" style="font-size: 12.5px; ${isSuspended ? 'color: #94a3b8 !important;' : ''}">
                 <i class="fas fa-envelope mr-1"></i> ${c.email}
               </a>
             </div>
@@ -4299,15 +4312,15 @@
           </td>
           <td>
             <div class="d-flex justify-content-between align-items-center mb-1">
-              <span class="font-weight-bold text-white" style="font-size: 12px;">
-                <i class="fas fa-video mr-1 text-warning"></i> <strong>${used}</strong> / ${quota} CCTV
+              <span class="font-weight-bold ${isSuspended ? 'text-muted' : 'text-white'}" style="font-size: 12px;">
+                <i class="fas fa-video mr-1 ${isSuspended ? 'text-muted' : 'text-warning'}"></i> <strong>${used}</strong> / ${quota} CCTV
               </span>
-              <span class="badge ${percentUsed >= 80 ? 'badge-danger' : (percentUsed >= 50 ? 'badge-warning' : 'badge-info')}" style="font-size: 10px; border-radius: 6px; padding: 2px 5px;">
-                ${percentUsed}%
+              <span class="badge ${isSuspended ? 'badge-secondary' : (percentUsed >= 80 ? 'badge-danger' : (percentUsed >= 50 ? 'badge-warning' : 'badge-info'))}" style="font-size: 10px; border-radius: 6px; padding: 2px 5px;">
+                ${isSuspended ? 'OFF' : percentUsed + '%'}
               </span>
             </div>
             <div class="progress-bar-custom">
-              <div class="progress-fill ${percentUsed >= 80 ? 'progress-fill-high' : (percentUsed >= 50 ? 'progress-fill-med' : 'progress-fill-low')}" style="width: ${percentUsed}%;"></div>
+              <div class="progress-fill ${isSuspended ? '' : (percentUsed >= 80 ? 'progress-fill-high' : (percentUsed >= 50 ? 'progress-fill-med' : 'progress-fill-low'))}" style="width: ${isSuspended ? 0 : percentUsed}%; ${isSuspended ? 'background: #64748b;' : ''}"></div>
             </div>
           </td>
           <td>${statusBadge}</td>
@@ -4322,9 +4335,10 @@
               <button class="act-btn act-btn-pass" onclick="resetAdminCustomerPassword(${c.id}, '${c.name.replace(/'/g, "\\'")}')" title="Reset Password Customer">
                 <i class="fas fa-key"></i>
               </button>
-              <button class="act-btn act-btn-status" onclick="toggleAdminCustomerStatus(${c.id}, '${c.name.replace(/'/g, "\\'")}', '${c.status}')" title="Toggle Suspend/Aktif">
-                <i class="fas fa-power-off"></i>
-              </button>
+              ${isSuspended 
+                ? `<button class="act-btn act-btn-status-resume" onclick="toggleAdminCustomerStatus(${c.id}, '${c.name.replace(/'/g, "\\'")}', 'suspended')" title="Klik untuk Mengaktifkan Kembali Akun (Un-suspend)"><i class="fas fa-play"></i></button>`
+                : `<button class="act-btn act-btn-status" onclick="toggleAdminCustomerStatus(${c.id}, '${c.name.replace(/'/g, "\\'")}', 'active')" title="Klik untuk Membekukan / Suspend Akun"><i class="fas fa-power-off"></i></button>`
+              }
               <button class="act-btn act-btn-delete" onclick="deleteAdminCustomer(${c.id}, '${c.name.replace(/'/g, "\\'")}')" title="Hapus Akun Customer">
                 <i class="fas fa-trash"></i>
               </button>
