@@ -5011,9 +5011,35 @@
     }
 
     function showInvoiceReceiptModal(orderId) {
-      const overlay = document.getElementById('modalLoewixReceiptOverlay');
+      let overlay = document.getElementById('modalLoewixReceiptOverlay');
+      if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.id = 'modalLoewixReceiptOverlay';
+        overlay.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; width: 100vw; height: 100vh; z-index: 99999999; background: rgba(5, 11, 26, 0.88); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); display: none; align-items: center; justify-content: center; padding: 20px; overflow-y: auto;';
+        overlay.innerHTML = `
+          <div style="background: #0f172a; border: 1px solid rgba(56, 189, 248, 0.4); border-radius: 16px; width: 100%; max-width: 620px; box-shadow: 0 25px 60px rgba(0, 0, 0, 0.85); overflow: hidden; margin: auto;">
+            <div style="background: rgba(15, 23, 42, 0.98); border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding: 16px 20px; display: flex; justify-content: space-between; align-items: center;">
+              <h5 style="margin: 0; color: #ffffff; font-weight: 700; font-size: 16px; display: flex; align-items: center;">
+                <i class="fas fa-receipt" style="color: #38bdf8; margin-right: 8px;"></i> Kwitansi Pembayaran Resmi Loewix
+              </h5>
+              <button type="button" onclick="closeLoewixReceiptOverlay()" style="background: rgba(255,255,255,0.08); border: none; color: #ffffff; font-size: 18px; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer;">
+                &times;
+              </button>
+            </div>
+            <div id="loewix-receipt-content" style="padding: 20px; max-height: 75vh; overflow-y: auto;"></div>
+            <div style="background: rgba(15, 23, 42, 0.98); border-top: 1px solid rgba(255, 255, 255, 0.1); padding: 14px 20px; display: flex; justify-content: flex-end; gap: 10px;">
+              <button type="button" class="btn btn-secondary btn-sm px-3" onclick="closeLoewixReceiptOverlay()" style="border-radius: 8px;">Tutup</button>
+              <button type="button" class="btn btn-info btn-sm font-weight-bold px-3" onclick="printInvoiceReceipt()" style="background: #0284c7; border: none; border-radius: 8px;">
+                <i class="fas fa-print mr-1"></i> Cetak / Simpan PDF
+              </button>
+            </div>
+          </div>
+        `;
+        document.body.appendChild(overlay);
+      }
+
       const contentEl = document.getElementById('loewix-receipt-content');
-      if (!overlay || !contentEl) return;
+      if (!contentEl) return;
 
       const activeUser = currentCustomer || (localStorage.getItem('loewix_user') ? JSON.parse(localStorage.getItem('loewix_user')) : null);
       let inv = null;
