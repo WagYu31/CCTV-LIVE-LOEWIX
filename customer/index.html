@@ -1032,7 +1032,7 @@
       border: 1px solid rgba(255, 255, 255, 0.14) !important;
       border-radius: 12px !important;
       color: #ffffff !important;
-      padding: 11px 15px !important;
+      padding: 11px 15px;
       font-size: 13.5px !important;
       transition: all 0.25s ease !important;
       outline: none !important;
@@ -2200,11 +2200,11 @@
                 <label style="font-size: 12px; font-weight: 600; color: #cbd5e1; margin-bottom: 6px; display: block;">
                   Nama Customer / Perusahaan:
                 </label>
-                <div class="input-group" style="position: relative;">
-                  <div style="position: absolute; left: 14px; top: 12px; z-index: 10; color: #38bdf8;">
+                <div class="input-group" style="position: relative; display: flex; align-items: center;">
+                  <div style="position: absolute; left: 16px; top: 50%; transform: translateY(-50%); z-index: 10; color: #38bdf8; font-size: 14px; pointer-events: none;">
                     <i class="fas fa-building"></i>
                   </div>
-                  <input type="text" id="prof-name" class="form-control" style="background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 12px; color: #ffffff !important; padding: 10px 14px 10px 40px; font-size: 13.5px;" required>
+                  <input type="text" id="prof-name" class="form-control form-control-dark" style="padding-left: 48px !important; padding-right: 16px !important;" required>
                 </div>
               </div>
 
@@ -2217,11 +2217,11 @@
                     <i class="fas fa-lock mr-1"></i> Read-only
                   </span>
                 </div>
-                <div class="input-group" style="position: relative;">
-                  <div style="position: absolute; left: 14px; top: 12px; z-index: 10; color: #64748b;">
+                <div class="input-group" style="position: relative; display: flex; align-items: center;">
+                  <div style="position: absolute; left: 16px; top: 50%; transform: translateY(-50%); z-index: 10; color: #64748b; font-size: 14px; pointer-events: none;">
                     <i class="fas fa-envelope"></i>
                   </div>
-                  <input type="email" id="prof-email" class="form-control" disabled style="background: rgba(15, 23, 42, 0.4); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; color: #94a3b8 !important; padding: 10px 14px 10px 40px; font-size: 13.5px; opacity: 0.85;">
+                  <input type="email" id="prof-email" class="form-control form-control-dark" disabled style="padding-left: 48px !important; padding-right: 16px !important; background: rgba(15, 23, 42, 0.4) !important; color: #94a3b8 !important; opacity: 0.85;">
                 </div>
               </div>
 
@@ -2230,22 +2230,22 @@
                   <label style="font-size: 12px; font-weight: 600; color: #cbd5e1; margin-bottom: 6px; display: block;">
                     No. WhatsApp:
                   </label>
-                  <div class="input-group" style="position: relative;">
-                    <div style="position: absolute; left: 14px; top: 12px; z-index: 10; color: #34d399;">
+                  <div class="input-group" style="position: relative; display: flex; align-items: center;">
+                    <div style="position: absolute; left: 16px; top: 50%; transform: translateY(-50%); z-index: 10; color: #34d399; font-size: 14px; pointer-events: none;">
                       <i class="fab fa-whatsapp"></i>
                     </div>
-                    <input type="text" id="prof-phone" class="form-control" style="background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 12px; color: #ffffff !important; padding: 10px 14px 10px 40px; font-size: 13.5px;" placeholder="+62 812-xxxx">
+                    <input type="text" id="prof-phone" class="form-control form-control-dark" style="padding-left: 48px !important; padding-right: 16px !important;" placeholder="+62 812-xxxx">
                   </div>
                 </div>
                 <div class="col-md-6">
                   <label style="font-size: 12px; font-weight: 600; color: #cbd5e1; margin-bottom: 6px; display: block;">
                     Kota / Wilayah:
                   </label>
-                  <div class="input-group" style="position: relative;">
-                    <div style="position: absolute; left: 14px; top: 12px; z-index: 10; color: #f43f5e;">
+                  <div class="input-group" style="position: relative; display: flex; align-items: center;">
+                    <div style="position: absolute; left: 16px; top: 50%; transform: translateY(-50%); z-index: 10; color: #f43f5e; font-size: 14px; pointer-events: none;">
                       <i class="fas fa-map-marker-alt"></i>
                     </div>
-                    <input type="text" id="prof-city" class="form-control" style="background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 12px; color: #ffffff !important; padding: 10px 14px 10px 40px; font-size: 13.5px;" placeholder="Contoh: Bandung">
+                    <input type="text" id="prof-city" class="form-control form-control-dark" style="padding-left: 48px !important; padding-right: 16px !important;" placeholder="Contoh: Bandung">
                   </div>
                 </div>
               </div>
@@ -2272,12 +2272,12 @@
                 <label style="font-size: 12px; font-weight: 600; color: #cbd5e1; margin-bottom: 6px; display: block;">
                   Password Baru:
                 </label>
-                <div class="input-group" style="position: relative;">
-                  <div style="position: absolute; left: 14px; top: 12px; z-index: 10; color: #fbbf24;">
+                <div class="input-group" style="position: relative; display: flex; align-items: center;">
+                  <div style="position: absolute; left: 16px; top: 50%; transform: translateY(-50%); z-index: 10; color: #fbbf24; font-size: 14px; pointer-events: none;">
                     <i class="fas fa-lock"></i>
                   </div>
-                  <input type="password" id="new-password" class="form-control" style="background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 12px; color: #ffffff !important; padding: 10px 40px 10px 40px; font-size: 13.5px;" placeholder="Minimal 6 karakter" required>
-                  <button type="button" onclick="toggleProfilePasswordVisibility('new-password', 'eye-new-pwd')" style="position: absolute; right: 12px; top: 10px; z-index: 10; background: none; border: none; color: #94a3b8; cursor: pointer;">
+                  <input type="password" id="new-password" class="form-control form-control-dark" style="padding-left: 48px !important; padding-right: 48px !important;" placeholder="Minimal 6 karakter" required>
+                  <button type="button" onclick="toggleProfilePasswordVisibility('new-password', 'eye-new-pwd')" style="position: absolute; right: 14px; top: 50%; transform: translateY(-50%); z-index: 10; background: none; border: none; color: #94a3b8; cursor: pointer; font-size: 14px; padding: 4px;">
                     <i class="fas fa-eye" id="eye-new-pwd"></i>
                   </button>
                 </div>
@@ -2287,12 +2287,12 @@
                 <label style="font-size: 12px; font-weight: 600; color: #cbd5e1; margin-bottom: 6px; display: block;">
                   Konfirmasi Password Baru:
                 </label>
-                <div class="input-group" style="position: relative;">
-                  <div style="position: absolute; left: 14px; top: 12px; z-index: 10; color: #fbbf24;">
+                <div class="input-group" style="position: relative; display: flex; align-items: center;">
+                  <div style="position: absolute; left: 16px; top: 50%; transform: translateY(-50%); z-index: 10; color: #fbbf24; font-size: 14px; pointer-events: none;">
                     <i class="fas fa-shield-alt"></i>
                   </div>
-                  <input type="password" id="confirm-password" class="form-control" style="background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 12px; color: #ffffff !important; padding: 10px 40px 10px 40px; font-size: 13.5px;" placeholder="Ulangi password baru" required>
-                  <button type="button" onclick="toggleProfilePasswordVisibility('confirm-password', 'eye-conf-pwd')" style="position: absolute; right: 12px; top: 10px; z-index: 10; background: none; border: none; color: #94a3b8; cursor: pointer;">
+                  <input type="password" id="confirm-password" class="form-control form-control-dark" style="padding-left: 48px !important; padding-right: 48px !important;" placeholder="Ulangi password baru" required>
+                  <button type="button" onclick="toggleProfilePasswordVisibility('confirm-password', 'eye-conf-pwd')" style="position: absolute; right: 14px; top: 50%; transform: translateY(-50%); z-index: 10; background: none; border: none; color: #94a3b8; cursor: pointer; font-size: 14px; padding: 4px;">
                     <i class="fas fa-eye" id="eye-conf-pwd"></i>
                   </button>
                 </div>
@@ -2380,12 +2380,12 @@
                   <i class="fas fa-dice mr-1"></i> Acak Password
                 </button>
               </div>
-              <div class="input-group" style="position: relative;">
-                <div style="position: absolute; left: 14px; top: 12px; z-index: 10; color: #c084fc;">
+              <div class="input-group" style="position: relative; display: flex; align-items: center;">
+                <div style="position: absolute; left: 16px; top: 50%; transform: translateY(-50%); z-index: 10; color: #c084fc; font-size: 15px; pointer-events: none;">
                   <i class="fas fa-lock"></i>
                 </div>
-                <input type="text" id="reset-cust-password-input" class="form-control form-control-dark font-weight-bold" style="padding-left: 40px; padding-right: 40px; color: #fbbf24 !important; font-size: 14.5px; letter-spacing: 0.5px;" value="loewix123" required>
-                <button type="button" onclick="copyPasswordToClipboard('reset-cust-password-input')" title="Salin Password" style="position: absolute; right: 12px; top: 10px; z-index: 10; background: none; border: none; color: #94a3b8; cursor: pointer;">
+                <input type="text" id="reset-cust-password-input" class="form-control form-control-dark font-weight-bold" style="padding-left: 48px !important; padding-right: 48px !important; color: #fbbf24 !important; font-size: 15px; letter-spacing: 0.5px;" value="loewix123" required>
+                <button type="button" onclick="copyPasswordToClipboard('reset-cust-password-input')" title="Salin Password" style="position: absolute; right: 14px; top: 50%; transform: translateY(-50%); z-index: 10; background: none; border: none; color: #94a3b8; cursor: pointer; font-size: 15px; padding: 4px;">
                   <i class="fas fa-copy"></i>
                 </button>
               </div>
