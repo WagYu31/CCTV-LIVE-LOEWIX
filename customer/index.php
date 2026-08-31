@@ -2565,14 +2565,14 @@
   </div>
 
   <!-- ===== MODAL INVOICE RECEIPT ===== -->
-  <div class="modal fade modal-dark" id="modalInvoiceReceipt" tabindex="-1" role="dialog" aria-hidden="true" style="z-index: 1060;">
+  <div class="modal fade modal-dark" id="modalInvoiceReceipt" tabindex="-1" role="dialog" aria-labelledby="receiptModalTitle" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" role="document" style="max-width: 620px;">
       <div class="modal-content" style="border: 1px solid rgba(56, 189, 248, 0.4); background: #0f172a; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);">
         <div class="modal-header" style="background: rgba(15, 23, 42, 0.95); border-bottom: 1px solid rgba(255,255,255,0.1);">
-          <h5 class="modal-title font-weight-bold text-white" style="font-size: 16px;">
+          <h5 class="modal-title font-weight-bold text-white" id="receiptModalTitle" style="font-size: 16px;">
             <i class="fas fa-receipt text-info mr-2"></i> Kwitansi Pembayaran Resmi Loewix
           </h5>
-          <button type="button" class="close text-white" aria-label="Close" onclick="closeModalHelper('modalInvoiceReceipt')">
+          <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
             <span aria-hidden="true">&times;</span>
           </button>
         </div>
@@ -2580,7 +2580,7 @@
           <!-- Dynamically populated -->
         </div>
         <div class="modal-footer" style="border-top: 1px solid rgba(255,255,255,0.1);">
-          <button type="button" class="btn btn-secondary btn-sm" onclick="closeModalHelper('modalInvoiceReceipt')">Tutup</button>
+          <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Tutup</button>
           <button type="button" class="btn btn-info btn-sm font-weight-bold" onclick="printInvoiceReceipt()" style="background: #0284c7; border: none;">
             <i class="fas fa-print mr-1"></i> Cetak / Simpan PDF
           </button>
@@ -2600,55 +2600,30 @@
 
     // Modal Helper functions (safe for jQuery and Vanilla JS)
     function openModalHelper(modalId) {
+      if (window.$ && typeof $(`#${modalId}`).modal === 'function') {
+        $(`#${modalId}`).modal('show');
+        return;
+      }
       const modalEl = document.getElementById(modalId);
       if (!modalEl) return;
-      
-      // Clean up any stale backdrops first
-      document.querySelectorAll('.modal-backdrop').forEach(b => b.remove());
-      
-      if (window.$ && typeof $(modalEl).modal === 'function') {
-        try { $(modalEl).modal('show'); } catch(e) {}
-      }
-      
-      // Force direct visibility safety guarantee
       modalEl.classList.add('show');
       modalEl.style.display = 'block';
-      modalEl.style.opacity = '1';
-      modalEl.style.zIndex = '100050';
       document.body.classList.add('modal-open');
-      
-      setTimeout(() => {
-        let backdrops = document.querySelectorAll('.modal-backdrop');
-        if (backdrops.length === 0) {
-          const backdrop = document.createElement('div');
-          backdrop.id = 'custom-modal-backdrop';
-          backdrop.className = 'modal-backdrop fade show';
-          backdrop.style.zIndex = '100040';
-          backdrop.onclick = () => closeModalHelper(modalId);
-          document.body.appendChild(backdrop);
-        } else {
-          backdrops.forEach(b => {
-            b.style.zIndex = '100040';
-            b.onclick = () => closeModalHelper(modalId);
-          });
-        }
-      }, 50);
     }
 
     function closeModalHelper(modalId) {
+      if (window.$ && typeof $(`#${modalId}`).modal === 'function') {
+        $(`#${modalId}`).modal('hide');
+      }
       const modalEl = document.getElementById(modalId);
       if (modalEl) {
-        if (window.$ && typeof $(modalEl).modal === 'function') {
-          try { $(modalEl).modal('hide'); } catch(e) {}
-        }
         modalEl.classList.remove('show');
         modalEl.style.display = 'none';
-        modalEl.style.opacity = '0';
       }
       document.body.classList.remove('modal-open');
-      document.querySelectorAll('.modal-backdrop').forEach(b => b.remove());
-      const customBackdrop = document.getElementById('custom-modal-backdrop');
-      if (customBackdrop) customBackdrop.remove();
+      if (window.$) {
+        $('.modal-backdrop').remove();
+      }
     }
 
     // ===== LIVE NETWORK SPEED & LATENCY TELEMETRY ENGINE =====
