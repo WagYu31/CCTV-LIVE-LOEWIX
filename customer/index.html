@@ -275,183 +275,236 @@
       box-shadow: 0 20px 45px rgba(0, 0, 0, 0.5), 0 0 20px rgba(56, 189, 248, 0.15);
     }
 
-    /* Quota Hero Widget - Ultra Premium Glass Architecture */
+    /* Quota Hero Widget - Ultra Premium Futuristic Cyber-Glass Architecture */
     .quota-hero-banner {
-      background: radial-gradient(circle at 10% 20%, rgba(14, 116, 144, 0.25) 0%, rgba(8, 20, 48, 0.95) 45%, rgba(4, 10, 26, 0.98) 100%);
+      background: radial-gradient(circle at 12% 20%, rgba(14, 116, 144, 0.38) 0%, rgba(15, 23, 42, 0.95) 45%, rgba(6, 12, 30, 0.99) 100%);
       border: 1px solid rgba(56, 189, 248, 0.35);
       border-radius: 24px;
-      padding: 30px 34px;
+      padding: 32px 36px;
       margin-top: 24px;
       margin-bottom: 30px;
-      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.65), 0 0 35px rgba(14, 116, 144, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.16);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
+      box-shadow: 0 25px 65px rgba(0, 0, 0, 0.75), 0 0 40px rgba(14, 116, 144, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
       position: relative;
       overflow: hidden;
+    }
+
+    .quota-hero-banner::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent 0%, rgba(56, 189, 248, 0.8) 30%, rgba(245, 158, 11, 0.8) 70%, transparent 100%);
+      z-index: 2;
     }
 
     .quota-hero-banner::after {
       content: '';
       position: absolute;
-      top: -50%;
-      right: -20%;
-      width: 400px;
-      height: 400px;
-      background: radial-gradient(circle, rgba(56, 189, 248, 0.12) 0%, transparent 70%);
+      top: -40%;
+      right: -15%;
+      width: 450px;
+      height: 450px;
+      background: radial-gradient(circle, rgba(56, 189, 248, 0.15) 0%, rgba(168, 85, 247, 0.05) 50%, transparent 70%);
       border-radius: 50%;
       pointer-events: none;
       z-index: 0;
     }
 
     .hero-tier-badge {
-      background: linear-gradient(135deg, #0284c7, #025078);
-      border: 1px solid rgba(56, 189, 248, 0.5);
+      background: linear-gradient(135deg, #0284c7, #0369a1);
+      border: 1px solid rgba(56, 189, 248, 0.6);
       color: #ffffff;
-      padding: 5px 14px;
+      padding: 6px 15px;
       border-radius: 20px;
       font-size: 11px;
       font-weight: 800;
       letter-spacing: 0.8px;
       display: inline-flex;
       align-items: center;
-      gap: 6px;
-      box-shadow: 0 0 14px rgba(2, 132, 199, 0.5);
+      gap: 7px;
+      box-shadow: 0 0 16px rgba(2, 132, 199, 0.55);
+      text-transform: uppercase;
     }
 
     .hero-city-badge {
-      background: rgba(15, 23, 42, 0.7);
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      color: #cbd5e1;
-      padding: 5px 12px;
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      color: #e2e8f0;
+      padding: 6px 14px;
       border-radius: 20px;
       font-size: 11.5px;
       font-weight: 700;
       display: inline-flex;
       align-items: center;
       gap: 6px;
+      backdrop-filter: blur(10px);
     }
 
     .hero-customer-title {
-      font-size: 28px;
+      font-size: 32px;
       font-weight: 900;
-      color: #ffffff;
+      background: linear-gradient(135deg, #ffffff 15%, #bae6fd 60%, #c4b5fd 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
       letter-spacing: -0.5px;
-      margin-top: 6px;
-      margin-bottom: 6px;
-      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+      margin-top: 8px;
+      margin-bottom: 8px;
+      text-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+      display: inline-block;
     }
 
     .quota-progress-track {
-      height: 12px;
+      height: 11px;
       background: rgba(255, 255, 255, 0.08);
       border-radius: 12px;
       overflow: hidden;
-      margin: 12px 0 10px 0;
+      margin: 14px 0 12px 0;
       position: relative;
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
     }
 
     .quota-progress-fill {
       height: 100%;
-      background: linear-gradient(90deg, #0284c7, #38bdf8 60%, #10b981 100%);
+      background: linear-gradient(90deg, #0284c7 0%, #38bdf8 50%, #10b981 100%);
       border-radius: 12px;
       transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-      box-shadow: 0 0 14px rgba(56, 189, 248, 0.7);
+      box-shadow: 0 0 16px rgba(56, 189, 248, 0.85);
+      position: relative;
+    }
+
+    .quota-progress-fill::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.45), transparent);
+      animation: scanline 2.5s infinite;
+    }
+
+    @keyframes scanline {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(100%); }
     }
 
     .quota-cap-pill {
-      background: rgba(56, 189, 248, 0.14);
-      border: 1px solid rgba(56, 189, 248, 0.4);
+      background: rgba(56, 189, 248, 0.16);
+      border: 1px solid rgba(56, 189, 248, 0.45);
       color: #38bdf8;
-      padding: 3px 10px;
+      padding: 4px 12px;
       border-radius: 12px;
       font-size: 12px;
       font-weight: 800;
       font-family: monospace;
       letter-spacing: 0.3px;
+      box-shadow: 0 0 12px rgba(56, 189, 248, 0.2);
     }
 
-    /* Metric Cards - 3D Glass Design */
+    /* Metric Cards - 3D Glass Holographic Design */
     .metric-card {
-      background: linear-gradient(135deg, rgba(15, 26, 56, 0.75) 0%, rgba(8, 16, 36, 0.85) 100%);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 18px;
-      padding: 16px 18px;
+      background: linear-gradient(145deg, rgba(15, 26, 56, 0.85) 0%, rgba(8, 16, 36, 0.95) 100%);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 20px;
+      padding: 18px 20px;
       display: flex;
       align-items: center;
-      gap: 14px;
-      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+      gap: 16px;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.1);
       position: relative;
       overflow: hidden;
     }
 
+    .metric-card::before {
+      content: '';
+      position: absolute;
+      top: -40%;
+      right: -40%;
+      width: 110px;
+      height: 110px;
+      background: radial-gradient(circle, rgba(255, 255, 255, 0.08), transparent 70%);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+
     .metric-card:hover {
-      background: linear-gradient(135deg, rgba(20, 36, 76, 0.85) 0%, rgba(10, 22, 48, 0.95) 100%);
-      border-color: rgba(56, 189, 248, 0.4);
-      transform: translateY(-3px);
-      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5), 0 0 20px rgba(56, 189, 248, 0.2);
+      background: linear-gradient(145deg, rgba(22, 40, 84, 0.92) 0%, rgba(12, 24, 54, 0.98) 100%);
+      border-color: rgba(56, 189, 248, 0.55);
+      transform: translateY(-4px) scale(1.02);
+      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.6), 0 0 24px rgba(56, 189, 248, 0.28);
     }
 
     .metric-icon {
-      width: 48px;
-      height: 48px;
-      min-width: 48px;
-      border-radius: 14px;
+      width: 52px;
+      height: 52px;
+      min-width: 52px;
+      border-radius: 16px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 20px;
+      font-size: 22px;
       border: 1px solid transparent;
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .metric-card:hover .metric-icon {
+      transform: scale(1.1);
     }
 
     .metric-icon.cyan {
-      background: radial-gradient(circle at top left, rgba(56, 189, 248, 0.28), rgba(2, 132, 199, 0.12));
-      border-color: rgba(56, 189, 248, 0.4);
+      background: radial-gradient(circle at top left, rgba(56, 189, 248, 0.32), rgba(2, 132, 199, 0.14));
+      border-color: rgba(56, 189, 248, 0.5);
       color: #38bdf8;
-      box-shadow: 0 0 15px rgba(56, 189, 248, 0.25);
+      box-shadow: 0 0 18px rgba(56, 189, 248, 0.35);
     }
 
     .metric-icon.emerald {
-      background: radial-gradient(circle at top left, rgba(16, 185, 129, 0.28), rgba(5, 150, 105, 0.12));
-      border-color: rgba(16, 185, 129, 0.4);
+      background: radial-gradient(circle at top left, rgba(16, 185, 129, 0.32), rgba(5, 150, 105, 0.14));
+      border-color: rgba(16, 185, 129, 0.5);
       color: #34d399;
-      box-shadow: 0 0 15px rgba(16, 185, 129, 0.25);
+      box-shadow: 0 0 18px rgba(16, 185, 129, 0.35);
     }
 
     .metric-icon.amber {
-      background: radial-gradient(circle at top left, rgba(245, 158, 11, 0.28), rgba(217, 119, 6, 0.12));
-      border-color: rgba(245, 158, 11, 0.4);
+      background: radial-gradient(circle at top left, rgba(245, 158, 11, 0.32), rgba(217, 119, 6, 0.14));
+      border-color: rgba(245, 158, 11, 0.5);
       color: #fbbf24;
-      box-shadow: 0 0 15px rgba(245, 158, 11, 0.25);
+      box-shadow: 0 0 18px rgba(245, 158, 11, 0.35);
     }
 
     .metric-icon.purple {
-      background: radial-gradient(circle at top left, rgba(168, 85, 247, 0.35), rgba(124, 58, 237, 0.15));
-      border-color: rgba(168, 85, 247, 0.45);
+      background: radial-gradient(circle at top left, rgba(168, 85, 247, 0.38), rgba(124, 58, 237, 0.16));
+      border-color: rgba(168, 85, 247, 0.55);
       color: #c084fc;
-      box-shadow: 0 0 15px rgba(168, 85, 247, 0.3);
+      box-shadow: 0 0 18px rgba(168, 85, 247, 0.35);
     }
 
     .metric-value {
-      font-size: 24px;
+      font-size: 26px;
       font-weight: 900;
       color: #ffffff;
       line-height: 1.1;
       font-family: system-ui, -apple-system, sans-serif;
+      letter-spacing: -0.5px;
     }
 
     .metric-label {
-      font-size: 11px;
+      font-size: 11.5px;
       color: #94a3b8;
       font-weight: 800;
       text-transform: uppercase;
-      letter-spacing: 0.6px;
-      margin-top: 2px;
+      letter-spacing: 0.7px;
+      margin-top: 3px;
     }
 
     .metric-sub {
-      font-size: 10px;
+      font-size: 11px;
       color: #64748b;
       font-weight: 600;
     }
@@ -3183,20 +3236,28 @@
         // Top Navbar Brand Badge
         const navBrandBadge = document.querySelector('.badge-hub-live');
         if (navBrandBadge) {
-          navBrandBadge.innerHTML = '<span class="pulse-dot" style="background: #fbbf24;"></span> <span>MASTER COMMAND CENTER</span>';
-          navBrandBadge.style.borderColor = 'rgba(245, 158, 11, 0.5)';
+          navBrandBadge.innerHTML = '<span class="pulse-dot" style="background: #fbbf24; box-shadow: 0 0 8px #fbbf24;"></span> <span>MASTER COMMAND CENTER</span>';
+          navBrandBadge.style.borderColor = 'rgba(245, 158, 11, 0.6)';
           navBrandBadge.style.color = '#fbbf24';
+          navBrandBadge.style.background = 'rgba(245, 158, 11, 0.12)';
         }
 
         // Direct Super Admin Switcher Button
         const btnAdmin = document.getElementById('btn-super-admin-direct');
-        if (btnAdmin) btnAdmin.style.display = 'inline-flex';
+        if (btnAdmin) {
+          btnAdmin.style.display = 'inline-flex';
+          btnAdmin.style.background = 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)';
+          btnAdmin.style.borderColor = '#fbbf24';
+          btnAdmin.style.boxShadow = '0 0 18px rgba(245, 158, 11, 0.55)';
+        }
 
         // Hero Tier Badge
         const tierBadge = document.querySelector('.hero-tier-badge');
         if (tierBadge) {
-          tierBadge.innerHTML = '<i class="fas fa-crown text-warning"></i> MASTER SUPER ADMIN';
+          tierBadge.innerHTML = '<i class="fas fa-crown text-warning" style="filter: drop-shadow(0 0 4px #fbbf24);"></i> MASTER SUPER ADMIN';
           tierBadge.style.background = 'linear-gradient(135deg, #f59e0b, #d97706)';
+          tierBadge.style.boxShadow = '0 0 18px rgba(245, 158, 11, 0.6)';
+          tierBadge.style.borderColor = 'rgba(251, 191, 36, 0.7)';
         }
 
         // Hero Description
@@ -3211,21 +3272,28 @@
         const card3Sub = document.getElementById('card-metric3-sub');
         const card3Icon = document.getElementById('card-metric3-icon');
         const card3IconWrap = document.getElementById('card-metric3-icon-wrap');
-        if (card3Val) card3Val.innerText = '4';
+        const totalTenants = (typeof cachedAdminCustomers !== 'undefined' && cachedAdminCustomers.length > 0) ? cachedAdminCustomers.length : 4;
+        if (card3Val) card3Val.innerText = totalTenants;
         if (card3Lbl) card3Lbl.innerText = 'Active Tenants';
         if (card3Sub) card3Sub.innerText = 'Perusahaan';
         if (card3Icon) card3Icon.className = 'fas fa-building';
         if (card3IconWrap) card3IconWrap.className = 'metric-icon cyan';
 
-        // Metric Card 4: Master Control
+        // Metric Card 4: Master Control (Golden Cyber Accent)
+        const card4Container = document.getElementById('card-metric4-container');
         const card4Val = document.getElementById('card-metric4-value');
         const card4Lbl = document.getElementById('card-metric4-label');
         const card4Sub = document.getElementById('card-metric4-sub');
         const card4Icon = document.getElementById('card-metric4-icon');
         const card4IconWrap = document.getElementById('card-metric4-icon-wrap');
-        if (card4Val) { card4Val.innerText = 'MASTER'; card4Val.style.color = '#fbbf24'; }
+        if (card4Container) {
+          card4Container.style.background = 'linear-gradient(145deg, rgba(35, 25, 10, 0.9) 0%, rgba(18, 12, 5, 0.98) 100%)';
+          card4Container.style.borderColor = 'rgba(245, 158, 11, 0.5)';
+          card4Container.style.boxShadow = '0 10px 28px rgba(0, 0, 0, 0.45), 0 0 22px rgba(245, 158, 11, 0.25), inset 0 1px 0 rgba(251, 191, 36, 0.25)';
+        }
+        if (card4Val) { card4Val.innerText = 'MASTER'; card4Val.style.color = '#fbbf24'; card4Val.style.textShadow = '0 0 10px rgba(251, 191, 36, 0.5)'; }
         if (card4Lbl) card4Lbl.innerText = 'Admin Center';
-        if (card4Sub) { card4Sub.innerText = 'Buka Panel →'; card4Sub.style.color = '#f59e0b'; }
+        if (card4Sub) { card4Sub.innerHTML = 'Buka Panel <i class="fas fa-arrow-right ml-1"></i>'; card4Sub.style.color = '#f59e0b'; }
         if (card4Icon) card4Icon.className = 'fas fa-crown';
         if (card4IconWrap) card4IconWrap.className = 'metric-icon amber';
 
@@ -3254,21 +3322,22 @@
         // Infrastructure Telemetry Bar (No Kuota for Admin)
         const barLabel = document.getElementById('hero-bar-label');
         if (barLabel) {
-          barLabel.innerHTML = '<i class="fas fa-bolt text-warning"></i> Status Jaringan & Server Streaming Global';
+          barLabel.innerHTML = '<i class="fas fa-bolt text-warning" style="filter: drop-shadow(0 0 6px #f59e0b);"></i> Status Jaringan & Server Streaming Global';
         }
 
         const capPill = document.getElementById('hero-quota-text');
         if (capPill) {
-          capPill.innerHTML = '<span class="pulse-dot" style="background: #34d399; margin-right: 4px;"></span> 100% OPERASIONAL • SLA 99.9%';
-          capPill.style.background = 'rgba(16, 185, 129, 0.15)';
-          capPill.style.borderColor = 'rgba(16, 185, 129, 0.4)';
+          capPill.innerHTML = '<span class="pulse-dot" style="background: #34d399; margin-right: 4px; box-shadow: 0 0 8px #34d399;"></span> 100% OPERASIONAL • SLA 99.99%';
+          capPill.style.background = 'rgba(16, 185, 129, 0.16)';
+          capPill.style.borderColor = 'rgba(16, 185, 129, 0.5)';
           capPill.style.color = '#34d399';
+          capPill.style.boxShadow = '0 0 14px rgba(16, 185, 129, 0.25)';
         }
 
         const barFill = document.getElementById('hero-quota-bar');
         if (barFill) {
           barFill.style.width = '100%';
-          barFill.style.background = 'linear-gradient(90deg, #0284c7 0%, #10b981 100%)';
+          barFill.style.background = 'linear-gradient(90deg, #0284c7 0%, #38bdf8 50%, #10b981 100%)';
         }
 
         const bottomStats = document.getElementById('hero-bar-bottom-stats');
@@ -3276,7 +3345,7 @@
           bottomStats.innerHTML = `
             <span><i class="fas fa-circle text-info" style="font-size: 8px;"></i> Total Stream: <strong class="text-white">${customerCameras.length || 12}</strong> CCTV Terhubung</span>
             <span><i class="fas fa-circle text-emerald" style="color: #34d399; font-size: 8px;"></i> Node Relay: <strong style="color: #34d399;">ID-JKT-01 (Online)</strong></span>
-            <span class="d-none d-md-inline" style="color: #94a3b8;"><i class="fas fa-shield-alt text-info"></i> TLS 1.3 256-Bit & Low-Latency Relay</span>
+            <span class="d-none d-md-inline" style="color: #94a3b8;"><i class="fas fa-shield-alt text-info"></i> TLS 1.3 256-Bit E2E Encrypted</span>
           `;
         }
       } else {
