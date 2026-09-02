@@ -538,7 +538,7 @@ function calculate_user_total_quota($userId) {
 }
 
 /**
- * Get user invoices list (Strict Multi-Tenant Isolation)
+ * Get user invoices list (Strict Multi-Tenant Isolation & Multi-Package Synchronization)
  */
 function get_user_invoices($userId) {
     $userId = (int)$userId;
@@ -563,67 +563,77 @@ function get_user_invoices($userId) {
             $invEmail = strtolower(trim($inv['user_email'] ?? ''));
             $invUserId = (isset($inv['user_id']) && $inv['user_id'] !== null && $inv['user_id'] !== '') ? (int)$inv['user_id'] : 0;
 
-            // Invoice MUST belong to this specific user ID AND email
-            if ($invUserId === $userId && (empty($invEmail) || $invEmail === $userEmail)) {
-                $list[] = $inv;
-            } elseif ($invUserId === 0 && !empty($userEmail) && $invEmail === $userEmail) {
+            // Invoice MUST belong to this specific user ID OR email
+            if ($invUserId === $userId || (!empty($userEmail) && $invEmail === $userEmail)) {
                 $list[] = $inv;
             }
         }
+    }
+
+    // Ensure every subscription package license has its corresponding invoice transaction record
+    $userSubs = get_user_subscriptions($userId);
+    $existingPlanIdsInList = array_map(function($i) { return $i['plan_id'] ?? ''; }, $list);
+    $existingOrderIdsInList = array_map(function($i) { return $i['order_id'] ?? ''; }, $list);
+
+    $dbModified = false;
+    foreach ($userSubs as $sub) {
+        $subOrderId = $sub['order_id'] ?? '';
+        $subPlanId = $sub['plan_id'] ?? '';
+
+        $hasMatch = false;
+        if (!empty($subOrderId) && in_array($subOrderId, $existingOrderIdsInList)) {
+            $hasMatch = true;
+        } elseif (!empty($subPlanId) && in_array($subPlanId, $existingPlanIdsInList)) {
+            $hasMatch = true;
+        }
+
+        if (!$hasMatch) {
+            $basePrice = (int)($sub['amount'] ?? 1490000);
+            $taxAmount = (int)round($basePrice * 0.11);
+            $grossAmount = $basePrice + $taxAmount;
+
+            $existingInvoiceIds = array_column($db['invoices'] ?? [], 'id');
+            $newInvoiceId = count($existingInvoiceIds) > 0 ? max($existingInvoiceIds) + 1 : 1;
+            $newOrderId = !empty($subOrderId) ? $subOrderId : ('INV-LWX-' . date('Ymd', strtotime($sub['start_date'] ?? 'now')) . '-' . strtoupper(substr(md5($userId . $subPlanId . ($sub['id'] ?? '1')), 0, 6)));
+
+            $newInv = [
+                'id' => $newInvoiceId,
+                'order_id' => $newOrderId,
+                'user_id' => $userId,
+                'user_name' => $targetUser['name'] ?? 'Pelanggan',
+                'user_email' => $userEmail,
+                'plan_id' => $subPlanId,
+                'plan_name' => $sub['plan_name'] ?? 'Paket CCTV',
+                'billing_cycle' => $sub['billing_cycle'] ?? 'annual',
+                'amount' => $basePrice,
+                'tax_amount' => $taxAmount,
+                'total_amount' => $grossAmount,
+                'status' => 'settlement',
+                'payment_type' => 'bank_transfer_bca',
+                'snap_token' => 'SNAP_LOEWIX_AUTO_' . $userId . '_' . ($sub['id'] ?? 1),
+                'transaction_time' => $sub['start_date'] ?? date('Y-m-d H:i:s'),
+                'settlement_time' => $sub['start_date'] ?? date('Y-m-d H:i:s')
+            ];
+
+            if (!isset($db['invoices']) || !is_array($db['invoices'])) {
+                $db['invoices'] = [];
+            }
+            $db['invoices'][] = $newInv;
+            $list[] = $newInv;
+            $existingPlanIdsInList[] = $subPlanId;
+            $existingOrderIdsInList[] = $newOrderId;
+            $dbModified = true;
+        }
+    }
+
+    if ($dbModified) {
+        save_db_data($db);
     }
 
     // Sort newest first
     usort($list, function($a, $b) {
         return strcmp($b['transaction_time'] ?? '', $a['transaction_time'] ?? '');
     });
-
-    // If user has no invoice yet, auto-create their 1 official registration invoice
-    if (empty($list)) {
-        $userQuota = (int)($targetUser['cctv_quota'] ?? 10);
-        $planId = 'business_10';
-        $planName = 'Business Pro (10 CCTV)';
-        $basePrice = 2990000;
-        if ($userQuota >= 20) {
-            $planId = 'enterprise_20';
-            $planName = 'Enterprise Fleet (20 CCTV)';
-            $basePrice = 5490000;
-        } elseif ($userQuota <= 4) {
-            $planId = 'starter_4';
-            $planName = 'Starter Fleet (4 CCTV)';
-            $basePrice = 1490000;
-        }
-        $taxAmount = (int)round($basePrice * 0.11);
-        $grossAmount = $basePrice + $taxAmount;
-
-        $existingInvoiceIds = array_column($db['invoices'] ?? [], 'id');
-        $newInvoiceId = count($existingInvoiceIds) > 0 ? max($existingInvoiceIds) + 1 : 1;
-
-        $newInv = [
-            'id' => $newInvoiceId,
-            'order_id' => 'INV-LWX-' . date('Ymd') . '-' . strtoupper(substr(md5($userId . $userEmail . 'REG'), 0, 6)),
-            'user_id' => $userId,
-            'user_name' => $targetUser['name'] ?? 'Pelanggan',
-            'user_email' => $userEmail,
-            'plan_id' => $planId,
-            'plan_name' => $planName,
-            'billing_cycle' => 'annual',
-            'amount' => $basePrice,
-            'tax_amount' => $taxAmount,
-            'total_amount' => $grossAmount,
-            'status' => 'settlement',
-            'payment_type' => 'bank_transfer_bca',
-            'snap_token' => 'SNAP_LOEWIX_AUTO_' . $userId,
-            'transaction_time' => $targetUser['created_at'] ?? date('Y-m-d H:i:s'),
-            'settlement_time' => $targetUser['created_at'] ?? date('Y-m-d H:i:s')
-        ];
-
-        if (!isset($db['invoices']) || !is_array($db['invoices'])) {
-            $db['invoices'] = [];
-        }
-        $db['invoices'][] = $newInv;
-        save_db_data($db);
-        $list[] = $newInv;
-    }
 
     return $list;
 }
