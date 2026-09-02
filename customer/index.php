@@ -5550,6 +5550,23 @@
       const profile = data.billing_profile || {};
       const plans = data.plans || [];
 
+      // Update Top Stats Card Quota Max & Hero Banner in real-time
+      if (currentCustomer) {
+        currentCustomer.cctv_quota = totalActiveQuota;
+      }
+      const quotaMaxEl = document.getElementById('card-quota-max');
+      if (quotaMaxEl) quotaMaxEl.innerText = totalActiveQuota;
+      const heroQuotaText = document.getElementById('hero-quota-text');
+      const heroRemCount = document.getElementById('hero-remaining-count');
+      const used = (currentCustomer && currentCustomer.cctv_used) ? parseInt(currentCustomer.cctv_used) : (customerCameras ? customerCameras.length : 0);
+      if (heroQuotaText && totalActiveQuota > 0) {
+        const pct = Math.min(100, Math.round((used / totalActiveQuota) * 100));
+        heroQuotaText.innerText = `${used} / ${totalActiveQuota} Kamera (${pct}%)`;
+      }
+      if (heroRemCount && totalActiveQuota > 0) {
+        heroRemCount.innerText = Math.max(0, totalActiveQuota - used);
+      }
+
       // 1. Render Active Package(s) License Cards Separately
       const subsListContainer = document.getElementById('active-subscriptions-list-container');
       const totalQuotaSummaryBadge = document.getElementById('total-quota-summary-badge');
@@ -5659,16 +5676,69 @@
         if (upgradeHtml) upgradeContainer.innerHTML = upgradeHtml;
       }
 
-      // 3. Render Invoices Tab
-      const lastInv = invoices[0];
-      const invOrderId = document.getElementById('inv-last-order-id');
-      const invPlanTitle = document.getElementById('inv-plan-title');
-      const invTotalDisplay = document.getElementById('inv-total-display');
+      // 3. Render Invoices Tab (Itemized Multi-Package Billing Cards)
+      const invoiceContainer = document.getElementById('active-invoice-container');
+      if (invoiceContainer) {
+        if (allSubs.length === 0) {
+          invoiceContainer.innerHTML = '<div class="text-center py-4 text-muted">Tidak ada tagihan tertunggak saat ini.</div>';
+        } else {
+          invoiceContainer.innerHTML = allSubs.map((subItem, idx) => {
+            const matchedInv = invoices.find(inv => inv.plan_id === subItem.plan_id) || invoices[idx] || {};
+            const orderId = subItem.order_id || matchedInv.order_id || `INV-LWX-${idx + 1}`;
+            const totalFmt = 'Rp ' + Number(matchedInv.total_amount || matchedInv.amount || subItem.amount || 0).toLocaleString('id-ID');
+            const cycleText = subItem.billing_cycle === 'annual' ? 'Tahunan' : 'Bulanan';
+            
+            const expDate = subItem.expires_at ? new Date(subItem.expires_at.replace(/-/g, '/')) : new Date();
+            const now = new Date();
+            const diffDays = Math.ceil((expDate - now) / (1000 * 60 * 60 * 24));
+            const isPaid = diffDays > 0 && subItem.status === 'active';
 
-      if (lastInv) {
-        if (invOrderId) invOrderId.textContent = lastInv.order_id;
-        if (invPlanTitle) invPlanTitle.textContent = `${lastInv.plan_name} - Periode ${lastInv.billing_cycle === 'annual' ? 'Tahunan' : 'Bulanan'}`;
-        if (invTotalDisplay) invTotalDisplay.textContent = 'Rp ' + Number(lastInv.total_amount || lastInv.amount).toLocaleString('id-ID');
+            const statusBadge = isPaid
+              ? `<span class="badge badge-success px-3 py-1.5" style="font-size: 11px; font-weight: 800; letter-spacing: 0.5px; border-radius: 6px; background: #059669; color: #ffffff;"><i class="fas fa-check-circle mr-1"></i> SEMUA TAGIHAN LUNAS</span>`
+              : `<span class="badge badge-danger px-3 py-1.5" style="font-size: 11px; font-weight: 800; letter-spacing: 0.5px; border-radius: 6px; background: #dc2626; color: #ffffff;"><i class="fas fa-exclamation-triangle mr-1"></i> TAGIHAN JATUH TEMPO</span>`;
+
+            return `
+              <div class="p-4 mb-3" style="background: linear-gradient(135deg, rgba(15, 23, 42, 0.9), rgba(12, 22, 48, 0.95)); border: 1.5px solid rgba(56, 189, 248, 0.25); border-radius: 16px; box-shadow: 0 8px 24px rgba(0,0,0,0.4);">
+                <div class="row align-items-center">
+                  <!-- Left: Invoice Status, Title & Details -->
+                  <div class="col-md-7 col-12 mb-3 mb-md-0">
+                    <div class="d-flex align-items-center flex-wrap mb-2" style="gap: 10px;">
+                      ${statusBadge}
+                      <span class="badge badge-dark px-2.5 py-1" style="background: rgba(255,255,255,0.08); font-size: 11px; border: 1px solid rgba(255,255,255,0.1); border-radius: 6px;">Lisensi #${idx + 1}</span>
+                      <span class="text-muted" style="font-size: 12px;">
+                        No. Invoice: <strong class="text-white font-monospace">${orderId}</strong>
+                      </span>
+                    </div>
+
+                    <h3 class="text-white font-weight-bold mb-1.5" style="font-size: 19px; letter-spacing: -0.2px;">
+                      ${subItem.plan_name} (${subItem.cctv_quota} CCTV) – Periode ${cycleText}
+                    </h3>
+                    <p class="text-muted mb-0" style="font-size: 12.5px; line-height: 1.5;">
+                      <i class="fas fa-shield-alt text-success mr-1"></i> Layanan streaming ${subItem.cctv_quota} CCTV aktif normal. Masa aktif s.d. <strong class="text-warning">${expDate.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</strong> (${isPaid ? 'Sisa ' + diffDays + ' hari' : 'Jatuh tempo'}).
+                    </p>
+                  </div>
+
+                  <!-- Right: Price Display & Clean Side-by-Side Action Buttons -->
+                  <div class="col-md-5 col-12 text-md-right text-left">
+                    <div class="mb-3">
+                      <div class="text-muted mb-1" style="font-size: 11.5px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px;">Total Pembayaran Terakhir</div>
+                      <h2 class="text-emerald font-weight-bold mb-0" style="color: #34d399; font-size: 24px; font-family: 'Space Grotesk', sans-serif; letter-spacing: -0.5px;">${totalFmt}</h2>
+                    </div>
+
+                    <div class="d-flex align-items-center justify-content-md-end justify-content-start flex-wrap" style="gap: 8px;">
+                      <a href="receipt.php?order_id=${encodeURIComponent(orderId)}" target="_blank" class="btn btn-outline-info font-weight-bold px-3 py-1.5" style="border-radius: 8px; font-size: 12px; border-color: rgba(56, 189, 248, 0.4); color: #38bdf8; background: rgba(56, 189, 248, 0.06); text-decoration: none;">
+                        <i class="fas fa-file-invoice mr-1"></i> Kwitansi
+                      </a>
+                      <button class="btn btn-info font-weight-bold px-3 py-1.5" onclick="checkoutPlanMidtrans('${subItem.plan_id}', '${subItem.billing_cycle || 'annual'}')" style="border-radius: 8px; font-size: 12px; background: linear-gradient(135deg, #0284c7, #0ea5e9); border: none; box-shadow: 0 4px 12px rgba(2, 132, 199, 0.4); color: #ffffff;">
+                        <i class="fas fa-sync mr-1"></i> Perpanjang Lisensi #${idx + 1}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            `;
+          }).join('');
+        }
       }
 
       // 4. Render Transaction History Table
