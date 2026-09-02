@@ -7438,6 +7438,7 @@
       let scanDirection = 1;
 
       function loop() {
+        const now = Date.now();
         // Ensure size
         if (canvas.parentElement && canvas.parentElement.clientWidth > 100 && canvas.width !== canvas.parentElement.clientWidth) {
           canvas.width = canvas.parentElement.clientWidth;
