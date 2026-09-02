@@ -3787,6 +3787,10 @@
             <button type="button" class="customer-nav-tab active" onclick="switchCustomerTab('tab-cameras')" id="nav-tab-cameras">
               <i class="fas fa-video"></i> <span>Kamera Semua Tenant (${customerCameras.length || 12})</span>
             </button>
+            <button type="button" class="customer-nav-tab" onclick="switchCustomerTab('tab-ai-vision')" id="nav-tab-ai-vision">
+              <i class="fas fa-brain text-info"></i> <span>AI Analytics (Face & ANPR)</span>
+              <span class="badge badge-danger ml-1" style="font-size: 9px; padding: 2px 5px; background: linear-gradient(135deg, #ef4444, #f43f5e); border-radius: 4px; box-shadow: 0 0 8px rgba(244,63,94,0.6);">AI PRO</span>
+            </button>
             <button type="button" class="customer-nav-tab" onclick="switchCustomerTab('tab-admin-customers')" id="nav-tab-admin-customers">
               <i class="fas fa-users-cog text-warning"></i> <span>Kelola Semua Pelanggan</span>
             </button>
