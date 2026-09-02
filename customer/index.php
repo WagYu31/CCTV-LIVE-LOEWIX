@@ -7698,7 +7698,7 @@
       // Top-Right Corner
       ctx.beginPath();
       ctx.moveTo(x + w - cornerLen, y);
-      ctx.lineTo(x + w);
+      ctx.lineTo(x + w, y);
       ctx.lineTo(x + w, y + cornerLen);
       ctx.stroke();
 
