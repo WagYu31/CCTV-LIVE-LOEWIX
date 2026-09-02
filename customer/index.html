@@ -6942,24 +6942,16 @@
       const select = document.getElementById('ai-target-face-selector');
       if (!select) return;
 
-      const isWebcam = !currentAICamera || currentAICamera.id === 'webcam';
-      const isSiantar = currentAICamera && ((currentAICamera.title || '').toLowerCase().includes('thai') || (currentAICamera.city || '').toLowerCase().includes('siantar'));
-
-      if (!activeTrackedFace || isWebcam) {
-        if (isWebcam) {
-          activeTrackedFace = cachedAIFaces.find(f => f.name.toLowerCase().includes('wagyu')) || cachedAIFaces[0];
-        } else if (isSiantar) {
-          activeTrackedFace = cachedAIFaces.find(f => f.name.toLowerCase().includes('hans')) || cachedAIFaces[0];
-        } else {
-          activeTrackedFace = cachedAIFaces.find(f => f.name.toLowerCase().includes('wagyu')) || cachedAIFaces[0];
-        }
+      if (!activeTrackedFace && cachedAIFaces.length > 0) {
+        // Default to Chika or first registered face
+        activeTrackedFace = cachedAIFaces.find(f => f.name.toLowerCase().includes('chika')) || cachedAIFaces[0];
       }
 
-      let html = '';
+      let html = '<option value="auto">✨ Mode AI: Auto Match (Deteksi Wajah)</option>';
       cachedAIFaces.forEach((f) => {
         const isSelected = activeTrackedFace && (activeTrackedFace.id == f.id || activeTrackedFace.name.toLowerCase() === f.name.toLowerCase()) ? 'selected' : '';
         const roleStr = f.role_title ? ` (${f.role_title})` : '';
-        html += `<option value="${f.id}" ${isSelected}>👤 Target: ${f.name}${roleStr}</option>`;
+        html += `<option value="${f.id}" ${isSelected}>👤 Wajah: ${f.name}${roleStr}</option>`;
       });
 
       if (cachedAIFaces.length === 0) {
@@ -6973,6 +6965,15 @@
     }
 
     function selectAITargetFace(faceId) {
+      if (faceId === 'auto') {
+        const face = cachedAIFaces.find(f => f.name.toLowerCase().includes('chika')) || cachedAIFaces[0];
+        if (face) {
+          activeTrackedFace = face;
+          window._lastAutoLogTime = 0;
+          simulateCustomFaceDetection(face.name, face.category, face.role_title);
+        }
+        return;
+      }
       const face = cachedAIFaces.find(f => f.id == faceId || f.name.toLowerCase() === String(faceId).toLowerCase());
       if (face) {
         activeTrackedFace = face;
@@ -7730,23 +7731,10 @@
           statusLabel.innerHTML = `<span class="text-info"><i class="fas fa-video mr-1"></i> ${currentAICamera.title} (Live CCTV)</span>`;
         }
 
-        // Smart Face Binding: If camera is in Siantar (e.g. I 6MP THAI, TEST L02, etc.), auto-select Hans
-        const camTitleLower = (currentAICamera.title || '').toLowerCase();
-        const camCityLower = (currentAICamera.city || '').toLowerCase();
-        if (camTitleLower.includes('6mp') || camTitleLower.includes('thai') || camCityLower.includes('siantar') || camTitleLower.includes('hans')) {
-          const hans = cachedAIFaces.find(f => f.name.toLowerCase().includes('hans'));
-          if (hans) {
-            activeTrackedFace = hans;
-            const targetSelect = document.getElementById('ai-target-face-selector');
-            if (targetSelect) targetSelect.value = hans.id;
-          }
-        } else {
-          const wagyu = cachedAIFaces.find(f => f.name.toLowerCase().includes('wagyu'));
-          if (wagyu) {
-            activeTrackedFace = wagyu;
-            const targetSelect = document.getElementById('ai-target-face-selector');
-            if (targetSelect) targetSelect.value = wagyu.id;
-          }
+        // Retain selected active target face or sync selector
+        const targetSelect = document.getElementById('ai-target-face-selector');
+        if (targetSelect && activeTrackedFace) {
+          targetSelect.value = activeTrackedFace.id;
         }
 
         const video = document.getElementById('ai-video-player');
