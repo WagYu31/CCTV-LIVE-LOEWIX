@@ -2974,7 +2974,7 @@
 
   <!-- Modal Daftarkan Wajah Baru (Face Recognition) -->
   <div class="modal fade modal-dark" id="modalRegisterFace" tabindex="-1" role="dialog" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-dialog modal-dialog-centered" role="document" style="max-width: 520px;">
       <div class="modal-content" style="background: linear-gradient(160deg, #0b1533 0%, #070d22 100%); border: 1.5px solid rgba(56,189,248,0.4); border-radius: 20px; box-shadow: 0 30px 80px rgba(0,0,0,0.9); overflow: hidden;">
         <div class="modal-header" style="background: rgba(15, 23, 42, 0.98); border-bottom: 1px solid rgba(255,255,255,0.08); padding: 18px 24px;">
           <h5 class="modal-title font-weight-bold text-white mb-0" style="font-size: 16px;">
@@ -2985,11 +2985,55 @@
           </button>
         </div>
         <form id="formRegisterFace" onsubmit="submitRegisterFace(event)">
-          <div class="modal-body p-4">
+          <div class="modal-body p-4" style="max-height: 75vh; overflow-y: auto;">
+            
+            <!-- Photo Upload & Live Preview Section -->
+            <div class="p-3 mb-3 text-center" style="background: rgba(15, 23, 42, 0.8); border: 1px dashed rgba(56, 189, 248, 0.4); border-radius: 14px;">
+              <div class="position-relative d-inline-block mb-2">
+                <div id="face-preview-container" style="width: 90px; height: 90px; border-radius: 50%; background: #1e293b; margin: 0 auto; overflow: hidden; border: 2.5px solid #38bdf8; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 15px rgba(56, 189, 248, 0.3);">
+                  <img id="face-preview-img" src="../assets/image/avatar-default.png" alt="Preview Wajah" style="width: 100%; height: 100%; object-fit: cover; display: block;" onerror="this.src='https://ui-avatars.com/api/?name=Face+AI&background=0284c7&color=fff'">
+                </div>
+                <span class="position-absolute" style="bottom: 0; right: 0; background: #059669; color: #fff; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; border: 2px solid #070d22;">
+                  <i class="fas fa-camera"></i>
+                </span>
+              </div>
+              
+              <div class="d-flex align-items-center justify-content-center gap-2 mt-2 flex-wrap">
+                <!-- File Picker -->
+                <label class="btn btn-sm btn-outline-info font-weight-bold mb-0 px-3 py-1.5" style="border-radius: 8px; font-size: 12px; cursor: pointer;">
+                  <i class="fas fa-upload mr-1"></i> Upload Foto (HP/PC)
+                  <input type="file" id="face-file-input" accept="image/*" onchange="handleFaceFileUpload(event)" style="display: none;">
+                </label>
+
+                <!-- Webcam Capture Trigger -->
+                <button type="button" class="btn btn-sm btn-outline-success font-weight-bold px-3 py-1.5" onclick="toggleFaceWebcamCapture()" style="border-radius: 8px; font-size: 12px;">
+                  <i class="fas fa-video mr-1"></i> Ambil via Kamera
+                </button>
+              </div>
+
+              <!-- Live Webcam Box (Hidden by default) -->
+              <div id="face-webcam-box" class="mt-3" style="display: none; background: #000; border-radius: 10px; padding: 8px; border: 1px solid #38bdf8;">
+                <video id="face-webcam-video" autoplay playsinline style="width: 100%; max-height: 200px; object-fit: cover; border-radius: 6px;"></video>
+                <div class="mt-2 d-flex justify-content-center gap-2">
+                  <button type="button" class="btn btn-sm btn-info font-weight-bold px-3" onclick="captureFaceFromWebcam()">
+                    <i class="fas fa-camera mr-1"></i> Jepret Foto Ini
+                  </button>
+                  <button type="button" class="btn btn-sm btn-secondary font-weight-bold px-3" onclick="stopFaceWebcam()">
+                    Tutup Kamera
+                  </button>
+                </div>
+              </div>
+
+              <input type="hidden" id="face-input-photo" value="https://ui-avatars.com/api/?name=User&background=0284c7&color=fff">
+              <small class="text-muted d-block mt-2" style="font-size: 11px;">Format JPG/PNG tampak depan, pencahayaan jelas tanpa masker.</small>
+            </div>
+
+            <!-- Form Fields -->
             <div class="form-group mb-3">
               <label class="text-white" style="font-size: 12.5px; font-weight: 600;">Nama Lengkap:</label>
-              <input type="text" id="face-input-name" class="form-control form-control-dark" placeholder="Contoh: Bambang Supriyanto" required>
+              <input type="text" id="face-input-name" class="form-control form-control-dark" placeholder="Contoh: WAHYU" required>
             </div>
+            
             <div class="form-group mb-3">
               <label class="text-white" style="font-size: 12.5px; font-weight: 600;">Kategori Akses:</label>
               <select id="face-input-category" class="form-control form-control-dark" required>
@@ -3000,19 +3044,17 @@
                 <option value="blacklist">🚨 Blacklist / DPO (Trigger Security Alarm & Sound Alert)</option>
               </select>
             </div>
+
             <div class="form-group mb-3">
               <label class="text-white" style="font-size: 12.5px; font-weight: 600;">Jabatan / Status Role:</label>
-              <input type="text" id="face-input-role" class="form-control form-control-dark" placeholder="Contoh: Direktur Operasional" required>
+              <input type="text" id="face-input-role" class="form-control form-control-dark" placeholder="Contoh: IT DEVELOPER" required>
             </div>
-            <div class="form-group mb-3">
-              <label class="text-white" style="font-size: 12.5px; font-weight: 600;">Foto Referensi AI (URL / Base64):</label>
-              <input type="text" id="face-input-photo" class="form-control form-control-dark" value="assets/image/avatar-default.png" placeholder="URL foto wajah">
-              <small class="text-muted" style="font-size: 11px;">Gunakan foto wajah resolusi jelas tampak depan tanpa masker.</small>
-            </div>
+
             <div class="form-group mb-0">
               <label class="text-white" style="font-size: 12.5px; font-weight: 600;">Catatan Tambahan:</label>
-              <textarea id="face-input-notes" class="form-control form-control-dark" rows="2" placeholder="Contoh: Akses ruang server 24 jam"></textarea>
+              <textarea id="face-input-notes" class="form-control form-control-dark" rows="2" placeholder="Contoh: Akses ruang server & kantor IT"></textarea>
             </div>
+
           </div>
           <div class="modal-footer" style="border-top: 1px solid rgba(255,255,255,0.08); background: rgba(15, 23, 42, 0.95); padding: 14px 24px;">
             <button type="button" class="btn btn-secondary btn-sm px-3" onclick="closeModalHelper('modalRegisterFace')" style="border-radius: 8px;">Batal</button>
@@ -6866,12 +6908,20 @@
           badgeText = '🏠 PENGHUNI';
         }
 
+        const photoSrc = f.photo && f.photo !== '' && f.photo !== 'assets/image/avatar-default.png'
+          ? (f.photo.startsWith('http') || f.photo.startsWith('data:') ? f.photo : `../${f.photo}`)
+          : `https://ui-avatars.com/api/?name=${encodeURIComponent(f.name)}&background=0284c7&color=fff&size=128`;
+
+        const escName = f.name.replace(/'/g, "\\'");
+        const escRole = (f.role_title || 'Staff').replace(/'/g, "\\'");
+        const cat = f.category || 'employee';
+
         return `
           <div class="col-md-4 col-sm-6 mb-3">
             <div class="ai-face-card" style="border-color: ${borderColor};">
               <div class="d-flex align-items-center gap-3 mb-3">
-                <div style="width: 48px; height: 48px; border-radius: 12px; background: rgba(56,189,248,0.15); display: flex; align-items: center; justify-content: center; overflow: hidden; border: 1.5px solid ${borderColor};">
-                  <i class="fas fa-user text-info" style="font-size: 20px;"></i>
+                <div style="width: 48px; height: 48px; border-radius: 12px; background: rgba(56,189,248,0.15); display: flex; align-items: center; justify-content: center; overflow: hidden; border: 1.5px solid ${borderColor}; flex-shrink: 0;">
+                  <img src="${photoSrc}" alt="${f.name}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(f.name)}&background=0284c7&color=fff'">
                 </div>
                 <div style="flex: 1; min-width: 0;">
                   <h6 class="text-white font-weight-bold mb-0 text-truncate" style="font-size: 14px;">${f.name}</h6>
@@ -6882,8 +6932,10 @@
               <p class="text-muted mb-3" style="font-size: 12px; line-height: 1.4; min-height: 34px;">
                 ${f.notes ? `<i class="fas fa-info-circle mr-1 text-info"></i> ${f.notes}` : 'Tidak ada catatan khusus.'}
               </p>
-              <div class="d-flex align-items-center justify-content-between pt-2 border-top" style="border-color: rgba(255,255,255,0.06) !important;">
-                <small class="text-muted" style="font-size: 10.5px;">${f.created_at || 'Terdaftar'}</small>
+              <div class="d-flex align-items-center justify-content-between pt-2 border-top gap-2" style="border-color: rgba(255,255,255,0.06) !important;">
+                <button class="btn btn-sm btn-outline-info px-2.5 py-1 font-weight-bold" onclick="simulateCustomFaceDetection('${escName}', '${cat}', '${escRole}')" style="border-radius: 6px; font-size: 11px;" title="Uji deteksi wajah ini di Live Scanner">
+                  <i class="fas fa-bolt text-warning mr-1"></i> Test Deteksi
+                </button>
                 <button class="btn btn-sm btn-outline-danger px-2.5 py-1" onclick="deleteAIFace(${f.id})" style="border-radius: 6px; font-size: 11px;">
                   <i class="fas fa-trash-alt"></i> Hapus
                 </button>
@@ -7278,9 +7330,146 @@
       isAISoundEnabled = isEnabled;
     }
 
+    // Handle Image Upload from File Picker (HP / PC)
+    function handleFaceFileUpload(event) {
+      const file = event.target.files && event.target.files[0];
+      if (!file) return;
+
+      if (!file.type.startsWith('image/')) {
+        alert('Silakan pilih file gambar (JPG, PNG).');
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const base64 = e.target.result;
+        const img = document.getElementById('face-preview-img');
+        const hiddenInput = document.getElementById('face-input-photo');
+        if (img) img.src = base64;
+        if (hiddenInput) hiddenInput.value = base64;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    // Webcam Live Selfie Capture Controller
+    let faceWebcamStream = null;
+
+    async function toggleFaceWebcamCapture() {
+      const box = document.getElementById('face-webcam-box');
+      const video = document.getElementById('face-webcam-video');
+      if (!box || !video) return;
+
+      if (box.style.display === 'block') {
+        stopFaceWebcam();
+        return;
+      }
+
+      try {
+        box.style.display = 'block';
+        faceWebcamStream = await navigator.mediaDevices.getUserMedia({ 
+          video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } } 
+        });
+        video.srcObject = faceWebcamStream;
+        await video.play();
+      } catch (err) {
+        console.error('Webcam access error:', err);
+        alert('Gagal mengakses kamera/webcam. Pastikan browser diizinkan mengakses kamera atau gunakan opsi Upload Foto.');
+        box.style.display = 'none';
+      }
+    }
+
+    function captureFaceFromWebcam() {
+      const video = document.getElementById('face-webcam-video');
+      if (!video) return;
+
+      const canvas = document.createElement('canvas');
+      canvas.width = 320;
+      canvas.height = 320;
+      const ctx = canvas.getContext('2d');
+
+      const minDim = Math.min(video.videoWidth, video.videoHeight) || 320;
+      const sx = (video.videoWidth - minDim) / 2 || 0;
+      const sy = (video.videoHeight - minDim) / 2 || 0;
+
+      ctx.drawImage(video, sx, sy, minDim, minDim, 0, 0, 320, 320);
+      const base64 = canvas.toDataURL('image/jpeg', 0.9);
+
+      const img = document.getElementById('face-preview-img');
+      const hiddenInput = document.getElementById('face-input-photo');
+      if (img) img.src = base64;
+      if (hiddenInput) hiddenInput.value = base64;
+
+      stopFaceWebcam();
+    }
+
+    function stopFaceWebcam() {
+      const box = document.getElementById('face-webcam-box');
+      const video = document.getElementById('face-webcam-video');
+      if (faceWebcamStream) {
+        faceWebcamStream.getTracks().forEach(track => track.stop());
+        faceWebcamStream = null;
+      }
+      if (video) video.srcObject = null;
+      if (box) box.style.display = 'none';
+    }
+
+    // Trigger Custom Face Detection for any registered user
+    function simulateCustomFaceDetection(name, category = 'employee', roleTitle = 'Staff') {
+      initAIHUDCanvas();
+      const canvas = document.getElementById('ai-hud-canvas');
+      const width = canvas ? canvas.width : 640;
+      const height = canvas ? canvas.height : 380;
+
+      const isBlacklist = category === 'blacklist';
+      const isVIP = category === 'vip';
+
+      const ent = {
+        x: Math.round(width * 0.38),
+        y: Math.round(height * 0.22),
+        w: 120,
+        h: 140,
+        type: 'face',
+        label: name,
+        category: category,
+        confidence: (96 + Math.random() * 3).toFixed(1),
+        createdAt: Date.now()
+      };
+
+      activeAIEntities.push(ent);
+
+      const badgeClass = isBlacklist ? 'badge-danger' : (isVIP ? 'badge-success' : 'badge-primary');
+      const badgeText = isBlacklist ? 'ALERT DPO' : (isVIP ? 'VIP ACCESSED' : 'ACCESS GRANTED');
+      const iconClass = isBlacklist ? 'fas fa-shield-virus' : (isVIP ? 'fas fa-star' : 'fas fa-user-check');
+      const iconBg = isBlacklist ? '#ef4444' : (isVIP ? '#059669' : '#0284c7');
+
+      showAIBanner(`${name} (${roleTitle})`, `Confidence: ${ent.confidence}% • Terverifikasi oleh Loewix Neural AI`, badgeClass, badgeText, iconClass, iconBg);
+
+      if (isBlacklist) {
+        playAIAlarmSound();
+      }
+
+      // Log to server
+      const fd = new FormData();
+      fd.append('action', 'log_detection');
+      fd.append('type', 'face');
+      fd.append('camera_id', 5002);
+      fd.append('camera_title', 'CAM LOEWIX JAKARTA 1 - LOBBY UTAMA');
+      fd.append('label', name);
+      fd.append('category', category);
+      fd.append('confidence', ent.confidence);
+      fd.append('details', `${roleTitle} • Terverifikasi oleh Face Recognition`);
+      fetch('../api/ai_analytics.php', { method: 'POST', body: fd }).then(() => loadAIData()).catch(e => {});
+    }
+
     // Modal Action Openers
     function openRegisterFaceModal() {
-      document.getElementById('formRegisterFace').reset();
+      const form = document.getElementById('formRegisterFace');
+      if (form) form.reset();
+      const img = document.getElementById('face-preview-img');
+      const hiddenInput = document.getElementById('face-input-photo');
+      if (img) img.src = '../assets/image/avatar-default.png';
+      if (hiddenInput) hiddenInput.value = 'https://ui-avatars.com/api/?name=User&background=0284c7&color=fff';
+      stopFaceWebcam();
       openModalHelper('modalRegisterFace');
     }
 
@@ -7404,10 +7593,15 @@
     window.loadAIData = loadAIData;
     window.switchAISubTab = switchAISubTab;
     window.simulateAIDetection = simulateAIDetection;
+    window.simulateCustomFaceDetection = simulateCustomFaceDetection;
     window.scanCurrentFrameManual = scanCurrentFrameManual;
     window.changeAICamera = changeAICamera;
     window.toggleAISound = toggleAISound;
     window.openRegisterFaceModal = openRegisterFaceModal;
+    window.handleFaceFileUpload = handleFaceFileUpload;
+    window.toggleFaceWebcamCapture = toggleFaceWebcamCapture;
+    window.captureFaceFromWebcam = captureFaceFromWebcam;
+    window.stopFaceWebcam = stopFaceWebcam;
     window.submitRegisterFace = submitRegisterFace;
     window.deleteAIFace = deleteAIFace;
     window.openRegisterPlateModal = openRegisterPlateModal;
