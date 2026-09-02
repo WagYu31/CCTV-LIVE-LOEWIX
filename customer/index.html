@@ -7045,19 +7045,19 @@
       if (!videoElem.videoWidth || videoElem.videoWidth === 0) return;
       faceAPIDetectionRunning = true;
       try {
-        const detections = await faceapi.detectAllFaces(videoElem, new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.25 }))
+        const detections = await faceapi.detectAllFaces(videoElem, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.20 }))
           .withFaceLandmarks(true)
           .withFaceDescriptors();
 
         if (detections.length > 0 && faceAPIFaceMatcher) {
           const results = detections.map(d => {
             const match = faceAPIFaceMatcher.findBestMatch(d.descriptor);
-            // Match check: must be recognized label and distance <= 0.58
-            const isMatch = match.label !== 'unknown' && match.distance <= 0.58;
+            // Match check: must be recognized label and distance <= 0.60
+            const isMatch = match.label !== 'unknown' && match.distance <= 0.60;
             let conf = '95.0';
             if (isMatch) {
-              const matchRatio = Math.max(0, 1 - (match.distance / 0.58));
-              conf = Math.min(99.8, Math.max(95.5, 93.5 + (matchRatio * 6.3))).toFixed(1);
+              const matchRatio = Math.max(0, 1 - (match.distance / 0.60));
+              conf = Math.min(99.6, Math.max(95.5, 93.5 + (matchRatio * 6.1))).toFixed(1);
             } else {
               conf = Math.max(70.0, ((1 - Math.min(1, match.distance)) * 100)).toFixed(1);
             }
@@ -7109,7 +7109,10 @@
             timestamp: Date.now()
           };
         } else {
-          lastFaceAPIResult = null;
+          // If no detection in this single frame, retain last position for 3.5s to prevent flickering
+          if (lastFaceAPIResult && (Date.now() - lastFaceAPIResult.timestamp > 3500)) {
+            lastFaceAPIResult = null;
+          }
         }
       } catch (err) {
         console.warn('[FaceAPI] Detection error:', err.message);
@@ -7132,14 +7135,14 @@
 
     let faceAPIDetectionTimer = null;
     function startFaceAPIDetectionLoop() {
-      if (faceAPIDetectionTimer) return;
+      if (faceAPIDetectionTimer) clearInterval(faceAPIDetectionTimer);
       faceAPIDetectionTimer = setInterval(() => {
         const video = document.getElementById('ai-video-player');
         const isVideoActive = video && (video.readyState >= 2 || video.srcObject !== null || (!video.paused && !video.ended));
         if (isVideoActive && isAutoTrackingActive) {
           runFaceAPIDetection(video);
         }
-      }, 1000);
+      }, 400);
     }
 
     // Active Tracked Face
