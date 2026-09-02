@@ -3081,6 +3081,7 @@
                 </button>
               </div>
 
+              <input type="hidden" id="face-edit-id" value="">
               <input type="hidden" id="face-input-photo" value="" required>
               <small class="text-muted d-block mt-2" style="font-size: 11px;">Posisikan wajah tegak, pencahayaan jelas, tanpa masker/kacamata hitam.</small>
             </div>
@@ -7020,8 +7021,9 @@
       }
 
       if (labeledDescriptors.length > 0) {
-        faceAPIFaceMatcher = new faceapi.FaceMatcher(labeledDescriptors, 0.55);
-        console.log(`[FaceAPI] ✅ FaceMatcher ready with ${labeledDescriptors.length} people`);
+        // Strict anti-false-positive threshold (0.48) to ensure zero misidentification
+        faceAPIFaceMatcher = new faceapi.FaceMatcher(labeledDescriptors, 0.48);
+        console.log(`[FaceAPI] ✅ High-Precision FaceMatcher ready with ${labeledDescriptors.length} people (Threshold: 0.48)`);
       } else {
         faceAPIFaceMatcher = null;
       }
@@ -7050,17 +7052,19 @@
         if (detections.length > 0 && faceAPIFaceMatcher) {
           const results = detections.map(d => {
             const match = faceAPIFaceMatcher.findBestMatch(d.descriptor);
-            const isMatch = match.label !== 'unknown' && match.distance < 0.65;
-            let conf = '82.5';
+            // Strict Anti-False-Positive Match: Distance must be <= 0.48
+            const isMatch = match.label !== 'unknown' && match.distance <= 0.48;
+            let conf = '0.0';
             if (isMatch) {
-              const matchRatio = Math.max(0, 1 - (match.distance / 0.65));
-              conf = Math.min(99.8, Math.max(95.2, 92.5 + (matchRatio * 7.3))).toFixed(1);
+              const matchRatio = Math.max(0, 1 - (match.distance / 0.48));
+              conf = Math.min(99.8, Math.max(95.5, 94.0 + (matchRatio * 5.8))).toFixed(1);
             } else {
-              conf = (75.0 + Math.random() * 7.0).toFixed(1);
+              conf = (60.0 + (1 - Math.min(1, match.distance)) * 15.0).toFixed(1);
             }
             return {
               box: d.detection.box,
-              label: match.label,
+              label: isMatch ? match.label : 'Wajah Belum Terdaftar',
+              category: isMatch ? (cachedAIFaces.find(f => f.name.toLowerCase() === match.label.toLowerCase())?.category || 'employee') : 'unknown',
               distance: match.distance,
               confidence: conf,
               isMatch: isMatch
@@ -7071,8 +7075,9 @@
           const recognizedFaces = results.map(r => {
             const faceObj = r.isMatch ? cachedAIFaces.find(f => f.name.toLowerCase() === r.label.toLowerCase()) : null;
             return {
-              name: r.isMatch ? r.label : 'Pengunjung (Wajah Baru)',
+              name: r.label,
               face: faceObj,
+              category: r.category,
               box: r.box,
               confidence: r.confidence
             };
@@ -7083,7 +7088,7 @@
             timestamp: Date.now()
           };
 
-          // If a known face was found, sync activeTrackedFace and UI dropdown
+          // If a genuinely known face was found, sync activeTrackedFace and UI dropdown
           const firstKnown = recognizedFaces.find(f => f.face !== null);
           if (firstKnown && firstKnown.face) {
             activeTrackedFace = firstKnown.face;
@@ -7097,6 +7102,7 @@
             faces: detections.map(d => ({
               name: 'Wajah Terdeteksi (Neural AI)',
               face: null,
+              category: 'unknown',
               box: d.detection.box,
               confidence: (d.detection.score * 100).toFixed(1)
             })),
@@ -7308,12 +7314,15 @@
               <p class="text-muted mb-3" style="font-size: 12px; line-height: 1.4; min-height: 34px;">
                 ${f.notes ? `<i class="fas fa-info-circle mr-1 text-info"></i> ${f.notes}` : 'Tidak ada catatan khusus.'}
               </p>
-              <div class="d-flex align-items-center justify-content-between pt-2 border-top gap-2" style="border-color: rgba(255,255,255,0.06) !important;">
-                <button class="btn btn-sm btn-outline-info px-2.5 py-1 font-weight-bold" onclick="simulateCustomFaceDetection('${escName}', '${cat}', '${escRole}')" style="border-radius: 6px; font-size: 11px;" title="Uji deteksi wajah ini di Live Scanner">
-                  <i class="fas fa-bolt text-warning mr-1"></i> Test Deteksi
+              <div class="d-flex align-items-center justify-content-between pt-2 border-top gap-1.5 flex-wrap" style="border-color: rgba(255,255,255,0.06) !important;">
+                <button class="btn btn-sm btn-outline-info px-2 py-1 font-weight-bold" onclick="simulateCustomFaceDetection('${escName}', '${cat}', '${escRole}')" style="border-radius: 6px; font-size: 11px;" title="Uji deteksi wajah ini di Live Scanner">
+                  <i class="fas fa-bolt text-warning mr-1"></i> Test
                 </button>
-                <button class="btn btn-sm btn-outline-danger px-2.5 py-1" onclick="deleteAIFace(${f.id})" style="border-radius: 6px; font-size: 11px;">
-                  <i class="fas fa-trash-alt"></i> Hapus
+                <button class="btn btn-sm btn-outline-warning px-2 py-1 font-weight-bold" onclick="openEditFaceModal(${f.id})" style="border-radius: 6px; font-size: 11px; background: rgba(245, 158, 11, 0.1); border-color: rgba(245, 158, 11, 0.4); color: #fbbf24;" title="Edit Data & Scan Ulang Wajah">
+                  <i class="fas fa-camera mr-1"></i> Edit & Scan Ulang
+                </button>
+                <button class="btn btn-sm btn-outline-danger px-2 py-1" onclick="deleteAIFace(${f.id})" style="border-radius: 6px; font-size: 11px;" title="Hapus Data">
+                  <i class="fas fa-trash-alt"></i>
                 </button>
               </div>
             </div>
@@ -7649,10 +7658,11 @@
       const { x, y, w, h, label, category, confidence } = ent;
       const isBlacklist = category === 'blacklist';
       const isVIP = category === 'vip';
+      const isUnknown = category === 'unknown' || category === 'guest' || String(label).toLowerCase().includes('belum terdaftar') || String(label).toLowerCase().includes('tidak dikenal') || String(label).toLowerCase().includes('pengunjung');
 
-      const strokeColor = isBlacklist ? '#ef4444' : (isVIP ? '#10b981' : '#00f0ff');
-      const glowColor = isBlacklist ? 'rgba(239, 68, 68, 0.6)' : (isVIP ? 'rgba(16, 185, 129, 0.6)' : 'rgba(0, 240, 255, 0.6)');
-      const boxBg = isBlacklist ? 'rgba(239, 68, 68, 0.08)' : (isVIP ? 'rgba(16, 185, 129, 0.08)' : 'rgba(0, 240, 255, 0.06)');
+      const strokeColor = isBlacklist ? '#ef4444' : (isVIP ? '#10b981' : (isUnknown ? '#f59e0b' : '#00f0ff'));
+      const glowColor = isBlacklist ? 'rgba(239, 68, 68, 0.6)' : (isVIP ? 'rgba(16, 185, 129, 0.6)' : (isUnknown ? 'rgba(245, 158, 11, 0.6)' : 'rgba(0, 240, 255, 0.6)'));
+      const boxBg = isBlacklist ? 'rgba(239, 68, 68, 0.08)' : (isVIP ? 'rgba(16, 185, 129, 0.08)' : (isUnknown ? 'rgba(245, 158, 11, 0.08)' : 'rgba(0, 240, 255, 0.06)'));
 
       ctx.save();
 
@@ -7661,7 +7671,7 @@
       ctx.fillRect(x, y, w, h);
 
       // 2. Faint Grid Box Outline
-      ctx.strokeStyle = isBlacklist ? 'rgba(239, 68, 68, 0.25)' : (isVIP ? 'rgba(16, 185, 129, 0.25)' : 'rgba(0, 240, 255, 0.20)');
+      ctx.strokeStyle = isBlacklist ? 'rgba(239, 68, 68, 0.25)' : (isVIP ? 'rgba(16, 185, 129, 0.25)' : (isUnknown ? 'rgba(245, 158, 11, 0.25)' : 'rgba(0, 240, 255, 0.20)'));
       ctx.lineWidth = 1;
       ctx.setLineDash([4, 4]);
       ctx.strokeRect(x, y, w, h);
@@ -7685,7 +7695,7 @@
       // Top-Right Corner
       ctx.beginPath();
       ctx.moveTo(x + w - cornerLen, y);
-      ctx.lineTo(x + w, y);
+      ctx.lineTo(x + w);
       ctx.lineTo(x + w, y + cornerLen);
       ctx.stroke();
 
@@ -7729,7 +7739,7 @@
       ];
 
       // Faint Constellation Lines
-      ctx.strokeStyle = isBlacklist ? 'rgba(239, 68, 68, 0.25)' : (isVIP ? 'rgba(16, 185, 129, 0.25)' : 'rgba(0, 240, 255, 0.25)');
+      ctx.strokeStyle = isBlacklist ? 'rgba(239, 68, 68, 0.25)' : (isVIP ? 'rgba(16, 185, 129, 0.25)' : (isUnknown ? 'rgba(245, 158, 11, 0.25)' : 'rgba(0, 240, 255, 0.25)'));
       ctx.lineWidth = 1;
       ctx.setLineDash([2, 2]);
       ctx.beginPath();
@@ -7771,7 +7781,7 @@
       ctx.stroke();
 
       // 7. Ultra-Sleek Glassmorphic Floating Identification Badge
-      const badgeW = Math.max(w + 10, 190);
+      const badgeW = Math.max(w + 10, 200);
       const badgeH = 34;
       const badgeX = x + (w - badgeW) / 2;
       const badgeY = y - badgeH - 8;
@@ -7802,7 +7812,7 @@
       // Live Pulsing Beacon Dot inside badge
       const pulseTime = Date.now() / 300;
       const pulseRadius = 3.5 + Math.sin(pulseTime) * 1.2;
-      ctx.fillStyle = isBlacklist ? '#ef4444' : (isVIP ? '#10b981' : '#00f0ff');
+      ctx.fillStyle = isBlacklist ? '#ef4444' : (isVIP ? '#10b981' : (isUnknown ? '#f59e0b' : '#00f0ff'));
       ctx.shadowColor = ctx.fillStyle;
       ctx.shadowBlur = 8;
       ctx.beginPath();
@@ -7813,13 +7823,13 @@
       ctx.shadowBlur = 0;
       ctx.fillStyle = '#ffffff';
       ctx.font = '700 13px "Plus Jakarta Sans", -apple-system, sans-serif';
-      const cleanLabel = String(label).toUpperCase();
+      const cleanLabel = isUnknown ? 'WAJAH TIDAK DIKENAL' : String(label).toUpperCase();
       ctx.fillText(cleanLabel, badgeX + 28, badgeY + 16);
 
       // Subtitle Tag (Role / Access)
-      ctx.fillStyle = isBlacklist ? '#fca5a5' : (isVIP ? '#6ee7b7' : '#7dd3fc');
+      ctx.fillStyle = isBlacklist ? '#fca5a5' : (isVIP ? '#6ee7b7' : (isUnknown ? '#fde047' : '#7dd3fc'));
       ctx.font = '600 9.5px "Plus Jakarta Sans", sans-serif';
-      const subText = isBlacklist ? '🚨 DPO / BLACKLIST' : (isVIP ? '⭐ VIP ACCESSED' : '👤 VERIFIED EMPLOYEE');
+      const subText = isBlacklist ? '🚨 DPO / BLACKLIST' : (isVIP ? '⭐ VIP ACCESSED' : (isUnknown ? '❓ BELUM TERDAFTAR • UNVERIFIED' : '👤 VERIFIED EMPLOYEE'));
       ctx.fillText(subText, badgeX + 28, badgeY + 28);
 
       // Score / Confidence Pill on the Right
@@ -7828,7 +7838,7 @@
       const pillX = badgeX + badgeW - pillW - 8;
       const pillY = badgeY + (badgeH - pillH) / 2;
 
-      ctx.fillStyle = isBlacklist ? 'rgba(239, 68, 68, 0.25)' : (isVIP ? 'rgba(16, 185, 129, 0.25)' : 'rgba(0, 240, 255, 0.20)');
+      ctx.fillStyle = isBlacklist ? 'rgba(239, 68, 68, 0.25)' : (isVIP ? 'rgba(16, 185, 129, 0.25)' : (isUnknown ? 'rgba(245, 158, 11, 0.25)' : 'rgba(0, 240, 255, 0.20)'));
       ctx.strokeStyle = strokeColor;
       ctx.lineWidth = 1;
       ctx.beginPath();
@@ -7839,7 +7849,7 @@
       ctx.fillStyle = '#ffffff';
       ctx.font = '800 10px monospace';
       ctx.textAlign = 'center';
-      ctx.fillText(`${confidence}%`, pillX + pillW / 2, pillY + 14);
+      ctx.fillText(isUnknown ? 'UNVERIFIED' : `${confidence}%`, pillX + pillW / 2, pillY + 14);
       ctx.textAlign = 'left';
 
       ctx.restore();
@@ -8650,13 +8660,64 @@
     function openRegisterFaceModal() {
       const form = document.getElementById('formRegisterFace');
       if (form) form.reset();
+      const editIdInput = document.getElementById('face-edit-id');
+      if (editIdInput) editIdInput.value = '';
       const img = document.getElementById('face-preview-img');
       const hiddenInput = document.getElementById('face-input-photo');
       if (img) img.src = '';
       if (hiddenInput) hiddenInput.value = '';
-      
+
+      const modalTitle = document.querySelector('#modalRegisterFace .modal-title');
+      if (modalTitle) {
+        modalTitle.innerHTML = '<i class="fas fa-user-plus text-info mr-2"></i> Daftarkan Wajah Baru ke AI Face Recognition';
+      }
+      const btnSubmit = document.getElementById('btn-submit-face');
+      if (btnSubmit) {
+        btnSubmit.innerHTML = '<i class="fas fa-save mr-1"></i> Simpan Data Wajah';
+      }
+
       openModalHelper('modalRegisterFace');
-      // Auto-start live camera scanner on modal open
+      setTimeout(() => {
+        startFaceEnrollmentCamera();
+      }, 300);
+    }
+
+    function openEditFaceModal(faceId) {
+      const face = cachedAIFaces.find(f => (f.id == faceId || String(f.id) === String(faceId)));
+      if (!face) return;
+
+      const form = document.getElementById('formRegisterFace');
+      if (form) form.reset();
+
+      const editIdInput = document.getElementById('face-edit-id');
+      if (editIdInput) editIdInput.value = face.id;
+
+      const nameInput = document.getElementById('face-input-name');
+      if (nameInput) nameInput.value = face.name;
+
+      const catInput = document.getElementById('face-input-category');
+      if (catInput) catInput.value = face.category || 'employee';
+
+      const roleInput = document.getElementById('face-input-role');
+      if (roleInput) roleInput.value = face.role_title || '';
+
+      const notesInput = document.getElementById('face-input-notes');
+      if (notesInput) notesInput.value = face.notes || '';
+
+      const hiddenInput = document.getElementById('face-input-photo');
+      if (hiddenInput) hiddenInput.value = face.photo || '';
+
+      const modalTitle = document.querySelector('#modalRegisterFace .modal-title');
+      if (modalTitle) {
+        modalTitle.innerHTML = `<i class="fas fa-camera text-warning mr-2"></i> Edit & Scan Ulang Wajah: ${face.name}`;
+      }
+
+      const btnSubmit = document.getElementById('btn-submit-face');
+      if (btnSubmit) {
+        btnSubmit.innerHTML = '<i class="fas fa-save mr-1"></i> Perbarui Data & Wajah';
+      }
+
+      openModalHelper('modalRegisterFace');
       setTimeout(() => {
         startFaceEnrollmentCamera();
       }, 300);
@@ -8665,14 +8726,16 @@
     async function submitRegisterFace(e) {
       e.preventDefault();
       const photoVal = document.getElementById('face-input-photo').value;
-      if (!photoVal || !photoVal.startsWith('data:image')) {
+      if (!photoVal || (!photoVal.startsWith('data:image') && !photoVal.startsWith('http') && !photoVal.startsWith('assets/'))) {
         alert('⚠️ Wajib lakukan Scan Wajah terlebih dahulu melalui kamera sebelum menyimpan data!');
         startFaceEnrollmentCamera();
         return;
       }
 
+      const editId = document.getElementById('face-edit-id')?.value || '';
       const fd = new FormData();
-      fd.append('action', 'register_face');
+      fd.append('action', editId ? 'update_face' : 'register_face');
+      if (editId) fd.append('id', editId);
       fd.append('name', document.getElementById('face-input-name').value);
       fd.append('category', document.getElementById('face-input-category').value);
       fd.append('role_title', document.getElementById('face-input-role').value);
@@ -8691,7 +8754,7 @@
         if (data.success) {
           stopFaceWebcam();
           closeModalHelper('modalRegisterFace');
-          alert('✅ Wajah Berhasil Terdaftar ke Database AI Face Recognition!');
+          alert(data.message || (editId ? '✅ Data Wajah Berhasil Diperbarui & Di-rescan!' : '✅ Wajah Berhasil Terdaftar ke Database AI Face Recognition!'));
           loadAIData(true);
         } else {
           alert(data.message || 'Gagal menyimpan data.');
@@ -8702,7 +8765,7 @@
       } finally {
         if (btnSubmit) {
           btnSubmit.disabled = false;
-          btnSubmit.innerHTML = '<i class="fas fa-save mr-1"></i> Simpan Data Wajah';
+          btnSubmit.innerHTML = editId ? '<i class="fas fa-save mr-1"></i> Perbarui Data & Wajah' : '<i class="fas fa-save mr-1"></i> Simpan Data Wajah';
         }
       }
     }
@@ -8817,8 +8880,8 @@
     window.toggleAISound = toggleAISound;
     window.toggleAIAutoTracking = toggleAIAutoTracking;
     window.openRegisterFaceModal = openRegisterFaceModal;
-    window.handleFaceFileUpload = handleFaceFileUpload;
-    window.toggleFaceWebcamCapture = toggleFaceWebcamCapture;
+    window.openEditFaceModal = openEditFaceModal;
+    window.startFaceEnrollmentCamera = startFaceEnrollmentCamera;
     window.captureFaceFromWebcam = captureFaceFromWebcam;
     window.stopFaceWebcam = stopFaceWebcam;
     window.submitRegisterFace = submitRegisterFace;

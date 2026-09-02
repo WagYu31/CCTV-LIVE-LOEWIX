@@ -199,17 +199,42 @@ if ($action === 'get_ai_data') {
     exit;
 }
 
-// 2. REGISTER NEW FACE
-if ($action === 'register_face') {
+// 2. REGISTER / UPDATE FACE
+if ($action === 'register_face' || $action === 'update_face') {
+    $editId = (int)($_POST['id'] ?? 0);
     $name = trim($_POST['name'] ?? '');
     $category = trim($_POST['category'] ?? 'employee'); // vip, employee, resident, blacklist, guest
     $roleTitle = trim($_POST['role_title'] ?? 'Tamu Terdaftar');
-    $photo = trim($_POST['photo'] ?? 'assets/image/avatar-default.png');
+    $photo = trim($_POST['photo'] ?? '');
     $notes = trim($_POST['notes'] ?? '');
 
     if (empty($name)) {
         echo json_encode(['success' => false, 'message' => 'Nama lengkap wajib diisi.']);
         exit;
+    }
+
+    if ($editId > 0) {
+        $found = false;
+        foreach ($db['ai_faces'] as &$f) {
+            if ((int)$f['id'] === $editId) {
+                $f['name'] = $name;
+                $f['category'] = $category;
+                $f['role_title'] = $roleTitle;
+                if (!empty($photo)) {
+                    $f['photo'] = $photo;
+                }
+                $f['notes'] = $notes;
+                $f['updated_at'] = date('Y-m-d H:i:s');
+                $found = true;
+                $savedFace = $f;
+                break;
+            }
+        }
+        if ($found) {
+            save_db_data($db);
+            echo json_encode(['success' => true, 'message' => 'Data wajah berhasil diperbarui & di-rescan!', 'face' => $savedFace]);
+            exit;
+        }
     }
 
     $existingIds = array_column($db['ai_faces'], 'id');
@@ -221,7 +246,7 @@ if ($action === 'register_face') {
         'name' => $name,
         'category' => $category,
         'role_title' => $roleTitle,
-        'photo' => $photo,
+        'photo' => !empty($photo) ? $photo : 'assets/image/avatar-default.png',
         'notes' => $notes,
         'created_at' => date('Y-m-d H:i:s')
     ];
