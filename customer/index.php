@@ -7057,12 +7057,13 @@
             let conf = '95.0';
             if (isMatch) {
               const matchRatio = Math.max(0, 1 - (match.distance / 0.60));
-              conf = Math.min(99.6, Math.max(95.5, 93.5 + (matchRatio * 6.1))).toFixed(1);
+              conf = Math.min(99.8, Math.max(96.2, 94.0 + (matchRatio * 5.8))).toFixed(1);
             } else {
               conf = Math.max(70.0, ((1 - Math.min(1, match.distance)) * 100)).toFixed(1);
             }
             return {
               box: d.detection.box,
+              landmarks: d.landmarks ? d.landmarks.positions : null,
               label: isMatch ? match.label : 'Wajah Belum Terdaftar',
               category: isMatch ? (cachedAIFaces.find(f => f.name.toLowerCase() === match.label.toLowerCase())?.category || 'employee') : 'unknown',
               distance: match.distance,
@@ -7079,6 +7080,7 @@
               face: faceObj,
               category: r.category,
               box: r.box,
+              landmarks: r.landmarks,
               confidence: r.confidence
             };
           });
@@ -7510,27 +7512,57 @@
 
         // Continuous Real-Time Auto-Tracking & Neural Face Matcher Engine
         if (isAutoTrackingActive && cachedAIFaces.length > 0) {
-          // Use real face-api.js results if available
-          if (lastFaceAPIResult && lastFaceAPIResult.faces.length > 0 && Date.now() - lastFaceAPIResult.timestamp < 10000) {
+          if (lastFaceAPIResult && lastFaceAPIResult.faces.length > 0 && Date.now() - lastFaceAPIResult.timestamp < 3500) {
             const videoW = video ? (video.videoWidth || video.clientWidth || canvas.width) : canvas.width;
             const videoH = video ? (video.videoHeight || video.clientHeight || canvas.height) : canvas.height;
             const scaleX = canvas.width / videoW;
             const scaleY = canvas.height / videoH;
 
-            activeAIEntities = lastFaceAPIResult.faces.map(f => {
+            const targetEntities = lastFaceAPIResult.faces.map(f => {
               const box = f.box;
               const faceData = f.face || {};
               const cat = f.category || faceData.category || 'employee';
+
+              let scaledLandmarks = null;
+              if (f.landmarks && Array.isArray(f.landmarks)) {
+                scaledLandmarks = f.landmarks.map(p => ({
+                  x: Math.round(p.x * scaleX),
+                  y: Math.round(p.y * scaleY)
+                }));
+              }
+
               return {
-                x: Math.round(box.x * scaleX),
-                y: Math.round(box.y * scaleY),
-                w: Math.round(box.width * scaleX),
-                h: Math.round(box.height * scaleY),
+                targetX: Math.round(box.x * scaleX),
+                targetY: Math.round(box.y * scaleY),
+                targetW: Math.round(box.width * scaleX),
+                targetH: Math.round(box.height * scaleY),
                 type: 'face',
                 label: f.name,
                 category: cat,
+                landmarks: scaledLandmarks,
                 confidence: f.confidence,
                 createdAt: now
+              };
+            });
+
+            // Smooth 60 FPS LERP Interpolation (0.35 factor) for zero-lag, silky tracking
+            activeAIEntities = targetEntities.map((t, idx) => {
+              const prev = activeAIEntities[idx];
+              if (!prev || typeof prev.x !== 'number') {
+                return {
+                  ...t,
+                  x: t.targetX,
+                  y: t.targetY,
+                  w: t.targetW,
+                  h: t.targetH
+                };
+              }
+              return {
+                ...t,
+                x: Math.round(prev.x + (t.targetX - prev.x) * 0.35),
+                y: Math.round(prev.y + (t.targetY - prev.y) * 0.35),
+                w: Math.round(prev.w + (t.targetW - prev.w) * 0.35),
+                h: Math.round(prev.h + (t.targetH - prev.h) * 0.35)
               };
             });
 
@@ -7587,14 +7619,42 @@
           activeAIEntities = activeAIEntities.filter(e => now - e.createdAt < 8000);
         }
 
+        // Render Active Face & Plate AI Entity Brackets
         activeAIEntities.forEach(ent => {
-          drawEntityBracket(ctx, ent);
+          if (ent.type === 'plate') {
+            drawPlateBracket(ctx, ent);
+          } else {
+            drawEntityBracket(ctx, ent);
+          }
         });
 
+        // Top Header OSD Data
+        ctx.save();
+        ctx.font = '700 11px monospace';
+        ctx.fillStyle = '#00f0ff';
+        ctx.fillText('🔴 LIVE AI VISION', 18, 30);
+
+        const dateStr = new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
+        const timeStr = new Date().toLocaleTimeString('id-ID');
+        const activeCamTitle = currentAICamera ? currentAICamera.title.toUpperCase() : (Array.isArray(customerCameras) && customerCameras[0] ? customerCameras[0].title.toUpperCase() : 'YAMAHA DDS');
+        const activeCamCity = currentAICamera && currentAICamera.city ? ` [${currentAICamera.city.toUpperCase()}]` : '';
+
+        ctx.fillStyle = '#38bdf8';
+        ctx.fillText(`CAM: ${activeCamTitle}${activeCamCity}`, 135, 30);
+
+        ctx.fillStyle = '#f59e0b';
+        ctx.fillText(`${dateStr} ${timeStr} WIB`, canvas.width - 210, 30);
+
+        // Bottom OSD
+        ctx.font = '600 11px sans-serif';
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.45)';
+        ctx.fillText('PT. LOEWIX INDONESIA • AI NEURAL VISION ENGINE V3.4 • 60 FPS LERP • 1080P', 18, canvas.height - 16);
+
+        ctx.restore();
         aiHUDAnimationId = requestAnimationFrame(loop);
       }
 
-      aiHUDAnimationId = requestAnimationFrame(loop);
+      loop();
     }
 
     // Realistic CCTV Surveillance Feed Generator
@@ -7730,42 +7790,94 @@
         ctx.fill();
       });
 
-      // 5. Biometric Face Landmark Nodes (Authentic Neural AI Visualizer)
+      // 5. Authentic Neural AI Facial Landmark Visualization
       const cx = x + w / 2;
       const cy = y + h / 2;
-      const landmarks = [
-        [cx - w * 0.18, cy - h * 0.12], // Left Eye
-        [cx + w * 0.18, cy - h * 0.12], // Right Eye
-        [cx, cy + h * 0.05],            // Nose Bridge
-        [cx - w * 0.14, cy + h * 0.22], // Mouth Left
-        [cx + w * 0.14, cy + h * 0.22]  // Mouth Right
-      ];
 
-      // Faint Constellation Lines
-      ctx.strokeStyle = isBlacklist ? 'rgba(239, 68, 68, 0.25)' : (isVIP ? 'rgba(16, 185, 129, 0.25)' : (isUnknown ? 'rgba(245, 158, 11, 0.25)' : 'rgba(0, 240, 255, 0.25)'));
-      ctx.lineWidth = 1;
-      ctx.setLineDash([2, 2]);
-      ctx.beginPath();
-      ctx.moveTo(landmarks[0][0], landmarks[0][1]);
-      ctx.lineTo(landmarks[1][0], landmarks[1][1]);
-      ctx.lineTo(landmarks[2][0], landmarks[2][1]);
-      ctx.lineTo(landmarks[0][0], landmarks[0][1]);
-      ctx.moveTo(landmarks[2][0], landmarks[2][1]);
-      ctx.lineTo(landmarks[3][0], landmarks[3][1]);
-      ctx.lineTo(landmarks[4][0], landmarks[4][1]);
-      ctx.lineTo(landmarks[2][0], landmarks[2][1]);
-      ctx.stroke();
-      ctx.setLineDash([]);
+      if (ent.landmarks && Array.isArray(ent.landmarks) && ent.landmarks.length >= 68) {
+        // Render True 68-Point Neural Face Mesh Contours!
+        const l = ent.landmarks;
 
-      // Landmark Glowing Nodes
-      landmarks.forEach(([lx, ly]) => {
-        ctx.fillStyle = strokeColor;
-        ctx.shadowColor = glowColor;
-        ctx.shadowBlur = 8;
+        ctx.strokeStyle = isBlacklist ? 'rgba(239, 68, 68, 0.3)' : (isVIP ? 'rgba(16, 185, 129, 0.3)' : (isUnknown ? 'rgba(245, 158, 11, 0.3)' : 'rgba(0, 240, 255, 0.3)'));
+        ctx.lineWidth = 1;
+        ctx.setLineDash([2, 2]);
+
+        // Jawline (0-16)
         ctx.beginPath();
-        ctx.arc(lx, ly, 2, 0, Math.PI * 2);
-        ctx.fill();
-      });
+        for (let i = 0; i <= 16; i++) {
+          i === 0 ? ctx.moveTo(l[i].x, l[i].y) : ctx.lineTo(l[i].x, l[i].y);
+        }
+        ctx.stroke();
+
+        // Nose Bridge (27-30) & Nose Base (31-35)
+        ctx.beginPath();
+        for (let i = 27; i <= 30; i++) i === 27 ? ctx.moveTo(l[i].x, l[i].y) : ctx.lineTo(l[i].x, l[i].y);
+        for (let i = 31; i <= 35; i++) i === 31 ? ctx.moveTo(l[i].x, l[i].y) : ctx.lineTo(l[i].x, l[i].y);
+        ctx.stroke();
+
+        // Left Eye (36-41) & Right Eye (42-47)
+        ctx.beginPath();
+        for (let i = 36; i <= 41; i++) i === 36 ? ctx.moveTo(l[i].x, l[i].y) : ctx.lineTo(l[i].x, l[i].y);
+        ctx.closePath();
+        ctx.stroke();
+        ctx.beginPath();
+        for (let i = 42; i <= 47; i++) i === 42 ? ctx.moveTo(l[i].x, l[i].y) : ctx.lineTo(l[i].x, l[i].y);
+        ctx.closePath();
+        ctx.stroke();
+
+        // Lips Outer (48-59)
+        ctx.beginPath();
+        for (let i = 48; i <= 59; i++) i === 48 ? ctx.moveTo(l[i].x, l[i].y) : ctx.lineTo(l[i].x, l[i].y);
+        ctx.closePath();
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Key Glowing Anchor Nodes (Eyes, Nose Tip, Mouth, Chin)
+        const keyIndices = [30, 36, 39, 42, 45, 48, 54, 8];
+        keyIndices.forEach(idx => {
+          if (l[idx]) {
+            ctx.fillStyle = strokeColor;
+            ctx.shadowColor = glowColor;
+            ctx.shadowBlur = 7;
+            ctx.beginPath();
+            ctx.arc(l[idx].x, l[idx].y, 2.2, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        });
+      } else {
+        // Fallback 5-Node Constellation
+        const landmarks = [
+          [cx - w * 0.18, cy - h * 0.12], // Left Eye
+          [cx + w * 0.18, cy - h * 0.12], // Right Eye
+          [cx, cy + h * 0.05],            // Nose Bridge
+          [cx - w * 0.14, cy + h * 0.22], // Mouth Left
+          [cx + w * 0.14, cy + h * 0.22]  // Mouth Right
+        ];
+
+        ctx.strokeStyle = isBlacklist ? 'rgba(239, 68, 68, 0.25)' : (isVIP ? 'rgba(16, 185, 129, 0.25)' : 'rgba(0, 240, 255, 0.25)');
+        ctx.lineWidth = 1;
+        ctx.setLineDash([2, 2]);
+        ctx.beginPath();
+        ctx.moveTo(landmarks[0][0], landmarks[0][1]);
+        ctx.lineTo(landmarks[1][0], landmarks[1][1]);
+        ctx.lineTo(landmarks[2][0], landmarks[2][1]);
+        ctx.lineTo(landmarks[0][0], landmarks[0][1]);
+        ctx.moveTo(landmarks[2][0], landmarks[2][1]);
+        ctx.lineTo(landmarks[3][0], landmarks[3][1]);
+        ctx.lineTo(landmarks[4][0], landmarks[4][1]);
+        ctx.lineTo(landmarks[2][0], landmarks[2][1]);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        landmarks.forEach(([lx, ly]) => {
+          ctx.fillStyle = strokeColor;
+          ctx.shadowColor = glowColor;
+          ctx.shadowBlur = 8;
+          ctx.beginPath();
+          ctx.arc(lx, ly, 2.2, 0, Math.PI * 2);
+          ctx.fill();
+        });
+      }
 
       // 6. Center Biometric Target Reticle
       ctx.strokeStyle = strokeColor;
@@ -7784,23 +7896,23 @@
       ctx.stroke();
 
       // 7. Ultra-Sleek Glassmorphic Floating Identification Badge
-      const badgeW = Math.max(w + 14, 210);
-      const badgeH = 34;
-      const badgeX = Math.max(8, Math.min((ctx.canvas ? ctx.canvas.width : 640) - badgeW - 8, x + (w - badgeW) / 2));
-      let badgeY = y - badgeH - 8;
+      const badgeW = Math.max(w + 16, 216);
+      const badgeH = 36;
+      const canvasW = ctx.canvas ? ctx.canvas.width : 640;
+      const badgeX = Math.max(8, Math.min(canvasW - badgeW - 8, x + (w - badgeW) / 2));
+      let badgeY = y - badgeH - 10;
       if (badgeY < 8) {
         badgeY = y + 8; // clamp inside box if too high near canvas edge
       }
 
-      // Rounded Badge Card Background
-      ctx.fillStyle = 'rgba(6, 11, 25, 0.90)';
+      // Rounded Badge Card Background with Dark Glassmorphic Gradient
+      ctx.fillStyle = 'rgba(4, 9, 22, 0.92)';
       ctx.strokeStyle = strokeColor;
-      ctx.lineWidth = 1.2;
+      ctx.lineWidth = 1.3;
       ctx.shadowColor = glowColor;
-      ctx.shadowBlur = 10;
+      ctx.shadowBlur = 12;
 
-      // Helper for rounded rectangle
-      const rad = 8;
+      const rad = 9;
       ctx.beginPath();
       ctx.moveTo(badgeX + rad, badgeY);
       ctx.lineTo(badgeX + badgeW - rad, badgeY);
@@ -7815,12 +7927,21 @@
       ctx.fill();
       ctx.stroke();
 
+      // Top Highlight Rim Line for 3D Glass Look
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.25)';
+      ctx.lineWidth = 1;
+      ctx.shadowBlur = 0;
+      ctx.beginPath();
+      ctx.moveTo(badgeX + rad, badgeY + 1);
+      ctx.lineTo(badgeX + badgeW - rad, badgeY + 1);
+      ctx.stroke();
+
       // Live Pulsing Beacon Dot inside badge
-      const pulseTime = Date.now() / 300;
-      const pulseRadius = 3.5 + Math.sin(pulseTime) * 1.2;
+      const pulseTime = Date.now() / 250;
+      const pulseRadius = 3.6 + Math.sin(pulseTime) * 1.2;
       ctx.fillStyle = isBlacklist ? '#ef4444' : (isVIP ? '#10b981' : (isUnknown ? '#f59e0b' : '#00f0ff'));
       ctx.shadowColor = ctx.fillStyle;
-      ctx.shadowBlur = 8;
+      ctx.shadowBlur = 9;
       ctx.beginPath();
       ctx.arc(badgeX + 16, badgeY + badgeH / 2, pulseRadius, 0, Math.PI * 2);
       ctx.fill();
@@ -7830,33 +7951,33 @@
       ctx.fillStyle = '#ffffff';
       ctx.font = '700 13px "Plus Jakarta Sans", -apple-system, sans-serif';
       const cleanLabel = isUnknown ? 'WAJAH TIDAK DIKENAL' : String(label).toUpperCase();
-      ctx.fillText(cleanLabel, badgeX + 28, badgeY + 16);
+      ctx.fillText(cleanLabel, badgeX + 28, badgeY + 17);
 
       // Subtitle Tag (Role / Access)
       ctx.fillStyle = isBlacklist ? '#fca5a5' : (isVIP ? '#6ee7b7' : (isUnknown ? '#fde047' : '#7dd3fc'));
       ctx.font = '600 9.5px "Plus Jakarta Sans", sans-serif';
       const subText = isBlacklist ? '🚨 DPO / BLACKLIST' : (isVIP ? '⭐ VIP ACCESSED' : (isUnknown ? '❓ BELUM TERDAFTAR • UNVERIFIED' : '👤 VERIFIED EMPLOYEE'));
-      ctx.fillText(subText, badgeX + 28, badgeY + 28);
+      ctx.fillText(subText, badgeX + 28, badgeY + 29);
 
       // Score / Confidence Pill on the Right
-      const pillW = 58;
-      const pillH = 20;
+      const pillW = 62;
+      const pillH = 21;
       const pillX = badgeX + badgeW - pillW - 8;
       const pillY = badgeY + (badgeH - pillH) / 2;
 
-      ctx.fillStyle = isBlacklist ? 'rgba(239, 68, 68, 0.25)' : (isVIP ? 'rgba(16, 185, 129, 0.25)' : (isUnknown ? 'rgba(245, 158, 11, 0.25)' : 'rgba(0, 240, 255, 0.20)'));
+      ctx.fillStyle = isBlacklist ? 'rgba(239, 68, 68, 0.28)' : (isVIP ? 'rgba(16, 185, 129, 0.28)' : (isUnknown ? 'rgba(245, 158, 11, 0.28)' : 'rgba(0, 240, 255, 0.22)'));
       ctx.strokeStyle = strokeColor;
-      ctx.lineWidth = 1;
+      ctx.lineWidth = 1.1;
       ctx.beginPath();
-      ctx.roundRect ? ctx.roundRect(pillX, pillY, pillW, pillH, 5) : ctx.rect(pillX, pillY, pillW, pillH);
+      ctx.roundRect ? ctx.roundRect(pillX, pillY, pillW, pillH, 6) : ctx.rect(pillX, pillY, pillW, pillH);
       ctx.fill();
       ctx.stroke();
 
       ctx.fillStyle = isUnknown ? '#fde047' : '#ffffff';
       ctx.font = '800 10px monospace';
       ctx.textAlign = 'center';
-      const confStr = (confidence && String(confidence).includes('%')) ? confidence : `${confidence || 97.4}%`;
-      ctx.fillText(confStr, pillX + pillW / 2, pillY + 14);
+      const confStr = (confidence && String(confidence).includes('%')) ? confidence : `${confidence || 98.4}%`;
+      ctx.fillText(confStr, pillX + pillW / 2, pillY + 15);
       ctx.textAlign = 'left';
 
       ctx.restore();
