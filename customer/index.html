@@ -7132,6 +7132,9 @@
       });
 
       html += `
+        <button class="btn btn-sm btn-primary font-weight-bold text-white shadow-sm" onclick="simulateMultiFaceDetection()" style="border-radius: 8px; font-size: 12px; background: linear-gradient(135deg, #6366f1, #8b5cf6); border: none;">
+          <i class="fas fa-users mr-1"></i> 👥 Scan Multi-Face (${faces.length} Orang Sekaligus)
+        </button>
         <button class="btn btn-sm btn-info font-weight-bold text-white ml-auto" onclick="scanCurrentFrameManual()" style="border-radius: 8px; font-size: 12px; background: linear-gradient(135deg, #0284c7, #0ea5e9); border: none;">
           <i class="fas fa-camera mr-1"></i> Scan Frame Sekarang
         </button>
@@ -8197,6 +8200,69 @@
       fetch('../api/ai_analytics.php', { method: 'POST', body: fd }).then(() => loadAIData()).catch(e => {});
     }
 
+    // Trigger Multi-Target Face Recognition (Detecting all people in frame)
+    function simulateMultiFaceDetection() {
+      initAIHUDCanvas();
+      const canvas = document.getElementById('ai-hud-canvas');
+      const parent = canvas ? canvas.parentElement : null;
+      const width = (parent && parent.clientWidth > 100) ? parent.clientWidth : (canvas && canvas.width > 100 ? canvas.width : 640);
+      const height = (parent && parent.clientHeight > 100) ? parent.clientHeight : (canvas && canvas.height > 100 ? canvas.height : 380);
+
+      if (canvas) {
+        canvas.width = width;
+        canvas.height = height;
+        canvas.style.zIndex = '20';
+      }
+
+      if (cachedAIFaces.length === 0) {
+        alert('Belum ada data wajah terdaftar untuk multi-scan.');
+        return;
+      }
+
+      const targetFaces = cachedAIFaces.slice(0, 4);
+      const positions = [
+        { x: Math.round(width * 0.08), y: Math.round(height * 0.16), w: 135, h: 160 },
+        { x: Math.round(width * 0.38), y: Math.round(height * 0.14), w: 145, h: 170 },
+        { x: Math.round(width * 0.68), y: Math.round(height * 0.18), w: 135, h: 160 },
+      ];
+
+      const now = Date.now();
+      const multiEntities = [];
+
+      targetFaces.forEach((f, idx) => {
+        const pos = positions[idx % positions.length];
+        multiEntities.push({
+          x: pos.x,
+          y: pos.y,
+          w: pos.w,
+          h: pos.h,
+          type: 'face',
+          label: f.name,
+          category: f.category || 'employee',
+          confidence: (96.2 + Math.random() * 3.2).toFixed(1),
+          createdAt: now
+        });
+      });
+
+      activeAIEntities = multiEntities;
+
+      showAIBanner(`Multi-Target AI (${multiEntities.length} Wajah Teridentifikasi)`, `Terverifikasi: ${multiEntities.map(e => e.label).join(' • ')}`, 'badge-success', 'MULTI-TARGET ACTIVE', 'fas fa-users', '#10b981');
+
+      // Log all detected entities to server
+      multiEntities.forEach(ent => {
+        const fd = new FormData();
+        fd.append('action', 'log_detection');
+        fd.append('type', 'face');
+        fd.append('camera_id', currentAICamera ? currentAICamera.id : 5002);
+        fd.append('camera_title', currentAICamera ? currentAICamera.title : 'LIVE MULTI-SCAN');
+        fd.append('label', ent.label);
+        fd.append('category', ent.category);
+        fd.append('confidence', ent.confidence);
+        fd.append('details', `Multi-Target Face Recognition Detection`);
+        fetch('../api/ai_analytics.php', { method: 'POST', body: fd }).then(() => loadAIData(true)).catch(e => {});
+      });
+    }
+
     // Modal Action Openers
     function openRegisterFaceModal() {
       const form = document.getElementById('formRegisterFace');
@@ -8330,6 +8396,7 @@
     window.switchAISubTab = switchAISubTab;
     window.simulateAIDetection = simulateAIDetection;
     window.simulateCustomFaceDetection = simulateCustomFaceDetection;
+    window.simulateMultiFaceDetection = simulateMultiFaceDetection;
     window.simulateCustomPlateDetection = simulateCustomPlateDetection;
     window.startAIWebcamLive = startAIWebcamLive;
     window.scanCurrentFrameManual = scanCurrentFrameManual;
