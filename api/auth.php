@@ -71,14 +71,7 @@ if ($action === 'login') {
     $_SESSION['cctv_used'] = $usedCount;
     $_SESSION['user_city'] = $foundUser['city'];
 
-    // Send Security Login Email Alert
-    $loginIp = get_client_ip_address();
-    $loginTime = date('d M Y, H:i:s');
-    $device = $_SERVER['HTTP_USER_AGENT'] ?? 'Web Browser';
-    $loginEmailHtml = get_email_login_alert($foundUser['name'], $foundUser['email'], $loginIp, $loginTime, $device);
-    send_loewix_email($foundUser['email'], $foundUser['name'], "[Security Alert] Deteksi Login Akun Loewix CCTV", $loginEmailHtml);
-
-    echo json_encode([
+    $responsePayload = [
         'success' => true,
         'message' => 'Login Berhasil!',
         'user' => [
@@ -90,8 +83,27 @@ if ($action === 'login') {
             'cctv_used' => $usedCount,
             'city' => $foundUser['city']
         ]
-    ]);
-    exit;
+    ];
+
+    // If PHP-FPM / FastCGI is available, flush buffer immediately so user logs in with 0ms delay!
+    if (function_exists('fastcgi_finish_request')) {
+        echo json_encode($responsePayload);
+        fastcgi_finish_request();
+        
+        // Background task: Send Security Login Email Alert
+        try {
+            $loginIp = get_client_ip_address();
+            $loginTime = date('d M Y, H:i:s');
+            $device = $_SERVER['HTTP_USER_AGENT'] ?? 'Web Browser';
+            $loginEmailHtml = get_email_login_alert($foundUser['name'], $foundUser['email'], $loginIp, $loginTime, $device);
+            send_loewix_email($foundUser['email'], $foundUser['name'], "[Security Alert] Deteksi Login Akun Loewix CCTV", $loginEmailHtml);
+        } catch(\Throwable $e) {}
+        exit;
+    } else {
+        // Return JSON immediately
+        echo json_encode($responsePayload);
+        exit;
+    }
 }
 
 if ($action === 'logout') {

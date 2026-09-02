@@ -41,7 +41,7 @@ function send_loewix_smtp_socket($toEmail, $toName, $subject, $htmlContent, &$er
         return false;
     }
 
-    $timeout = 15;
+    $timeout = 3;
     $socketHost = ($secure === 'ssl' || $port === 465) ? "ssl://{$host}" : "tcp://{$host}";
     
     $socket = @stream_socket_client("{$socketHost}:{$port}", $errno, $errstr, $timeout);
@@ -50,6 +50,7 @@ function send_loewix_smtp_socket($toEmail, $toName, $subject, $htmlContent, &$er
         error_log("Loewix SMTP Socket Connect Error: {$errstr} ({$errno})");
         return false;
     }
+    @stream_set_timeout($socket, 3);
 
     $read = function() use ($socket) {
         $response = '';
