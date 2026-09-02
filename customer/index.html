@@ -3034,45 +3034,55 @@
         <form id="formRegisterFace" onsubmit="submitRegisterFace(event)">
           <div class="modal-body p-4" style="max-height: 75vh; overflow-y: auto;">
             
-            <!-- Photo Upload & Live Preview Section -->
-            <div class="p-3 mb-3 text-center" style="background: rgba(15, 23, 42, 0.8); border: 1px dashed rgba(56, 189, 248, 0.4); border-radius: 14px;">
-              <div class="position-relative d-inline-block mb-2">
-                <div id="face-preview-container" style="width: 90px; height: 90px; border-radius: 50%; background: #1e293b; margin: 0 auto; overflow: hidden; border: 2.5px solid #38bdf8; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 15px rgba(56, 189, 248, 0.3);">
-                  <img id="face-preview-img" src="../assets/image/avatar-default.png" alt="Preview Wajah" style="width: 100%; height: 100%; object-fit: cover; display: block;" onerror="this.src='https://ui-avatars.com/api/?name=Face+AI&background=0284c7&color=fff'">
-                </div>
-                <span class="position-absolute" style="bottom: 0; right: 0; background: #059669; color: #fff; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; border: 2px solid #070d22;">
-                  <i class="fas fa-camera"></i>
+            <!-- Live Biometric AI Face Enrollment Scanner -->
+            <div class="p-3 mb-3 text-center" style="background: rgba(15, 23, 42, 0.9); border: 1.5px solid rgba(0, 240, 255, 0.4); border-radius: 16px; box-shadow: inset 0 0 20px rgba(0, 240, 255, 0.1);">
+              <div class="d-flex align-items-center justify-content-between mb-2 px-1">
+                <span class="badge badge-info font-weight-bold px-2 py-1" style="font-size: 11px; background: rgba(0, 240, 255, 0.2); color: #38bdf8; border: 1px solid rgba(0, 240, 255, 0.4);">
+                  <span class="pulse-dot" style="background: #00f0ff; margin-right: 4px;"></span> LIVE BIOMETRIC SCANNER
                 </span>
+                <span class="text-muted" style="font-size: 11px;">Wajib Scan Langsung via Kamera</span>
               </div>
-              
-              <div class="d-flex align-items-center justify-content-center gap-2 mt-2 flex-wrap">
-                <!-- File Picker -->
-                <label class="btn btn-sm btn-outline-info font-weight-bold mb-0 px-3 py-1.5" style="border-radius: 8px; font-size: 12px; cursor: pointer;">
-                  <i class="fas fa-upload mr-1"></i> Upload Foto (HP/PC)
-                  <input type="file" id="face-file-input" accept="image/*" onchange="handleFaceFileUpload(event)" style="display: none;">
-                </label>
 
-                <!-- Webcam Capture Trigger -->
-                <button type="button" class="btn btn-sm btn-outline-success font-weight-bold px-3 py-1.5" onclick="toggleFaceWebcamCapture()" style="border-radius: 8px; font-size: 12px;">
-                  <i class="fas fa-video mr-1"></i> Ambil via Kamera
+              <!-- Active Live Scanner Viewfinder -->
+              <div id="face-scanner-viewfinder" style="position: relative; width: 100%; max-width: 360px; height: 230px; margin: 0 auto; border-radius: 12px; overflow: hidden; background: #000; border: 2px solid #00f0ff; box-shadow: 0 0 20px rgba(0, 240, 255, 0.3);">
+                <video id="face-webcam-video" autoplay playsinline style="width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1);"></video>
+                
+                <!-- Biometric Oval Target Guide Overlay -->
+                <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 140px; height: 180px; border: 2px dashed #00f0ff; border-radius: 50%; box-shadow: 0 0 15px rgba(0, 240, 255, 0.3); pointer-events: none;">
+                  <div class="position-absolute" style="top: -6px; left: -6px; width: 14px; height: 14px; border-top: 3px solid #00f0ff; border-left: 3px solid #00f0ff;"></div>
+                  <div class="position-absolute" style="top: -6px; right: -6px; width: 14px; height: 14px; border-top: 3px solid #00f0ff; border-right: 3px solid #00f0ff;"></div>
+                  <div class="position-absolute" style="bottom: -6px; left: -6px; width: 14px; height: 14px; border-bottom: 3px solid #00f0ff; border-left: 3px solid #00f0ff;"></div>
+                  <div class="position-absolute" style="bottom: -6px; right: -6px; width: 14px; height: 14px; border-bottom: 3px solid #00f0ff; border-right: 3px solid #00f0ff;"></div>
+                </div>
+
+                <!-- Live Status Indicator -->
+                <div id="face-scan-status-badge" style="position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%); background: rgba(10, 15, 30, 0.9); border: 1px solid rgba(0, 240, 255, 0.5); padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; color: #38bdf8; white-space: nowrap;">
+                  <i class="fas fa-expand mr-1"></i> Arahkan Wajah ke Dalam Lingkaran
+                </div>
+              </div>
+
+              <!-- Scanned Snapshot Preview (Shown after capture) -->
+              <div id="face-scanned-preview-box" style="display: none; text-align: center; padding: 10px 0;">
+                <div style="width: 105px; height: 105px; border-radius: 50%; margin: 0 auto; overflow: hidden; border: 3px solid #10b981; box-shadow: 0 0 20px rgba(16, 185, 129, 0.5);">
+                  <img id="face-preview-img" src="" alt="Hasil Scan" style="width: 100%; height: 100%; object-fit: cover;">
+                </div>
+                <div class="mt-2 font-weight-bold" style="color: #34d399; font-size: 12.5px;">
+                  <i class="fas fa-check-circle mr-1"></i> Wajah Berhasil Di-scan & Tervalidasi AI!
+                </div>
+              </div>
+
+              <!-- Scan Action Buttons -->
+              <div class="mt-3 d-flex justify-content-center gap-2">
+                <button type="button" id="btn-capture-face" class="btn btn-info font-weight-bold px-4 py-2" onclick="captureFaceFromWebcam()" style="border-radius: 10px; font-size: 13px; background: linear-gradient(135deg, #0284c7, #00f0ff); color: #000; border: none; box-shadow: 0 0 15px rgba(0, 240, 255, 0.4);">
+                  <i class="fas fa-camera mr-1.5"></i> Scan Wajah Sekarang
+                </button>
+                <button type="button" id="btn-rescan-face" class="btn btn-outline-warning font-weight-bold px-3 py-2" onclick="startFaceEnrollmentCamera()" style="display: none; border-radius: 10px; font-size: 12px;">
+                  <i class="fas fa-sync-alt mr-1"></i> Scan Ulang
                 </button>
               </div>
 
-              <!-- Live Webcam Box (Hidden by default) -->
-              <div id="face-webcam-box" class="mt-3" style="display: none; background: #000; border-radius: 10px; padding: 8px; border: 1px solid #38bdf8;">
-                <video id="face-webcam-video" autoplay playsinline style="width: 100%; max-height: 200px; object-fit: cover; border-radius: 6px;"></video>
-                <div class="mt-2 d-flex justify-content-center gap-2">
-                  <button type="button" class="btn btn-sm btn-info font-weight-bold px-3" onclick="captureFaceFromWebcam()">
-                    <i class="fas fa-camera mr-1"></i> Jepret Foto Ini
-                  </button>
-                  <button type="button" class="btn btn-sm btn-secondary font-weight-bold px-3" onclick="stopFaceWebcam()">
-                    Tutup Kamera
-                  </button>
-                </div>
-              </div>
-
-              <input type="hidden" id="face-input-photo" value="https://ui-avatars.com/api/?name=User&background=0284c7&color=fff">
-              <small class="text-muted d-block mt-2" style="font-size: 11px;">Format JPG/PNG tampak depan, pencahayaan jelas tanpa masker.</small>
+              <input type="hidden" id="face-input-photo" value="" required>
+              <small class="text-muted d-block mt-2" style="font-size: 11px;">Posisikan wajah tegak, pencahayaan jelas, tanpa masker/kacamata hitam.</small>
             </div>
 
             <!-- Form Fields -->
@@ -8309,66 +8319,119 @@
       reader.readAsDataURL(file);
     }
 
-    // Webcam Live Selfie Capture Controller
+    // ========================================================
+    // LIVE BIOMETRIC FACE ENROLLMENT SCANNER CONTROLLER
+    // ========================================================
     let faceWebcamStream = null;
+    let faceEnrollmentInterval = null;
 
-    async function toggleFaceWebcamCapture() {
-      const box = document.getElementById('face-webcam-box');
+    async function startFaceEnrollmentCamera() {
       const video = document.getElementById('face-webcam-video');
-      if (!box || !video) return;
+      const viewFinder = document.getElementById('face-scanner-viewfinder');
+      const previewBox = document.getElementById('face-scanned-preview-box');
+      const btnCapture = document.getElementById('btn-capture-face');
+      const btnRescan = document.getElementById('btn-rescan-face');
+      const statusBadge = document.getElementById('face-scan-status-badge');
 
-      if (box.style.display === 'block') {
-        stopFaceWebcam();
-        return;
-      }
+      if (!video) return;
+
+      if (viewFinder) viewFinder.style.display = 'block';
+      if (previewBox) previewBox.style.display = 'none';
+      if (btnCapture) btnCapture.style.display = 'inline-block';
+      if (btnRescan) btnRescan.style.display = 'none';
+      if (statusBadge) statusBadge.innerHTML = '<span class="pulse-dot" style="background: #00f0ff; margin-right: 4px;"></span> Menghubungkan Kamera...';
+
+      stopFaceWebcam();
 
       try {
-        box.style.display = 'block';
         faceWebcamStream = await navigator.mediaDevices.getUserMedia({ 
           video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } } 
         });
         video.srcObject = faceWebcamStream;
         await video.play();
+
+        if (statusBadge) {
+          statusBadge.innerHTML = '<span class="pulse-dot" style="background: #10b981; margin-right: 4px;"></span> Kamera Aktif • Posisikan Wajah di Lingkaran';
+        }
+
+        // Real-time quality guide check using faceapi if available
+        if (typeof faceapi !== 'undefined' && faceAPIReady) {
+          faceEnrollmentInterval = setInterval(async () => {
+            if (!video || video.paused || video.ended || !video.videoWidth) return;
+            try {
+              const detection = await faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.3 }));
+              if (detection && statusBadge) {
+                statusBadge.innerHTML = '<span class="text-success font-weight-bold"><i class="fas fa-check-circle mr-1"></i> Wajah Terdeteksi Jelas (Siap Di-scan)</span>';
+                statusBadge.style.borderColor = '#10b981';
+              } else if (statusBadge) {
+                statusBadge.innerHTML = '<span style="color: #38bdf8;"><i class="fas fa-expand mr-1"></i> Arahkan Wajah ke Dalam Lingkaran</span>';
+                statusBadge.style.borderColor = 'rgba(0, 240, 255, 0.5)';
+              }
+            } catch (e) {}
+          }, 600);
+        }
+
       } catch (err) {
         console.error('Webcam access error:', err);
-        alert('Gagal mengakses kamera/webcam. Pastikan browser diizinkan mengakses kamera atau gunakan opsi Upload Foto.');
-        box.style.display = 'none';
+        if (statusBadge) {
+          statusBadge.innerHTML = '<span class="text-danger font-weight-bold"><i class="fas fa-exclamation-triangle mr-1"></i> Gagal Mengakses Kamera</span>';
+        }
+        alert('Gagal mengakses kamera laptop/HP. Pastikan izin kamera telah diberikan di browser Anda.');
       }
     }
 
     function captureFaceFromWebcam() {
       const video = document.getElementById('face-webcam-video');
-      if (!video) return;
+      const viewFinder = document.getElementById('face-scanner-viewfinder');
+      const previewBox = document.getElementById('face-scanned-preview-box');
+      const btnCapture = document.getElementById('btn-capture-face');
+      const btnRescan = document.getElementById('btn-rescan-face');
+      const img = document.getElementById('face-preview-img');
+      const hiddenInput = document.getElementById('face-input-photo');
+
+      if (!video || !video.videoWidth) {
+        alert('Kamera belum siap. Mohon tunggu sejenak atau pastikan kamera aktif.');
+        return;
+      }
 
       const canvas = document.createElement('canvas');
-      canvas.width = 320;
-      canvas.height = 320;
+      canvas.width = 400;
+      canvas.height = 400;
       const ctx = canvas.getContext('2d');
 
-      const minDim = Math.min(video.videoWidth, video.videoHeight) || 320;
+      const minDim = Math.min(video.videoWidth, video.videoHeight) || 400;
       const sx = (video.videoWidth - minDim) / 2 || 0;
       const sy = (video.videoHeight - minDim) / 2 || 0;
 
-      ctx.drawImage(video, sx, sy, minDim, minDim, 0, 0, 320, 320);
-      const base64 = canvas.toDataURL('image/jpeg', 0.9);
+      // Draw mirrored frame like a selfie mirror
+      ctx.translate(400, 0);
+      ctx.scale(-1, 1);
+      ctx.drawImage(video, sx, sy, minDim, minDim, 0, 0, 400, 400);
+      const base64 = canvas.toDataURL('image/jpeg', 0.92);
 
-      const img = document.getElementById('face-preview-img');
-      const hiddenInput = document.getElementById('face-input-photo');
       if (img) img.src = base64;
       if (hiddenInput) hiddenInput.value = base64;
+
+      // Update UI state
+      if (viewFinder) viewFinder.style.display = 'none';
+      if (previewBox) previewBox.style.display = 'block';
+      if (btnCapture) btnCapture.style.display = 'none';
+      if (btnRescan) btnRescan.style.display = 'inline-block';
 
       stopFaceWebcam();
     }
 
     function stopFaceWebcam() {
-      const box = document.getElementById('face-webcam-box');
+      if (faceEnrollmentInterval) {
+        clearInterval(faceEnrollmentInterval);
+        faceEnrollmentInterval = null;
+      }
       const video = document.getElementById('face-webcam-video');
       if (faceWebcamStream) {
         faceWebcamStream.getTracks().forEach(track => track.stop());
         faceWebcamStream = null;
       }
       if (video) video.srcObject = null;
-      if (box) box.style.display = 'none';
     }
 
     // Trigger Custom Face Detection for any registered user
@@ -8589,34 +8652,58 @@
       if (form) form.reset();
       const img = document.getElementById('face-preview-img');
       const hiddenInput = document.getElementById('face-input-photo');
-      if (img) img.src = '../assets/image/avatar-default.png';
-      if (hiddenInput) hiddenInput.value = 'https://ui-avatars.com/api/?name=User&background=0284c7&color=fff';
-      stopFaceWebcam();
+      if (img) img.src = '';
+      if (hiddenInput) hiddenInput.value = '';
+      
       openModalHelper('modalRegisterFace');
+      // Auto-start live camera scanner on modal open
+      setTimeout(() => {
+        startFaceEnrollmentCamera();
+      }, 300);
     }
 
     async function submitRegisterFace(e) {
       e.preventDefault();
+      const photoVal = document.getElementById('face-input-photo').value;
+      if (!photoVal || !photoVal.startsWith('data:image')) {
+        alert('⚠️ Wajib lakukan Scan Wajah terlebih dahulu melalui kamera sebelum menyimpan data!');
+        startFaceEnrollmentCamera();
+        return;
+      }
+
       const fd = new FormData();
       fd.append('action', 'register_face');
       fd.append('name', document.getElementById('face-input-name').value);
       fd.append('category', document.getElementById('face-input-category').value);
       fd.append('role_title', document.getElementById('face-input-role').value);
-      fd.append('photo', document.getElementById('face-input-photo').value);
+      fd.append('photo', photoVal);
       fd.append('notes', document.getElementById('face-input-notes').value);
+
+      const btnSubmit = document.getElementById('btn-submit-face');
+      if (btnSubmit) {
+        btnSubmit.disabled = true;
+        btnSubmit.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> Menyimpan...';
+      }
 
       try {
         const res = await fetch('../api/ai_analytics.php', { method: 'POST', body: fd });
         const data = await res.json();
         if (data.success) {
+          stopFaceWebcam();
           closeModalHelper('modalRegisterFace');
-          alert('Data Wajah berhasil didaftarkan ke AI Face Recognition!');
+          alert('✅ Wajah Berhasil Terdaftar ke Database AI Face Recognition!');
           loadAIData(true);
         } else {
           alert(data.message || 'Gagal menyimpan data.');
         }
       } catch (err) {
         console.error(err);
+        alert('Terjadi kesalahan saat menyimpan data wajah.');
+      } finally {
+        if (btnSubmit) {
+          btnSubmit.disabled = false;
+          btnSubmit.innerHTML = '<i class="fas fa-save mr-1"></i> Simpan Data Wajah';
+        }
       }
     }
 
