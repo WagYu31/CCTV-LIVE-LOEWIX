@@ -1770,8 +1770,8 @@
           <h5 class="billing-card-title">
             <i class="fas fa-receipt text-info"></i> Informasi Tagihan & Status Pembayaran
           </h5>
-          <button class="btn btn-sm btn-outline-info" onclick="loadBillingDashboardData()">
-            <i class="fas fa-sync mr-1"></i> Segarkan Tagihan
+          <button class="btn btn-sm btn-outline-info" id="btn-refresh-invoices" onclick="loadBillingDashboardData(this)" title="Periksa status pembayaran dan tagihan terbaru">
+            <i class="fas fa-rotate mr-1"></i> Segarkan Tagihan
           </button>
         </div>
 
@@ -1781,7 +1781,7 @@
             <div class="row align-items-center">
               
               <!-- Left: Invoice Status, Title & Details -->
-              <div class="col-lg-7 col-md-12 mb-3 mb-lg-0">
+              <div class="col-md-7 col-12 mb-3 mb-md-0">
                 <div class="d-flex align-items-center flex-wrap mb-2.5" style="gap: 12px;">
                   <span class="badge badge-success px-3 py-1.5" style="font-size: 11px; font-weight: 800; letter-spacing: 0.5px; border-radius: 6px; background: #059669; color: #ffffff;">
                     <i class="fas fa-check-circle mr-1"></i> SEMUA TAGIHAN LUNAS
@@ -1798,13 +1798,13 @@
               </div>
 
               <!-- Right: Price Display & Clean Side-by-Side Action Buttons -->
-              <div class="col-lg-5 col-md-12 text-lg-right text-left">
+              <div class="col-md-5 col-12 text-md-right text-left">
                 <div class="mb-3">
                   <div class="text-muted mb-1" style="font-size: 12px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px;">Total Pembayaran Terakhir</div>
                   <h2 class="text-emerald font-weight-bold mb-0" style="color: #34d399; font-size: 26px; font-family: 'Space Grotesk', sans-serif; letter-spacing: -0.5px;" id="inv-total-display">Rp 6.093.908</h2>
                 </div>
 
-                <div class="d-flex align-items-center justify-content-lg-end justify-content-start flex-wrap" style="gap: 10px;">
+                <div class="d-flex align-items-center justify-content-md-end justify-content-start flex-wrap" style="gap: 10px;">
                   <button class="btn btn-outline-info font-weight-bold px-3 py-2" onclick="switchCustomerTab('tab-history')" style="border-radius: 10px; font-size: 12.5px; border-color: rgba(56, 189, 248, 0.4); color: #38bdf8; background: rgba(56, 189, 248, 0.06);">
                     <i class="fas fa-file-invoice mr-1.5"></i> Riwayat & Kwitansi
                   </button>
@@ -5501,7 +5501,14 @@
       }
     }
 
-    async function loadBillingDashboardData() {
+    async function loadBillingDashboardData(btnEl) {
+      const btn = btnEl || document.getElementById('btn-refresh-invoices');
+      const originalHtml = btn ? btn.innerHTML : '';
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> Memuat...';
+      }
+
       try {
         const u = currentCustomer || (localStorage.getItem('loewix_user') ? JSON.parse(localStorage.getItem('loewix_user')) : null);
         const url = (u && u.id) 
@@ -5513,9 +5520,26 @@
         if (data.success) {
           currentBillingData = data;
           renderBillingData(data);
+          
+          if (btn) {
+            btn.innerHTML = '<i class="fas fa-check text-success mr-1"></i> Data Terkini!';
+            setTimeout(() => {
+              btn.disabled = false;
+              btn.innerHTML = '<i class="fas fa-rotate mr-1"></i> Segarkan Tagihan';
+            }, 1200);
+          }
+        } else {
+          if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = originalHtml || '<i class="fas fa-rotate mr-1"></i> Segarkan Tagihan';
+          }
         }
       } catch (err) {
         console.error('Failed to load billing dashboard:', err);
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = originalHtml || '<i class="fas fa-rotate mr-1"></i> Segarkan Tagihan';
+        }
       }
     }
 
