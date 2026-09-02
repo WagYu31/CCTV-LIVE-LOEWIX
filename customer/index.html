@@ -1880,7 +1880,7 @@
               <div class="ai-scanline-overlay"></div>
 
               <!-- Canvas for AI Bounding Box Rendering -->
-              <canvas id="ai-hud-canvas" class="position-absolute" style="top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;"></canvas>
+              <canvas id="ai-hud-canvas" class="position-absolute" style="top: 0; left: 0; width: 100%; height: 100%; z-index: 20; pointer-events: none;"></canvas>
 
               <!-- HUD Live Status Pill -->
               <div class="position-absolute" style="top: 14px; left: 14px; background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(8px); border: 1px solid rgba(56, 189, 248, 0.4); border-radius: 8px; padding: 6px 12px; font-size: 11px; color: #38bdf8; z-index: 10; display: flex; align-items: center; gap: 6px;">
@@ -7093,8 +7093,11 @@
       if (!canvas) return;
 
       const parent = canvas.parentElement;
-      canvas.width = parent.clientWidth || 640;
-      canvas.height = parent.clientHeight || 380;
+      const w = parent ? parent.clientWidth : 640;
+      const h = parent ? parent.clientHeight : 380;
+      canvas.width = (w && w > 100) ? w : 640;
+      canvas.height = (h && h > 100) ? h : 380;
+      canvas.style.zIndex = '20';
 
       if (!aiHUDAnimationId) {
         startAIHUDLoop();
@@ -7110,26 +7113,45 @@
       let scanDirection = 1;
 
       function loop() {
+        // Ensure size
+        if (canvas.parentElement && canvas.parentElement.clientWidth > 100 && canvas.width !== canvas.parentElement.clientWidth) {
+          canvas.width = canvas.parentElement.clientWidth;
+          canvas.height = canvas.parentElement.clientHeight || 380;
+        }
+
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+        const video = document.getElementById('ai-video-player');
+        const isWebcamRunning = video && video.srcObject !== null;
+
+        // If no active webcam, render high-tech CCTV Surveillance Background
+        if (!isWebcamRunning) {
+          drawSimulatedCCTVFeed(ctx, canvas.width, canvas.height);
+        }
+
         // Draw animated cyber scanning line
-        scanLineY += 2 * scanDirection;
-        if (scanLineY >= canvas.height - 10) scanDirection = -1;
-        if (scanLineY <= 10) scanDirection = 1;
+        scanLineY += 2.2 * scanDirection;
+        if (scanLineY >= canvas.height - 15) scanDirection = -1;
+        if (scanLineY <= 15) scanDirection = 1;
 
         ctx.save();
-        ctx.strokeStyle = 'rgba(56, 189, 248, 0.4)';
+        ctx.strokeStyle = 'rgba(56, 189, 248, 0.6)';
         ctx.lineWidth = 1.5;
         ctx.setLineDash([8, 4]);
         ctx.beginPath();
         ctx.moveTo(0, scanLineY);
         ctx.lineTo(canvas.width, scanLineY);
         ctx.stroke();
+
+        // Scanline glow
+        ctx.shadowColor = '#38bdf8';
+        ctx.shadowBlur = 10;
+        ctx.stroke();
         ctx.restore();
 
         // Draw active bounding box entities
         const now = Date.now();
-        activeAIEntities = activeAIEntities.filter(e => now - e.createdAt < 6000);
+        activeAIEntities = activeAIEntities.filter(e => now - e.createdAt < 12000);
 
         activeAIEntities.forEach(ent => {
           drawEntityBracket(ctx, ent);
@@ -7141,18 +7163,84 @@
       aiHUDAnimationId = requestAnimationFrame(loop);
     }
 
+    // Realistic CCTV Surveillance Feed Generator
+    function drawSimulatedCCTVFeed(ctx, w, h) {
+      ctx.save();
+      // Background gradient
+      const bgGrad = ctx.createLinearGradient(0, 0, w, h);
+      bgGrad.addColorStop(0, '#0a1128');
+      bgGrad.addColorStop(0.5, '#040817');
+      bgGrad.addColorStop(1, '#020617');
+      ctx.fillStyle = bgGrad;
+      ctx.fillRect(0, 0, w, h);
+
+      // Floor & Perspective Room Lines (Simulated Lobby)
+      ctx.strokeStyle = 'rgba(56, 189, 248, 0.08)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      // Horizon line
+      ctx.moveTo(0, h * 0.65);
+      ctx.lineTo(w, h * 0.65);
+      // Perspective floor grid
+      for (let x = 0; x <= w; x += w / 8) {
+        ctx.moveTo(w / 2, h * 0.65);
+        ctx.lineTo(x, h);
+      }
+      ctx.stroke();
+
+      // Center crosshair
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+      ctx.beginPath();
+      ctx.moveTo(w / 2 - 20, h / 2);
+      ctx.lineTo(w / 2 + 20, h / 2);
+      ctx.moveTo(w / 2, h / 2 - 20);
+      ctx.lineTo(w / 2, h / 2 + 20);
+      ctx.stroke();
+
+      // Top CCTV OSD Text
+      const d = new Date();
+      const timeStr = d.toTimeString().split(' ')[0];
+      const dateStr = d.toISOString().split('T')[0];
+
+      ctx.font = '700 12px "Courier New", monospace';
+      ctx.fillStyle = '#ef4444';
+      ctx.fillText('🔴 REC', 18, 30);
+
+      ctx.fillStyle = '#38bdf8';
+      ctx.fillText(`CAM 01 - LOBBY UTAMA`, 75, 30);
+
+      ctx.fillStyle = '#f59e0b';
+      ctx.fillText(`${dateStr} ${timeStr} WIB`, w - 210, 30);
+
+      // Bottom OSD
+      ctx.font = '600 11px sans-serif';
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+      ctx.fillText('PT. LOEWIX INDONESIA • AI NEURAL VISION ENGINE V3 • 1080P @ 25FPS', 18, h - 16);
+
+      ctx.restore();
+    }
+
     function drawEntityBracket(ctx, ent) {
       const { x, y, w, h, label, category, confidence } = ent;
       const isBlacklist = category === 'blacklist';
       const isVIP = category === 'vip';
 
-      let strokeColor = isBlacklist ? '#ef4444' : (isVIP ? '#10b981' : '#38bdf8');
+      const strokeColor = isBlacklist ? '#ef4444' : (isVIP ? '#10b981' : '#38bdf8');
+      const boxBg = isBlacklist ? 'rgba(239, 68, 68, 0.18)' : (isVIP ? 'rgba(16, 185, 129, 0.15)' : 'rgba(56, 189, 248, 0.15)');
 
       ctx.save();
+
+      // Bounding box fill
+      ctx.fillStyle = boxBg;
+      ctx.fillRect(x, y, w, h);
+
+      // Animated pulsing glow
       ctx.strokeStyle = strokeColor;
       ctx.lineWidth = 2.5;
+      ctx.shadowColor = strokeColor;
+      ctx.shadowBlur = 12;
 
-      const cornerLen = 16;
+      const cornerLen = 18;
 
       // Top-Left
       ctx.beginPath();
@@ -7164,7 +7252,7 @@
       // Top-Right
       ctx.beginPath();
       ctx.moveTo(x + w - cornerLen, y);
-      ctx.lineTo(x + w);
+      ctx.lineTo(x + w, y);
       ctx.lineTo(x + w, y + cornerLen);
       ctx.stroke();
 
@@ -7182,13 +7270,32 @@
       ctx.lineTo(x + w, y + h - cornerLen);
       ctx.stroke();
 
-      // Label background & text
-      ctx.fillStyle = isBlacklist ? 'rgba(239, 68, 68, 0.9)' : (isVIP ? 'rgba(16, 185, 129, 0.9)' : 'rgba(15, 23, 42, 0.9)');
-      ctx.fillRect(x, y - 24, Math.max(w, 140), 22);
+      // Center crosshair inside box
+      ctx.strokeStyle = strokeColor;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(x + w / 2 - 8, y + h / 2);
+      ctx.lineTo(x + w / 2 + 8, y + h / 2);
+      ctx.moveTo(x + w / 2, y + h / 2 - 8);
+      ctx.lineTo(x + w / 2, y + h / 2 + 8);
+      ctx.stroke();
 
+      // Label background banner
+      const bannerW = Math.max(w, 180);
+      ctx.fillStyle = isBlacklist ? '#ef4444' : (isVIP ? '#059669' : '#0284c7');
+      ctx.fillRect(x, y - 28, bannerW, 26);
+
+      // Text inside banner
       ctx.fillStyle = '#ffffff';
-      ctx.font = 'bold 11px Plus Jakarta Sans, sans-serif';
-      ctx.fillText(`${label} (${confidence}%)`, x + 6, y - 8);
+      ctx.font = 'bold 12px Plus Jakarta Sans, sans-serif';
+      ctx.fillText(`${label}`, x + 8, y - 11);
+
+      // Confidence badge pill on the right of banner
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.35)';
+      ctx.fillRect(x + bannerW - 55, y - 25, 50, 20);
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 10px monospace';
+      ctx.fillText(`${confidence}%`, x + bannerW - 48, y - 11);
 
       ctx.restore();
     }
@@ -7560,25 +7667,32 @@
     function simulateCustomFaceDetection(name, category = 'employee', roleTitle = 'Staff') {
       initAIHUDCanvas();
       const canvas = document.getElementById('ai-hud-canvas');
-      const width = canvas ? canvas.width : 640;
-      const height = canvas ? canvas.height : 380;
+      const parent = canvas ? canvas.parentElement : null;
+      const width = (parent && parent.clientWidth > 100) ? parent.clientWidth : (canvas && canvas.width > 100 ? canvas.width : 640);
+      const height = (parent && parent.clientHeight > 100) ? parent.clientHeight : (canvas && canvas.height > 100 ? canvas.height : 380);
+
+      if (canvas) {
+        canvas.width = width;
+        canvas.height = height;
+        canvas.style.zIndex = '20';
+      }
 
       const isBlacklist = category === 'blacklist';
       const isVIP = category === 'vip';
 
       const ent = {
-        x: Math.round(width * 0.38),
-        y: Math.round(height * 0.22),
-        w: 120,
-        h: 140,
+        x: Math.round(width * 0.36),
+        y: Math.round(height * 0.18),
+        w: 160,
+        h: 180,
         type: 'face',
         label: name,
         category: category,
-        confidence: (96 + Math.random() * 3).toFixed(1),
+        confidence: (96.5 + Math.random() * 2.8).toFixed(1),
         createdAt: Date.now()
       };
 
-      activeAIEntities.push(ent);
+      activeAIEntities = [ent];
 
       const badgeClass = isBlacklist ? 'badge-danger' : (isVIP ? 'badge-success' : 'badge-primary');
       const badgeText = isBlacklist ? 'ALERT DPO' : (isVIP ? 'VIP ACCESSED' : 'ACCESS GRANTED');
