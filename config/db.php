@@ -683,7 +683,27 @@ function activate_user_subscription($userId, $planId, $billingCycle, $amount, $o
     $durationDays = ($billingCycle === 'annual') ? 365 : 30;
     
     $startDate = date('Y-m-d H:i:s');
-    $expiresAt = date('Y-m-d 23:59:59', strtotime("+{$durationDays} days"));
+    
+    // Check if current subscription is active and has remaining time
+    $currentActiveSub = null;
+    foreach ($db['subscriptions'] as $s) {
+        if ((int)$s['user_id'] === (int)$userId && !empty($s['expires_at'])) {
+            $currentActiveSub = $s;
+            break;
+        }
+    }
+
+    $existingExpiryTs = ($currentActiveSub && strtotime($currentActiveSub['expires_at']) > time()) 
+        ? strtotime($currentActiveSub['expires_at']) 
+        : null;
+
+    if ($existingExpiryTs && ($currentActiveSub['plan_id'] ?? '') === $targetPlan['id']) {
+        // Renewal on SAME package: Accumulate / extend from active expiration date (Zero days lost!)
+        $expiresAt = date('Y-m-d 23:59:59', strtotime("+{$durationDays} days", $existingExpiryTs));
+    } else {
+        // Upgrade to new higher tier: New full subscription period starts today with expanded quota
+        $expiresAt = date('Y-m-d 23:59:59', strtotime("+{$durationDays} days"));
+    }
 
     // Update or create subscription
     $foundSub = false;
