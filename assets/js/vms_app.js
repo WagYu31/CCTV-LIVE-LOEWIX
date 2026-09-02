@@ -5077,8 +5077,7 @@
         overlay.classList.toggle('active', isOpen);
       }
       if (favBtn) {
-        favBtn.style.opacity = isOpen ? '0' : '1';
-        favBtn.style.pointerEvents = isOpen ? 'none' : 'auto';
+        favBtn.style.display = isOpen ? 'none' : 'flex';
       }
       if (isOpen) {
         renderVMSDeviceTree();
@@ -5104,13 +5103,13 @@
       let html = `
         <div class="vms-tree-group">
           <div class="vms-group-header" onclick="this.nextElementSibling.classList.toggle('d-none'); this.querySelector('.group-chevron').classList.toggle('rotate');">
-            <div class="d-flex align-items-center" style="gap: 6px;">
-              <i class="fas fa-folder-open text-warning"></i>
-              <span>Default Group (${activeCams.length})</span>
+            <div class="d-flex align-items-center" style="gap: 8px;">
+              <i class="fas fa-folder-open text-warning" style="font-size: 13px;"></i>
+              <span style="font-weight: 700;">Default Group (${activeCams.length})</span>
             </div>
             <i class="fas fa-chevron-down group-chevron" style="font-size: 11px; transition: transform 0.2s;"></i>
           </div>
-          <div class="vms-group-content mt-1">`;
+          <div class="vms-group-content mt-2">`;
 
       activeCams.forEach((cam, idx) => {
         const isActive = (selectedSingleCameraId === cam.id) ? 'active' : '';
@@ -5121,10 +5120,15 @@
 
         html += `
           <div class="vms-cam-item ${isActive}" onclick="focusCameraSingle(${cam.id}); toggleVMSDeviceSidebar();" title="Klik untuk fokus kamera ${cam.title}">
-            <span class="vms-cam-dot ${statusDot}"></span>
-            <span class="vms-cam-ch-tag">CH-${chNum}</span>
-            <span class="vms-cam-title text-truncate">${cam.title || cam.name}</span>
-            <span class="vms-cam-proto-badge">${platformLabel}</span>
+            <div class="d-flex align-items-center" style="gap: 8px; flex: 1; min-width: 0;">
+              <span class="vms-cam-dot ${statusDot}"></span>
+              <span class="vms-cam-ch-tag">CH-${chNum}</span>
+              <span class="vms-cam-title text-truncate">${cam.title || cam.name}</span>
+            </div>
+            <div class="d-flex align-items-center" style="gap: 6px; flex-shrink: 0;">
+              <span class="vms-cam-proto-badge">${platformLabel}</span>
+              <i class="fas fa-play-circle text-info vms-cam-play-icon" style="font-size: 12px; opacity: 0.7;"></i>
+            </div>
           </div>`;
       });
 

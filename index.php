@@ -499,7 +499,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
   
   <!-- Modular Loewix VMS Core Stylesheet -->
-  <link rel="stylesheet" href="assets/css/vms_core.css?v=3.9.5">
+  <link rel="stylesheet" href="assets/css/vms_core.css?v=3.9.7">
 
   <!-- Tactical Industrial / Brutalist Telemetry Form Styling -->
   <style>
@@ -1982,7 +1982,7 @@
   <!-- Core App Javascript - Ultimate Version -->
 
   <!-- Core Modular VMS Application & Authentication Scripts -->
-  <script src="assets/js/vms_app.js?v=3.9.5"></script>
+  <script src="assets/js/vms_app.js?v=3.9.7"></script>
   <script src="assets/js/vms_auth.js?v=3.9.0"></script>
 
   <!-- Dynamic Package Selector Controller (Real-time Synced with Super Admin) -->
