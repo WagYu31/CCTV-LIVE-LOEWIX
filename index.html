@@ -1340,12 +1340,12 @@
             <div class="vms-select-item" title="Filter Wilayah">
               <i class="fas fa-map-marker-alt"></i>
               <select class="vms-custom-select" id="filter-city" onchange="changeGlobalCity(this.value)">
-                <option value="all" selected>🌐 Semua Wilayah</option>
-                <option value="siantar">📍 Pematangsiantar</option>
-                <option value="jakarta">📍 DKI Jakarta</option>
-                <option value="medan">📍 Kota Medan</option>
-                <option value="bandung">📍 Kota Bandung</option>
-                <option value="bali">📍 Bali / Denpasar</option>
+                <option value="all" selected>Semua Wilayah</option>
+                <option value="siantar">Pematangsiantar</option>
+                <option value="jakarta">DKI Jakarta</option>
+                <option value="medan">Kota Medan</option>
+                <option value="bandung">Kota Bandung</option>
+                <option value="bali">Bali / Denpasar</option>
               </select>
             </div>
 
