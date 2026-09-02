@@ -1823,9 +1823,14 @@
               <div class="col-md-4 text-md-right">
                 <div class="text-muted mb-1" style="font-size: 12px;">Total Pembayaran Terakhir</div>
                 <h3 class="text-emerald font-weight-bold mb-3" style="color: #34d399;" id="inv-total-display">Rp 3.318.900</h3>
-                <button class="btn btn-info btn-block font-weight-bold" onclick="switchCustomerTab('tab-history')">
-                  <i class="fas fa-file-invoice mr-1"></i> Lihat Rincian di Riwayat
-                </button>
+                <div class="d-flex flex-column gap-2" style="gap: 8px;">
+                  <button class="btn btn-primary btn-block font-weight-bold" onclick="switchCustomerTab('tab-package')" style="background: linear-gradient(135deg, #0284c7, #0ea5e9); border: none; border-radius: 8px; box-shadow: 0 4px 12px rgba(2, 132, 199, 0.4);">
+                    <i class="fas fa-sync mr-1"></i> Perpanjang / Upgrade Paket
+                  </button>
+                  <button class="btn btn-outline-info btn-block font-weight-bold" onclick="switchCustomerTab('tab-history')" style="border-radius: 8px;">
+                    <i class="fas fa-file-invoice mr-1"></i> Lihat Rincian di Riwayat
+                  </button>
+                </div>
               </div>
             </div>
           </div>
