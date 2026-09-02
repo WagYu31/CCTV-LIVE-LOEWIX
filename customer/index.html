@@ -7135,7 +7135,6 @@
         select.value = activeTrackedFace.id;
       }
     }
-    }
 
     function selectAITargetFace(faceId) {
       if (faceId === 'auto') {
