@@ -1407,6 +1407,61 @@
     .act-btn-delete { background: rgba(239, 68, 68, 0.15); border-color: rgba(239, 68, 68, 0.4); color: #f87171; }
     .act-btn-delete:hover { background: #ef4444; color: #fff; box-shadow: 0 0 12px rgba(239, 68, 68, 0.6); }
 
+    /* AI Vision Suite Cyber HUD Styles */
+    .ai-scanline-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+      background-size: 100% 3px, 6px 100%;
+      pointer-events: none;
+      z-index: 5;
+    }
+
+    .ai-live-card-item {
+      background: rgba(15, 23, 42, 0.75);
+      border: 1px solid rgba(56, 189, 248, 0.2);
+      border-radius: 12px;
+      padding: 12px;
+      margin-bottom: 10px;
+      transition: all 0.25s ease;
+      animation: fadeInSlide 0.3s ease;
+    }
+
+    .ai-live-card-item:hover {
+      border-color: rgba(56, 189, 248, 0.5);
+      background: rgba(15, 23, 42, 0.9);
+      transform: translateX(3px);
+    }
+
+    .ai-live-card-item.blacklist-alert {
+      border-color: rgba(239, 68, 68, 0.6);
+      background: rgba(239, 68, 68, 0.12);
+      box-shadow: 0 0 16px rgba(239, 68, 68, 0.25);
+    }
+
+    .ai-face-card {
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      border-radius: 14px;
+      padding: 16px;
+      transition: all 0.25s ease;
+      height: 100%;
+    }
+
+    .ai-face-card:hover {
+      border-color: #38bdf8;
+      box-shadow: 0 8px 24px rgba(56, 189, 248, 0.2);
+      transform: translateY(-3px);
+    }
+
+    @keyframes fadeInSlide {
+      from { opacity: 0; transform: translateY(-8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
     .btn-gold-admin {
       background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 60%, #d97706 100%);
       color: #000 !important;
@@ -1605,6 +1660,10 @@
       <button type="button" class="customer-nav-tab active" onclick="switchCustomerTab('tab-cameras')" id="nav-tab-cameras">
         <i class="fas fa-video"></i> <span>Kamera CCTV</span>
       </button>
+      <button type="button" class="customer-nav-tab" onclick="switchCustomerTab('tab-ai-vision')" id="nav-tab-ai-vision">
+        <i class="fas fa-brain text-info"></i> <span>AI Analytics (Face & ANPR)</span>
+        <span class="badge badge-danger ml-1" style="font-size: 9px; padding: 2px 5px; background: linear-gradient(135deg, #ef4444, #f43f5e); border-radius: 4px; box-shadow: 0 0 8px rgba(244,63,94,0.6);">AI PRO</span>
+      </button>
       <button type="button" class="customer-nav-tab" onclick="switchCustomerTab('tab-package')" id="nav-tab-package">
         <i class="fas fa-box-open"></i> <span>Informasi Paket</span>
       </button>
@@ -1690,7 +1749,293 @@
     </div>
 
     <!-- ======================================================== -->
-    <!-- TAB 2: INFORMASI PAKET & UPGRADE -->
+    <!-- TAB 2: AI ANALYTICS (FACE RECOGNITION & ANPR PLAT NOMOR) -->
+    <!-- ======================================================== -->
+    <div id="tab-ai-vision" class="customer-tab-pane" style="display: none;">
+      
+      <!-- AI Telemetry & Status Header -->
+      <div class="billing-card mb-4" style="background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(10, 30, 60, 0.9)); border: 1.5px solid rgba(56, 189, 248, 0.4); box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+          <div class="d-flex align-items-center gap-3">
+            <div style="width: 52px; height: 52px; border-radius: 14px; background: linear-gradient(135deg, #0284c7, #38bdf8); display: flex; align-items: center; justify-content: center; font-size: 24px; color: #fff; box-shadow: 0 0 20px rgba(56, 189, 248, 0.5);">
+              <i class="fas fa-brain"></i>
+            </div>
+            <div>
+              <div class="d-flex align-items-center gap-2 mb-1">
+                <h4 class="text-white font-weight-bold mb-0" style="font-size: 20px; letter-spacing: -0.3px;">Loewix Neural Vision Suite</h4>
+                <span class="badge badge-info px-2.5 py-1" style="font-size: 10px; font-weight: 800; background: rgba(56,189,248,0.2); border: 1px solid rgba(56,189,248,0.4); border-radius: 6px;">
+                  AI COMPUTER VISION V3
+                </span>
+              </div>
+              <p class="text-muted mb-0" style="font-size: 13px;">
+                Pengenalan Wajah Otomatis (Face Recognition) & Pembacaan Plat Nomor Kendaraan Indonesia (ANPR) Real-Time.
+              </p>
+            </div>
+          </div>
+
+          <div class="d-flex align-items-center flex-wrap gap-2">
+            <div class="px-3 py-1.5" style="background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 8px; font-size: 12px; color: #34d399; display: flex; align-items: center; gap: 6px;">
+              <span class="pulse-dot" style="background: #34d399;"></span>
+              <strong>NEURAL ENGINE: ONLINE</strong>
+            </div>
+            <button class="btn btn-sm btn-outline-info font-weight-bold px-3 py-1.5" onclick="loadAIData(true)" style="border-radius: 8px;">
+              <i class="fas fa-sync mr-1"></i> Segarkan Data AI
+            </button>
+          </div>
+        </div>
+
+        <!-- AI Metrics Row -->
+        <div class="row mt-4">
+          <div class="col-md-3 col-6 mb-3 mb-md-0">
+            <div class="p-3" style="background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(56, 189, 248, 0.2); border-radius: 12px;">
+              <div class="d-flex align-items-center justify-content-between mb-1">
+                <span class="text-muted" style="font-size: 12px; font-weight: 600;">Wajah Terdaftar</span>
+                <i class="fas fa-user-check text-info" style="font-size: 16px;"></i>
+              </div>
+              <h3 class="text-white font-weight-bold mb-0" id="ai-stat-faces" style="font-family: 'Space Grotesk', sans-serif;">3</h3>
+              <small class="text-info" style="font-size: 11px;">VIP & Karyawan Aktif</small>
+            </div>
+          </div>
+
+          <div class="col-md-3 col-6 mb-3 mb-md-0">
+            <div class="p-3" style="background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(56, 189, 248, 0.2); border-radius: 12px;">
+              <div class="d-flex align-items-center justify-content-between mb-1">
+                <span class="text-muted" style="font-size: 12px; font-weight: 600;">Plat Terdaftar (ANPR)</span>
+                <i class="fas fa-car text-emerald" style="color: #34d399; font-size: 16px;"></i>
+              </div>
+              <h3 class="text-white font-weight-bold mb-0" id="ai-stat-plates" style="font-family: 'Space Grotesk', sans-serif;">3</h3>
+              <small class="text-emerald" style="color: #34d399; font-size: 11px;">Mobil & Motor Resmi</small>
+            </div>
+          </div>
+
+          <div class="col-md-3 col-6">
+            <div class="p-3" style="background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(56, 189, 248, 0.2); border-radius: 12px;">
+              <div class="d-flex align-items-center justify-content-between mb-1">
+                <span class="text-muted" style="font-size: 12px; font-weight: 600;">Deteksi Hari Ini</span>
+                <i class="fas fa-bolt text-warning" style="font-size: 16px;"></i>
+              </div>
+              <h3 class="text-white font-weight-bold mb-0" id="ai-stat-detections" style="font-family: 'Space Grotesk', sans-serif;">12</h3>
+              <small class="text-warning" style="font-size: 11px;">Akurasi Rata-rata 97.4%</small>
+            </div>
+          </div>
+
+          <div class="col-md-3 col-6">
+            <div class="p-3" style="background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 12px;">
+              <div class="d-flex align-items-center justify-content-between mb-1">
+                <span class="text-muted" style="font-size: 12px; font-weight: 600;">Alert Blacklist</span>
+                <i class="fas fa-shield-virus text-danger" style="font-size: 16px;"></i>
+              </div>
+              <h3 class="text-danger font-weight-bold mb-0" id="ai-stat-blacklist" style="font-family: 'Space Grotesk', sans-serif;">1</h3>
+              <small class="text-danger" style="font-size: 11px;">Notifikasi Keamanan</small>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Live AI Vision Workspace (Video + Canvas Overlay + Controls) -->
+      <div class="row">
+        
+        <!-- Left: Live AI Scanner Stream with HUD Overlay -->
+        <div class="col-lg-8 mb-4">
+          <div class="billing-card p-4" style="background: #090e1a; border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 16px;">
+            
+            <!-- Video Header Toolbar -->
+            <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+              <div class="d-flex align-items-center gap-2">
+                <span class="badge badge-danger px-2.5 py-1" style="font-size: 11px; font-weight: 800; letter-spacing: 0.5px;">
+                  <span class="pulse-dot" style="background: #ffffff; margin-right: 4px;"></span> AI LIVE SCAN
+                </span>
+                <select class="form-control form-control-sm form-control-dark" id="ai-camera-selector" onchange="changeAICamera(this.value)" style="width: auto; font-size: 12.5px; border-radius: 8px;">
+                  <option value="5002">CAM LOEWIX JAKARTA 1 - LOBBY UTAMA</option>
+                  <option value="5003">CAM LOEWIX GATE MASUK & PARKIR</option>
+                  <option value="5001">CAM LOEWIX SIANTAR 1</option>
+                </select>
+              </div>
+
+              <div class="d-flex align-items-center gap-2">
+                <span class="text-muted" style="font-size: 12px;">Mode: <strong class="text-info" id="ai-active-mode-label">Face & ANPR Dual Scan</strong></span>
+              </div>
+            </div>
+
+            <!-- Video Player & Canvas HUD Overlay Container -->
+            <div class="position-relative" style="background: #020617; border-radius: 12px; overflow: hidden; border: 1px solid rgba(56, 189, 248, 0.3); min-height: 380px; display: flex; align-items: center; justify-content: center;">
+              
+              <!-- Video Layer -->
+              <video id="ai-video-player" autoplay loop muted playsinline style="width: 100%; height: 380px; object-fit: cover; display: block; filter: brightness(0.95) contrast(1.05);">
+                <source src="assets/video/demo-cctv.mp4" type="video/mp4">
+              </video>
+
+              <!-- Video Fallback Poster / Placeholder if no video -->
+              <div id="ai-video-placeholder" class="position-absolute text-center" style="display: none; top: 0; left: 0; right: 0; bottom: 0; background: radial-gradient(circle, #0f172a 0%, #020617 100%); align-items: center; justify-content: center; flex-direction: column;">
+                <i class="fas fa-video-slash text-muted mb-2" style="font-size: 36px;"></i>
+                <h6 class="text-white font-weight-bold">Live Stream Hub Offline</h6>
+                <small class="text-muted">Pilih channel kamera yang aktif di atas</small>
+              </div>
+
+              <!-- HUD Cybernetic Scanline Overlay -->
+              <div class="ai-scanline-overlay"></div>
+
+              <!-- Canvas for AI Bounding Box Rendering -->
+              <canvas id="ai-hud-canvas" class="position-absolute" style="top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;"></canvas>
+
+              <!-- HUD Live Status Pill -->
+              <div class="position-absolute" style="top: 14px; left: 14px; background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(8px); border: 1px solid rgba(56, 189, 248, 0.4); border-radius: 8px; padding: 6px 12px; font-size: 11px; color: #38bdf8; z-index: 10; display: flex; align-items: center; gap: 6px;">
+                <i class="fas fa-crosshairs fa-spin"></i>
+                <span id="ai-hud-status-text">AI SCANNER: TRACKING ENTITIES</span>
+              </div>
+
+              <!-- Live Detection Banner Toast (Popup inside video) -->
+              <div id="ai-hud-detection-banner" class="position-absolute" style="bottom: 14px; left: 14px; right: 14px; background: rgba(15, 23, 42, 0.9); backdrop-filter: blur(10px); border: 1.5px solid #38bdf8; border-radius: 10px; padding: 10px 14px; font-size: 12.5px; z-index: 10; display: none; align-items: center; justify-content: space-between; box-shadow: 0 4px 20px rgba(0,0,0,0.6);">
+                <div class="d-flex align-items-center gap-3">
+                  <div id="ai-banner-icon" style="width: 32px; height: 32px; border-radius: 8px; background: #0284c7; display: flex; align-items: center; justify-content: center; color: #fff;">
+                    <i class="fas fa-user-check"></i>
+                  </div>
+                  <div>
+                    <strong class="text-white d-block" id="ai-banner-title">Bambang Supriyanto (VIP)</strong>
+                    <small class="text-muted" id="ai-banner-sub">Confidence: 97.8% • Akses Terbuka</small>
+                  </div>
+                </div>
+                <span class="badge badge-success px-2 py-1" id="ai-banner-badge">VIP ACCESSED</span>
+              </div>
+
+            </div>
+
+            <!-- Live AI Simulation & Testing Toolbar -->
+            <div class="mt-3 p-3" style="background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px;">
+              <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-2">
+                <span class="text-white font-weight-bold" style="font-size: 12.5px;">
+                  <i class="fas fa-wand-magic-sparkles text-info mr-1"></i> Live Trigger & Simulator Deteksi AI:
+                </span>
+                <small class="text-muted" style="font-size: 11px;">Uji coba pengenalan wajah & pembacaan plat nomor secara langsung</small>
+              </div>
+
+              <div class="d-flex align-items-center flex-wrap gap-2">
+                <button class="btn btn-sm btn-outline-info font-weight-bold" onclick="simulateAIDetection('vip_face')" style="border-radius: 8px; font-size: 12px;">
+                  <i class="fas fa-user-tie mr-1 text-info"></i> Deteksi Wajah VIP (Bambang)
+                </button>
+                <button class="btn btn-sm btn-outline-danger font-weight-bold" onclick="simulateAIDetection('blacklist_face')" style="border-radius: 8px; font-size: 12px;">
+                  <i class="fas fa-user-secret mr-1 text-danger"></i> Alert Wajah DPO (Blacklist)
+                </button>
+                <button class="btn btn-sm btn-outline-success font-weight-bold" onclick="simulateAIDetection('vip_plate')" style="border-radius: 8px; font-size: 12px;">
+                  <i class="fas fa-car mr-1 text-success"></i> Deteksi Plat Mobil (B 1234 YMH)
+                </button>
+                <button class="btn btn-sm btn-outline-warning font-weight-bold" onclick="simulateAIDetection('employee_plate')" style="border-radius: 8px; font-size: 12px;">
+                  <i class="fas fa-motorcycle mr-1 text-warning"></i> Deteksi Plat Motor (B 5678 DDS)
+                </button>
+                <button class="btn btn-sm btn-info font-weight-bold text-white ml-auto" onclick="scanCurrentFrameManual()" style="border-radius: 8px; font-size: 12px; background: linear-gradient(135deg, #0284c7, #0ea5e9); border: none;">
+                  <i class="fas fa-camera mr-1"></i> Scan Frame Sekarang
+                </button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Right: Real-time Live Detection Feed (Log Stream) -->
+        <div class="col-lg-4 mb-4">
+          <div class="billing-card p-4 h-100 d-flex flex-column" style="background: #090e1a; border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 16px;">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+              <h5 class="billing-card-title mb-0" style="font-size: 15px;">
+                <i class="fas fa-bolt text-warning mr-1"></i> Live Stream Deteksi AI
+              </h5>
+              <button class="btn btn-sm btn-link text-muted p-0" onclick="clearAILogs()" style="font-size: 11px; text-decoration: none;">
+                <i class="fas fa-trash-alt mr-1"></i> Bersihkan Log
+              </button>
+            </div>
+
+            <!-- Feed Stream List Container -->
+            <div id="ai-live-feed-container" class="flex-fill" style="max-height: 480px; overflow-y: auto; padding-right: 4px;">
+              <!-- Dynamically populated live detection cards -->
+            </div>
+
+            <div class="pt-3 mt-auto border-top" style="border-color: rgba(255,255,255,0.08) !important;">
+              <div class="d-flex align-items-center justify-content-between">
+                <small class="text-muted" style="font-size: 11.5px;">Auto Audio Alert:</small>
+                <div class="custom-control custom-switch">
+                  <input type="checkbox" class="custom-control-input" id="ai-sound-toggle" checked onchange="toggleAISound(this.checked)">
+                  <label class="custom-control-label text-info" for="ai-sound-toggle" style="font-size: 11.5px; cursor: pointer;">Suara Alert Aktif</label>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+
+      <!-- AI Directories & Management Sub-Tabs (Face DB & ANPR Plate DB) -->
+      <div class="billing-card mb-4" style="background: rgba(15, 23, 42, 0.85); border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 16px;">
+        
+        <!-- Directory Navigation Pills -->
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-4 pb-3 border-bottom" style="border-color: rgba(255,255,255,0.08) !important;">
+          <div class="d-flex align-items-center gap-2">
+            <button class="btn btn-sm btn-info font-weight-bold px-3 py-2" id="btn-subtab-faces" onclick="switchAISubTab('subtab-faces')" style="border-radius: 8px; font-size: 12.5px;">
+              <i class="fas fa-user-tag mr-1.5"></i> Database Wajah Terdaftar (<span id="badge-faces-count">3</span>)
+            </button>
+            <button class="btn btn-sm btn-outline-info font-weight-bold px-3 py-2" id="btn-subtab-plates" onclick="switchAISubTab('subtab-plates')" style="border-radius: 8px; font-size: 12.5px;">
+              <i class="fas fa-car-side mr-1.5"></i> Database Plat Nomor ANPR (<span id="badge-plates-count">3</span>)
+            </button>
+          </div>
+
+          <div class="d-flex align-items-center gap-2">
+            <button class="btn btn-sm btn-success font-weight-bold px-3 py-2" onclick="openRegisterFaceModal()" style="border-radius: 8px; font-size: 12.5px; background: #059669; border: none;">
+              <i class="fas fa-user-plus mr-1.5"></i> + Daftarkan Wajah Baru
+            </button>
+            <button class="btn btn-sm btn-primary font-weight-bold px-3 py-2" onclick="openRegisterPlateModal()" style="border-radius: 8px; font-size: 12.5px; background: #0284c7; border: none;">
+              <i class="fas fa-plus-circle mr-1.5"></i> + Daftarkan Plat Kendaraan
+            </button>
+          </div>
+        </div>
+
+        <!-- Subtab 1: Face Recognition Directory -->
+        <div id="subtab-faces" class="ai-subtab-content">
+          <div class="d-flex align-items-center justify-content-between mb-3">
+            <h6 class="text-white font-weight-bold mb-0" style="font-size: 14px;">
+              <i class="fas fa-users-viewfinder text-info mr-1"></i> Direktori Wajah (VIP, Karyawan, Penghuni & Blacklist)
+            </h6>
+            <input type="text" class="form-control form-control-sm form-control-dark" id="search-face-input" onkeyup="filterFacesList(this.value)" placeholder="Cari nama atau jabatan..." style="max-width: 250px; font-size: 12px; border-radius: 8px;">
+          </div>
+
+          <div class="row" id="ai-faces-grid">
+            <!-- Dynamically populated face directory cards -->
+          </div>
+        </div>
+
+        <!-- Subtab 2: ANPR Vehicle Plates Directory -->
+        <div id="subtab-plates" class="ai-subtab-content" style="display: none;">
+          <div class="d-flex align-items-center justify-content-between mb-3">
+            <h6 class="text-white font-weight-bold mb-0" style="font-size: 14px;">
+              <i class="fas fa-id-card-clip text-info mr-1"></i> Direktori Plat Nomor Kendaraan Terdaftar
+            </h6>
+            <input type="text" class="form-control form-control-sm form-control-dark" id="search-plate-input" onkeyup="filterPlatesList(this.value)" placeholder="Cari nomor plat (contoh: B 1234)..." style="max-width: 250px; font-size: 12px; border-radius: 8px;">
+          </div>
+
+          <div class="table-responsive">
+            <table class="billing-table">
+              <thead>
+                <tr>
+                  <th>Nomor Plat</th>
+                  <th>Pemilik / Unit</th>
+                  <th>Jenis Kendaraan</th>
+                  <th>Model / Warna</th>
+                  <th>Kategori Akses</th>
+                  <th>Catatan</th>
+                  <th class="text-center">Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="ai-plates-tbody">
+                <!-- Dynamically populated plate rows -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- ======================================================== -->
+    <!-- TAB 3: INFORMASI PAKET & UPGRADE -->
     <!-- ======================================================== -->
     <div id="tab-package" class="customer-tab-pane" style="display: none;">
       <div class="row">
@@ -2623,6 +2968,122 @@
           </button>
         </div>
 
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Daftarkan Wajah Baru (Face Recognition) -->
+  <div class="modal fade modal-dark" id="modalRegisterFace" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content" style="background: linear-gradient(160deg, #0b1533 0%, #070d22 100%); border: 1.5px solid rgba(56,189,248,0.4); border-radius: 20px; box-shadow: 0 30px 80px rgba(0,0,0,0.9); overflow: hidden;">
+        <div class="modal-header" style="background: rgba(15, 23, 42, 0.98); border-bottom: 1px solid rgba(255,255,255,0.08); padding: 18px 24px;">
+          <h5 class="modal-title font-weight-bold text-white mb-0" style="font-size: 16px;">
+            <i class="fas fa-user-plus text-info mr-2"></i> Daftarkan Wajah Baru ke AI Face Recognition
+          </h5>
+          <button type="button" class="close text-white" onclick="closeModalHelper('modalRegisterFace')" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <form id="formRegisterFace" onsubmit="submitRegisterFace(event)">
+          <div class="modal-body p-4">
+            <div class="form-group mb-3">
+              <label class="text-white" style="font-size: 12.5px; font-weight: 600;">Nama Lengkap:</label>
+              <input type="text" id="face-input-name" class="form-control form-control-dark" placeholder="Contoh: Bambang Supriyanto" required>
+            </div>
+            <div class="form-group mb-3">
+              <label class="text-white" style="font-size: 12.5px; font-weight: 600;">Kategori Akses:</label>
+              <select id="face-input-category" class="form-control form-control-dark" required>
+                <option value="vip">⭐ VIP / Petinggi (Auto Access & Special Notification)</option>
+                <option value="employee" selected>👔 Karyawan / Staff (Absensi & Jam Kerja)</option>
+                <option value="resident">🏠 Penghuni / Warga (Akses Gerbang)</option>
+                <option value="guest">👤 Tamu Resmi (Akses Terbatas)</option>
+                <option value="blacklist">🚨 Blacklist / DPO (Trigger Security Alarm & Sound Alert)</option>
+              </select>
+            </div>
+            <div class="form-group mb-3">
+              <label class="text-white" style="font-size: 12.5px; font-weight: 600;">Jabatan / Status Role:</label>
+              <input type="text" id="face-input-role" class="form-control form-control-dark" placeholder="Contoh: Direktur Operasional" required>
+            </div>
+            <div class="form-group mb-3">
+              <label class="text-white" style="font-size: 12.5px; font-weight: 600;">Foto Referensi AI (URL / Base64):</label>
+              <input type="text" id="face-input-photo" class="form-control form-control-dark" value="assets/image/avatar-default.png" placeholder="URL foto wajah">
+              <small class="text-muted" style="font-size: 11px;">Gunakan foto wajah resolusi jelas tampak depan tanpa masker.</small>
+            </div>
+            <div class="form-group mb-0">
+              <label class="text-white" style="font-size: 12.5px; font-weight: 600;">Catatan Tambahan:</label>
+              <textarea id="face-input-notes" class="form-control form-control-dark" rows="2" placeholder="Contoh: Akses ruang server 24 jam"></textarea>
+            </div>
+          </div>
+          <div class="modal-footer" style="border-top: 1px solid rgba(255,255,255,0.08); background: rgba(15, 23, 42, 0.95); padding: 14px 24px;">
+            <button type="button" class="btn btn-secondary btn-sm px-3" onclick="closeModalHelper('modalRegisterFace')" style="border-radius: 8px;">Batal</button>
+            <button type="submit" id="btn-submit-face" class="btn btn-success btn-sm px-4 font-weight-bold" style="border-radius: 8px; background: #059669; border: none;">
+              <i class="fas fa-save mr-1"></i> Simpan Data Wajah
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Daftarkan Plat Nomor Kendaraan (ANPR) -->
+  <div class="modal fade modal-dark" id="modalRegisterPlate" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content" style="background: linear-gradient(160deg, #0b1533 0%, #070d22 100%); border: 1.5px solid rgba(56,189,248,0.4); border-radius: 20px; box-shadow: 0 30px 80px rgba(0,0,0,0.9); overflow: hidden;">
+        <div class="modal-header" style="background: rgba(15, 23, 42, 0.98); border-bottom: 1px solid rgba(255,255,255,0.08); padding: 18px 24px;">
+          <h5 class="modal-title font-weight-bold text-white mb-0" style="font-size: 16px;">
+            <i class="fas fa-car text-info mr-2"></i> Daftarkan Plat Kendaraan ke ANPR System
+          </h5>
+          <button type="button" class="close text-white" onclick="closeModalHelper('modalRegisterPlate')" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <form id="formRegisterPlate" onsubmit="submitRegisterPlate(event)">
+          <div class="modal-body p-4">
+            <div class="form-group mb-3">
+              <label class="text-white" style="font-size: 12.5px; font-weight: 600;">Nomor Plat Kendaraan (Format Indonesia):</label>
+              <input type="text" id="plate-input-number" class="form-control form-control-dark font-monospace" style="text-transform: uppercase; letter-spacing: 1px; font-weight: bold; font-size: 15px;" placeholder="Contoh: B 1234 YMH" required>
+              <small class="text-muted" style="font-size: 11px;">Mendukung Plat Hitam, Putih, Merah & Kuning.</small>
+            </div>
+            <div class="row">
+              <div class="col-6 form-group mb-3">
+                <label class="text-white" style="font-size: 12.5px; font-weight: 600;">Jenis Kendaraan:</label>
+                <select id="plate-input-type" class="form-control form-control-dark" required>
+                  <option value="car" selected>🚗 Mobil Pribadi</option>
+                  <option value="motorcycle">🏍️ Sepeda Motor</option>
+                  <option value="truck">🚚 Truk / Bus / Box</option>
+                </select>
+              </div>
+              <div class="col-6 form-group mb-3">
+                <label class="text-white" style="font-size: 12.5px; font-weight: 600;">Kategori Akses:</label>
+                <select id="plate-input-category" class="form-control form-control-dark" required>
+                  <option value="vip">⭐ VIP (Akses Gate Otomatis)</option>
+                  <option value="employee">👔 Karyawan / Dinas</option>
+                  <option value="resident" selected>🏠 Penghuni / Resident</option>
+                  <option value="guest">👤 Tamu Terdaftar</option>
+                  <option value="blacklist">🚨 Blacklist / DPO (Alarm)</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group mb-3">
+              <label class="text-white" style="font-size: 12.5px; font-weight: 600;">Nama Pemilik / Unit:</label>
+              <input type="text" id="plate-input-owner" class="form-control form-control-dark" placeholder="Contoh: Bambang Supriyanto" required>
+            </div>
+            <div class="form-group mb-3">
+              <label class="text-white" style="font-size: 12.5px; font-weight: 600;">Model & Warna Kendaraan:</label>
+              <input type="text" id="plate-input-model" class="form-control form-control-dark" placeholder="Contoh: Toyota Alphard Hitam" required>
+            </div>
+            <div class="form-group mb-0">
+              <label class="text-white" style="font-size: 12.5px; font-weight: 600;">Catatan / Slot Parkir:</label>
+              <textarea id="plate-input-notes" class="form-control form-control-dark" rows="2" placeholder="Contoh: Slot Parkir VIP A-01"></textarea>
+            </div>
+          </div>
+          <div class="modal-footer" style="border-top: 1px solid rgba(255,255,255,0.08); background: rgba(15, 23, 42, 0.95); padding: 14px 24px;">
+            <button type="button" class="btn btn-secondary btn-sm px-3" onclick="closeModalHelper('modalRegisterPlate')" style="border-radius: 8px;">Batal</button>
+            <button type="submit" id="btn-submit-plate" class="btn btn-info btn-sm px-4 font-weight-bold" style="border-radius: 8px; background: #0284c7; border: none;">
+              <i class="fas fa-save mr-1"></i> Simpan Data Plat
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   </div>
@@ -4312,6 +4773,9 @@
         loadAdminPlansList();
       } else if (tabId === 'tab-admin-transactions') {
         loadAdminTransactionsList();
+      } else if (tabId === 'tab-ai-vision') {
+        loadAIData();
+        setTimeout(initAIHUDCanvas, 150);
       } else if (tabId !== 'tab-cameras') {
         if (currentBillingData) {
           renderBillingData(currentBillingData);
@@ -6325,6 +6789,595 @@
       }
     };
 
+    // ========================================================
+    // LOEWIX NEURAL VISION SUITE (FACE RECOGNITION & ANPR)
+    // ========================================================
+    let cachedAIFaces = [];
+    let cachedAIPlates = [];
+    let cachedAILogs = [];
+    let aiHUDAnimationId = null;
+    let activeAIEntities = [];
+    let isAISoundEnabled = true;
+
+    // Load AI Data from API
+    async function loadAIData(forceRefresh = false) {
+      const u = currentCustomer || (localStorage.getItem('loewix_user') ? JSON.parse(localStorage.getItem('loewix_user')) : { id: 3 });
+      const url = `../api/ai_analytics.php?action=get_ai_data&user_id=${u.id || 3}`;
+
+      try {
+        const res = await fetch(url);
+        const data = await res.json();
+
+        if (data.success) {
+          cachedAIFaces = data.faces || [];
+          cachedAIPlates = data.plates || [];
+          cachedAILogs = data.logs || [];
+
+          // Render Stats
+          const statFaces = document.getElementById('ai-stat-faces');
+          const statPlates = document.getElementById('ai-stat-plates');
+          const statDetections = document.getElementById('ai-stat-detections');
+          const statBlacklist = document.getElementById('ai-stat-blacklist');
+
+          if (statFaces) statFaces.textContent = data.stats.total_faces;
+          if (statPlates) statPlates.textContent = data.stats.total_plates;
+          if (statDetections) statDetections.textContent = data.stats.total_detections_today;
+          if (statBlacklist) statBlacklist.textContent = data.stats.blacklist_alerts;
+
+          const badgeFaces = document.getElementById('badge-faces-count');
+          const badgePlates = document.getElementById('badge-plates-count');
+          if (badgeFaces) badgeFaces.textContent = cachedAIFaces.length;
+          if (badgePlates) badgePlates.textContent = cachedAIPlates.length;
+
+          renderAIFacesGrid(cachedAIFaces);
+          renderAIPlatesTable(cachedAIPlates);
+          renderAILiveFeed(cachedAILogs);
+        }
+      } catch (err) {
+        console.error('Error loading AI data:', err);
+      }
+    }
+
+    // Render Face Directory Cards
+    function renderAIFacesGrid(faces) {
+      const grid = document.getElementById('ai-faces-grid');
+      if (!grid) return;
+
+      if (faces.length === 0) {
+        grid.innerHTML = '<div class="col-12 text-center py-4 text-muted">Belum ada wajah terdaftar di database.</div>';
+        return;
+      }
+
+      grid.innerHTML = faces.map(f => {
+        let badgeColor = 'badge-primary';
+        let badgeText = 'Karyawan';
+        let borderColor = 'rgba(56, 189, 248, 0.3)';
+
+        if (f.category === 'vip') {
+          badgeColor = 'badge-success';
+          badgeText = '⭐ VIP ACCESS';
+          borderColor = 'rgba(16, 185, 129, 0.5)';
+        } else if (f.category === 'blacklist') {
+          badgeColor = 'badge-danger';
+          badgeText = '🚨 BLACKLIST / DPO';
+          borderColor = 'rgba(239, 68, 68, 0.6)';
+        } else if (f.category === 'resident') {
+          badgeColor = 'badge-info';
+          badgeText = '🏠 PENGHUNI';
+        }
+
+        return `
+          <div class="col-md-4 col-sm-6 mb-3">
+            <div class="ai-face-card" style="border-color: ${borderColor};">
+              <div class="d-flex align-items-center gap-3 mb-3">
+                <div style="width: 48px; height: 48px; border-radius: 12px; background: rgba(56,189,248,0.15); display: flex; align-items: center; justify-content: center; overflow: hidden; border: 1.5px solid ${borderColor};">
+                  <i class="fas fa-user text-info" style="font-size: 20px;"></i>
+                </div>
+                <div style="flex: 1; min-width: 0;">
+                  <h6 class="text-white font-weight-bold mb-0 text-truncate" style="font-size: 14px;">${f.name}</h6>
+                  <small class="text-muted d-block text-truncate">${f.role_title || 'Tamu Terdaftar'}</small>
+                </div>
+                <span class="badge ${badgeColor} px-2 py-1" style="font-size: 10px; font-weight: 700;">${badgeText}</span>
+              </div>
+              <p class="text-muted mb-3" style="font-size: 12px; line-height: 1.4; min-height: 34px;">
+                ${f.notes ? `<i class="fas fa-info-circle mr-1 text-info"></i> ${f.notes}` : 'Tidak ada catatan khusus.'}
+              </p>
+              <div class="d-flex align-items-center justify-content-between pt-2 border-top" style="border-color: rgba(255,255,255,0.06) !important;">
+                <small class="text-muted" style="font-size: 10.5px;">${f.created_at || 'Terdaftar'}</small>
+                <button class="btn btn-sm btn-outline-danger px-2.5 py-1" onclick="deleteAIFace(${f.id})" style="border-radius: 6px; font-size: 11px;">
+                  <i class="fas fa-trash-alt"></i> Hapus
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Render ANPR Plates Table
+    function renderAIPlatesTable(plates) {
+      const tbody = document.getElementById('ai-plates-tbody');
+      if (!tbody) return;
+
+      if (plates.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-muted">Belum ada nomor plat kendaraan terdaftar.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = plates.map(p => {
+        let catBadge = '<span class="badge badge-info px-2 py-1">PENGHUNI</span>';
+        if (p.category === 'vip') catBadge = '<span class="badge badge-success px-2 py-1"><i class="fas fa-star mr-1"></i> VIP</span>';
+        if (p.category === 'blacklist') catBadge = '<span class="badge badge-danger px-2 py-1"><i class="fas fa-ban mr-1"></i> BLACKLIST</span>';
+        if (p.category === 'employee') catBadge = '<span class="badge badge-primary px-2 py-1">KARYAWAN</span>';
+
+        let typeIcon = '<i class="fas fa-car text-info mr-1"></i> Mobil';
+        if (p.vehicle_type === 'motorcycle') typeIcon = '<i class="fas fa-motorcycle text-warning mr-1"></i> Motor';
+        if (p.vehicle_type === 'truck') typeIcon = '<i class="fas fa-truck text-emerald mr-1"></i> Truk / Box';
+
+        return `
+          <tr>
+            <td>
+              <strong class="font-monospace text-white px-2.5 py-1" style="background: rgba(15, 23, 42, 0.9); border: 1px solid #38bdf8; border-radius: 6px; letter-spacing: 1px; font-size: 13.5px;">
+                ${p.plate_number}
+              </strong>
+            </td>
+            <td><strong class="text-white">${p.owner_name}</strong></td>
+            <td>${typeIcon}</td>
+            <td class="text-muted" style="font-size: 12.5px;">${p.vehicle_model || '-'}</td>
+            <td>${catBadge}</td>
+            <td class="text-muted" style="font-size: 12px;">${p.notes || '-'}</td>
+            <td class="text-center">
+              <button class="btn btn-sm btn-outline-danger px-2.5 py-1" onclick="deleteAIPlate(${p.id})" style="border-radius: 6px; font-size: 11px;">
+                <i class="fas fa-trash-alt"></i> Hapus
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // Render Live Feed Log Ticker
+    function renderAILiveFeed(logs) {
+      const container = document.getElementById('ai-live-feed-container');
+      if (!container) return;
+
+      if (logs.length === 0) {
+        container.innerHTML = '<div class="text-center py-4 text-muted" style="font-size: 12px;">Belum ada riwayat deteksi. Jalankan simulator di samping.</div>';
+        return;
+      }
+
+      container.innerHTML = logs.map(l => {
+        const isBlacklist = l.category === 'blacklist';
+        let iconHtml = l.type === 'face' ? '<i class="fas fa-user-check text-info"></i>' : '<i class="fas fa-car text-emerald" style="color: #34d399;"></i>';
+        if (isBlacklist) iconHtml = '<i class="fas fa-shield-virus text-danger"></i>';
+
+        let badgeStyle = 'badge-info';
+        if (l.category === 'vip') badgeStyle = 'badge-success';
+        if (l.category === 'blacklist') badgeStyle = 'badge-danger';
+
+        return `
+          <div class="ai-live-card-item ${isBlacklist ? 'blacklist-alert' : ''}">
+            <div class="d-flex align-items-center justify-content-between mb-1.5">
+              <div class="d-flex align-items-center gap-2">
+                ${iconHtml}
+                <strong class="text-white" style="font-size: 13px;">${l.label}</strong>
+              </div>
+              <span class="badge ${badgeStyle} px-2 py-0.5" style="font-size: 9.5px; font-weight: 700;">
+                ${l.confidence ? l.confidence + '%' : '97.5%'}
+              </span>
+            </div>
+            <div class="text-muted mb-1" style="font-size: 11px;">
+              <i class="fas fa-video mr-1 text-info"></i> ${l.camera_title}
+            </div>
+            <div class="d-flex align-items-center justify-content-between" style="font-size: 11px;">
+              <span style="color: #94a3b8;">${l.details}</span>
+              <span class="text-muted">${l.timestamp ? l.timestamp.split(' ')[1] : 'Baru saja'}</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Switch Sub Tabs inside AI Analytics
+    function switchAISubTab(subTabId) {
+      document.querySelectorAll('.ai-subtab-content').forEach(p => p.style.display = 'none');
+      const target = document.getElementById(subTabId);
+      if (target) target.style.display = 'block';
+
+      const btnFaces = document.getElementById('btn-subtab-faces');
+      const btnPlates = document.getElementById('btn-subtab-plates');
+
+      if (subTabId === 'subtab-faces') {
+        if (btnFaces) { btnFaces.className = 'btn btn-sm btn-info font-weight-bold px-3 py-2'; }
+        if (btnPlates) { btnPlates.className = 'btn btn-sm btn-outline-info font-weight-bold px-3 py-2'; }
+      } else {
+        if (btnFaces) { btnFaces.className = 'btn btn-sm btn-outline-info font-weight-bold px-3 py-2'; }
+        if (btnPlates) { btnPlates.className = 'btn btn-sm btn-info font-weight-bold px-3 py-2'; }
+      }
+    }
+
+    // AI Canvas HUD Animation
+    function initAIHUDCanvas() {
+      const canvas = document.getElementById('ai-hud-canvas');
+      if (!canvas) return;
+
+      const parent = canvas.parentElement;
+      canvas.width = parent.clientWidth || 640;
+      canvas.height = parent.clientHeight || 380;
+
+      if (!aiHUDAnimationId) {
+        startAIHUDLoop();
+      }
+    }
+
+    function startAIHUDLoop() {
+      const canvas = document.getElementById('ai-hud-canvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+
+      let scanLineY = 0;
+      let scanDirection = 1;
+
+      function loop() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Draw animated cyber scanning line
+        scanLineY += 2 * scanDirection;
+        if (scanLineY >= canvas.height - 10) scanDirection = -1;
+        if (scanLineY <= 10) scanDirection = 1;
+
+        ctx.save();
+        ctx.strokeStyle = 'rgba(56, 189, 248, 0.4)';
+        ctx.lineWidth = 1.5;
+        ctx.setLineDash([8, 4]);
+        ctx.beginPath();
+        ctx.moveTo(0, scanLineY);
+        ctx.lineTo(canvas.width, scanLineY);
+        ctx.stroke();
+        ctx.restore();
+
+        // Draw active bounding box entities
+        const now = Date.now();
+        activeAIEntities = activeAIEntities.filter(e => now - e.createdAt < 6000);
+
+        activeAIEntities.forEach(ent => {
+          drawEntityBracket(ctx, ent);
+        });
+
+        aiHUDAnimationId = requestAnimationFrame(loop);
+      }
+
+      aiHUDAnimationId = requestAnimationFrame(loop);
+    }
+
+    function drawEntityBracket(ctx, ent) {
+      const { x, y, w, h, label, category, confidence } = ent;
+      const isBlacklist = category === 'blacklist';
+      const isVIP = category === 'vip';
+
+      let strokeColor = isBlacklist ? '#ef4444' : (isVIP ? '#10b981' : '#38bdf8');
+
+      ctx.save();
+      ctx.strokeStyle = strokeColor;
+      ctx.lineWidth = 2.5;
+
+      const cornerLen = 16;
+
+      // Top-Left
+      ctx.beginPath();
+      ctx.moveTo(x, y + cornerLen);
+      ctx.lineTo(x, y);
+      ctx.lineTo(x + cornerLen, y);
+      ctx.stroke();
+
+      // Top-Right
+      ctx.beginPath();
+      ctx.moveTo(x + w - cornerLen, y);
+      ctx.lineTo(x + w);
+      ctx.lineTo(x + w, y + cornerLen);
+      ctx.stroke();
+
+      // Bottom-Left
+      ctx.beginPath();
+      ctx.moveTo(x, y + h - cornerLen);
+      ctx.lineTo(x, y + h);
+      ctx.lineTo(x + cornerLen, y + h);
+      ctx.stroke();
+
+      // Bottom-Right
+      ctx.beginPath();
+      ctx.moveTo(x + w - cornerLen, y + h);
+      ctx.lineTo(x + w, y + h);
+      ctx.lineTo(x + w, y + h - cornerLen);
+      ctx.stroke();
+
+      // Label background & text
+      ctx.fillStyle = isBlacklist ? 'rgba(239, 68, 68, 0.9)' : (isVIP ? 'rgba(16, 185, 129, 0.9)' : 'rgba(15, 23, 42, 0.9)');
+      ctx.fillRect(x, y - 24, Math.max(w, 140), 22);
+
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 11px Plus Jakarta Sans, sans-serif';
+      ctx.fillText(`${label} (${confidence}%)`, x + 6, y - 8);
+
+      ctx.restore();
+    }
+
+    // Trigger Instant AI Detection Simulation
+    async function simulateAIDetection(type) {
+      initAIHUDCanvas();
+      const canvas = document.getElementById('ai-hud-canvas');
+      const width = canvas ? canvas.width : 640;
+      const height = canvas ? canvas.height : 380;
+
+      let ent = null;
+      let logPayload = null;
+
+      if (type === 'vip_face') {
+        ent = {
+          x: Math.round(width * 0.35),
+          y: Math.round(height * 0.2),
+          w: 120,
+          h: 140,
+          type: 'face',
+          label: 'Bambang Supriyanto',
+          category: 'vip',
+          confidence: 97.8,
+          createdAt: Date.now()
+        };
+        showAIBanner('Bambang Supriyanto (VIP)', 'Confidence 97.8% • Akses Terbuka Otomatis', 'badge-success', 'VIP ACCESSED', 'fas fa-user-check', '#059669');
+        logPayload = {
+          type: 'face',
+          camera_id: 5002,
+          camera_title: 'CAM LOEWIX JAKARTA 1 - LOBBY UTAMA',
+          label: 'Bambang Supriyanto',
+          category: 'vip',
+          confidence: 97.8,
+          details: 'Terdeteksi di Lobby Utama • Akses VIP Terbuka'
+        };
+      } else if (type === 'blacklist_face') {
+        ent = {
+          x: Math.round(width * 0.45),
+          y: Math.round(height * 0.25),
+          w: 120,
+          h: 140,
+          type: 'face',
+          label: '🚨 TERSANGKA DPO',
+          category: 'blacklist',
+          confidence: 95.4,
+          createdAt: Date.now()
+        };
+        showAIBanner('🚨 PERINGATAN: Tersangka DPO Terdeteksi!', 'Confidence 95.4% • Segera Amankan Lokasi', 'badge-danger', 'ALERT DPO', 'fas fa-shield-virus', '#ef4444');
+        playAIAlarmSound();
+        logPayload = {
+          type: 'face',
+          camera_id: 5002,
+          camera_title: 'CAM LOEWIX JAKARTA 1 - LOBBY UTAMA',
+          label: 'Tersangka Residu DPO',
+          category: 'blacklist',
+          confidence: 95.4,
+          details: 'ALERT KEAMANAN: DPO Pencurian Terdeteksi di Lobby'
+        };
+      } else if (type === 'vip_plate') {
+        ent = {
+          x: Math.round(width * 0.25),
+          y: Math.round(height * 0.4),
+          w: 220,
+          h: 100,
+          type: 'anpr',
+          label: 'B 1234 YMH (VIP)',
+          category: 'vip',
+          confidence: 98.6,
+          createdAt: Date.now()
+        };
+        showAIBanner('🚗 Plat B 1234 YMH (Toyota Alphard)', 'Confidence 98.6% • Palang Barrier Gate Terbuka Otomatis', 'badge-success', 'GATE OPEN', 'fas fa-car', '#0284c7');
+        logPayload = {
+          type: 'anpr',
+          camera_id: 5003,
+          camera_title: 'CAM LOEWIX GATE MASUK & PARKIR',
+          label: 'B 1234 YMH',
+          category: 'vip',
+          confidence: 98.6,
+          details: 'Toyota Alphard Hitam • Palang Gate Masuk Terbuka'
+        };
+      } else if (type === 'employee_plate') {
+        ent = {
+          x: Math.round(width * 0.28),
+          y: Math.round(height * 0.42),
+          w: 200,
+          h: 90,
+          type: 'anpr',
+          label: 'B 5678 DDS (Motor)',
+          category: 'employee',
+          confidence: 96.9,
+          createdAt: Date.now()
+        };
+        showAIBanner('🏍️ Plat B 5678 DDS (Honda Beat)', 'Confidence 96.9% • Masuk Area Parkir Staff', 'badge-primary', 'STAFF ACCESS', 'fas fa-motorcycle', '#0284c7');
+        logPayload = {
+          type: 'anpr',
+          camera_id: 5003,
+          camera_title: 'CAM LOEWIX GATE MASUK & PARKIR',
+          label: 'B 5678 DDS',
+          category: 'employee',
+          confidence: 96.9,
+          details: 'Honda Beat Hitam • Masuk Area Parkir Staff'
+        };
+      }
+
+      if (ent) {
+        activeAIEntities.push(ent);
+      }
+
+      // Persist to server logs
+      if (logPayload) {
+        try {
+          const fd = new FormData();
+          fd.append('action', 'log_detection');
+          for (const k in logPayload) {
+            fd.append(k, logPayload[k]);
+          }
+          const res = await fetch('../api/ai_analytics.php', { method: 'POST', body: fd });
+          const data = await res.json();
+          if (data.success) {
+            loadAIData();
+          }
+        } catch (e) {
+          console.error(e);
+        }
+      }
+    }
+
+    function showAIBanner(title, sub, badgeClass, badgeText, iconClass, iconBg) {
+      const banner = document.getElementById('ai-hud-detection-banner');
+      if (!banner) return;
+
+      document.getElementById('ai-banner-title').textContent = title;
+      document.getElementById('ai-banner-sub').textContent = sub;
+      const bBadge = document.getElementById('ai-banner-badge');
+      bBadge.className = `badge ${badgeClass} px-2 py-1`;
+      bBadge.textContent = badgeText;
+
+      const bIcon = document.getElementById('ai-banner-icon');
+      bIcon.style.background = iconBg;
+      bIcon.innerHTML = `<i class="${iconClass}"></i>`;
+
+      banner.style.display = 'flex';
+      setTimeout(() => {
+        banner.style.display = 'none';
+      }, 4500);
+    }
+
+    function playAIAlarmSound() {
+      if (!isAISoundEnabled) return;
+      try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(880, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(440, audioCtx.currentTime + 0.4);
+        gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.4);
+      } catch (e) {}
+    }
+
+    function scanCurrentFrameManual() {
+      simulateAIDetection('vip_plate');
+    }
+
+    function changeAICamera(camId) {
+      const select = document.getElementById('ai-camera-selector');
+      if (select) select.value = camId;
+      initAIHUDCanvas();
+    }
+
+    function toggleAISound(isEnabled) {
+      isAISoundEnabled = isEnabled;
+    }
+
+    // Modal Action Openers
+    function openRegisterFaceModal() {
+      document.getElementById('formRegisterFace').reset();
+      openModalHelper('modalRegisterFace');
+    }
+
+    async function submitRegisterFace(e) {
+      e.preventDefault();
+      const fd = new FormData();
+      fd.append('action', 'register_face');
+      fd.append('name', document.getElementById('face-input-name').value);
+      fd.append('category', document.getElementById('face-input-category').value);
+      fd.append('role_title', document.getElementById('face-input-role').value);
+      fd.append('photo', document.getElementById('face-input-photo').value);
+      fd.append('notes', document.getElementById('face-input-notes').value);
+
+      try {
+        const res = await fetch('../api/ai_analytics.php', { method: 'POST', body: fd });
+        const data = await res.json();
+        if (data.success) {
+          closeModalHelper('modalRegisterFace');
+          alert('Data Wajah berhasil didaftarkan ke AI Face Recognition!');
+          loadAIData(true);
+        } else {
+          alert(data.message || 'Gagal menyimpan data.');
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    async function deleteAIFace(id) {
+      if (!confirm('Hapus data wajah ini dari database AI?')) return;
+      const fd = new FormData();
+      fd.append('action', 'delete_face');
+      fd.append('id', id);
+      await fetch('../api/ai_analytics.php', { method: 'POST', body: fd });
+      loadAIData(true);
+    }
+
+    function openRegisterPlateModal() {
+      document.getElementById('formRegisterPlate').reset();
+      openModalHelper('modalRegisterPlate');
+    }
+
+    async function submitRegisterPlate(e) {
+      e.preventDefault();
+      const fd = new FormData();
+      fd.append('action', 'register_plate');
+      fd.append('plate_number', document.getElementById('plate-input-number').value);
+      fd.append('vehicle_type', document.getElementById('plate-input-type').value);
+      fd.append('category', document.getElementById('plate-input-category').value);
+      fd.append('owner_name', document.getElementById('plate-input-owner').value);
+      fd.append('vehicle_model', document.getElementById('plate-input-model').value);
+      fd.append('notes', document.getElementById('plate-input-notes').value);
+
+      try {
+        const res = await fetch('../api/ai_analytics.php', { method: 'POST', body: fd });
+        const data = await res.json();
+        if (data.success) {
+          closeModalHelper('modalRegisterPlate');
+          alert('Nomor Plat Kendaraan berhasil didaftarkan ke ANPR!');
+          loadAIData(true);
+        } else {
+          alert(data.message || 'Gagal menyimpan data.');
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    async function deleteAIPlate(id) {
+      if (!confirm('Hapus nomor plat kendaraan ini dari database ANPR?')) return;
+      const fd = new FormData();
+      fd.append('action', 'delete_plate');
+      fd.append('id', id);
+      await fetch('../api/ai_analytics.php', { method: 'POST', body: fd });
+      loadAIData(true);
+    }
+
+    async function clearAILogs() {
+      if (!confirm('Bersihkan seluruh riwayat deteksi AI?')) return;
+      const fd = new FormData();
+      fd.append('action', 'clear_logs');
+      await fetch('../api/ai_analytics.php', { method: 'POST', body: fd });
+      loadAIData(true);
+    }
+
+    function filterFacesList(q) {
+      q = q.toLowerCase();
+      const filtered = cachedAIFaces.filter(f => f.name.toLowerCase().includes(q) || (f.role_title && f.role_title.toLowerCase().includes(q)));
+      renderAIFacesGrid(filtered);
+    }
+
+    function filterPlatesList(q) {
+      q = q.toLowerCase();
+      const filtered = cachedAIPlates.filter(p => p.plate_number.toLowerCase().includes(q) || p.owner_name.toLowerCase().includes(q));
+      renderAIPlatesTable(filtered);
+    }
+
     window.showInvoiceReceiptModal = showInvoiceReceiptModal;
     window.closeLoewixReceiptOverlay = closeLoewixReceiptOverlay;
     window.printInvoiceReceipt = printInvoiceReceipt;
@@ -6348,6 +7401,21 @@
     window.deleteAdminInvoice = deleteAdminInvoice;
     window.filterAdminTransactionsTable = filterAdminTransactionsTable;
     window.exportAdminTransactionsCSV = exportAdminTransactionsCSV;
+    window.loadAIData = loadAIData;
+    window.switchAISubTab = switchAISubTab;
+    window.simulateAIDetection = simulateAIDetection;
+    window.scanCurrentFrameManual = scanCurrentFrameManual;
+    window.changeAICamera = changeAICamera;
+    window.toggleAISound = toggleAISound;
+    window.openRegisterFaceModal = openRegisterFaceModal;
+    window.submitRegisterFace = submitRegisterFace;
+    window.deleteAIFace = deleteAIFace;
+    window.openRegisterPlateModal = openRegisterPlateModal;
+    window.submitRegisterPlate = submitRegisterPlate;
+    window.deleteAIPlate = deleteAIPlate;
+    window.clearAILogs = clearAILogs;
+    window.filterFacesList = filterFacesList;
+    window.filterPlatesList = filterPlatesList;
   </script>
 </body>
 </html>
