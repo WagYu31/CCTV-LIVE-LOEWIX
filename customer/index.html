@@ -3876,6 +3876,7 @@
           }
 
           renderCameraCards(customerCameras);
+          populateAICameraSelector();
         } else {
           renderEmptyState('Belum ada kamera CCTV terdaftar di akun Anda. Klik tombol "Tambah Kamera CCTV" di atas untuk menambahkan.');
         }
@@ -6869,10 +6870,33 @@
           renderAIPlatesTable(cachedAIPlates);
           renderAILiveFeed(cachedAILogs);
           renderAISimulatorButtons(cachedAIFaces, cachedAIPlates);
+          populateAICameraSelector();
         }
       } catch (err) {
         console.error('Error loading AI data:', err);
       }
+    }
+
+    // Populate Camera Selector with all 12 Real Customer Cameras
+    function populateAICameraSelector() {
+      const select = document.getElementById('ai-camera-selector');
+      if (!select) return;
+
+      const currentVal = select.value;
+      let html = '<option value="webcam" ' + (currentVal === 'webcam' ? 'selected' : '') + '>📸 Live Webcam Laptop (Uji Scan Wajah Anda)</option>';
+
+      if (Array.isArray(customerCameras) && customerCameras.length > 0) {
+        customerCameras.forEach((cam, idx) => {
+          const statusIcon = cam.status !== 'offline' ? '🟢' : '🔴';
+          const cityStr = cam.city ? ` [${cam.city.toUpperCase()}]` : '';
+          const isSelected = (currentVal == cam.id) || (idx === 0 && (!currentVal || currentVal === '5002')) ? 'selected' : '';
+          html += `<option value="${cam.id}" ${isSelected}>📹 ${statusIcon} ${cam.title}${cityStr}</option>`;
+        });
+      } else {
+        html += '<option value="5002" selected>📹 🟢 YAMAHA DDS [JAKARTA]</option>';
+      }
+
+      select.innerHTML = html;
     }
 
     // Render Dynamic AI Simulator Buttons (For Every Registered Face & Plate)
@@ -7252,8 +7276,11 @@
       ctx.fillStyle = '#ef4444';
       ctx.fillText('🔴 REC', 18, 30);
 
+      const activeCamTitle = currentAICamera ? currentAICamera.title.toUpperCase() : (Array.isArray(customerCameras) && customerCameras[0] ? customerCameras[0].title.toUpperCase() : 'YAMAHA DDS');
+      const activeCamCity = currentAICamera && currentAICamera.city ? ` [${currentAICamera.city.toUpperCase()}]` : '';
+
       ctx.fillStyle = '#38bdf8';
-      ctx.fillText(`CAM 01 - LOBBY UTAMA`, 75, 30);
+      ctx.fillText(`CAM: ${activeCamTitle}${activeCamCity}`, 75, 30);
 
       ctx.fillStyle = '#f59e0b';
       ctx.fillText(`${dateStr} ${timeStr} WIB`, w - 210, 30);
@@ -7554,22 +7581,50 @@
       }
     }
 
+    let currentAICamera = null;
+
     function changeAICamera(camId) {
       const select = document.getElementById('ai-camera-selector');
       if (select) select.value = camId;
+      const statusLabel = document.getElementById('ai-active-mode-label');
+
       if (camId === 'webcam') {
+        currentAICamera = null;
         startAIWebcamLive();
       } else {
         if (aiMainWebcamStream) {
           aiMainWebcamStream.getTracks().forEach(t => t.stop());
           aiMainWebcamStream = null;
-          const video = document.getElementById('ai-video-player');
-          if (video) {
-            video.srcObject = null;
+        }
+
+        const cam = (Array.isArray(customerCameras) && customerCameras.length > 0)
+          ? customerCameras.find(c => c.id == camId)
+          : null;
+
+        currentAICamera = cam || { title: 'CAM LOEWIX CCTV', city: 'JAKARTA' };
+
+        if (statusLabel) {
+          statusLabel.innerHTML = `<span class="text-info"><i class="fas fa-video mr-1"></i> ${currentAICamera.title} (Live CCTV)</span>`;
+        }
+
+        const video = document.getElementById('ai-video-player');
+        if (video) {
+          video.srcObject = null;
+          if (cam && cam.hls_url && typeof Hls !== 'undefined' && Hls.isSupported()) {
+            if (window._aiHls) window._aiHls.destroy();
+            window._aiHls = new Hls({ enableWorker: true, lowLatencyMode: true });
+            window._aiHls.loadSource(cam.hls_url);
+            window._aiHls.attachMedia(video);
+            window._aiHls.on(Hls.Events.MANIFEST_PARSED, () => video.play().catch(e => {}));
+          } else if (cam && cam.hls_url && video.canPlayType('application/vnd.apple.mpegurl')) {
+            video.src = cam.hls_url;
+            video.play().catch(e => {});
+          } else {
             video.src = 'assets/video/demo-cctv.mp4';
             video.play().catch(e => {});
           }
         }
+
         initAIHUDCanvas();
       }
     }
@@ -7921,6 +7976,7 @@
     window.simulateCustomPlateDetection = simulateCustomPlateDetection;
     window.startAIWebcamLive = startAIWebcamLive;
     window.scanCurrentFrameManual = scanCurrentFrameManual;
+    window.populateAICameraSelector = populateAICameraSelector;
     window.changeAICamera = changeAICamera;
     window.toggleAISound = toggleAISound;
     window.toggleAIAutoTracking = toggleAIAutoTracking;
