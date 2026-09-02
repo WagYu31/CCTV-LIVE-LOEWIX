@@ -546,148 +546,298 @@ h1, h2, h3, h4, h5, h6, .vms-heading, .gate-auth-heading, .stage-headline, .vms-
       color: #38bdf8;
     }
 
-    /* VMS Device Tree Sidebar */
+    /* ===== VMS DEVICE SLIDEOVER DRAWER ===== */
+    .vms-device-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.55);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      z-index: 99998;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+
+    .vms-device-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
     .vms-device-sidebar {
       position: fixed;
-      top: 105px;
-      right: -380px;
-      width: 320px;
-      max-height: calc(100vh - 140px);
-      height: 520px;
-      background: rgba(10, 18, 38, 0.98);
-      border: 1px solid rgba(56, 189, 248, 0.35);
-      border-radius: 14px;
+      top: 0;
+      right: -390px;
+      width: 360px;
+      max-width: 90vw;
+      height: 100vh;
+      background: linear-gradient(180deg, rgba(10, 18, 38, 0.98) 0%, rgba(6, 12, 28, 0.99) 100%);
+      border-left: 1px solid rgba(56, 189, 248, 0.35);
+      border-top: none;
+      border-right: none;
+      border-bottom: none;
+      border-radius: 0;
       backdrop-filter: blur(25px);
       -webkit-backdrop-filter: blur(25px);
-      box-shadow: -15px 0 35px rgba(0, 0, 0, 0.7);
-      z-index: 10000;
-      transition: right 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: -15px 0 40px rgba(0, 0, 0, 0.85);
+      z-index: 99999;
+      transition: right 0.35s cubic-bezier(0.16, 1, 0.3, 1);
       display: flex;
       flex-direction: column;
       overflow: hidden;
     }
 
     .vms-device-sidebar.open {
-      right: 20px;
+      right: 0;
     }
 
     .vms-sidebar-header {
-      padding: 12px 16px;
-      background: rgba(15, 23, 42, 0.98);
-      border-bottom: 1px solid rgba(56, 189, 248, 0.25);
+      padding: 16px 18px;
+      background: rgba(15, 23, 42, 0.95);
+      border-bottom: 1px solid rgba(56, 189, 248, 0.22);
       display: flex;
       justify-content: space-between;
       align-items: center;
       color: #fff;
     }
 
-    .vms-sidebar-header h6 {
+    .vms-sidebar-icon-badge {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: rgba(56, 189, 248, 0.15);
+      border: 1px solid rgba(56, 189, 248, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #38bdf8;
+      font-size: 13px;
+    }
+
+    .vms-sidebar-title {
       margin: 0;
       font-size: 13px;
       font-weight: 700;
-      letter-spacing: 0.5px;
+      color: #ffffff;
+      letter-spacing: 0.4px;
+      line-height: 1.2;
+    }
+
+    .vms-sidebar-subtitle {
+      color: #94a3b8;
+      font-size: 11px;
+      display: block;
+      margin-top: 1px;
     }
 
     .vms-close-btn {
       background: rgba(255, 255, 255, 0.08);
       border: 1px solid rgba(255, 255, 255, 0.15);
-      border-radius: 6px;
-      width: 26px;
-      height: 26px;
+      border-radius: 8px;
+      width: 28px;
+      height: 28px;
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      color: #94a3b8;
-      font-size: 16px;
+      color: #cbd5e1;
+      font-size: 14px;
       cursor: pointer;
       line-height: 1;
-      transition: all 0.2s;
+      transition: all 0.2s ease;
     }
 
     .vms-close-btn:hover {
-      background: rgba(239, 68, 68, 0.2);
+      background: rgba(239, 68, 68, 0.25);
       color: #ef4444;
-      border-color: rgba(239, 68, 68, 0.4);
+      border-color: rgba(239, 68, 68, 0.5);
+      transform: rotate(90deg);
     }
 
     .vms-sidebar-search {
-      padding: 10px 14px;
-      background: rgba(10, 20, 42, 0.9);
+      padding: 12px 16px;
+      background: rgba(10, 20, 42, 0.85);
       border-bottom: 1px solid rgba(255, 255, 255, 0.08);
     }
 
-    .vms-sidebar-search input {
+    .vms-sidebar-search-box {
+      position: relative;
+      display: flex;
+      align-items: center;
+      width: 100%;
+    }
+
+    .vms-sidebar-search-box i.fa-search {
+      position: absolute;
+      left: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #38bdf8;
+      font-size: 11px;
+      pointer-events: none;
+    }
+
+    .vms-sidebar-search-box input {
       width: 100%;
       height: 34px;
       background: rgba(15, 23, 42, 0.95);
       border: 1px solid rgba(56, 189, 248, 0.3);
       border-radius: 8px;
-      padding: 0 12px;
+      padding: 0 28px 0 28px;
       color: #fff;
-      font-size: 12px;
+      font-size: 11.5px;
       outline: none;
-      transition: border-color 0.2s;
+      transition: all 0.2s;
     }
 
-    .vms-sidebar-search input:focus {
+    .vms-sidebar-search-box input:focus {
       border-color: #38bdf8;
-      box-shadow: 0 0 10px rgba(56, 189, 248, 0.3);
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.35);
+      background: rgba(22, 36, 71, 0.95);
+    }
+
+    .vms-search-clear-mini {
+      position: absolute;
+      right: 8px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: #64748b;
+      font-size: 11px;
+      cursor: pointer;
+      padding: 2px;
+    }
+
+    .vms-search-clear-mini:hover {
+      color: #38bdf8;
     }
 
     .vms-device-tree {
-      flex: 1;
+      flex: 1 1 auto;
       overflow-y: auto;
-      padding: 12px;
+      padding: 12px 14px;
     }
 
     .vms-tree-group {
-      margin-bottom: 10px;
+      margin-bottom: 12px;
     }
 
     .vms-group-header {
-      font-size: 12px;
+      font-size: 11.5px;
       font-weight: 700;
       color: #38bdf8;
       display: flex;
       align-items: center;
-      gap: 6px;
-      padding: 6px 8px;
+      justify-content: space-between;
+      padding: 8px 10px;
       background: rgba(56, 189, 248, 0.1);
-      border-radius: 6px;
+      border: 1px solid rgba(56, 189, 248, 0.2);
+      border-radius: 8px;
       cursor: pointer;
+      user-select: none;
+      transition: all 0.2s;
+    }
+
+    .vms-group-header:hover {
+      background: rgba(56, 189, 248, 0.18);
+      border-color: rgba(56, 189, 248, 0.4);
+    }
+
+    .vms-group-header .group-chevron.rotate {
+      transform: rotate(-90deg);
+    }
+
+    .vms-group-content {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
     }
 
     .vms-cam-item {
       display: flex;
       align-items: center;
       gap: 8px;
-      padding: 6px 12px;
+      padding: 8px 10px;
       color: #cbd5e1;
       font-size: 12px;
+      font-weight: 500;
       cursor: pointer;
-      border-radius: 4px;
-      transition: background 0.15s;
+      border-radius: 6px;
+      border: 1px solid transparent;
+      transition: all 0.18s ease;
+      user-select: none;
     }
 
     .vms-cam-item:hover {
-      background: rgba(255, 255, 255, 0.08);
-      color: #fff;
+      background: rgba(255, 255, 255, 0.07);
+      color: #ffffff;
+      border-color: rgba(255, 255, 255, 0.1);
+      transform: translateX(2px);
     }
 
     .vms-cam-item.active {
-      background: rgba(56, 189, 248, 0.25) !important;
+      background: linear-gradient(90deg, rgba(2, 132, 199, 0.3) 0%, rgba(14, 165, 233, 0.15) 100%) !important;
       color: #38bdf8 !important;
-      font-weight: 700;
-      border: 1px solid rgba(56, 189, 248, 0.45);
+      font-weight: 700 !important;
+      border-color: rgba(56, 189, 248, 0.5) !important;
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.2) !important;
     }
 
     .vms-cam-dot {
       width: 7px;
       height: 7px;
       border-radius: 50%;
-      background: #20bf6b;
-      box-shadow: 0 0 6px #20bf6b;
+      background: #10b981;
+      box-shadow: 0 0 6px #10b981;
       flex-shrink: 0;
+    }
+
+    .vms-cam-dot.offline {
+      background: #ef4444;
+      box-shadow: 0 0 6px #ef4444;
+    }
+
+    .vms-cam-ch-tag {
+      font-size: 9.5px;
+      font-weight: 700;
+      padding: 1px 5px;
+      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.08);
+      color: #94a3b8;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      flex-shrink: 0;
+    }
+
+    .vms-cam-title {
+      flex: 1 1 auto;
+      min-width: 0;
+    }
+
+    .vms-cam-proto-badge {
+      font-size: 9px;
+      font-weight: 700;
+      padding: 1px 5px;
+      border-radius: 4px;
+      background: rgba(56, 189, 248, 0.12);
+      color: #38bdf8;
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      flex-shrink: 0;
+    }
+
+    .vms-sidebar-footer {
+      padding: 12px 16px;
+      background: rgba(8, 14, 30, 0.96);
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      margin-top: auto;
+    }
+
+    .vms-stat-text {
+      color: #94a3b8;
+      font-size: 11px;
+      font-weight: 600;
     }
 
     /* Card Footer Command Center Panel */

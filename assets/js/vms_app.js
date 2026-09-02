@@ -5068,32 +5068,63 @@
 
     function toggleVMSDeviceSidebar() {
       const sidebar = document.getElementById('vms-device-sidebar');
+      const overlay = document.getElementById('vms-device-overlay');
+      const favBtn = document.getElementById('favorites-toggle-btn');
       if (!sidebar) return;
-      sidebar.classList.toggle('open');
-      if (sidebar.classList.contains('open')) {
+
+      const isOpen = sidebar.classList.toggle('open');
+      if (overlay) {
+        overlay.classList.toggle('active', isOpen);
+      }
+      if (favBtn) {
+        favBtn.style.opacity = isOpen ? '0' : '1';
+        favBtn.style.pointerEvents = isOpen ? 'none' : 'auto';
+      }
+      if (isOpen) {
         renderVMSDeviceTree();
+        const searchInp = document.getElementById('vms-device-search');
+        if (searchInp) {
+          searchInp.value = '';
+          searchInp.focus();
+        }
       }
     }
 
     function renderVMSDeviceTree() {
       const container = document.getElementById('vms-device-tree-list');
-      if (!container || !mediamtxData) return;
+      const countSub = document.getElementById('vms-device-count-sub');
+      const cams = (typeof allCCTV !== 'undefined' && allCCTV && allCCTV.length > 0) ? allCCTV : (typeof mediamtxData !== 'undefined' ? mediamtxData : []);
+      if (!container || !cams) return;
 
-      const activeCams = mediamtxData.filter(c => !c.section);
+      const activeCams = cams.filter(c => !c.section);
+      if (countSub) {
+        countSub.textContent = `${activeCams.length} Kamera Terdaftar`;
+      }
+
       let html = `
         <div class="vms-tree-group">
-          <div class="vms-group-header" onclick="this.nextElementSibling.classList.toggle('d-none')">
-            <i class="fas fa-folder-open"></i> Default Group (${activeCams.length})
+          <div class="vms-group-header" onclick="this.nextElementSibling.classList.toggle('d-none'); this.querySelector('.group-chevron').classList.toggle('rotate');">
+            <div class="d-flex align-items-center" style="gap: 6px;">
+              <i class="fas fa-folder-open text-warning"></i>
+              <span>Default Group (${activeCams.length})</span>
+            </div>
+            <i class="fas fa-chevron-down group-chevron" style="font-size: 11px; transition: transform 0.2s;"></i>
           </div>
           <div class="vms-group-content mt-1">`;
 
-      activeCams.forEach(cam => {
+      activeCams.forEach((cam, idx) => {
         const isActive = (selectedSingleCameraId === cam.id) ? 'active' : '';
+        const chNum = String(idx + 1).padStart(2, '0');
+        const isOnline = cam.status !== 'offline';
+        const statusDot = isOnline ? 'online' : 'offline';
+        const platformLabel = (cam.platform || 'RTSP').toUpperCase();
+
         html += `
-          <div class="vms-cam-item ${isActive}" onclick="focusCameraSingle(${cam.id})">
-            <span class="vms-cam-dot"></span>
-            <i class="fas fa-video text-muted" style="font-size:10px;"></i>
-            <span class="text-truncate" style="max-width: 210px;">${cam.title}</span>
+          <div class="vms-cam-item ${isActive}" onclick="focusCameraSingle(${cam.id}); toggleVMSDeviceSidebar();" title="Klik untuk fokus kamera ${cam.title}">
+            <span class="vms-cam-dot ${statusDot}"></span>
+            <span class="vms-cam-ch-tag">CH-${chNum}</span>
+            <span class="vms-cam-title text-truncate">${cam.title || cam.name}</span>
+            <span class="vms-cam-proto-badge">${platformLabel}</span>
           </div>`;
       });
 
@@ -5102,10 +5133,10 @@
     }
 
     function filterVMSDevices(query) {
-      const q = (query || '').toLowerCase();
+      const q = (query || '').toLowerCase().trim();
       const items = document.querySelectorAll('.vms-cam-item');
       items.forEach(item => {
-        if (item.textContent.toLowerCase().includes(q)) {
+        if (!q || item.textContent.toLowerCase().includes(q)) {
           item.style.display = 'flex';
         } else {
           item.style.display = 'none';
