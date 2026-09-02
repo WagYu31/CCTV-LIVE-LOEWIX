@@ -1281,20 +1281,20 @@
           <div class="d-none d-sm-block" style="width: 1px; height: 20px; background: rgba(255,255,255,0.15); margin: 0 1px;"></div>
           
           <!-- Search Box -->
-          <div class="vms-search-box cctv-search-input-wrapper">
-            <i class="fas fa-search vms-search-icon cctv-search-icon"></i>
+          <div class="vms-search-box" id="vms-search-box-wrap">
+            <i class="fas fa-search vms-search-icon"></i>
             <input
               type="text"
               id="cctv-search-input"
-              class="vms-search-input cctv-search-input"
+              class="vms-search-input"
               placeholder="Cari CCTV / lokasi..."
               autocomplete="off" />
-            <span class="vms-search-spinner cctv-search-loading" id="cctv-search-loading">
+            <span class="vms-search-spinner" id="cctv-search-loading">
               <i class="fas fa-spinner fa-spin"></i>
             </span>
             <button
               type="button"
-              class="vms-search-clear-btn cctv-search-clear"
+              class="vms-search-clear-btn"
               id="cctv-search-clear"
               aria-label="Clear search">
               <i class="fas fa-times"></i>
