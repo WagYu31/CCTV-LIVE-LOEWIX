@@ -499,7 +499,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
   
   <!-- Modular Loewix VMS Core Stylesheet -->
-  <link rel="stylesheet" href="assets/css/vms_core.css?v=3.9.9">
+  <link rel="stylesheet" href="assets/css/vms_core.css?v=4.0.0">
 
   <!-- Tactical Industrial / Brutalist Telemetry Form Styling -->
   <style>
@@ -724,7 +724,12 @@
       src="https://www.facebook.com/tr?id=1234567890123456&ev=PageView&noscript=1" /></noscript>
 
   <!-- ===== CINEMATIC 3D ENTERPRISE SPLIT-STAGE PORTAL ===== -->
-  <div id="loewix-login-gate" style="display: flex;">
+  <div id="loewix-login-gate" style="display: none;">
+    
+    <!-- Close / Back to CCTV Button -->
+    <button type="button" class="gate-close-btn" onclick="showDashboardView()" title="Kembali ke Live CCTV">
+      <i class="fas fa-times"></i>
+    </button>
     
     <!-- 3D Three.js Interactive Particle Canvas -->
     <canvas id="gate-3d-canvas"></canvas>
@@ -1132,7 +1137,7 @@
   </div>
 
   <!-- ===== MAIN DASHBOARD APPLICATION WRAPPER ===== -->
-  <div id="main-app-content" style="display: none;">
+  <div id="main-app-content" style="display: block;">
 
   <!-- Banner Section [HIDDEN] -->
   <div class="header-and-banner-con w-100" style="display: none !important;">
@@ -1987,8 +1992,8 @@
   <!-- Core App Javascript - Ultimate Version -->
 
   <!-- Core Modular VMS Application & Authentication Scripts -->
-  <script src="assets/js/vms_app.js?v=3.9.9"></script>
-  <script src="assets/js/vms_auth.js?v=3.9.0"></script>
+  <script src="assets/js/vms_app.js?v=4.0.0"></script>
+  <script src="assets/js/vms_auth.js?v=4.0.0"></script>
 
   <!-- Dynamic Package Selector Controller (Real-time Synced with Super Admin) -->
   <script>

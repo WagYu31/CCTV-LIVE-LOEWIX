@@ -4974,6 +4974,33 @@ h1, h2, h3, h4, h5, h6, .vms-heading, .gate-auth-heading, .stage-headline, .vms-
       perspective: 1200px;
     }
 
+    .gate-close-btn {
+      position: absolute !important;
+      top: 24px !important;
+      right: 24px !important;
+      background: rgba(255, 255, 255, 0.08) !important;
+      border: 1px solid rgba(255, 255, 255, 0.2) !important;
+      color: #ffffff !important;
+      border-radius: 50% !important;
+      width: 42px !important;
+      height: 42px !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      font-size: 16px !important;
+      cursor: pointer !important;
+      z-index: 1000 !important;
+      transition: all 0.25s ease !important;
+      backdrop-filter: blur(8px) !important;
+    }
+
+    .gate-close-btn:hover {
+      background: rgba(239, 68, 68, 0.3) !important;
+      border-color: #ef4444 !important;
+      color: #ef4444 !important;
+      transform: rotate(90deg) scale(1.05) !important;
+    }
+
     /* 3D WebGL Canvas in Background */
     #gate-3d-canvas {
       position: absolute;

@@ -620,6 +620,8 @@ function toggleGatePasswordVisibility(inputId = 'gate-login-password', iconId = 
             showDashboardView(user);
           }
         } catch(e) {}
+      } else {
+        renderUserSessionUI(null);
       }
 
       // 2. Authoritative check from server session
@@ -632,15 +634,14 @@ function toggleGatePasswordVisibility(inputId = 'gate-login-password', iconId = 
             localStorage.setItem('loewix_user', JSON.stringify(data.user));
             showDashboardView(data.user);
           } else {
-            if (!currentUser) {
-              showLoginGateView();
-            }
+            currentUser = null;
+            renderUserSessionUI(null);
           }
         })
         .catch(err => {
           authCheckComplete = true;
           if (!currentUser) {
-            showLoginGateView();
+            renderUserSessionUI(null);
           }
         });
     }
