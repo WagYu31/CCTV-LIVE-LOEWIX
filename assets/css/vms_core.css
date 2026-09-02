@@ -1759,45 +1759,51 @@ h1, h2, h3, h4, h5, h6, .vms-heading, .gate-auth-heading, .stage-headline, .vms-
     }
 
     /* RESPONSIVE BREAKPOINTS */
-    @media (max-width: 1199px) {
-      .vms-search-box {
-        min-width: 100%;
-        max-width: 100%;
-        flex: 1 1 100%;
-      }
-    }
-
     @media (max-width: 991px) {
       .cctv-vms-command-center {
-        padding: 12px 14px;
-      }
-      .vms-filters-cluster {
-        width: 100%;
-      }
-      .vms-select-group {
-        width: 100%;
-      }
-      .vms-select-item {
-        flex: 1 1 calc(50% - 6px);
+        padding: 8px 12px;
       }
       .vms-bar-top {
-        flex-direction: column;
-        align-items: stretch;
-      }
-      .vms-telemetry-cluster {
-        width: 100%;
+        display: flex;
+        align-items: center;
         justify-content: space-between;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+      .vms-search-box {
+        width: 180px !important;
+        max-width: 200px !important;
+      }
+      .vms-select-item {
+        flex: 0 0 auto;
+        width: auto;
+      }
+      .vms-bar-bottom {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        flex-wrap: wrap;
       }
     }
 
     @media (max-width: 576px) {
+      .vms-bar-top {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+      }
+      .vms-search-box {
+        width: 100% !important;
+        max-width: 100% !important;
+      }
       .vms-select-item {
-        flex: 1 1 100%;
+        flex: 1 1 calc(50% - 4px);
       }
       .vms-bar-bottom {
         flex-direction: column;
         align-items: stretch;
-        gap: 10px;
+        gap: 8px;
       }
       .vms-layout-cluster {
         width: 100%;
@@ -1806,16 +1812,10 @@ h1, h2, h3, h4, h5, h6, .vms-heading, .gate-auth-heading, .stage-headline, .vms-
         width: 100%;
         justify-content: flex-start;
       }
-      .vms-devices-action-btn {
+      .vms-telemetry-cluster {
         width: 100%;
-        justify-content: center;
+        justify-content: flex-start;
       }
-    }
-      transform: scale(1.05);
-      border-color: #38bdf8;
-    }
-      transform: scale(1.05);
-      border-color: #38bdf8;
     }
 
     /* ===== FULLSCREEN MODE FOR INDIVIDUAL CCTV CARD ===== */
