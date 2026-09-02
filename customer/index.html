@@ -1719,6 +1719,10 @@
                   <span class="text-muted">Masa Aktif Hingga:</span>
                   <strong class="text-warning" id="pkg-expiry-date">14 Agustus 2027</strong>
                 </div>
+                <div class="d-flex justify-content-between mb-1" style="font-size: 12.5px;">
+                  <span class="text-muted">Status / Sisa Waktu:</span>
+                  <strong class="text-info" id="pkg-remaining-days">Sisa 345 Hari Lagi</strong>
+                </div>
                 <div class="d-flex justify-content-between" style="font-size: 12.5px;">
                   <span class="text-muted">Biaya Berlangganan:</span>
                   <strong class="text-emerald" style="color: #34d399;" id="pkg-cost-amount">Rp 2.990.000 / Tahun</strong>
@@ -1735,10 +1739,13 @@
               <li><i class="fas fa-check-circle text-success mr-2"></i> Dedicated P2P Relay Server</li>
             </ul>
 
-            <div class="d-flex gap-2">
-              <button class="btn btn-info font-weight-bold flex-fill py-2" onclick="renewCurrentPlan()" style="border-radius: 10px;">
+            <div class="d-flex flex-column gap-2">
+              <button class="btn btn-info font-weight-bold flex-fill py-2" onclick="renewCurrentPlan()" style="border-radius: 10px; box-shadow: 0 4px 14px rgba(2, 132, 199, 0.4);">
                 <i class="fas fa-sync mr-1"></i> Perpanjang Paket Sekarang
               </button>
+              <small class="text-muted text-center mt-1" style="font-size: 11px;">
+                <i class="fas fa-info-circle text-info mr-1"></i> Perpanjangan kapan saja sebelum jatuh tempo akan otomatis menambahkan (+1 thn / +1 bln) masa aktif tanpa memotong sisa hari.
+              </small>
             </div>
           </div>
         </div>
@@ -5557,6 +5564,26 @@
       if (expiryEl && sub.expires_at) {
         const expDate = new Date(sub.expires_at.replace(/-/g, '/'));
         expiryEl.textContent = expDate.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+
+        const now = new Date();
+        const diffTime = expDate - now;
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        const remainingEl = document.getElementById('pkg-remaining-days');
+        const statusBadge = document.getElementById('pkg-status-badge');
+
+        if (diffDays > 0) {
+          if (remainingEl) remainingEl.innerHTML = `<span class="text-info"><i class="fas fa-hourglass-half mr-1"></i> Sisa ${diffDays} Hari Lagi</span>`;
+          if (statusBadge) {
+            statusBadge.className = 'billing-status-badge active';
+            statusBadge.innerHTML = '<i class="fas fa-check-circle"></i> AKTIF';
+          }
+        } else {
+          if (remainingEl) remainingEl.innerHTML = `<span class="text-danger font-weight-bold"><i class="fas fa-exclamation-triangle mr-1"></i> Telah Berakhir (Jatuh Tempo)</span>`;
+          if (statusBadge) {
+            statusBadge.className = 'billing-status-badge badge-danger text-white bg-danger';
+            statusBadge.innerHTML = '<i class="fas fa-times-circle"></i> EXPIRED';
+          }
+        }
       }
       
       if (costEl && sub.amount) {
