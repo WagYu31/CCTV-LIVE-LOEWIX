@@ -491,7 +491,26 @@
     })();
   </script>
 
-  <!-- Custom Card Styles -->
+  <!-- Instant Auth State Detector (Zero FOUC & Immediate View State) -->
+  <script>
+    (function() {
+      try {
+        var user = localStorage.getItem('loewix_user');
+        if (user) {
+          var parsed = JSON.parse(user);
+          if (parsed && parsed.id) {
+            document.documentElement.classList.add('user-logged-in');
+          } else {
+            document.documentElement.classList.add('user-logged-out');
+          }
+        } else {
+          document.documentElement.classList.add('user-logged-out');
+        }
+      } catch(e) {
+        document.documentElement.classList.add('user-logged-out');
+      }
+    })();
+  </script>
 
   <!-- Premium Enterprise Fonts (Plus Jakarta Sans, Outfit, Space Grotesk) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -499,7 +518,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
   
   <!-- Modular Loewix VMS Core Stylesheet -->
-  <link rel="stylesheet" href="assets/css/vms_core.css?v=4.0.1">
+  <link rel="stylesheet" href="assets/css/vms_core.css?v=4.0.2">
 
   <!-- Tactical Industrial / Brutalist Telemetry Form Styling -->
   <style>
@@ -1994,8 +2013,8 @@
   <!-- Core App Javascript - Ultimate Version -->
 
   <!-- Core Modular VMS Application & Authentication Scripts -->
-  <script src="assets/js/vms_app.js?v=4.0.1"></script>
-  <script src="assets/js/vms_auth.js?v=4.0.1"></script>
+  <script src="assets/js/vms_app.js?v=4.0.2"></script>
+  <script src="assets/js/vms_auth.js?v=4.0.2"></script>
 
   <!-- Dynamic Package Selector Controller (Real-time Synced with Super Admin) -->
   <script>

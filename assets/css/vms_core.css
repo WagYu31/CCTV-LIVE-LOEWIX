@@ -90,6 +90,21 @@ h1, h2, h3, h4, h5, h6, .vms-heading, .gate-auth-heading, .stage-headline, .vms-
       min-height: 100vh;
     }
 
+    /* ZERO-FOUC AUTH STATE DISPLAY RULES */
+    html.user-logged-in #loewix-login-gate {
+      display: none !important;
+    }
+    html.user-logged-in #main-app-content {
+      display: block !important;
+    }
+
+    html.user-logged-out #loewix-login-gate {
+      display: flex !important;
+    }
+    html.user-logged-out #main-app-content {
+      display: none !important;
+    }
+
     #main-app-content {
       background-color: #091650 !important;
       background: #091650 !important;

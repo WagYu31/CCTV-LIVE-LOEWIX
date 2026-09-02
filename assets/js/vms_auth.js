@@ -618,10 +618,14 @@ function toggleGatePasswordVisibility(inputId = 'gate-login-password', iconId = 
           if (user && user.id) {
             currentUser = user;
             showDashboardView(user);
+          } else {
+            showLoginGateView();
           }
-        } catch(e) {}
+        } catch(e) {
+          showLoginGateView();
+        }
       } else {
-        renderUserSessionUI(null);
+        showLoginGateView();
       }
 
       // 2. Authoritative check from server session
@@ -635,13 +639,14 @@ function toggleGatePasswordVisibility(inputId = 'gate-login-password', iconId = 
             showDashboardView(data.user);
           } else {
             currentUser = null;
-            renderUserSessionUI(null);
+            localStorage.removeItem('loewix_user');
+            showLoginGateView();
           }
         })
         .catch(err => {
           authCheckComplete = true;
           if (!currentUser) {
-            renderUserSessionUI(null);
+            showLoginGateView();
           }
         });
     }
@@ -651,6 +656,9 @@ function toggleGatePasswordVisibility(inputId = 'gate-login-password', iconId = 
         currentUser = user;
         authCheckComplete = true;
       }
+      document.documentElement.classList.remove('user-logged-out');
+      document.documentElement.classList.add('user-logged-in');
+
       const gate = document.getElementById('loewix-login-gate');
       const content = document.getElementById('main-app-content');
       if (gate) gate.style.display = 'none';
@@ -664,6 +672,9 @@ function toggleGatePasswordVisibility(inputId = 'gate-login-password', iconId = 
     }
 
     function showLoginGateView() {
+      document.documentElement.classList.remove('user-logged-in');
+      document.documentElement.classList.add('user-logged-out');
+
       const gate = document.getElementById('loewix-login-gate');
       const content = document.getElementById('main-app-content');
       if (gate) gate.style.display = 'flex';
