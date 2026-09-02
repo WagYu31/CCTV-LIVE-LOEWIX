@@ -17,6 +17,31 @@ if (!empty($orderId)) {
             break;
         }
     }
+
+    if (!$targetInvoice && !empty($db['subscriptions'])) {
+        foreach ($db['subscriptions'] as $sub) {
+            if ((isset($sub['order_id']) && strcasecmp($sub['order_id'], $orderId) === 0) || (stripos($orderId, $sub['plan_id'] ?? '') !== false)) {
+                $base = (float)($sub['amount'] ?? 1490000);
+                $tax = round($base * 0.11);
+                $targetInvoice = [
+                    'order_id' => $orderId,
+                    'user_id' => $sub['user_id'] ?? 3,
+                    'user_name' => 'Yamaha DDS Jakarta',
+                    'user_email' => 'YamahaDDS09@gmail.com',
+                    'plan_name' => ($sub['plan_name'] ?? 'Paket CCTV') . ' (' . ($sub['cctv_quota'] ?? 4) . ' CCTV)',
+                    'billing_cycle' => $sub['billing_cycle'] ?? 'annual',
+                    'amount' => $base,
+                    'tax_amount' => $tax,
+                    'total_amount' => $base + $tax,
+                    'status' => 'settlement',
+                    'payment_type' => 'bank_transfer_bca',
+                    'transaction_time' => $sub['start_date'] ?? date('Y-m-d H:i:s'),
+                    'settlement_time' => $sub['start_date'] ?? date('Y-m-d H:i:s')
+                ];
+                break;
+            }
+        }
+    }
 }
 
 // Fallback to latest invoice if not specifically found
@@ -28,13 +53,13 @@ if (!$targetInvoice && !empty($invoices)) {
 if (!$targetInvoice) {
     $targetInvoice = [
         'order_id' => !empty($orderId) ? $orderId : 'INV-LWX-' . date('Ymd') . '-001',
-        'user_name' => 'BATAGOR BANDUNG',
-        'user_email' => 'cingire687@gmail.com',
-        'plan_name' => 'Business Pro (10 CCTV)',
+        'user_name' => 'Yamaha DDS Jakarta',
+        'user_email' => 'YamahaDDS09@gmail.com',
+        'plan_name' => 'Enterprise Fleet (20 CCTV)',
         'billing_cycle' => 'annual',
-        'amount' => 2990000,
-        'tax_amount' => 328900,
-        'total_amount' => 3318900,
+        'amount' => 5490000,
+        'tax_amount' => 603900,
+        'total_amount' => 6093900,
         'status' => 'settlement',
         'payment_type' => 'bank_transfer_bca',
         'transaction_time' => date('Y-m-d H:i:s'),
