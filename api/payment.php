@@ -413,21 +413,27 @@ if ($action === 'get_billing_dashboard') {
     $db = get_db_data();
     $userId = (int)$user['id'];
 
-    // Active subscription
-    $sub = get_user_subscription($userId);
-    if (!$sub) {
-        $sub = [
-            'plan_id' => 'business_10',
-            'plan_name' => 'Business Pro Plan',
+    // Multi-Subscription / Active Packages list
+    $allSubs = get_user_subscriptions($userId);
+    if (empty($allSubs)) {
+        $defaultSub = [
+            'id' => 1,
+            'user_id' => $userId,
+            'plan_id' => 'enterprise_20',
+            'plan_name' => 'Enterprise Fleet',
             'cctv_quota' => $user['cctv_quota'] ?? 20,
             'billing_cycle' => 'annual',
-            'amount' => 2990000,
+            'amount' => 5490000,
             'status' => 'active',
-            'start_date' => date('Y-m-01 00:00:00'),
-            'expires_at' => date('Y-12-31 23:59:59', strtotime('+1 year')),
+            'start_date' => date('Y-08-14 00:00:00'),
+            'expires_at' => date('Y-08-14 23:59:59', strtotime('+1 year')),
             'auto_renew' => true
         ];
+        $allSubs = [$defaultSub];
     }
+
+    $sub = $allSubs[0];
+    $totalActiveQuota = calculate_user_total_quota($userId);
 
     // Count camera usage
     $usedCount = 0;
@@ -452,6 +458,8 @@ if ($action === 'get_billing_dashboard') {
     echo json_encode([
         'success' => true,
         'subscription' => $sub,
+        'subscriptions' => $allSubs,
+        'total_active_quota' => $totalActiveQuota,
         'cctv_used' => $usedCount,
         'invoices' => $invoices,
         'billing_profile' => $profile,

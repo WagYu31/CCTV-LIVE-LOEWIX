@@ -488,16 +488,53 @@ function is_super_admin() {
 }
 
 /**
- * Get user active subscription
+ * Get user active subscription (primary)
  */
 function get_user_subscription($userId) {
+    $subs = get_user_subscriptions($userId);
+    return $subs[0] ?? null;
+}
+
+/**
+ * Get all user subscriptions (active and historical separated)
+ */
+function get_user_subscriptions($userId) {
     $db = get_db_data();
-    foreach ($db['subscriptions'] as $sub) {
-        if ((int)$sub['user_id'] === (int)$userId && $sub['status'] === 'active') {
-            return $sub;
+    $subs = [];
+    if (isset($db['subscriptions']) && is_array($db['subscriptions'])) {
+        foreach ($db['subscriptions'] as $sub) {
+            if ((int)$sub['user_id'] === (int)$userId) {
+                // Check if expired
+                if (!empty($sub['expires_at']) && strtotime($sub['expires_at']) < time()) {
+                    $sub['status'] = 'expired';
+                }
+                $subs[] = $sub;
+            }
         }
     }
-    return null;
+    
+    // Sort active first, then newest
+    usort($subs, function($a, $b) {
+        if ($a['status'] === 'active' && $b['status'] !== 'active') return -1;
+        if ($a['status'] !== 'active' && $b['status'] === 'active') return 1;
+        return strcmp($b['start_date'] ?? '', $a['start_date'] ?? '');
+    });
+    
+    return $subs;
+}
+
+/**
+ * Calculate user total active CCTV quota across all active packages
+ */
+function calculate_user_total_quota($userId) {
+    $subs = get_user_subscriptions($userId);
+    $totalQuota = 0;
+    foreach ($subs as $sub) {
+        if ($sub['status'] === 'active') {
+            $totalQuota += (int)($sub['cctv_quota'] ?? 0);
+        }
+    }
+    return $totalQuota > 0 ? $totalQuota : 10;
 }
 
 /**
@@ -697,32 +734,28 @@ function activate_user_subscription($userId, $planId, $billingCycle, $amount, $o
         ? strtotime($currentActiveSub['expires_at']) 
         : null;
 
-    if ($existingExpiryTs && ($currentActiveSub['plan_id'] ?? '') === $targetPlan['id']) {
-        // Renewal on SAME package: Accumulate / extend from active expiration date (Zero days lost!)
-        $expiresAt = date('Y-m-d 23:59:59', strtotime("+{$durationDays} days", $existingExpiryTs));
-    } else {
-        // Upgrade to new higher tier: New full subscription period starts today with expanded quota
-        $expiresAt = date('Y-m-d 23:59:59', strtotime("+{$durationDays} days"));
-    }
-
-    // Update or create subscription
-    $foundSub = false;
-    foreach ($db['subscriptions'] as &$sub) {
-        if ((int)$sub['user_id'] === (int)$userId) {
-            $sub['plan_id'] = $targetPlan['id'];
-            $sub['plan_name'] = $targetPlan['name'];
-            $sub['cctv_quota'] = $cctvQuota;
-            $sub['billing_cycle'] = $billingCycle;
-            $sub['amount'] = $amount;
-            $sub['status'] = 'active';
-            $sub['start_date'] = $startDate;
-            $sub['expires_at'] = $expiresAt;
-            $foundSub = true;
+    // Check if there is an existing ACTIVE subscription with the EXACT SAME plan_id for renewal
+    $existingSamePlanSub = null;
+    foreach ($db['subscriptions'] as &$s) {
+        if ((int)$s['user_id'] === (int)$userId && ($s['plan_id'] ?? '') === $targetPlan['id'] && ($s['status'] ?? '') === 'active') {
+            $existingSamePlanSub = &$s;
             break;
         }
     }
-    if (!$foundSub) {
-        $existingSubIds = array_column($db['subscriptions'], 'id');
+
+    if ($existingSamePlanSub) {
+        // Renewal on SAME package: Accumulate / extend from active expiration date (Zero days lost!)
+        $currentExpiryTs = (!empty($existingSamePlanSub['expires_at']) && strtotime($existingSamePlanSub['expires_at']) > time()) 
+            ? strtotime($existingSamePlanSub['expires_at']) 
+            : time();
+
+        $existingSamePlanSub['expires_at'] = date('Y-m-d 23:59:59', strtotime("+{$durationDays} days", $currentExpiryTs));
+        $existingSamePlanSub['billing_cycle'] = $billingCycle;
+        $existingSamePlanSub['amount'] = $amount;
+        $existingSamePlanSub['status'] = 'active';
+    } else {
+        // New Package / Additional License: Create a separate distinct active package item!
+        $existingSubIds = array_column($db['subscriptions'] ?? [], 'id');
         $newSubId = count($existingSubIds) > 0 ? max($existingSubIds) + 1 : 1;
         $db['subscriptions'][] = [
             'id' => $newSubId,
@@ -734,15 +767,27 @@ function activate_user_subscription($userId, $planId, $billingCycle, $amount, $o
             'amount' => $amount,
             'status' => 'active',
             'start_date' => $startDate,
-            'expires_at' => $expiresAt,
+            'expires_at' => date('Y-m-d 23:59:59', strtotime("+{$durationDays} days")),
+            'order_id' => $orderId,
             'auto_renew' => true
         ];
     }
 
-    // Update user cctv quota
+    // Recalculate combined total CCTV quota across all active packages
+    $totalActiveQuota = 0;
+    foreach ($db['subscriptions'] as $sub) {
+        if ((int)$sub['user_id'] === (int)$userId && ($sub['status'] ?? '') === 'active') {
+            if (empty($sub['expires_at']) || strtotime($sub['expires_at']) >= time()) {
+                $totalActiveQuota += (int)($sub['cctv_quota'] ?? 0);
+            }
+        }
+    }
+    if ($totalActiveQuota <= 0) $totalActiveQuota = $cctvQuota;
+
+    // Update user cctv quota in users table
     foreach ($db['users'] as &$u) {
         if ((int)$u['id'] === (int)$userId) {
-            $u['cctv_quota'] = $cctvQuota;
+            $u['cctv_quota'] = $totalActiveQuota;
             break;
         }
     }

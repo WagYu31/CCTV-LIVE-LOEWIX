@@ -1694,70 +1694,32 @@
     <!-- ======================================================== -->
     <div id="tab-package" class="customer-tab-pane" style="display: none;">
       <div class="row">
-        <!-- Current Active Package Card -->
+        <!-- Current Active Packages Column -->
         <div class="col-lg-6 mb-4">
           <div class="billing-card h-100">
             <div class="billing-card-header">
               <h5 class="billing-card-title">
-                <i class="fas fa-box-open text-info"></i> Paket Langganan Aktif
+                <i class="fas fa-boxes-stacked text-info"></i> Daftar Lisensi & Paket Aktif
               </h5>
-              <span class="billing-status-badge active" id="pkg-status-badge">
-                <i class="fas fa-check-circle"></i> AKTIF
+              <span class="badge badge-info px-2.5 py-1" id="total-quota-summary-badge" style="font-size: 12px; font-weight: 700; border-radius: 8px;">
+                Total Kuota: 20 CCTV
               </span>
             </div>
 
-            <div class="mb-4">
-              <div class="d-flex align-items-center justify-content-between mb-2">
-                <h3 class="font-weight-bold text-white mb-0" id="pkg-plan-name">Business Pro Cloud</h3>
-                <span class="badge badge-info px-3 py-2" id="pkg-quota-badge" style="font-size: 13px; font-weight: 700; border-radius: 8px;">10 CCTV Kuota</span>
-              </div>
-              <p class="text-muted mb-3" style="font-size: 13px;">
-                Siklus Tagihan: <strong class="text-white" id="pkg-billing-cycle">Tahunan (Annual)</strong> &bull; Perpanjangan Otomatis
-              </p>
-              <div class="p-3 mb-3" style="background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px;">
-                <div class="d-flex justify-content-between mb-1" style="font-size: 12.5px;">
-                  <span class="text-muted">Masa Aktif Hingga:</span>
-                  <strong class="text-warning" id="pkg-expiry-date">14 Agustus 2027</strong>
-                </div>
-                <div class="d-flex justify-content-between mb-1" style="font-size: 12.5px;">
-                  <span class="text-muted">Status / Sisa Waktu:</span>
-                  <strong class="text-info" id="pkg-remaining-days">Sisa 345 Hari Lagi</strong>
-                </div>
-                <div class="d-flex justify-content-between" style="font-size: 12.5px;">
-                  <span class="text-muted">Biaya Berlangganan:</span>
-                  <strong class="text-emerald" style="color: #34d399;" id="pkg-cost-amount">Rp 2.990.000 / Tahun</strong>
-                </div>
-              </div>
-            </div>
-
-            <h6 class="text-white font-weight-bold mb-3" style="font-size: 13.5px;">Fitur & Kapabilitas Paket:</h6>
-            <ul class="list-unstyled mb-4" style="font-size: 13px; color: #cbd5e1; line-height: 2;">
-              <li><i class="fas fa-check-circle text-success mr-2"></i> Streaming Full HD / 4K Ultra H.265</li>
-              <li><i class="fas fa-check-circle text-success mr-2"></i> Low Latency WebRTC & HLS Stream</li>
-              <li><i class="fas fa-check-circle text-success mr-2"></i> AI Motion & Smart Detection Telemetry</li>
-              <li><i class="fas fa-check-circle text-success mr-2"></i> Cloud Recording & Playback 14 Hari</li>
-              <li><i class="fas fa-check-circle text-success mr-2"></i> Dedicated P2P Relay Server</li>
-            </ul>
-
-            <div class="d-flex flex-column gap-2">
-              <button class="btn btn-info font-weight-bold flex-fill py-2" onclick="renewCurrentPlan()" style="border-radius: 10px; box-shadow: 0 4px 14px rgba(2, 132, 199, 0.4);">
-                <i class="fas fa-sync mr-1"></i> Perpanjang Paket Sekarang
-              </button>
-              <small class="text-muted text-center mt-1" style="font-size: 11px;">
-                <i class="fas fa-info-circle text-info mr-1"></i> Perpanjangan kapan saja sebelum jatuh tempo akan otomatis menambahkan (+1 thn / +1 bln) masa aktif tanpa memotong sisa hari.
-              </small>
+            <div id="active-subscriptions-list-container">
+              <!-- Dynamically populated from active subscriptions API -->
             </div>
           </div>
         </div>
 
-        <!-- Available Upgrade Plans -->
+        <!-- Available Upgrade / Add-On Plans -->
         <div class="col-lg-6 mb-4">
           <div class="billing-card h-100">
             <div class="billing-card-header">
               <h5 class="billing-card-title">
-                <i class="fas fa-rocket text-warning"></i> Opsi Upgrade Paket
+                <i class="fas fa-rocket text-warning"></i> Tambah / Beli Lisensi Paket Baru
               </h5>
-              <span class="text-muted" style="font-size: 12px;">Pilih kuota lebih besar</span>
+              <span class="text-muted" style="font-size: 12px;">Tambah kuota kamera & slot baru</span>
             </div>
 
             <div class="upgrade-plans-list" id="upgrade-plans-container">
@@ -5545,80 +5507,117 @@
     }
 
     function renderBillingData(data) {
-      const sub = data.subscription || {};
+      const allSubs = data.subscriptions || (data.subscription ? [data.subscription] : []);
+      const totalActiveQuota = data.total_active_quota || (data.subscription ? data.subscription.cctv_quota : 20);
       const invoices = data.invoices || [];
       const profile = data.billing_profile || {};
       const plans = data.plans || [];
 
-      // 1. Render Active Package Info
-      const planNameEl = document.getElementById('pkg-plan-name');
-      const quotaBadgeEl = document.getElementById('pkg-quota-badge');
-      const cycleEl = document.getElementById('pkg-billing-cycle');
-      const expiryEl = document.getElementById('pkg-expiry-date');
-      const costEl = document.getElementById('pkg-cost-amount');
+      // 1. Render Active Package(s) License Cards Separately
+      const subsListContainer = document.getElementById('active-subscriptions-list-container');
+      const totalQuotaSummaryBadge = document.getElementById('total-quota-summary-badge');
 
-      if (planNameEl) planNameEl.textContent = sub.plan_name || 'Business Pro Plan';
-      if (quotaBadgeEl) quotaBadgeEl.textContent = (sub.cctv_quota || 10) + ' CCTV Kuota';
-      if (cycleEl) cycleEl.textContent = sub.billing_cycle === 'annual' ? 'Tahunan (Annual - Hemat 2 Bln)' : 'Bulanan (Monthly)';
-      
-      if (expiryEl && sub.expires_at) {
-        const expDate = new Date(sub.expires_at.replace(/-/g, '/'));
-        expiryEl.textContent = expDate.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+      if (totalQuotaSummaryBadge) {
+        totalQuotaSummaryBadge.textContent = `Total Kuota: ${totalActiveQuota} CCTV`;
+      }
 
-        const now = new Date();
-        const diffTime = expDate - now;
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-        const remainingEl = document.getElementById('pkg-remaining-days');
-        const statusBadge = document.getElementById('pkg-status-badge');
-
-        if (diffDays > 0) {
-          if (remainingEl) remainingEl.innerHTML = `<span class="text-info"><i class="fas fa-hourglass-half mr-1"></i> Sisa ${diffDays} Hari Lagi</span>`;
-          if (statusBadge) {
-            statusBadge.className = 'billing-status-badge active';
-            statusBadge.innerHTML = '<i class="fas fa-check-circle"></i> AKTIF';
-          }
+      if (subsListContainer) {
+        if (allSubs.length === 0) {
+          subsListContainer.innerHTML = '<div class="text-center py-4 text-muted">Belum ada lisensi paket aktif.</div>';
         } else {
-          if (remainingEl) remainingEl.innerHTML = `<span class="text-danger font-weight-bold"><i class="fas fa-exclamation-triangle mr-1"></i> Telah Berakhir (Jatuh Tempo)</span>`;
-          if (statusBadge) {
-            statusBadge.className = 'billing-status-badge badge-danger text-white bg-danger';
-            statusBadge.innerHTML = '<i class="fas fa-times-circle"></i> EXPIRED';
-          }
-        }
-      }
-      
-      if (costEl && sub.amount) {
-        costEl.textContent = 'Rp ' + Number(sub.amount).toLocaleString('id-ID') + (sub.billing_cycle === 'annual' ? ' / Tahun' : ' / Bulan');
-      }
+          subsListContainer.innerHTML = allSubs.map((subItem, idx) => {
+            const expDate = subItem.expires_at ? new Date(subItem.expires_at.replace(/-/g, '/')) : new Date();
+            const expDateFmt = expDate.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+            const now = new Date();
+            const diffTime = expDate - now;
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            const isActive = diffDays > 0 && subItem.status === 'active';
 
-      // 2. Render Upgrade Plans
-      const upgradeContainer = document.getElementById('upgrade-plans-container');
-      if (upgradeContainer && plans.length > 0) {
-        let upgradeHtml = '';
-        plans.forEach(p => {
-          if (p.id !== sub.plan_id) {
-            upgradeHtml += `
-              <div class="p-3 mb-3" style="background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 12px;">
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                  <div>
-                    <h6 class="text-white font-weight-bold mb-0">${p.name} (${p.cctv_quota} CCTV)</h6>
-                    <small class="text-info font-weight-bold">${p.features ? p.features[1] : 'Full Cloud Stream'}</small>
+            const statusBadge = isActive 
+              ? '<span class="billing-status-badge active"><i class="fas fa-check-circle"></i> AKTIF</span>'
+              : '<span class="billing-status-badge badge-danger text-white bg-danger"><i class="fas fa-times-circle"></i> EXPIRED</span>';
+
+            const sisaWaktuBadge = isActive
+              ? `<strong class="text-info"><i class="fas fa-hourglass-half mr-1"></i> Sisa ${diffDays} Hari Lagi</strong>`
+              : `<strong class="text-danger"><i class="fas fa-exclamation-triangle mr-1"></i> Telah Berakhir</strong>`;
+
+            const cycleText = subItem.billing_cycle === 'annual' ? 'Tahunan (Annual - Hemat 2 Bln)' : 'Bulanan (Monthly)';
+            const costText = 'Rp ' + Number(subItem.amount || 0).toLocaleString('id-ID') + (subItem.billing_cycle === 'annual' ? ' / Tahun' : ' / Bulan');
+
+            return `
+              <div class="package-item-card p-3.5 mb-3" style="background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 12px; position: relative;">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                  <div class="d-flex align-items-center gap-2">
+                    <span class="badge badge-dark px-2 py-0.5" style="background: rgba(255,255,255,0.08); font-size: 11px; border: 1px solid rgba(255,255,255,0.1); border-radius: 6px;">Lisensi #${idx + 1}</span>
+                    <h5 class="font-weight-bold text-white mb-0" style="font-size: 15px;">${subItem.plan_name}</h5>
                   </div>
-                  <div class="text-right">
-                    <div class="text-emerald font-weight-bold" style="color: #34d399; font-size: 15px;">Rp ${Number(p.price_annual).toLocaleString('id-ID')}<small>/thn</small></div>
-                    <small class="text-muted">Atau Rp ${Number(p.price_monthly).toLocaleString('id-ID')}/bln</small>
+                  <div>${statusBadge}</div>
+                </div>
+
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                  <span class="badge badge-info px-2.5 py-1" style="font-size: 12px; font-weight: 700; border-radius: 6px;">${subItem.cctv_quota} CCTV Kuota</span>
+                  <small class="text-muted">Siklus: <strong class="text-white">${cycleText}</strong></small>
+                </div>
+
+                <div class="p-2.5 mb-3" style="background: rgba(4, 9, 24, 0.6); border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 8px;">
+                  <div class="d-flex justify-content-between mb-1" style="font-size: 12px;">
+                    <span class="text-muted">Masa Aktif Hingga:</span>
+                    <strong class="text-warning">${expDateFmt}</strong>
+                  </div>
+                  <div class="d-flex justify-content-between mb-1" style="font-size: 12px;">
+                    <span class="text-muted">Status / Sisa Waktu:</span>
+                    ${sisaWaktuBadge}
+                  </div>
+                  <div class="d-flex justify-content-between" style="font-size: 12px;">
+                    <span class="text-muted">Biaya Lisensi:</span>
+                    <strong class="text-emerald" style="color: #34d399;">${costText}</strong>
                   </div>
                 </div>
-                <div class="d-flex gap-2 mt-2">
-                  <button class="btn btn-sm btn-outline-info flex-fill font-weight-bold" onclick="checkoutPlanMidtrans('${p.id}', 'annual')">
-                    <i class="fas fa-credit-card mr-1"></i> Upgrade Tahunan (Hemat)
-                  </button>
-                  <button class="btn btn-sm btn-outline-light font-weight-bold" onclick="checkoutPlanMidtrans('${p.id}', 'monthly')">
-                    Bulanan
+
+                <div class="d-flex gap-2">
+                  <button class="btn btn-sm btn-info font-weight-bold flex-fill py-1.5" onclick="checkoutPlanMidtrans('${subItem.plan_id}', '${subItem.billing_cycle || 'annual'}')" style="border-radius: 8px; font-size: 12px; box-shadow: 0 2px 8px rgba(2, 132, 199, 0.3);">
+                    <i class="fas fa-sync mr-1"></i> Perpanjang Lisensi Ini (${subItem.plan_name})
                   </button>
                 </div>
               </div>
             `;
-          }
+          }).join('') + `
+            <div class="text-center mt-2">
+              <small class="text-muted" style="font-size: 11px;">
+                <i class="fas fa-info-circle text-info mr-1"></i> Setiap lisensi paket memiliki masa aktif dan kuota mandiri. Total kuota CCTV dihitung otomatis dari seluruh paket yang masih aktif.
+              </small>
+            </div>
+          `;
+        }
+      }
+
+      // 2. Render Upgrade / Add-On Plans
+      const upgradeContainer = document.getElementById('upgrade-plans-container');
+      if (upgradeContainer && plans.length > 0) {
+        let upgradeHtml = '';
+        plans.forEach(p => {
+          upgradeHtml += `
+            <div class="p-3 mb-3" style="background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 12px;">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <div>
+                  <h6 class="text-white font-weight-bold mb-0">${p.name} (${p.cctv_quota} CCTV)</h6>
+                  <small class="text-info font-weight-bold">${p.features ? p.features[1] : 'Full Cloud Stream H.265'}</small>
+                </div>
+                <div class="text-right">
+                  <div class="text-emerald font-weight-bold" style="color: #34d399; font-size: 15px;">Rp ${Number(p.price_annual).toLocaleString('id-ID')}<small>/thn</small></div>
+                  <small class="text-muted">Atau Rp ${Number(p.price_monthly).toLocaleString('id-ID')}/bln</small>
+                </div>
+              </div>
+              <div class="d-flex gap-2 mt-2">
+                <button class="btn btn-sm btn-outline-info flex-fill font-weight-bold" onclick="checkoutPlanMidtrans('${p.id}', 'annual')">
+                  <i class="fas fa-plus-circle mr-1"></i> Beli Lisensi Tahunan
+                </button>
+                <button class="btn btn-sm btn-outline-light font-weight-bold" onclick="checkoutPlanMidtrans('${p.id}', 'monthly')">
+                  Bulanan
+                </button>
+              </div>
+            </div>
+          `;
         });
         if (upgradeHtml) upgradeContainer.innerHTML = upgradeHtml;
       }
