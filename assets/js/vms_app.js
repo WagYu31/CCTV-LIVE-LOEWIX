@@ -7609,8 +7609,12 @@
           // Filter cameras by name (case insensitive)
           allSearchResults = allCCTV.filter(camera => {
             const name = (camera.name || camera.title || '').toLowerCase();
-            return name.includes(currentSearchQuery);
+            const location = (camera.location || camera.city || '').toLowerCase();
+            return name.includes(currentSearchQuery) || location.includes(currentSearchQuery);
           });
+
+          // Live grid filter on the active CCTV matrix
+          filterCCTVGridLive(currentSearchQuery);
 
           console.log('Search results found:', allSearchResults.length);
 
@@ -7626,7 +7630,28 @@
 
             // Save to recent searches
             saveRecentSearch(query);
-          }, 200);
+          }, 150);
+        }
+
+        // Live grid filter on active cards
+        function filterCCTVGridLive(query) {
+          const q = (query || '').toLowerCase().trim();
+          const allCards = document.querySelectorAll('.traffic-card');
+          if (!allCards || allCards.length === 0) return;
+
+          allCards.forEach(card => {
+            if (!q) {
+              card.style.display = '';
+              return;
+            }
+            const cardText = (card.innerText || '').toLowerCase();
+            const cardId = (card.getAttribute('data-camera-id') || card.id || '').toLowerCase();
+            if (cardText.includes(q) || cardId.includes(q)) {
+              card.style.display = '';
+            } else {
+              card.style.display = 'none';
+            }
+          });
         }
 
         // Display empty search state (recent searches or popular cameras)
@@ -8148,18 +8173,14 @@
 
         // Add input event listener
         searchInput.addEventListener('input', function(e) {
-          console.log('=== SEARCH INPUT EVENT ===');
-          console.log('Input value:', e.target.value);
-          console.log('allCCTV length:', allCCTV ? allCCTV.length : 0);
-          console.log('allCCTV defined:', typeof allCCTV !== 'undefined');
           showingAllResults = false;
           selectedResultIndex = -1;
           const value = e.target.value.trim();
+          filterCCTVGridLive(value);
           if (value.length > 0) {
-            console.log('Calling debouncedSearch with:', value);
             debouncedSearch(value);
+            searchClear.classList.add('show');
           } else {
-            console.log('Calling displayEmptySearchState');
             displayEmptySearchState();
             searchClear.classList.remove('show');
           }
@@ -8167,7 +8188,6 @@
 
         // Add focus event listener
         searchInput.addEventListener('focus', function() {
-          console.log('Search input focused');
           const value = this.value.trim();
           if (value.length > 0) {
             // If there are previous results, show them
@@ -8190,19 +8210,18 @@
         searchClear.addEventListener('click', function(e) {
           e.preventDefault();
           e.stopPropagation();
-          console.log('Clear button clicked');
           searchInput.value = '';
-          searchInput.focus();
+          filterCCTVGridLive('');
           searchResults.classList.remove('show');
           searchClear.classList.remove('show');
           allSearchResults = [];
           showingAllResults = false;
+          searchInput.focus();
         }, false);
 
         // Close search on Escape key
         document.addEventListener('keydown', function(e) {
           if (e.key === 'Escape' && searchResults.classList.contains('show')) {
-            console.log('Escape key pressed, closing search');
             searchResults.classList.remove('show');
             searchInput.blur();
           }
@@ -8210,7 +8229,7 @@
 
         // Close search when clicking outside
         document.addEventListener('click', function(e) {
-          const searchWrapper = document.querySelector('.cctv-search-wrapper');
+          const searchWrapper = document.getElementById('vms-search-box-wrap') || document.querySelector('.vms-search-box') || document.querySelector('.cctv-search-wrapper');
           if (searchWrapper && !searchWrapper.contains(e.target)) {
             searchResults.classList.remove('show');
           }
