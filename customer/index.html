@@ -1864,11 +1864,21 @@
               </div>
             </div>
 
+            <!-- Hidden SVG Convolution Matrices for Real-time Hardware-Accelerated Video Sharpening -->
+            <svg style="position: absolute; width: 0; height: 0; pointer-events: none;" aria-hidden="true">
+              <filter id="ai-super-sharpen">
+                <feConvolveMatrix order="3" preserveAlpha="true" kernelMatrix="0 -1 0 -1 5 -1 0 -1 0" />
+              </filter>
+              <filter id="ai-ultra-edge">
+                <feConvolveMatrix order="3" preserveAlpha="true" kernelMatrix="-1 -1 -1 -1 9 -1 -1 -1 -1" />
+              </filter>
+            </svg>
+
             <!-- Video Player & Canvas HUD Overlay Container -->
-            <div class="position-relative" style="background: #020617; border-radius: 12px; overflow: hidden; border: 1px solid rgba(56, 189, 248, 0.3); min-height: 380px; display: flex; align-items: center; justify-content: center;">
+            <div id="ai-video-wrapper" class="position-relative" style="background: #020617; border-radius: 12px; overflow: hidden; border: 1px solid rgba(56, 189, 248, 0.3); min-height: 380px; display: flex; align-items: center; justify-content: center; user-select: none;">
               
               <!-- Video Layer -->
-              <video id="ai-video-player" autoplay loop muted playsinline style="width: 100%; height: 380px; object-fit: cover; display: block; filter: brightness(0.95) contrast(1.05);">
+              <video id="ai-video-player" autoplay loop muted playsinline style="width: 100%; height: 380px; object-fit: cover; display: block; filter: brightness(0.95) contrast(1.05); transition: transform 0.15s ease-out; transform-origin: center center;">
                 <source src="assets/video/demo-cctv.mp4" type="video/mp4">
               </video>
 
@@ -1883,7 +1893,7 @@
               <div class="ai-scanline-overlay"></div>
 
               <!-- Canvas for AI Bounding Box Rendering -->
-              <canvas id="ai-hud-canvas" class="position-absolute" style="top: 0; left: 0; width: 100%; height: 100%; z-index: 20; pointer-events: none;"></canvas>
+              <canvas id="ai-hud-canvas" class="position-absolute" style="top: 0; left: 0; width: 100%; height: 100%; z-index: 20; pointer-events: none; transition: transform 0.15s ease-out; transform-origin: center center;"></canvas>
 
               <!-- HUD Live Status Pill -->
               <div class="position-absolute" style="top: 14px; left: 14px; background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(8px); border: 1px solid rgba(56, 189, 248, 0.4); border-radius: 8px; padding: 6px 12px; font-size: 11px; color: #38bdf8; z-index: 10; display: flex; align-items: center; gap: 6px;">
@@ -1905,6 +1915,46 @@
                 <span class="badge badge-success px-2 py-1" id="ai-banner-badge">VIP ACCESSED</span>
               </div>
 
+            </div>
+
+            <!-- AI Super-Sharpness & Digital Zoom Toolbar -->
+            <div class="mt-2 p-2.5 d-flex align-items-center justify-content-between flex-wrap gap-2" style="background: rgba(15, 23, 42, 0.85); border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 10px;">
+              <div class="d-flex align-items-center gap-2 flex-wrap">
+                <span class="text-white font-weight-bold" style="font-size: 11.5px; color: #38bdf8;">
+                  <i class="fas fa-wand-magic-sparkles mr-1"></i> Penjernih AI:
+                </span>
+                <div class="btn-group btn-group-sm" role="group">
+                  <button type="button" class="btn btn-sm btn-info px-2.5 py-1 font-weight-bold" id="btn-filter-sharp" onclick="setAIVideoFilter('sharp')" style="font-size: 11px;">
+                    ✨ Ultra Sharpen (Plat Jelas)
+                  </button>
+                  <button type="button" class="btn btn-sm btn-outline-secondary px-2.5 py-1" id="btn-filter-ocr" onclick="setAIVideoFilter('ocr')" style="font-size: 11px;" title="Kontras tinggi hitam-putih untuk mempertegas huruf/angka plat nomor">
+                    🌙 High-Contrast OCR
+                  </button>
+                  <button type="button" class="btn btn-sm btn-outline-secondary px-2.5 py-1" id="btn-filter-hdr" onclick="setAIVideoFilter('hdr')" style="font-size: 11px;" title="Mengurangi silau lampu / pantulan sinar">
+                    ☀️ Anti-Glare HDR
+                  </button>
+                  <button type="button" class="btn btn-sm btn-outline-secondary px-2 py-1" id="btn-filter-normal" onclick="setAIVideoFilter('normal')" style="font-size: 11px;">
+                    Normal
+                  </button>
+                </div>
+              </div>
+
+              <!-- Digital Zoom & Pan Controls -->
+              <div class="d-flex align-items-center gap-2 flex-wrap">
+                <span class="text-white" style="font-size: 11.5px;">
+                  <i class="fas fa-magnifying-glass-plus mr-1 text-warning"></i> Zoom Plat:
+                </span>
+                <div class="btn-group btn-group-sm" role="group">
+                  <button type="button" class="btn btn-sm btn-outline-info px-2 py-1" onclick="setAIVideoZoom(1)" style="font-size: 11px;">1x</button>
+                  <button type="button" class="btn btn-sm btn-outline-info px-2 py-1" onclick="setAIVideoZoom(1.5)" style="font-size: 11px;">1.5x</button>
+                  <button type="button" class="btn btn-sm btn-outline-info px-2 py-1" onclick="setAIVideoZoom(2)" style="font-size: 11px;">2x</button>
+                  <button type="button" class="btn btn-sm btn-outline-info px-2 py-1" onclick="setAIVideoZoom(3)" style="font-size: 11px;">3x</button>
+                  <button type="button" class="btn btn-sm btn-outline-info px-2 py-1 font-weight-bold" onclick="setAIVideoZoom(4)" style="font-size: 11px;">4x HD</button>
+                </div>
+                <button type="button" class="btn btn-sm btn-outline-warning px-2.5 py-1 font-weight-bold" onclick="resetAIVideoPanZoom()" style="font-size: 11px;" title="Reset Zoom dan Posisi">
+                  <i class="fas fa-rotate-left mr-1"></i> Reset
+                </button>
+              </div>
             </div>
 
             <!-- Live AI Simulation & Testing Toolbar -->
@@ -7134,6 +7184,7 @@
       if (!aiHUDAnimationId) {
         startAIHUDLoop();
       }
+      initAIVideoPanListeners();
     }
 
     function startAIHUDLoop() {
@@ -7633,6 +7684,102 @@
       }
     }
 
+    // ========================================================
+    // AI VIDEO SUPER-SHARPNESS & DIGITAL ZOOM ENHANCER
+    // ========================================================
+    let aiVideoZoomLevel = 1;
+    let aiVideoPanX = 0;
+    let aiVideoPanY = 0;
+    let isAiPanning = false;
+    let aiPanStartX = 0;
+    let aiPanStartY = 0;
+    let currentAIFilterMode = 'normal';
+
+    function setAIVideoFilter(mode) {
+      currentAIFilterMode = mode;
+      const video = document.getElementById('ai-video-player');
+      if (!video) return;
+
+      ['btn-filter-sharp', 'btn-filter-ocr', 'btn-filter-hdr', 'btn-filter-normal'].forEach(id => {
+        const btn = document.getElementById(id);
+        if (btn) btn.className = 'btn btn-sm btn-outline-secondary px-2.5 py-1';
+      });
+
+      const activeBtn = document.getElementById(`btn-filter-${mode}`);
+      if (activeBtn) {
+        activeBtn.className = 'btn btn-sm btn-info px-2.5 py-1 font-weight-bold';
+      }
+
+      if (mode === 'sharp') {
+        video.style.filter = 'url(#ai-super-sharpen) contrast(1.45) brightness(1.08) saturate(1.2)';
+      } else if (mode === 'ocr') {
+        video.style.filter = 'grayscale(1) contrast(2.4) brightness(1.2)';
+      } else if (mode === 'hdr') {
+        video.style.filter = 'contrast(1.3) brightness(0.92) saturate(1.35)';
+      } else {
+        video.style.filter = 'brightness(0.95) contrast(1.05)';
+      }
+    }
+
+    function setAIVideoZoom(scale) {
+      aiVideoZoomLevel = scale;
+      if (scale === 1) {
+        aiVideoPanX = 0;
+        aiVideoPanY = 0;
+      }
+      applyAIVideoTransform();
+    }
+
+    function resetAIVideoPanZoom() {
+      aiVideoZoomLevel = 1;
+      aiVideoPanX = 0;
+      aiVideoPanY = 0;
+      applyAIVideoTransform();
+      setAIVideoFilter('normal');
+    }
+
+    function applyAIVideoTransform() {
+      const video = document.getElementById('ai-video-player');
+      const canvas = document.getElementById('ai-hud-canvas');
+      const wrapper = document.getElementById('ai-video-wrapper');
+
+      const transformStr = `scale(${aiVideoZoomLevel}) translate(${aiVideoPanX}px, ${aiVideoPanY}px)`;
+      if (video) video.style.transform = transformStr;
+      if (canvas) canvas.style.transform = transformStr;
+
+      if (wrapper) {
+        wrapper.style.cursor = aiVideoZoomLevel > 1 ? 'grab' : 'default';
+      }
+    }
+
+    function initAIVideoPanListeners() {
+      const wrapper = document.getElementById('ai-video-wrapper');
+      if (!wrapper) return;
+
+      wrapper.addEventListener('mousedown', (e) => {
+        if (aiVideoZoomLevel <= 1) return;
+        isAiPanning = true;
+        aiPanStartX = e.clientX - aiVideoPanX * aiVideoZoomLevel;
+        aiPanStartY = e.clientY - aiVideoPanY * aiVideoZoomLevel;
+        wrapper.style.cursor = 'grabbing';
+      });
+
+      window.addEventListener('mousemove', (e) => {
+        if (!isAiPanning || aiVideoZoomLevel <= 1) return;
+        aiVideoPanX = (e.clientX - aiPanStartX) / aiVideoZoomLevel;
+        aiVideoPanY = (e.clientY - aiPanStartY) / aiVideoZoomLevel;
+        applyAIVideoTransform();
+      });
+
+      window.addEventListener('mouseup', () => {
+        if (isAiPanning) {
+          isAiPanning = false;
+          const wrapper = document.getElementById('ai-video-wrapper');
+          if (wrapper) wrapper.style.cursor = aiVideoZoomLevel > 1 ? 'grab' : 'default';
+        }
+      });
+    }
+
     // Trigger Custom Plate Detection
     function simulateCustomPlateDetection(plateNumber, category = 'resident', vehicleModel = 'Mobil') {
       initAIHUDCanvas();
@@ -7982,6 +8129,9 @@
     window.scanCurrentFrameManual = scanCurrentFrameManual;
     window.populateAICameraSelector = populateAICameraSelector;
     window.changeAICamera = changeAICamera;
+    window.setAIVideoFilter = setAIVideoFilter;
+    window.setAIVideoZoom = setAIVideoZoom;
+    window.resetAIVideoPanZoom = resetAIVideoPanZoom;
     window.toggleAISound = toggleAISound;
     window.toggleAIAutoTracking = toggleAIAutoTracking;
     window.openRegisterFaceModal = openRegisterFaceModal;
