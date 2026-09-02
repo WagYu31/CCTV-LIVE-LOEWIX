@@ -1777,44 +1777,57 @@
 
         <div id="active-invoice-container">
           <!-- Active Invoice Box -->
-          <div class="p-4 mb-4" style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 14px;">
+          <div class="p-4 mb-4" style="background: linear-gradient(135deg, rgba(15, 23, 42, 0.9), rgba(12, 22, 48, 0.95)); border: 1.5px solid rgba(56, 189, 248, 0.3); border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
             <div class="row align-items-center">
-              <div class="col-md-8 mb-3 mb-md-0">
-                <div class="d-flex align-items-center gap-2 mb-2">
-                  <span class="badge badge-success px-2.5 py-1" style="font-size: 11px;">SEMUA TAGIHAN LUNAS</span>
-                  <span class="text-muted" style="font-size: 12.5px;">Invoice Terakhir: <strong class="text-white" id="inv-last-order-id">INV-LOEWIX-20260814-001</strong></span>
+              
+              <!-- Left: Invoice Status, Title & Details -->
+              <div class="col-lg-7 col-md-12 mb-3 mb-lg-0">
+                <div class="d-flex align-items-center flex-wrap mb-2.5" style="gap: 12px;">
+                  <span class="badge badge-success px-3 py-1.5" style="font-size: 11px; font-weight: 800; letter-spacing: 0.5px; border-radius: 6px; background: #059669; color: #ffffff;">
+                    <i class="fas fa-check-circle mr-1"></i> SEMUA TAGIHAN LUNAS
+                  </span>
+                  <span class="text-muted" style="font-size: 12.5px;">
+                    No. Invoice: <strong class="text-white font-monospace" id="inv-last-order-id">INV-LOEWIX-20260814-001</strong>
+                  </span>
                 </div>
-                <h4 class="text-white font-weight-bold mb-1" id="inv-plan-title">Business Pro (10 CCTV) - Periode Tahunan</h4>
-                <p class="text-muted mb-0" style="font-size: 13px;">
-                  Tidak ada tagihan tertunggak saat ini. Layanan streaming CCTV Anda aktif dan berjalan normal.
+
+                <h3 class="text-white font-weight-bold mb-2" style="font-size: 20px; letter-spacing: -0.3px;" id="inv-plan-title">Enterprise Fleet (20 CCTV) – Periode Tahunan</h3>
+                <p class="text-muted mb-0" style="font-size: 13px; line-height: 1.5;">
+                  <i class="fas fa-shield-alt text-success mr-1"></i> Layanan live streaming CCTV & penyimpanan cloud aktif normal. Tidak ada tagihan tertunggak.
                 </p>
               </div>
-              <div class="col-md-4 text-md-right">
-                <div class="text-muted mb-1" style="font-size: 12px;">Total Pembayaran Terakhir</div>
-                <h3 class="text-emerald font-weight-bold mb-3" style="color: #34d399;" id="inv-total-display">Rp 3.318.900</h3>
-                <div class="d-flex flex-column gap-2" style="gap: 8px;">
-                  <button class="btn btn-primary btn-block font-weight-bold" onclick="switchCustomerTab('tab-package')" style="background: linear-gradient(135deg, #0284c7, #0ea5e9); border: none; border-radius: 8px; box-shadow: 0 4px 12px rgba(2, 132, 199, 0.4);">
-                    <i class="fas fa-sync mr-1"></i> Perpanjang / Upgrade Paket
+
+              <!-- Right: Price Display & Clean Side-by-Side Action Buttons -->
+              <div class="col-lg-5 col-md-12 text-lg-right text-left">
+                <div class="mb-3">
+                  <div class="text-muted mb-1" style="font-size: 12px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px;">Total Pembayaran Terakhir</div>
+                  <h2 class="text-emerald font-weight-bold mb-0" style="color: #34d399; font-size: 26px; font-family: 'Space Grotesk', sans-serif; letter-spacing: -0.5px;" id="inv-total-display">Rp 6.093.908</h2>
+                </div>
+
+                <div class="d-flex align-items-center justify-content-lg-end justify-content-start flex-wrap" style="gap: 10px;">
+                  <button class="btn btn-outline-info font-weight-bold px-3 py-2" onclick="switchCustomerTab('tab-history')" style="border-radius: 10px; font-size: 12.5px; border-color: rgba(56, 189, 248, 0.4); color: #38bdf8; background: rgba(56, 189, 248, 0.06);">
+                    <i class="fas fa-file-invoice mr-1.5"></i> Riwayat & Kwitansi
                   </button>
-                  <button class="btn btn-outline-info btn-block font-weight-bold" onclick="switchCustomerTab('tab-history')" style="border-radius: 8px;">
-                    <i class="fas fa-file-invoice mr-1"></i> Lihat Rincian di Riwayat
+                  <button class="btn btn-info font-weight-bold px-3 py-2" onclick="switchCustomerTab('tab-package')" style="border-radius: 10px; font-size: 12.5px; background: linear-gradient(135deg, #0284c7, #0ea5e9); border: none; box-shadow: 0 4px 14px rgba(2, 132, 199, 0.4); color: #ffffff;">
+                    <i class="fas fa-sync mr-1.5"></i> Perpanjang / Upgrade
                   </button>
                 </div>
               </div>
+
             </div>
           </div>
         </div>
 
         <!-- Payment Channels Supported -->
-        <div class="p-3" style="background: rgba(2, 6, 23, 0.5); border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 12px;">
-          <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+        <div class="p-3" style="background: rgba(2, 6, 23, 0.6); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px;">
+          <div class="d-flex align-items-center justify-content-between flex-wrap" style="gap: 12px;">
             <span class="text-muted" style="font-size: 12.5px;">
               <i class="fas fa-shield-alt text-success mr-1"></i> Pembayaran resmi diproses secara otomatis & instan melalui gerbang pembayaran <strong>Midtrans</strong>:
             </span>
-            <div class="d-flex align-items-center gap-2">
-              <span class="badge badge-dark px-2 py-1" style="background: rgba(255,255,255,0.08);">QRIS (GoPay, OVO, Dana)</span>
-              <span class="badge badge-dark px-2 py-1" style="background: rgba(255,255,255,0.08);">Virtual Account (BCA, Mandiri, BRI, BNI)</span>
-              <span class="badge badge-dark px-2 py-1" style="background: rgba(255,255,255,0.08);">Kartu Kredit / Debit</span>
+            <div class="d-flex align-items-center flex-wrap" style="gap: 8px;">
+              <span class="badge badge-dark px-2.5 py-1.5" style="background: rgba(255,255,255,0.08); font-size: 11px; border: 1px solid rgba(255,255,255,0.08); border-radius: 6px;">QRIS (GoPay, OVO, Dana)</span>
+              <span class="badge badge-dark px-2.5 py-1.5" style="background: rgba(255,255,255,0.08); font-size: 11px; border: 1px solid rgba(255,255,255,0.08); border-radius: 6px;">Virtual Account (BCA, Mandiri, BRI, BNI)</span>
+              <span class="badge badge-dark px-2.5 py-1.5" style="background: rgba(255,255,255,0.08); font-size: 11px; border: 1px solid rgba(255,255,255,0.08); border-radius: 6px;">Kartu Kredit / Debit</span>
             </div>
           </div>
         </div>
