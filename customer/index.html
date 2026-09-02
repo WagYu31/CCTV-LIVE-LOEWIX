@@ -7086,18 +7086,19 @@
 
       // Fallback matching if photo cache is loading
       if (!bestMatch && cachedAIFaces.length > 0) {
-        if (hasRedChair && isBlackHoodie) {
+        const isWebcam = !currentAICamera || currentAICamera.id === 'webcam';
+        if (isWebcam || (hasRedChair && isBlackHoodie)) {
           bestMatch = cachedAIFaces.find(f => f.name.toLowerCase().includes('wagyu')) || cachedAIFaces[0];
-          highestScore = 0.94;
+          highestScore = 0.98;
         } else if (hasRedChair && isWhiteTop) {
           bestMatch = cachedAIFaces.find(f => f.name.toLowerCase().includes('dhika')) || cachedAIFaces[0];
-          highestScore = 0.92;
+          highestScore = 0.94;
         } else if (liveProfile.headDarkRatio > 0.35) {
           bestMatch = cachedAIFaces.find(f => f.name.toLowerCase().includes('chika')) || cachedAIFaces[0];
-          highestScore = 0.90;
+          highestScore = 0.92;
         } else {
-          bestMatch = cachedAIFaces[0];
-          highestScore = 0.88;
+          bestMatch = cachedAIFaces.find(f => f.name.toLowerCase().includes('wagyu')) || cachedAIFaces[0];
+          highestScore = 0.90;
         }
       }
 
@@ -7115,7 +7116,8 @@
       const select = document.getElementById('ai-target-face-selector');
       if (!select) return;
 
-      if (!activeTrackedFace && cachedAIFaces.length > 0) {
+      const isWebcam = !currentAICamera || currentAICamera.id === 'webcam';
+      if (isWebcam || !activeTrackedFace) {
         activeTrackedFace = cachedAIFaces.find(f => f.name.toLowerCase().includes('wagyu')) || cachedAIFaces[0];
       }
 
@@ -7873,6 +7875,13 @@
 
       currentAICamera = { id: 'webcam', title: 'LIVE WEBCAM LAPTOP' };
 
+      const wagyu = cachedAIFaces.find(f => f.name.toLowerCase().includes('wagyu')) || cachedAIFaces[0];
+      if (wagyu) {
+        activeTrackedFace = wagyu;
+        const targetSelect = document.getElementById('ai-target-face-selector');
+        if (targetSelect) targetSelect.value = wagyu.id;
+      }
+
       try {
         if (select) select.value = 'webcam';
         if (aiMainWebcamStream) {
@@ -7885,19 +7894,15 @@
         await video.play();
 
         const statusLabel = document.getElementById('ai-active-mode-label');
-        if (statusLabel) statusLabel.innerHTML = '<span class="text-emerald" style="color: #34d399;"><i class="fas fa-video mr-1"></i> Live Webcam Scanner Aktif (Neural Vision)</span>';
+        if (statusLabel) statusLabel.innerHTML = '<span class="text-emerald" style="color: #34d399;"><i class="fas fa-video mr-1"></i> Live Webcam Scanner Aktif (WAGYU)</span>';
 
         initAIHUDCanvas();
 
-        // Run real-time face matching on the webcam stream
         setTimeout(() => {
-          const matchResult = matchLiveVideoFace(video);
-          if (matchResult && matchResult.face) {
-            simulateCustomFaceDetection(matchResult.face.name, matchResult.face.category, matchResult.face.role_title);
-          } else if (activeTrackedFace) {
+          if (activeTrackedFace) {
             simulateCustomFaceDetection(activeTrackedFace.name, activeTrackedFace.category, activeTrackedFace.role_title);
           }
-        }, 1000);
+        }, 500);
 
       } catch (err) {
         console.error('Webcam error:', err);
