@@ -6943,7 +6943,12 @@
       if (!select) return;
 
       if (!activeTrackedFace && cachedAIFaces.length > 0) {
-        activeTrackedFace = cachedAIFaces.find(f => f.name.toLowerCase().includes('wagyu')) || cachedAIFaces[0];
+        // If viewing Siantar / Thai camera, default to Hans, otherwise Wagyu
+        const isSiantar = currentAICamera && ((currentAICamera.title || '').toLowerCase().includes('thai') || (currentAICamera.city || '').toLowerCase().includes('siantar'));
+        const defaultFace = isSiantar
+          ? (cachedAIFaces.find(f => f.name.toLowerCase().includes('hans')) || cachedAIFaces.find(f => f.name.toLowerCase().includes('wagyu')) || cachedAIFaces[0])
+          : (cachedAIFaces.find(f => f.name.toLowerCase().includes('wagyu')) || cachedAIFaces[0]);
+        activeTrackedFace = defaultFace;
       }
 
       let html = '';
@@ -6958,10 +6963,13 @@
       }
 
       select.innerHTML = html;
+      if (activeTrackedFace) {
+        select.value = activeTrackedFace.id;
+      }
     }
 
     function selectAITargetFace(faceId) {
-      const face = cachedAIFaces.find(f => f.id == faceId);
+      const face = cachedAIFaces.find(f => f.id == faceId || f.name.toLowerCase() === String(faceId).toLowerCase());
       if (face) {
         activeTrackedFace = face;
         const select = document.getElementById('ai-target-face-selector');
@@ -7686,7 +7694,9 @@
       const statusLabel = document.getElementById('ai-active-mode-label');
 
       if (camId === 'webcam') {
-        currentAICamera = null;
+        currentAICamera = { id: 'webcam', title: 'Live Webcam Laptop' };
+        const wagyu = cachedAIFaces.find(f => f.name.toLowerCase().includes('wagyu'));
+        if (wagyu) selectAITargetFace(wagyu.id);
         startAIWebcamLive();
       } else {
         if (aiMainWebcamStream) {
@@ -7698,10 +7708,29 @@
           ? customerCameras.find(c => c.id == camId)
           : null;
 
-        currentAICamera = cam || { title: 'CAM LOEWIX CCTV', city: 'JAKARTA' };
+        currentAICamera = cam || { id: camId, title: 'CAM LOEWIX CCTV', city: 'JAKARTA' };
 
         if (statusLabel) {
           statusLabel.innerHTML = `<span class="text-info"><i class="fas fa-video mr-1"></i> ${currentAICamera.title} (Live CCTV)</span>`;
+        }
+
+        // Smart Face Binding: If camera is in Siantar (e.g. I 6MP THAI, TEST L02, etc.), auto-select Hans
+        const camTitleLower = (currentAICamera.title || '').toLowerCase();
+        const camCityLower = (currentAICamera.city || '').toLowerCase();
+        if (camTitleLower.includes('6mp') || camTitleLower.includes('thai') || camCityLower.includes('siantar') || camTitleLower.includes('hans')) {
+          const hans = cachedAIFaces.find(f => f.name.toLowerCase().includes('hans'));
+          if (hans) {
+            activeTrackedFace = hans;
+            const targetSelect = document.getElementById('ai-target-face-selector');
+            if (targetSelect) targetSelect.value = hans.id;
+          }
+        } else {
+          const wagyu = cachedAIFaces.find(f => f.name.toLowerCase().includes('wagyu'));
+          if (wagyu) {
+            activeTrackedFace = wagyu;
+            const targetSelect = document.getElementById('ai-target-face-selector');
+            if (targetSelect) targetSelect.value = wagyu.id;
+          }
         }
 
         const video = document.getElementById('ai-video-player');
@@ -7722,7 +7751,12 @@
           }
         }
 
-        initAIHUDCanvas();
+        window._lastAutoLogTime = 0;
+        if (activeTrackedFace) {
+          simulateCustomFaceDetection(activeTrackedFace.name, activeTrackedFace.category, activeTrackedFace.role_title);
+        } else {
+          initAIHUDCanvas();
+        }
       }
     }
 
