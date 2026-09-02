@@ -1841,19 +1841,23 @@
             
             <!-- Video Header Toolbar -->
             <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
-              <div class="d-flex align-items-center gap-2">
+              <div class="d-flex align-items-center gap-2 flex-wrap">
                 <span class="badge badge-danger px-2.5 py-1" style="font-size: 11px; font-weight: 800; letter-spacing: 0.5px;">
                   <span class="pulse-dot" style="background: #ffffff; margin-right: 4px;"></span> AI LIVE SCAN
                 </span>
-                <select class="form-control form-control-sm form-control-dark" id="ai-camera-selector" onchange="changeAICamera(this.value)" style="width: auto; font-size: 12.5px; border-radius: 8px;">
-                  <option value="5002">CAM LOEWIX JAKARTA 1 - LOBBY UTAMA</option>
+                <select class="form-control form-control-sm form-control-dark" id="ai-camera-selector" onchange="changeAICamera(this.value)" style="width: auto; max-width: 320px; font-size: 12.5px; border-radius: 8px;">
+                  <option value="webcam">📸 Live Webcam Laptop (Uji Scan Wajah Anda)</option>
+                  <option value="5002" selected>CAM LOEWIX JAKARTA 1 - LOBBY UTAMA</option>
                   <option value="5003">CAM LOEWIX GATE MASUK & PARKIR</option>
                   <option value="5001">CAM LOEWIX SIANTAR 1</option>
                 </select>
+                <button class="btn btn-sm btn-outline-info font-weight-bold px-2.5 py-1" onclick="startAIWebcamLive()" style="border-radius: 8px; font-size: 11px;" title="Nyalakan kamera laptop untuk scan wajah langsung">
+                  <i class="fas fa-camera mr-1"></i> Scan Wajah Saya (Webcam)
+                </button>
               </div>
 
               <div class="d-flex align-items-center gap-2">
-                <span class="text-muted" style="font-size: 12px;">Mode: <strong class="text-info" id="ai-active-mode-label">Face & ANPR Dual Scan</strong></span>
+                <span class="text-muted" style="font-size: 12px;">Status: <strong class="text-info" id="ai-active-mode-label">Face & ANPR Online</strong></span>
               </div>
             </div>
 
@@ -1906,25 +1910,11 @@
                 <span class="text-white font-weight-bold" style="font-size: 12.5px;">
                   <i class="fas fa-wand-magic-sparkles text-info mr-1"></i> Live Trigger & Simulator Deteksi AI:
                 </span>
-                <small class="text-muted" style="font-size: 11px;">Uji coba pengenalan wajah & pembacaan plat nomor secara langsung</small>
+                <small class="text-muted" style="font-size: 11px;">Klik salah satu entitas di bawah untuk menguji respon pengenalan AI di video</small>
               </div>
 
-              <div class="d-flex align-items-center flex-wrap gap-2">
-                <button class="btn btn-sm btn-outline-info font-weight-bold" onclick="simulateAIDetection('vip_face')" style="border-radius: 8px; font-size: 12px;">
-                  <i class="fas fa-user-tie mr-1 text-info"></i> Deteksi Wajah VIP (Bambang)
-                </button>
-                <button class="btn btn-sm btn-outline-danger font-weight-bold" onclick="simulateAIDetection('blacklist_face')" style="border-radius: 8px; font-size: 12px;">
-                  <i class="fas fa-user-secret mr-1 text-danger"></i> Alert Wajah DPO (Blacklist)
-                </button>
-                <button class="btn btn-sm btn-outline-success font-weight-bold" onclick="simulateAIDetection('vip_plate')" style="border-radius: 8px; font-size: 12px;">
-                  <i class="fas fa-car mr-1 text-success"></i> Deteksi Plat Mobil (B 1234 YMH)
-                </button>
-                <button class="btn btn-sm btn-outline-warning font-weight-bold" onclick="simulateAIDetection('employee_plate')" style="border-radius: 8px; font-size: 12px;">
-                  <i class="fas fa-motorcycle mr-1 text-warning"></i> Deteksi Plat Motor (B 5678 DDS)
-                </button>
-                <button class="btn btn-sm btn-info font-weight-bold text-white ml-auto" onclick="scanCurrentFrameManual()" style="border-radius: 8px; font-size: 12px; background: linear-gradient(135deg, #0284c7, #0ea5e9); border: none;">
-                  <i class="fas fa-camera mr-1"></i> Scan Frame Sekarang
-                </button>
+              <div class="d-flex align-items-center flex-wrap gap-2" id="ai-simulator-buttons-container">
+                <!-- Dynamically populated from registered faces & plates -->
               </div>
             </div>
 
@@ -6874,10 +6864,59 @@
           renderAIFacesGrid(cachedAIFaces);
           renderAIPlatesTable(cachedAIPlates);
           renderAILiveFeed(cachedAILogs);
+          renderAISimulatorButtons(cachedAIFaces, cachedAIPlates);
         }
       } catch (err) {
         console.error('Error loading AI data:', err);
       }
+    }
+
+    // Render Dynamic AI Simulator Buttons (For Every Registered Face & Plate)
+    function renderAISimulatorButtons(faces, plates) {
+      const container = document.getElementById('ai-simulator-buttons-container');
+      if (!container) return;
+
+      let html = '';
+
+      faces.forEach(f => {
+        const isBlacklist = f.category === 'blacklist';
+        const isVIP = f.category === 'vip';
+        const btnClass = isBlacklist ? 'btn-outline-danger' : (isVIP ? 'btn-outline-success' : 'btn-outline-info');
+        const iconClass = isBlacklist ? 'fas fa-user-secret text-danger' : (isVIP ? 'fas fa-user-tie text-success' : 'fas fa-user-check text-info');
+        const escName = f.name.replace(/'/g, "\\'");
+        const escRole = (f.role_title || 'Staff').replace(/'/g, "\\'");
+        const cat = f.category || 'employee';
+
+        html += `
+          <button class="btn btn-sm ${btnClass} font-weight-bold" onclick="simulateCustomFaceDetection('${escName}', '${cat}', '${escRole}')" style="border-radius: 8px; font-size: 12px;">
+            <i class="${iconClass} mr-1"></i> Scan Wajah: ${f.name}
+          </button>
+        `;
+      });
+
+      plates.forEach(p => {
+        const isBlacklist = p.category === 'blacklist';
+        const isVIP = p.category === 'vip';
+        const btnClass = isBlacklist ? 'btn-outline-danger' : (isVIP ? 'btn-outline-success' : 'btn-outline-warning');
+        const iconClass = p.vehicle_type === 'motorcycle' ? 'fas fa-motorcycle text-warning' : 'fas fa-car text-success';
+        const escPlate = p.plate_number.replace(/'/g, "\\'");
+        const escModel = (p.vehicle_model || 'Kendaraan').replace(/'/g, "\\'");
+        const cat = p.category || 'resident';
+
+        html += `
+          <button class="btn btn-sm ${btnClass} font-weight-bold" onclick="simulateCustomPlateDetection('${escPlate}', '${cat}', '${escModel}')" style="border-radius: 8px; font-size: 12px;">
+            <i class="${iconClass} mr-1"></i> Scan Plat: ${p.plate_number}
+          </button>
+        `;
+      });
+
+      html += `
+        <button class="btn btn-sm btn-info font-weight-bold text-white ml-auto" onclick="scanCurrentFrameManual()" style="border-radius: 8px; font-size: 12px; background: linear-gradient(135deg, #0284c7, #0ea5e9); border: none;">
+          <i class="fas fa-camera mr-1"></i> Scan Frame Sekarang
+        </button>
+      `;
+
+      container.innerHTML = html;
     }
 
     // Render Face Directory Cards
@@ -7317,13 +7356,117 @@
     }
 
     function scanCurrentFrameManual() {
-      simulateAIDetection('vip_plate');
+      if (cachedAIFaces.length > 0) {
+        const lastFace = cachedAIFaces[cachedAIFaces.length - 1];
+        simulateCustomFaceDetection(lastFace.name, lastFace.category, lastFace.role_title);
+      } else {
+        simulateAIDetection('vip_face');
+      }
+    }
+
+    let aiMainWebcamStream = null;
+
+    async function startAIWebcamLive() {
+      const video = document.getElementById('ai-video-player');
+      const select = document.getElementById('ai-camera-selector');
+      if (!video) return;
+
+      try {
+        if (select) select.value = 'webcam';
+        if (aiMainWebcamStream) {
+          aiMainWebcamStream.getTracks().forEach(t => t.stop());
+        }
+        aiMainWebcamStream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 720 } }
+        });
+        video.srcObject = aiMainWebcamStream;
+        await video.play();
+
+        const statusLabel = document.getElementById('ai-active-mode-label');
+        if (statusLabel) statusLabel.innerHTML = '<span class="text-emerald" style="color: #34d399;"><i class="fas fa-video mr-1"></i> Live Webcam Scanner Aktif</span>';
+
+        initAIHUDCanvas();
+
+        // Auto trigger detection on the latest registered face (e.g. WAGYU) after 1.5s
+        setTimeout(() => {
+          if (cachedAIFaces.length > 0) {
+            const first = cachedAIFaces[cachedAIFaces.length - 1];
+            simulateCustomFaceDetection(first.name, first.category, first.role_title);
+          }
+        }, 1500);
+
+      } catch (err) {
+        console.error('Webcam error:', err);
+        alert('Gagal mengakses kamera laptop/HP. Pastikan browser diizinkan mengakses kamera.');
+      }
     }
 
     function changeAICamera(camId) {
       const select = document.getElementById('ai-camera-selector');
       if (select) select.value = camId;
+      if (camId === 'webcam') {
+        startAIWebcamLive();
+      } else {
+        if (aiMainWebcamStream) {
+          aiMainWebcamStream.getTracks().forEach(t => t.stop());
+          aiMainWebcamStream = null;
+          const video = document.getElementById('ai-video-player');
+          if (video) {
+            video.srcObject = null;
+            video.src = 'assets/video/demo-cctv.mp4';
+            video.play().catch(e => {});
+          }
+        }
+        initAIHUDCanvas();
+      }
+    }
+
+    // Trigger Custom Plate Detection
+    function simulateCustomPlateDetection(plateNumber, category = 'resident', vehicleModel = 'Mobil') {
       initAIHUDCanvas();
+      const canvas = document.getElementById('ai-hud-canvas');
+      const width = canvas ? canvas.width : 640;
+      const height = canvas ? canvas.height : 380;
+
+      const isBlacklist = category === 'blacklist';
+      const isVIP = category === 'vip';
+
+      const ent = {
+        x: Math.round(width * 0.26),
+        y: Math.round(height * 0.42),
+        w: 220,
+        h: 95,
+        type: 'anpr',
+        label: `${plateNumber} (${isVIP ? 'VIP' : (isBlacklist ? 'BLACKLIST' : 'ACCESS')})`,
+        category: category,
+        confidence: (97 + Math.random() * 2.5).toFixed(1),
+        createdAt: Date.now()
+      };
+
+      activeAIEntities.push(ent);
+
+      const badgeClass = isBlacklist ? 'badge-danger' : (isVIP ? 'badge-success' : 'badge-primary');
+      const badgeText = isBlacklist ? 'ALERT BLACKLIST' : (isVIP ? 'GATE OPEN (VIP)' : 'GATE OPEN');
+      const iconClass = 'fas fa-car';
+      const iconBg = isBlacklist ? '#ef4444' : (isVIP ? '#059669' : '#0284c7');
+
+      showAIBanner(`🚗 Plat ${plateNumber} (${vehicleModel})`, `Confidence: ${ent.confidence}% • Palang Pintu Terbuka Otomatis`, badgeClass, badgeText, iconClass, iconBg);
+
+      if (isBlacklist) {
+        playAIAlarmSound();
+      }
+
+      // Log to server
+      const fd = new FormData();
+      fd.append('action', 'log_detection');
+      fd.append('type', 'anpr');
+      fd.append('camera_id', 5003);
+      fd.append('camera_title', 'CAM LOEWIX GATE MASUK & PARKIR');
+      fd.append('label', plateNumber);
+      fd.append('category', category);
+      fd.append('confidence', ent.confidence);
+      fd.append('details', `${vehicleModel} • Palang Gate Masuk Terbuka`);
+      fetch('../api/ai_analytics.php', { method: 'POST', body: fd }).then(() => loadAIData()).catch(e => {});
     }
 
     function toggleAISound(isEnabled) {
@@ -7594,6 +7737,8 @@
     window.switchAISubTab = switchAISubTab;
     window.simulateAIDetection = simulateAIDetection;
     window.simulateCustomFaceDetection = simulateCustomFaceDetection;
+    window.simulateCustomPlateDetection = simulateCustomPlateDetection;
+    window.startAIWebcamLive = startAIWebcamLive;
     window.scanCurrentFrameManual = scanCurrentFrameManual;
     window.changeAICamera = changeAICamera;
     window.toggleAISound = toggleAISound;
