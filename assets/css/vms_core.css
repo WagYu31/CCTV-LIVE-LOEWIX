@@ -1191,23 +1191,29 @@ h1, h2, h3, h4, h5, h6, .vms-heading, .gate-auth-heading, .stage-headline, .vms-
       gap: 10px !important;
       flex-wrap: nowrap !important;
       min-width: 0 !important;
-      padding-bottom: 6px !important;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+      padding: 5px 8px 6px 8px !important;
+      border-bottom: 1px solid rgba(56, 189, 248, 0.12) !important;
     }
 
     .vms-brand-search-group {
       display: flex !important;
       align-items: center !important;
-      gap: 10px !important;
-      flex: 0 0 auto !important;
+      gap: 8px !important;
+      flex: 1 1 auto !important;
       min-width: 0 !important;
+      overflow-x: auto !important;
+      scrollbar-width: none !important;
+    }
+
+    .vms-brand-search-group::-webkit-scrollbar {
+      display: none !important;
     }
 
     .vms-header-divider {
       width: 1px !important;
       height: 20px !important;
       background: rgba(255, 255, 255, 0.15) !important;
-      margin: 0 2px !important;
+      margin: 0 4px !important;
       flex-shrink: 0 !important;
     }
 
@@ -1229,6 +1235,13 @@ h1, h2, h3, h4, h5, h6, .vms-heading, .gate-auth-heading, .stage-headline, .vms-
       align-items: center !important;
       justify-content: center !important;
       padding: 0 !important;
+      transition: all 0.2s ease !important;
+    }
+
+    .vms-darkmode-btn:hover {
+      background: rgba(56, 189, 248, 0.2) !important;
+      border-color: #38bdf8 !important;
+      transform: rotate(15deg);
     }
 
     .vms-darkmode-btn i {
@@ -1240,10 +1253,10 @@ h1, h2, h3, h4, h5, h6, .vms-heading, .gate-auth-heading, .stage-headline, .vms-
       position: relative !important;
       display: inline-flex !important;
       align-items: center !important;
-      width: 220px !important;
-      max-width: 250px !important;
-      min-width: 160px !important;
-      height: 34px !important;
+      width: 210px !important;
+      max-width: 240px !important;
+      min-width: 150px !important;
+      height: 32px !important;
       background: transparent !important;
       border: none !important;
       border-radius: 0 !important;
@@ -1889,65 +1902,68 @@ h1, h2, h3, h4, h5, h6, .vms-heading, .gate-auth-heading, .stage-headline, .vms-
 
     /* TELEMETRY CLUSTER */
     .vms-telemetry-cluster {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      flex-wrap: wrap;
+      display: inline-flex !important;
+      align-items: center !important;
+      gap: 6px !important;
+      flex-wrap: nowrap !important;
+      flex-shrink: 0 !important;
     }
 
     .vms-telemetry-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      background: rgba(15, 23, 42, 0.75);
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      border-radius: 16px;
-      padding: 0 10px;
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: 0.3px;
-      height: 28px;
-      color: #cbd5e1;
-      backdrop-filter: blur(8px);
+      display: inline-flex !important;
+      align-items: center !important;
+      gap: 5px !important;
+      background: rgba(15, 23, 42, 0.85) !important;
+      border: 1px solid rgba(255, 255, 255, 0.12) !important;
+      border-radius: 16px !important;
+      padding: 0 9px !important;
+      font-size: 11px !important;
+      font-weight: 700 !important;
+      letter-spacing: 0.3px !important;
+      height: 28px !important;
+      color: #cbd5e1 !important;
+      backdrop-filter: blur(8px) !important;
+      white-space: nowrap !important;
+      flex-shrink: 0 !important;
     }
 
     .vms-telemetry-badge.status-online {
-      border-color: rgba(16, 185, 129, 0.4);
-      color: #34d399;
-      background: rgba(16, 185, 129, 0.12);
+      border-color: rgba(16, 185, 129, 0.4) !important;
+      color: #34d399 !important;
+      background: rgba(16, 185, 129, 0.12) !important;
     }
 
     .vms-telemetry-badge .pulse-dot {
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: #10b981;
-      box-shadow: 0 0 8px #10b981;
-      animation: pulseDot 1.8s infinite;
+      width: 6px !important;
+      height: 6px !important;
+      border-radius: 50% !important;
+      background: #10b981 !important;
+      box-shadow: 0 0 8px #10b981 !important;
+      animation: pulseDot 1.8s infinite !important;
     }
 
     .vms-telemetry-badge.speed-badge {
-      color: #38bdf8;
-      border-color: rgba(56, 189, 248, 0.35);
-      background: rgba(8, 47, 73, 0.5);
+      color: #38bdf8 !important;
+      border-color: rgba(56, 189, 248, 0.35) !important;
+      background: rgba(8, 47, 73, 0.5) !important;
     }
 
     .vms-telemetry-badge.ping-badge {
-      color: #34d399;
-      border-color: rgba(16, 185, 129, 0.35);
-      background: rgba(16, 185, 129, 0.08);
+      color: #34d399 !important;
+      border-color: rgba(16, 185, 129, 0.35) !important;
+      background: rgba(16, 185, 129, 0.08) !important;
     }
 
     .vms-telemetry-badge.codec-badge {
-      color: #38bdf8;
-      border-color: rgba(56, 189, 248, 0.25);
-      background: rgba(56, 189, 248, 0.06);
+      color: #38bdf8 !important;
+      border-color: rgba(56, 189, 248, 0.25) !important;
+      background: rgba(56, 189, 248, 0.06) !important;
     }
 
     .vms-telemetry-badge.clock-badge {
-      color: #94a3b8;
-      font-family: monospace;
-      font-size: 11.5px;
+      color: #94a3b8 !important;
+      font-family: monospace !important;
+      font-size: 11px !important;
       letter-spacing: 0.5px;
     }
 

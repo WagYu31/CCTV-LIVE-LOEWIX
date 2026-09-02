@@ -499,7 +499,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
   
   <!-- Modular Loewix VMS Core Stylesheet -->
-  <link rel="stylesheet" href="assets/css/vms_core.css?v=4.0.0">
+  <link rel="stylesheet" href="assets/css/vms_core.css?v=4.0.1">
 
   <!-- Tactical Industrial / Brutalist Telemetry Form Styling -->
   <style>
@@ -1273,10 +1273,10 @@
     <!-- Unified VMS Master Sticky Header Bar (Clean 2-Row Master Deck) -->
     <header class="cctv-vms-command-center" id="cctv-filter-toolbar">
       
-      <!-- Top Row: Brand Logo, Search Bar & Management Actions -->
+      <!-- Top Row: Brand Logo, Search Bar, Filters & User Account -->
       <div class="vms-bar-top">
         
-        <!-- Left: Brand Logo + Search Input -->
+        <!-- Left: Brand Logo + Search Input + Filters Group -->
         <div class="vms-brand-search-group">
           <!-- Brand Logo -->
           <a href="index.html" class="vms-brand-logo" title="LOEWIX Enterprise CCTV">
@@ -1306,22 +1306,54 @@
             </button>
             <div class="cctv-search-results vms-search-dropdown" id="cctv-search-results"></div>
           </div>
+
+          <div class="vms-header-divider d-none d-md-block"></div>
+
+          <!-- Filter Selects Group -->
+          <div class="vms-select-group">
+            <div class="vms-select-item" title="Filter Wilayah">
+              <i class="fas fa-map-marker-alt"></i>
+              <select class="vms-custom-select" id="filter-city" onchange="changeGlobalCity(this.value)">
+                <option value="all" selected>Semua Wilayah</option>
+                <option value="siantar">Pematangsiantar</option>
+                <option value="jakarta">DKI Jakarta</option>
+                <option value="medan">Kota Medan</option>
+                <option value="bandung">Kota Bandung</option>
+                <option value="bali">Bali / Denpasar</option>
+              </select>
+            </div>
+
+            <div class="vms-select-item" title="Filter Platform">
+              <i class="fas fa-server"></i>
+              <select class="vms-custom-select" id="filter-platform">
+                <option value="all">Platform: Semua</option>
+                <option value="mediamtx">MediaMTX</option>
+                <option value="ipcamlive">IPCamLive</option>
+              </select>
+            </div>
+
+            <div class="vms-select-item" title="Filter Status">
+              <i class="fas fa-circle-notch"></i>
+              <select class="vms-custom-select" id="filter-status">
+                <option value="all">Status: Semua</option>
+                <option value="online">Online</option>
+                <option value="offline">Offline</option>
+              </select>
+            </div>
+
+            <div class="vms-select-item" title="Urutan CCTV">
+              <i class="fas fa-sort-amount-down"></i>
+              <select class="vms-custom-select" id="filter-sort">
+                <option value="default">Urutan: Default</option>
+                <option value="name-asc">Nama A-Z</option>
+                <option value="name-desc">Nama Z-A</option>
+              </select>
+            </div>
+          </div>
         </div>
 
-        <!-- Right: Refresh ALL, Devices Action, Encode Settings, Dark Mode Toggle & User Auth Area -->
+        <!-- Right: Dark Mode Toggle & User Auth Area -->
         <div class="vms-actions-deck ml-auto">
-          <button class="vms-refresh-all-btn vms-tool-btn" id="vms-btn-refresh-all" onclick="refreshAllVMSCCTV()" title="Segarkan & Hubungkan Ulang Semua Kamera CCTV di Layar">
-            <i class="fas fa-rotate"></i> <span>Refresh ALL</span>
-          </button>
-
-          <button class="vms-devices-action-btn vms-tool-btn" onclick="toggleVMSDeviceSidebar()" title="Buka Daftar Kamera (Devices)">
-            <i class="fas fa-video"></i> <span>Devices</span>
-          </button>
-
-          <button class="vms-encode-action-btn vms-tool-btn" onclick="openEncodeModal(1)" title="Buka Menu Encode (Stream & Compression Settings)">
-            <i class="fas fa-sliders-h"></i> <span>Encode</span>
-          </button>
-
           <button id="dark-mode-toggle" class="btn btn-sm text-white vms-darkmode-btn" title="Toggle Dark Mode">
             <i class="fas fa-moon" id="dark-mode-icon"></i>
           </button>
@@ -1335,53 +1367,25 @@
 
       </div>
 
-      <!-- Bottom Row: Filter Selects (Left) & Matrix View + Telemetry Cluster (Right) -->
+      <!-- Bottom Row: Tool Actions + Matrix View (Left) & Telemetry Cluster (Right) -->
       <div class="vms-bar-bottom">
         
-        <!-- Left: Filter Selects Group -->
-        <div class="vms-select-group">
-          <div class="vms-select-item" title="Filter Wilayah">
-            <i class="fas fa-map-marker-alt"></i>
-            <select class="vms-custom-select" id="filter-city" onchange="changeGlobalCity(this.value)">
-              <option value="all" selected>Semua Wilayah</option>
-              <option value="siantar">Pematangsiantar</option>
-              <option value="jakarta">DKI Jakarta</option>
-              <option value="medan">Kota Medan</option>
-              <option value="bandung">Kota Bandung</option>
-              <option value="bali">Bali / Denpasar</option>
-            </select>
-          </div>
+        <!-- Left: Tool Actions (Refresh, Devices, Encode) + Matrix Layout Buttons -->
+        <div class="d-flex align-items-center flex-nowrap" style="gap: 8px; flex-shrink: 0;">
+          <button class="vms-refresh-all-btn vms-tool-btn" id="vms-btn-refresh-all" onclick="refreshAllVMSCCTV()" title="Segarkan & Hubungkan Ulang Semua Kamera CCTV di Layar">
+            <i class="fas fa-rotate"></i> <span>Refresh ALL</span>
+          </button>
 
-          <div class="vms-select-item" title="Filter Platform">
-            <i class="fas fa-server"></i>
-            <select class="vms-custom-select" id="filter-platform">
-              <option value="all">Platform: Semua</option>
-              <option value="mediamtx">MediaMTX</option>
-              <option value="ipcamlive">IPCamLive</option>
-            </select>
-          </div>
+          <button class="vms-devices-action-btn vms-tool-btn" onclick="toggleVMSDeviceSidebar()" title="Buka Daftar Kamera (Devices)">
+            <i class="fas fa-video"></i> <span>Devices</span>
+          </button>
 
-          <div class="vms-select-item" title="Filter Status">
-            <i class="fas fa-circle-notch"></i>
-            <select class="vms-custom-select" id="filter-status">
-              <option value="all">Status: Semua</option>
-              <option value="online">Online</option>
-              <option value="offline">Offline</option>
-            </select>
-          </div>
+          <button class="vms-encode-action-btn vms-tool-btn" onclick="openEncodeModal(1)" title="Buka Menu Encode (Stream & Compression Settings)">
+            <i class="fas fa-sliders-h"></i> <span>Encode</span>
+          </button>
 
-          <div class="vms-select-item" title="Urutan CCTV">
-            <i class="fas fa-sort-amount-down"></i>
-            <select class="vms-custom-select" id="filter-sort">
-              <option value="default">Urutan: Default</option>
-              <option value="name-asc">Nama A-Z</option>
-              <option value="name-desc">Nama Z-A</option>
-            </select>
-          </div>
-        </div>
+          <div class="vms-header-divider"></div>
 
-        <!-- Right: Matrix Layout Buttons + Live Telemetry Cluster -->
-        <div class="vms-matrix-telemetry-deck ml-auto">
           <!-- Matrix Layout Buttons -->
           <div class="vms-layout-cluster">
             <span class="vms-layout-label">
@@ -1402,34 +1406,32 @@
               <button class="vms-layout-btn vms-matrix-btn vms-fs-btn" onclick="toggleVMSFullscreen()" title="Fullscreen Matrix"><i class="fas fa-expand"></i></button>
             </div>
           </div>
+        </div>
 
-          <div class="vms-header-divider d-none d-lg-block"></div>
-
-          <!-- VMS Telemetry & Stream Quality Toggle & Clock -->
-          <div class="vms-telemetry-cluster">
-            <div class="vms-telemetry-badge status-online" title="Surveillance Core Status">
-              <span class="pulse-dot"></span>
-              <span>VMS ONLINE</span>
-            </div>
-            <div class="vms-telemetry-badge speed-badge d-none d-sm-inline-flex" title="Bandwidth Siaran Live Real-Time">
-              <i class="fas fa-gauge-high text-info speed-pulse-icon"></i>
-              <span>SPEED: <strong id="vms-net-speed" class="text-white">0.0 Mbps</strong></span>
-            </div>
-            <div class="vms-telemetry-badge ping-badge d-none d-md-inline-flex" title="Latensi Jaringan Gateway">
-              <span class="net-ping-dot"></span>
-              <span id="vms-net-ping">14 ms</span>
-            </div>
-            <div class="vms-telemetry-badge codec-badge d-none d-md-inline-flex" onclick="openEncodeModal(1)" style="cursor: pointer;" title="Klik untuk Pengaturan Encode (H.265 / Bitrate / FPS)">
-              <i class="fas fa-bolt text-warning mr-1"></i>
-              <span>H.265</span>
-            </div>
-            <button id="global-quality-btn" class="vms-quality-toggle-pill is-sd" onclick="toggleGlobalStreamQuality()" title="Ganti Kualitas Semua CCTV (SD / HD)">
-              <i class="fas fa-sliders-h"></i>
-              <span>Kualitas: <strong id="global-quality-text">SD</strong></span>
-            </button>
-            <div class="vms-telemetry-badge clock-badge d-none d-xl-inline-flex" id="vms-live-clock" title="Waktu Server Real-Time">
-              --:--:-- WIB
-            </div>
+        <!-- Right: VMS Telemetry & Stream Quality Toggle & Clock -->
+        <div class="vms-telemetry-cluster ml-auto">
+          <div class="vms-telemetry-badge status-online" title="Surveillance Core Status">
+            <span class="pulse-dot"></span>
+            <span>VMS ONLINE</span>
+          </div>
+          <div class="vms-telemetry-badge speed-badge d-none d-sm-inline-flex" title="Bandwidth Siaran Live Real-Time">
+            <i class="fas fa-gauge-high text-info speed-pulse-icon"></i>
+            <span>SPEED: <strong id="vms-net-speed" class="text-white">0.0 Mbps</strong></span>
+          </div>
+          <div class="vms-telemetry-badge ping-badge d-none d-md-inline-flex" title="Latensi Jaringan Gateway">
+            <span class="net-ping-dot"></span>
+            <span id="vms-net-ping">14 ms</span>
+          </div>
+          <div class="vms-telemetry-badge codec-badge d-none d-md-inline-flex" onclick="openEncodeModal(1)" style="cursor: pointer;" title="Klik untuk Pengaturan Encode (H.265 / Bitrate / FPS)">
+            <i class="fas fa-bolt text-warning mr-1"></i>
+            <span>H.265</span>
+          </div>
+          <button id="global-quality-btn" class="vms-quality-toggle-pill is-sd" onclick="toggleGlobalStreamQuality()" title="Ganti Kualitas Semua CCTV (SD / HD)">
+            <i class="fas fa-sliders-h"></i>
+            <span>Kualitas: <strong id="global-quality-text">SD</strong></span>
+          </button>
+          <div class="vms-telemetry-badge clock-badge d-none d-xl-inline-flex" id="vms-live-clock" title="Waktu Server Real-Time">
+            --:--:-- WIB
           </div>
         </div>
 
@@ -1992,8 +1994,8 @@
   <!-- Core App Javascript - Ultimate Version -->
 
   <!-- Core Modular VMS Application & Authentication Scripts -->
-  <script src="assets/js/vms_app.js?v=4.0.0"></script>
-  <script src="assets/js/vms_auth.js?v=4.0.0"></script>
+  <script src="assets/js/vms_app.js?v=4.0.1"></script>
+  <script src="assets/js/vms_auth.js?v=4.0.1"></script>
 
   <!-- Dynamic Package Selector Controller (Real-time Synced with Super Admin) -->
   <script>
