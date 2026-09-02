@@ -1185,20 +1185,54 @@ h1, h2, h3, h4, h5, h6, .vms-heading, .gate-auth-heading, .stage-headline, .vms-
 
     /* TOP ROW: Brand, Search & User Actions */
     .vms-bar-top {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      padding-bottom: 8px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+      gap: 10px !important;
+      flex-wrap: nowrap !important;
+      min-width: 0 !important;
+      padding-bottom: 6px !important;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
     }
 
-    .vms-filters-cluster {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      flex-wrap: wrap;
-      flex: 1 1 auto;
+    .vms-brand-search-group {
+      display: flex !important;
+      align-items: center !important;
+      gap: 10px !important;
+      flex: 0 0 auto !important;
+      min-width: 0 !important;
+    }
+
+    .vms-header-divider {
+      width: 1px !important;
+      height: 20px !important;
+      background: rgba(255, 255, 255, 0.15) !important;
+      margin: 0 2px !important;
+      flex-shrink: 0 !important;
+    }
+
+    .vms-actions-deck {
+      display: flex !important;
+      align-items: center !important;
+      gap: 6px !important;
+      flex-shrink: 0 !important;
+      margin-left: auto !important;
+    }
+
+    .vms-darkmode-btn {
+      background: rgba(255, 255, 255, 0.08) !important;
+      border: 1px solid rgba(255, 255, 255, 0.2) !important;
+      border-radius: 50% !important;
+      width: 32px !important;
+      height: 32px !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      padding: 0 !important;
+    }
+
+    .vms-darkmode-btn i {
+      font-size: 12px !important;
     }
 
     /* SEARCH INPUT BOX */
@@ -1207,7 +1241,7 @@ h1, h2, h3, h4, h5, h6, .vms-heading, .gate-auth-heading, .stage-headline, .vms-
       display: inline-flex !important;
       align-items: center !important;
       width: 220px !important;
-      max-width: 260px !important;
+      max-width: 250px !important;
       min-width: 160px !important;
       height: 34px !important;
       background: transparent !important;
@@ -1750,19 +1784,36 @@ h1, h2, h3, h4, h5, h6, .vms-heading, .gate-auth-heading, .stage-headline, .vms-
 
     /* BOTTOM ROW: Matrix Multi-View & Telemetry Deck */
     .vms-bar-bottom {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      flex-wrap: wrap;
-      padding-top: 6px;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+      gap: 10px !important;
+      flex-wrap: nowrap !important;
+      min-width: 0 !important;
+      overflow-x: auto !important;
+      scrollbar-width: none !important;
+      -webkit-overflow-scrolling: touch !important;
+      padding-top: 4px !important;
+      padding-bottom: 2px !important;
+    }
+
+    .vms-bar-bottom::-webkit-scrollbar {
+      display: none !important;
+    }
+
+    .vms-matrix-telemetry-deck {
+      display: flex !important;
+      align-items: center !important;
+      gap: 8px !important;
+      flex-shrink: 0 !important;
+      margin-left: auto !important;
     }
 
     .vms-layout-cluster {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      flex-wrap: wrap;
+      display: inline-flex !important;
+      align-items: center !important;
+      gap: 6px !important;
+      flex-shrink: 0 !important;
     }
 
     .vms-layout-label {
@@ -1928,63 +1979,81 @@ h1, h2, h3, h4, h5, h6, .vms-heading, .gate-auth-heading, .stage-headline, .vms-
       box-shadow: 0 0 10px rgba(16, 185, 129, 0.25) !important;
     }
 
-    /* RESPONSIVE BREAKPOINTS */
-    @media (max-width: 991px) {
+    /* RESPONSIVE BREAKPOINTS (PRESERVE STRICT 2-ROW ARCHITECTURE) */
+    @media (max-width: 1200px) {
       .cctv-vms-command-center {
-        padding: 8px 12px;
-      }
-      .vms-bar-top {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 8px;
-        flex-wrap: wrap;
+        padding: 6px 12px;
       }
       .vms-search-box {
-        width: 180px !important;
-        max-width: 200px !important;
+        width: 170px !important;
+        min-width: 140px !important;
       }
       .vms-select-item {
-        flex: 0 0 auto;
-        width: auto;
+        padding: 0 6px;
+        height: 28px;
+        gap: 4px;
       }
-      .vms-bar-bottom {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 8px;
-        flex-wrap: wrap;
+      .vms-custom-select {
+        font-size: 11px !important;
+      }
+      .vms-layout-label {
+        display: none !important;
+      }
+      .vms-actions-deck .vms-tool-btn {
+        padding: 0 8px;
+        font-size: 10.5px;
+      }
+    }
+
+    @media (max-width: 991px) {
+      .vms-bar-top {
+        overflow-x: auto !important;
+        scrollbar-width: none !important;
+        -webkit-overflow-scrolling: touch !important;
+      }
+      .vms-bar-top::-webkit-scrollbar {
+        display: none !important;
+      }
+      .vms-actions-deck .vms-tool-btn span {
+        display: none !important;
+      }
+      .vms-actions-deck .vms-tool-btn {
+        width: 32px;
+        height: 32px;
+        padding: 0;
+        justify-content: center;
+        border-radius: 50%;
       }
     }
 
     @media (max-width: 576px) {
-      .vms-bar-top {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 8px;
+      .cctv-vms-command-center {
+        padding: 4px 8px;
+        gap: 4px;
+      }
+      .vms-brand-logo img {
+        height: 22px !important;
       }
       .vms-search-box {
-        width: 100% !important;
-        max-width: 100% !important;
+        width: 140px !important;
+        min-width: 120px !important;
+        height: 30px !important;
+      }
+      .vms-search-input {
+        height: 30px !important;
+        font-size: 11px !important;
       }
       .vms-select-item {
-        flex: 1 1 calc(50% - 4px);
+        height: 26px;
+        padding: 0 5px;
       }
-      .vms-bar-bottom {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 8px;
+      .vms-custom-select {
+        font-size: 10.5px !important;
       }
-      .vms-layout-cluster {
-        width: 100%;
-      }
-      .vms-layout-matrix-buttons {
-        width: 100%;
-        justify-content: flex-start;
-      }
-      .vms-telemetry-cluster {
-        width: 100%;
-        justify-content: flex-start;
+      .vms-telemetry-badge {
+        height: 26px;
+        font-size: 10px;
+        padding: 0 6px;
       }
     }
 
