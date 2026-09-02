@@ -1851,6 +1851,9 @@
                   <option value="5003">CAM LOEWIX GATE MASUK & PARKIR</option>
                   <option value="5001">CAM LOEWIX SIANTAR 1</option>
                 </select>
+                <select class="form-control form-control-sm form-control-dark" id="ai-target-face-selector" onchange="selectAITargetFace(this.value)" style="width: auto; max-width: 210px; font-size: 11.5px; border-radius: 8px; border-color: rgba(56, 189, 248, 0.4); background: rgba(15, 23, 42, 0.9);" title="Pilih target orang / wajah yang ingin di-track & diverifikasi AI">
+                  <option value="auto">👤 Target: WAGYU</option>
+                </select>
                 <button class="btn btn-sm btn-outline-info font-weight-bold px-2.5 py-1" onclick="startAIWebcamLive()" style="border-radius: 8px; font-size: 11px;" title="Nyalakan kamera laptop untuk scan wajah langsung">
                   <i class="fas fa-camera mr-1"></i> Scan Wajah Saya (Webcam)
                 </button>
@@ -6925,9 +6928,46 @@
           renderAILiveFeed(cachedAILogs);
           renderAISimulatorButtons(cachedAIFaces, cachedAIPlates);
           populateAICameraSelector();
+          populateAITargetFaceSelector();
         }
       } catch (err) {
         console.error('Error loading AI data:', err);
+      }
+    }
+
+    // Active Tracked Face
+    let activeTrackedFace = null;
+
+    function populateAITargetFaceSelector() {
+      const select = document.getElementById('ai-target-face-selector');
+      if (!select) return;
+
+      if (!activeTrackedFace && cachedAIFaces.length > 0) {
+        activeTrackedFace = cachedAIFaces.find(f => f.name.toLowerCase().includes('wagyu')) || cachedAIFaces[0];
+      }
+
+      let html = '';
+      cachedAIFaces.forEach((f) => {
+        const isSelected = activeTrackedFace && (activeTrackedFace.id == f.id || activeTrackedFace.name.toLowerCase() === f.name.toLowerCase()) ? 'selected' : '';
+        const roleStr = f.role_title ? ` (${f.role_title})` : '';
+        html += `<option value="${f.id}" ${isSelected}>👤 Target: ${f.name}${roleStr}</option>`;
+      });
+
+      if (cachedAIFaces.length === 0) {
+        html = '<option value="">Belum ada wajah terdaftar</option>';
+      }
+
+      select.innerHTML = html;
+    }
+
+    function selectAITargetFace(faceId) {
+      const face = cachedAIFaces.find(f => f.id == faceId);
+      if (face) {
+        activeTrackedFace = face;
+        const select = document.getElementById('ai-target-face-selector');
+        if (select) select.value = face.id;
+        window._lastAutoLogTime = 0;
+        simulateCustomFaceDetection(face.name, face.category, face.role_title);
       }
     }
 
@@ -7234,7 +7274,7 @@
 
         // Continuous Real-Time Auto-Tracking Engine (Like Gojek Face ID / AI CCTV)
         if (isAutoTrackingActive && cachedAIFaces.length > 0) {
-          const registered = cachedAIFaces[cachedAIFaces.length - 1]; // latest registered user (e.g. WAGYU)
+          const registered = activeTrackedFace || cachedAIFaces.find(f => f.name.toLowerCase().includes('wagyu')) || cachedAIFaces[0];
           const targetW = 160;
           const targetH = 185;
           const centerX = (canvas.width - targetW) / 2;
@@ -7262,11 +7302,13 @@
           if (!window._lastAutoLogTime || (now - window._lastAutoLogTime > 45000)) {
             window._lastAutoLogTime = now;
             showAIBanner(`${registered.name} (${registered.role_title || 'Staff'})`, `Confidence: ${activeEnt.confidence}% • Terverifikasi Otomatis (Face ID Real-time)`, registered.category === 'vip' ? 'badge-success' : 'badge-primary', 'AUTO VERIFIED', 'fas fa-user-check', '#059669');
+            const activeCamTitle = currentAICamera ? currentAICamera.title : (isWebcamRunning ? 'LIVE WEBCAM - LAPTOP SCANNER' : 'CAM LOEWIX CCTV');
+            const activeCamId = currentAICamera ? currentAICamera.id : 5002;
             const fd = new FormData();
             fd.append('action', 'log_detection');
             fd.append('type', 'face');
-            fd.append('camera_id', 5002);
-            fd.append('camera_title', isWebcamRunning ? 'LIVE WEBCAM - LAPTOP SCANNER' : 'CAM LOEWIX JAKARTA 1 - LOBBY UTAMA');
+            fd.append('camera_id', activeCamId);
+            fd.append('camera_title', activeCamTitle);
             fd.append('label', registered.name);
             fd.append('category', registered.category || 'employee');
             fd.append('confidence', activeEnt.confidence);
@@ -7939,6 +7981,17 @@
     // Trigger Custom Face Detection for any registered user
     function simulateCustomFaceDetection(name, category = 'employee', roleTitle = 'Staff') {
       initAIHUDCanvas();
+
+      // Sync active target face
+      const face = cachedAIFaces.find(f => f.name.toLowerCase() === name.toLowerCase());
+      if (face) {
+        activeTrackedFace = face;
+        const select = document.getElementById('ai-target-face-selector');
+        if (select) select.value = face.id;
+      } else {
+        activeTrackedFace = { name, category, role_title: roleTitle };
+      }
+
       const canvas = document.getElementById('ai-hud-canvas');
       const parent = canvas ? canvas.parentElement : null;
       const width = (parent && parent.clientWidth > 100) ? parent.clientWidth : (canvas && canvas.width > 100 ? canvas.width : 640);
@@ -7978,12 +8031,14 @@
         playAIAlarmSound();
       }
 
-      // Log to server
+      // Log to server with active camera info
+      const activeCamTitle = currentAICamera ? currentAICamera.title : (isWebcamRunning ? 'LIVE WEBCAM - LAPTOP SCANNER' : 'CAM LOEWIX CCTV');
+      const activeCamId = currentAICamera ? currentAICamera.id : 5002;
       const fd = new FormData();
       fd.append('action', 'log_detection');
       fd.append('type', 'face');
-      fd.append('camera_id', 5002);
-      fd.append('camera_title', 'CAM LOEWIX JAKARTA 1 - LOBBY UTAMA');
+      fd.append('camera_id', activeCamId);
+      fd.append('camera_title', activeCamTitle);
       fd.append('label', name);
       fd.append('category', category);
       fd.append('confidence', ent.confidence);
@@ -8128,6 +8183,8 @@
     window.startAIWebcamLive = startAIWebcamLive;
     window.scanCurrentFrameManual = scanCurrentFrameManual;
     window.populateAICameraSelector = populateAICameraSelector;
+    window.populateAITargetFaceSelector = populateAITargetFaceSelector;
+    window.selectAITargetFace = selectAITargetFace;
     window.changeAICamera = changeAICamera;
     window.setAIVideoFilter = setAIVideoFilter;
     window.setAIVideoZoom = setAIVideoZoom;
