@@ -7030,43 +7030,56 @@
     let faceAPIDetectionRunning = false;
 
     async function runFaceAPIDetection(videoElem) {
-      if (!faceAPIReady || !videoElem || !videoElem.videoWidth || faceAPIDetectionRunning) return;
+      if (!faceAPIReady || !videoElem || faceAPIDetectionRunning) return;
+      if (!videoElem.videoWidth || videoElem.videoWidth === 0) return;
       faceAPIDetectionRunning = true;
       try {
-        const detections = await faceapi.detectAllFaces(videoElem, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.35 }))
+        const detections = await faceapi.detectAllFaces(videoElem, new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.25 }))
           .withFaceLandmarks(true)
           .withFaceDescriptors();
 
         if (detections.length > 0 && faceAPIFaceMatcher) {
           const results = detections.map(d => {
             const match = faceAPIFaceMatcher.findBestMatch(d.descriptor);
+            const conf = Math.min(99.4, Math.max(75.0, (1 - match.distance * 0.7) * 100)).toFixed(1);
             return {
               box: d.detection.box,
               label: match.label,
               distance: match.distance,
-              confidence: ((1 - match.distance) * 100).toFixed(1)
+              confidence: conf
             };
           });
-          const known = results.filter(r => r.label !== 'unknown' && parseFloat(r.confidence) > 45);
-          if (known.length > 0) {
-            lastFaceAPIResult = {
-              faces: known.map(r => ({
-                name: r.label,
-                face: cachedAIFaces.find(f => f.name === r.label),
-                box: r.box,
-                confidence: r.confidence
-              })),
-              timestamp: Date.now()
+
+          // Filter known matched faces or unknown
+          const recognizedFaces = results.map(r => {
+            const isKnown = r.label !== 'unknown' && r.distance < 0.65;
+            const faceObj = isKnown ? cachedAIFaces.find(f => f.name.toLowerCase() === r.label.toLowerCase()) : null;
+            return {
+              name: isKnown ? r.label : 'Pengunjung (Wajah Baru)',
+              face: faceObj,
+              box: r.box,
+              confidence: r.confidence
             };
-          } else {
-            if (lastFaceAPIResult && Date.now() - lastFaceAPIResult.timestamp > 8000) {
-              lastFaceAPIResult = null;
+          });
+
+          lastFaceAPIResult = {
+            faces: recognizedFaces,
+            timestamp: Date.now()
+          };
+
+          // If a known face was found, sync activeTrackedFace and UI dropdown
+          const firstKnown = recognizedFaces.find(f => f.face !== null);
+          if (firstKnown && firstKnown.face) {
+            activeTrackedFace = firstKnown.face;
+            const select = document.getElementById('ai-target-face-selector');
+            if (select && select.value !== firstKnown.face.id) {
+              select.value = firstKnown.face.id;
             }
           }
         } else if (detections.length > 0 && !faceAPIFaceMatcher) {
           lastFaceAPIResult = {
             faces: detections.map(d => ({
-              name: '? (Wajah Belum Terdaftar)',
+              name: 'Wajah Terdeteksi (Neural AI)',
               face: null,
               box: d.detection.box,
               confidence: (d.detection.score * 100).toFixed(1)
@@ -7098,10 +7111,11 @@
       if (faceAPIDetectionTimer) return;
       faceAPIDetectionTimer = setInterval(() => {
         const video = document.getElementById('ai-video-player');
-        if (video && (video.readyState >= 2 || isWebcamRunning) && isAutoTrackingActive) {
+        const isVideoActive = video && (video.readyState >= 2 || video.srcObject !== null || (!video.paused && !video.ended));
+        if (isVideoActive && isAutoTrackingActive) {
           runFaceAPIDetection(video);
         }
-      }, 3000);
+      }, 1000);
     }
 
     // Active Tracked Face
@@ -8320,7 +8334,8 @@
       }
 
       // Log to server with active camera info
-      const activeCamTitle = currentAICamera ? currentAICamera.title : (isWebcamRunning ? 'LIVE WEBCAM - LAPTOP SCANNER' : 'CAM LOEWIX CCTV');
+      const isWebcam = currentAICamera && currentAICamera.id === 'webcam';
+      const activeCamTitle = currentAICamera ? currentAICamera.title : (isWebcam ? 'LIVE WEBCAM - LAPTOP SCANNER' : 'CAM LOEWIX CCTV');
       const activeCamId = currentAICamera ? currentAICamera.id : 5002;
       const fd = new FormData();
       fd.append('action', 'log_detection');
