@@ -1416,8 +1416,7 @@
       left: 0;
       width: 100%;
       height: 100%;
-      background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
-      background-size: 100% 3px, 6px 100%;
+      background: radial-gradient(circle at center, transparent 60%, rgba(2, 6, 23, 0.4) 100%);
       pointer-events: none;
       z-index: 5;
     }
@@ -7455,23 +7454,26 @@
           drawSimulatedCCTVFeed(ctx, canvas.width, canvas.height);
         }
 
-        // Draw animated cyber scanning line
-        scanLineY += 2.2 * scanDirection;
+        // Ultra-Sleek Holographic AI Scan Laser Wave
+        scanLineY += 2.0 * scanDirection;
         if (scanLineY >= canvas.height - 15) scanDirection = -1;
         if (scanLineY <= 15) scanDirection = 1;
 
         ctx.save();
-        ctx.strokeStyle = 'rgba(56, 189, 248, 0.6)';
+        const laserGrad = ctx.createLinearGradient(0, scanLineY - 18, 0, scanLineY + 18);
+        laserGrad.addColorStop(0, 'rgba(0, 240, 255, 0)');
+        laserGrad.addColorStop(0.5, 'rgba(0, 240, 255, 0.18)');
+        laserGrad.addColorStop(1, 'rgba(0, 240, 255, 0)');
+        ctx.fillStyle = laserGrad;
+        ctx.fillRect(0, scanLineY - 18, canvas.width, 36);
+
+        ctx.strokeStyle = '#00f0ff';
         ctx.lineWidth = 1.5;
-        ctx.setLineDash([8, 4]);
+        ctx.shadowColor = '#00f0ff';
+        ctx.shadowBlur = 8;
         ctx.beginPath();
         ctx.moveTo(0, scanLineY);
         ctx.lineTo(canvas.width, scanLineY);
-        ctx.stroke();
-
-        // Scanline glow
-        ctx.shadowColor = '#38bdf8';
-        ctx.shadowBlur = 10;
         ctx.stroke();
         ctx.restore();
 
@@ -7631,77 +7633,197 @@
       const isBlacklist = category === 'blacklist';
       const isVIP = category === 'vip';
 
-      const strokeColor = isBlacklist ? '#ef4444' : (isVIP ? '#10b981' : '#38bdf8');
-      const boxBg = isBlacklist ? 'rgba(239, 68, 68, 0.18)' : (isVIP ? 'rgba(16, 185, 129, 0.15)' : 'rgba(56, 189, 248, 0.15)');
+      const strokeColor = isBlacklist ? '#ef4444' : (isVIP ? '#10b981' : '#00f0ff');
+      const glowColor = isBlacklist ? 'rgba(239, 68, 68, 0.6)' : (isVIP ? 'rgba(16, 185, 129, 0.6)' : 'rgba(0, 240, 255, 0.6)');
+      const boxBg = isBlacklist ? 'rgba(239, 68, 68, 0.08)' : (isVIP ? 'rgba(16, 185, 129, 0.08)' : 'rgba(0, 240, 255, 0.06)');
 
       ctx.save();
 
-      // Bounding box fill
+      // 1. Subtle Biometric Bounding Box Fill
       ctx.fillStyle = boxBg;
       ctx.fillRect(x, y, w, h);
 
-      // Animated pulsing glow
+      // 2. Faint Grid Box Outline
+      ctx.strokeStyle = isBlacklist ? 'rgba(239, 68, 68, 0.25)' : (isVIP ? 'rgba(16, 185, 129, 0.25)' : 'rgba(0, 240, 255, 0.20)');
+      ctx.lineWidth = 1;
+      ctx.setLineDash([4, 4]);
+      ctx.strokeRect(x, y, w, h);
+      ctx.setLineDash([]);
+
+      // 3. Precision Cyber Corner Brackets
       ctx.strokeStyle = strokeColor;
       ctx.lineWidth = 2.5;
-      ctx.shadowColor = strokeColor;
-      ctx.shadowBlur = 12;
+      ctx.shadowColor = glowColor;
+      ctx.shadowBlur = 10;
 
-      const cornerLen = 18;
+      const cornerLen = Math.min(24, Math.max(14, Math.round(w * 0.18)));
 
-      // Top-Left
+      // Top-Left Corner
       ctx.beginPath();
       ctx.moveTo(x, y + cornerLen);
       ctx.lineTo(x, y);
       ctx.lineTo(x + cornerLen, y);
       ctx.stroke();
 
-      // Top-Right
+      // Top-Right Corner
       ctx.beginPath();
       ctx.moveTo(x + w - cornerLen, y);
       ctx.lineTo(x + w, y);
       ctx.lineTo(x + w, y + cornerLen);
       ctx.stroke();
 
-      // Bottom-Left
+      // Bottom-Left Corner
       ctx.beginPath();
       ctx.moveTo(x, y + h - cornerLen);
       ctx.lineTo(x, y + h);
       ctx.lineTo(x + cornerLen, y + h);
       ctx.stroke();
 
-      // Bottom-Right
+      // Bottom-Right Corner
       ctx.beginPath();
       ctx.moveTo(x + w - cornerLen, y + h);
       ctx.lineTo(x + w, y + h);
       ctx.lineTo(x + w, y + h - cornerLen);
       ctx.stroke();
 
-      // Center crosshair inside box
+      // 4. Glowing Corner Accent Dots
+      ctx.fillStyle = '#ffffff';
+      ctx.shadowBlur = 6;
+      [
+        [x, y],
+        [x + w, y],
+        [x, y + h],
+        [x + w, y + h]
+      ].forEach(([px, py]) => {
+        ctx.beginPath();
+        ctx.arc(px, py, 2.5, 0, Math.PI * 2);
+        ctx.fill();
+      });
+
+      // 5. Biometric Face Landmark Nodes (Authentic Neural AI Visualizer)
+      const cx = x + w / 2;
+      const cy = y + h / 2;
+      const landmarks = [
+        [cx - w * 0.18, cy - h * 0.12], // Left Eye
+        [cx + w * 0.18, cy - h * 0.12], // Right Eye
+        [cx, cy + h * 0.05],            // Nose Bridge
+        [cx - w * 0.14, cy + h * 0.22], // Mouth Left
+        [cx + w * 0.14, cy + h * 0.22]  // Mouth Right
+      ];
+
+      // Faint Constellation Lines
+      ctx.strokeStyle = isBlacklist ? 'rgba(239, 68, 68, 0.25)' : (isVIP ? 'rgba(16, 185, 129, 0.25)' : 'rgba(0, 240, 255, 0.25)');
+      ctx.lineWidth = 1;
+      ctx.setLineDash([2, 2]);
+      ctx.beginPath();
+      ctx.moveTo(landmarks[0][0], landmarks[0][1]);
+      ctx.lineTo(landmarks[1][0], landmarks[1][1]);
+      ctx.lineTo(landmarks[2][0], landmarks[2][1]);
+      ctx.lineTo(landmarks[0][0], landmarks[0][1]);
+      ctx.moveTo(landmarks[2][0], landmarks[2][1]);
+      ctx.lineTo(landmarks[3][0], landmarks[3][1]);
+      ctx.lineTo(landmarks[4][0], landmarks[4][1]);
+      ctx.lineTo(landmarks[2][0], landmarks[2][1]);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Landmark Glowing Nodes
+      landmarks.forEach(([lx, ly]) => {
+        ctx.fillStyle = strokeColor;
+        ctx.shadowColor = glowColor;
+        ctx.shadowBlur = 8;
+        ctx.beginPath();
+        ctx.arc(lx, ly, 2, 0, Math.PI * 2);
+        ctx.fill();
+      });
+
+      // 6. Center Biometric Target Reticle
+      ctx.strokeStyle = strokeColor;
+      ctx.lineWidth = 1;
+      ctx.shadowBlur = 4;
+      ctx.beginPath();
+      ctx.arc(cx, cy, 14, 0, Math.PI * 2);
+      ctx.stroke();
+
+      // Reticle Crosshairs
+      ctx.beginPath();
+      ctx.moveTo(cx - 8, cy);
+      ctx.lineTo(cx + 8, cy);
+      ctx.moveTo(cx, cy - 8);
+      ctx.lineTo(cx, cy + 8);
+      ctx.stroke();
+
+      // 7. Ultra-Sleek Glassmorphic Floating Identification Badge
+      const badgeW = Math.max(w + 10, 190);
+      const badgeH = 34;
+      const badgeX = x + (w - badgeW) / 2;
+      const badgeY = y - badgeH - 8;
+
+      // Rounded Badge Card Background
+      ctx.fillStyle = 'rgba(6, 11, 25, 0.88)';
+      ctx.strokeStyle = strokeColor;
+      ctx.lineWidth = 1.2;
+      ctx.shadowColor = glowColor;
+      ctx.shadowBlur = 10;
+
+      // Helper for rounded rectangle
+      const rad = 8;
+      ctx.beginPath();
+      ctx.moveTo(badgeX + rad, badgeY);
+      ctx.lineTo(badgeX + badgeW - rad, badgeY);
+      ctx.quadraticCurveTo(badgeX + badgeW, badgeY, badgeX + badgeW, badgeY + rad);
+      ctx.lineTo(badgeX + badgeW, badgeY + badgeH - rad);
+      ctx.quadraticCurveTo(badgeX + badgeW, badgeY + badgeH, badgeX + badgeW - rad, badgeY + badgeH);
+      ctx.lineTo(badgeX + rad, badgeY + badgeH);
+      ctx.quadraticCurveTo(badgeX, badgeY + badgeH, badgeX, badgeY + badgeH - rad);
+      ctx.lineTo(badgeX, badgeY + rad);
+      ctx.quadraticCurveTo(badgeX, badgeY, badgeX + rad, badgeY);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+
+      // Live Pulsing Beacon Dot inside badge
+      const pulseTime = Date.now() / 300;
+      const pulseRadius = 3.5 + Math.sin(pulseTime) * 1.2;
+      ctx.fillStyle = isBlacklist ? '#ef4444' : (isVIP ? '#10b981' : '#00f0ff');
+      ctx.shadowColor = ctx.fillStyle;
+      ctx.shadowBlur = 8;
+      ctx.beginPath();
+      ctx.arc(badgeX + 16, badgeY + badgeH / 2, pulseRadius, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Person Name
+      ctx.shadowBlur = 0;
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '700 13px "Plus Jakarta Sans", -apple-system, sans-serif';
+      const cleanLabel = String(label).toUpperCase();
+      ctx.fillText(cleanLabel, badgeX + 28, badgeY + 16);
+
+      // Subtitle Tag (Role / Access)
+      ctx.fillStyle = isBlacklist ? '#fca5a5' : (isVIP ? '#6ee7b7' : '#7dd3fc');
+      ctx.font = '600 9.5px "Plus Jakarta Sans", sans-serif';
+      const subText = isBlacklist ? '🚨 DPO / BLACKLIST' : (isVIP ? '⭐ VIP ACCESSED' : '👤 VERIFIED EMPLOYEE');
+      ctx.fillText(subText, badgeX + 28, badgeY + 28);
+
+      // Score / Confidence Pill on the Right
+      const pillW = 60;
+      const pillH = 20;
+      const pillX = badgeX + badgeW - pillW - 8;
+      const pillY = badgeY + (badgeH - pillH) / 2;
+
+      ctx.fillStyle = isBlacklist ? 'rgba(239, 68, 68, 0.25)' : (isVIP ? 'rgba(16, 185, 129, 0.25)' : 'rgba(0, 240, 255, 0.20)');
       ctx.strokeStyle = strokeColor;
       ctx.lineWidth = 1;
       ctx.beginPath();
-      ctx.moveTo(x + w / 2 - 8, y + h / 2);
-      ctx.lineTo(x + w / 2 + 8, y + h / 2);
-      ctx.moveTo(x + w / 2, y + h / 2 - 8);
-      ctx.lineTo(x + w / 2, y + h / 2 + 8);
+      ctx.roundRect ? ctx.roundRect(pillX, pillY, pillW, pillH, 5) : ctx.rect(pillX, pillY, pillW, pillH);
+      ctx.fill();
       ctx.stroke();
 
-      // Label background banner
-      const bannerW = Math.max(w, 180);
-      ctx.fillStyle = isBlacklist ? '#ef4444' : (isVIP ? '#059669' : '#0284c7');
-      ctx.fillRect(x, y - 28, bannerW, 26);
-
-      // Text inside banner
       ctx.fillStyle = '#ffffff';
-      ctx.font = 'bold 12px Plus Jakarta Sans, sans-serif';
-      ctx.fillText(`${label}`, x + 8, y - 11);
-
-      // Confidence badge pill on the right of banner
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.35)';
-      ctx.fillRect(x + bannerW - 55, y - 25, 50, 20);
-      ctx.fillStyle = '#ffffff';
-      ctx.font = 'bold 10px monospace';
-      ctx.fillText(`${confidence}%`, x + bannerW - 48, y - 11);
+      ctx.font = '800 10px monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText(`${confidence}%`, pillX + pillW / 2, pillY + 14);
+      ctx.textAlign = 'left';
 
       ctx.restore();
     }
