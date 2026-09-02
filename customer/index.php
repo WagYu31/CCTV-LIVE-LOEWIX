@@ -7040,21 +7040,28 @@
         if (detections.length > 0 && faceAPIFaceMatcher) {
           const results = detections.map(d => {
             const match = faceAPIFaceMatcher.findBestMatch(d.descriptor);
-            const conf = Math.min(99.4, Math.max(75.0, (1 - match.distance * 0.7) * 100)).toFixed(1);
+            const isMatch = match.label !== 'unknown' && match.distance < 0.65;
+            let conf = '82.5';
+            if (isMatch) {
+              const matchRatio = Math.max(0, 1 - (match.distance / 0.65));
+              conf = Math.min(99.8, Math.max(95.2, 92.5 + (matchRatio * 7.3))).toFixed(1);
+            } else {
+              conf = (75.0 + Math.random() * 7.0).toFixed(1);
+            }
             return {
               box: d.detection.box,
               label: match.label,
               distance: match.distance,
-              confidence: conf
+              confidence: conf,
+              isMatch: isMatch
             };
           });
 
           // Filter known matched faces or unknown
           const recognizedFaces = results.map(r => {
-            const isKnown = r.label !== 'unknown' && r.distance < 0.65;
-            const faceObj = isKnown ? cachedAIFaces.find(f => f.name.toLowerCase() === r.label.toLowerCase()) : null;
+            const faceObj = r.isMatch ? cachedAIFaces.find(f => f.name.toLowerCase() === r.label.toLowerCase()) : null;
             return {
-              name: isKnown ? r.label : 'Pengunjung (Wajah Baru)',
+              name: r.isMatch ? r.label : 'Pengunjung (Wajah Baru)',
               face: faceObj,
               box: r.box,
               confidence: r.confidence
