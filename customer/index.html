@@ -6942,13 +6942,17 @@
       const select = document.getElementById('ai-target-face-selector');
       if (!select) return;
 
-      if (!activeTrackedFace && cachedAIFaces.length > 0) {
-        // If viewing Siantar / Thai camera, default to Hans, otherwise Wagyu
-        const isSiantar = currentAICamera && ((currentAICamera.title || '').toLowerCase().includes('thai') || (currentAICamera.city || '').toLowerCase().includes('siantar'));
-        const defaultFace = isSiantar
-          ? (cachedAIFaces.find(f => f.name.toLowerCase().includes('hans')) || cachedAIFaces.find(f => f.name.toLowerCase().includes('wagyu')) || cachedAIFaces[0])
-          : (cachedAIFaces.find(f => f.name.toLowerCase().includes('wagyu')) || cachedAIFaces[0]);
-        activeTrackedFace = defaultFace;
+      const isWebcam = !currentAICamera || currentAICamera.id === 'webcam';
+      const isSiantar = currentAICamera && ((currentAICamera.title || '').toLowerCase().includes('thai') || (currentAICamera.city || '').toLowerCase().includes('siantar'));
+
+      if (!activeTrackedFace || isWebcam) {
+        if (isWebcam) {
+          activeTrackedFace = cachedAIFaces.find(f => f.name.toLowerCase().includes('wagyu')) || cachedAIFaces[0];
+        } else if (isSiantar) {
+          activeTrackedFace = cachedAIFaces.find(f => f.name.toLowerCase().includes('hans')) || cachedAIFaces[0];
+        } else {
+          activeTrackedFace = cachedAIFaces.find(f => f.name.toLowerCase().includes('wagyu')) || cachedAIFaces[0];
+        }
       }
 
       let html = '';
@@ -7642,8 +7646,11 @@
 
     function scanCurrentFrameManual() {
       if (cachedAIFaces.length > 0) {
-        const lastFace = cachedAIFaces[cachedAIFaces.length - 1];
-        simulateCustomFaceDetection(lastFace.name, lastFace.category, lastFace.role_title);
+        const isWebcam = currentAICamera && currentAICamera.id === 'webcam';
+        const target = activeTrackedFace || (isWebcam ? cachedAIFaces.find(f => f.name.toLowerCase().includes('wagyu')) : cachedAIFaces[0]);
+        if (target) {
+          simulateCustomFaceDetection(target.name, target.category, target.role_title);
+        }
       } else {
         simulateAIDetection('vip_face');
       }
@@ -7655,6 +7662,16 @@
       const video = document.getElementById('ai-video-player');
       const select = document.getElementById('ai-camera-selector');
       if (!video) return;
+
+      currentAICamera = { id: 'webcam', title: 'LIVE WEBCAM LAPTOP' };
+
+      // Set target to Wagyu (the person in front of the laptop)
+      const wagyu = cachedAIFaces.find(f => f.name.toLowerCase().includes('wagyu')) || cachedAIFaces[0];
+      if (wagyu) {
+        activeTrackedFace = wagyu;
+        const targetSelect = document.getElementById('ai-target-face-selector');
+        if (targetSelect) targetSelect.value = wagyu.id;
+      }
 
       try {
         if (select) select.value = 'webcam';
@@ -7668,17 +7685,16 @@
         await video.play();
 
         const statusLabel = document.getElementById('ai-active-mode-label');
-        if (statusLabel) statusLabel.innerHTML = '<span class="text-emerald" style="color: #34d399;"><i class="fas fa-video mr-1"></i> Live Webcam Scanner Aktif</span>';
+        if (statusLabel) statusLabel.innerHTML = '<span class="text-emerald" style="color: #34d399;"><i class="fas fa-video mr-1"></i> Live Webcam Scanner Aktif (WAGYU)</span>';
 
         initAIHUDCanvas();
 
-        // Auto trigger detection on the latest registered face (e.g. WAGYU) after 1.5s
+        // Auto trigger detection on Wagyu
         setTimeout(() => {
-          if (cachedAIFaces.length > 0) {
-            const first = cachedAIFaces[cachedAIFaces.length - 1];
-            simulateCustomFaceDetection(first.name, first.category, first.role_title);
+          if (activeTrackedFace) {
+            simulateCustomFaceDetection(activeTrackedFace.name, activeTrackedFace.category, activeTrackedFace.role_title);
           }
-        }, 1500);
+        }, 800);
 
       } catch (err) {
         console.error('Webcam error:', err);
