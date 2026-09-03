@@ -7471,6 +7471,10 @@
     }
 
     function startAIHUDLoop() {
+      if (aiHUDAnimationId) {
+        cancelAnimationFrame(aiHUDAnimationId);
+        aiHUDAnimationId = null;
+      }
       const canvas = document.getElementById('ai-hud-canvas');
       if (!canvas) return;
       const ctx = canvas.getContext('2d');
@@ -7645,20 +7649,25 @@
 
         // Top Header OSD Data
         ctx.save();
-        ctx.font = '700 11px monospace';
-        ctx.fillStyle = '#00f0ff';
-        ctx.fillText('🔴 LIVE AI VISION', 18, 30);
-
         const dateStr = new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
         const timeStr = new Date().toLocaleTimeString('id-ID');
         const activeCamTitle = currentAICamera ? currentAICamera.title.toUpperCase() : (Array.isArray(customerCameras) && customerCameras[0] ? customerCameras[0].title.toUpperCase() : 'YAMAHA DDS');
         const activeCamCity = currentAICamera && currentAICamera.city ? ` [${currentAICamera.city.toUpperCase()}]` : '';
 
-        ctx.fillStyle = '#38bdf8';
-        ctx.fillText(`CAM: ${activeCamTitle}${activeCamCity}`, 135, 30);
+        // Dynamically update the top-left HTML status pill without any overlapping text!
+        const statusTextElem = document.getElementById('ai-hud-status-text');
+        if (statusTextElem) {
+          const camLabel = isWebcamRunning ? 'LIVE WEBCAM LAPTOP' : `${activeCamTitle}${activeCamCity}`;
+          statusTextElem.textContent = `AI SCANNER: ${camLabel}`;
+        }
+
+        // Clean, non-overlapping Top Right Timestamp OSD
+        ctx.font = '700 11px monospace';
+        ctx.fillStyle = '#00f0ff';
+        ctx.fillText('🔴 LIVE', canvas.width - 275, 30);
 
         ctx.fillStyle = '#f59e0b';
-        ctx.fillText(`${dateStr} ${timeStr} WIB`, canvas.width - 210, 30);
+        ctx.fillText(`${dateStr} ${timeStr} WIB`, canvas.width - 215, 30);
 
         // Bottom OSD
         ctx.font = '600 11px sans-serif';
@@ -7669,7 +7678,7 @@
         aiHUDAnimationId = requestAnimationFrame(loop);
       }
 
-      loop();
+      aiHUDAnimationId = requestAnimationFrame(loop);
     }
 
     // Realistic CCTV Surveillance Feed Generator
@@ -8224,12 +8233,35 @@
 
     let currentAICamera = null;
 
+    function showAICameraOfflineNotice(camTitle) {
+      const placeholder = document.getElementById('ai-video-placeholder');
+      if (!placeholder) return;
+      placeholder.style.display = 'flex';
+      placeholder.style.zIndex = '15';
+      placeholder.innerHTML = `
+        <div style="background: rgba(15, 23, 42, 0.92); border: 1.5px solid rgba(245, 158, 11, 0.5); border-radius: 14px; padding: 22px 28px; max-width: 440px; box-shadow: 0 10px 40px rgba(0,0,0,0.8); text-align: center;">
+          <div style="width: 48px; height: 48px; margin: 0 auto 12px; border-radius: 50%; background: rgba(245, 158, 11, 0.15); display: flex; align-items: center; justify-content: center;">
+            <i class="fas fa-video-slash text-warning" style="font-size: 22px;"></i>
+          </div>
+          <h6 class="text-white font-weight-bold mb-1" style="font-size: 14.5px;">STREAM CCTV STANDBY / OFFLINE</h6>
+          <p class="text-muted mb-3" style="font-size: 12px; line-height: 1.5;">
+            Kamera <strong>${camTitle}</strong> saat ini belum terhubung ke Media Server atau perangkat DVR/NVR fisik sedang offline di lokasi.
+          </p>
+          <button class="btn btn-sm btn-info font-weight-bold px-3 py-1.5" onclick="changeAICamera('webcam')" style="border-radius: 8px; font-size: 12px; background: linear-gradient(135deg, #0284c7, #0ea5e9); border: none;">
+            <i class="fas fa-camera mr-1"></i> Beralih ke Live Webcam Laptop
+          </button>
+        </div>
+      `;
+    }
+
     function changeAICamera(camId) {
       const select = document.getElementById('ai-camera-selector');
       if (select) select.value = camId;
       const statusLabel = document.getElementById('ai-active-mode-label');
+      const placeholder = document.getElementById('ai-video-placeholder');
 
       if (camId === 'webcam') {
+        if (placeholder) placeholder.style.display = 'none';
         currentAICamera = { id: 'webcam', title: 'Live Webcam Laptop' };
         const wagyu = cachedAIFaces.find(f => f.name.toLowerCase().includes('wagyu'));
         if (wagyu) selectAITargetFace(wagyu.id);
@@ -8259,18 +8291,37 @@
         const video = document.getElementById('ai-video-player');
         if (video) {
           video.srcObject = null;
-          if (cam && cam.hls_url && typeof Hls !== 'undefined' && Hls.isSupported()) {
+
+          let targetStreamUrl = (cam && cam.hls_url) ? cam.hls_url : '';
+          // Avoid Mixed Content blocking on HTTPS
+          if (targetStreamUrl && window.location.protocol === 'https:' && targetStreamUrl.startsWith('http://')) {
+            targetStreamUrl = targetStreamUrl.replace('http://', 'https://');
+          }
+
+          if (targetStreamUrl && typeof Hls !== 'undefined' && Hls.isSupported()) {
             if (window._aiHls) window._aiHls.destroy();
             window._aiHls = new Hls({ enableWorker: true, lowLatencyMode: true });
-            window._aiHls.loadSource(cam.hls_url);
+            window._aiHls.loadSource(targetStreamUrl);
             window._aiHls.attachMedia(video);
-            window._aiHls.on(Hls.Events.MANIFEST_PARSED, () => video.play().catch(e => {}));
-          } else if (cam && cam.hls_url && video.canPlayType('application/vnd.apple.mpegurl')) {
-            video.src = cam.hls_url;
-            video.play().catch(e => {});
+            window._aiHls.on(Hls.Events.MANIFEST_PARSED, () => {
+              if (placeholder) placeholder.style.display = 'none';
+              video.play().catch(e => {});
+            });
+            window._aiHls.on(Hls.Events.ERROR, (event, data) => {
+              if (data.fatal) {
+                console.warn('[AI Camera] HLS stream error:', data);
+                showAICameraOfflineNotice(currentAICamera.title);
+              }
+            });
+          } else if (targetStreamUrl && video.canPlayType('application/vnd.apple.mpegurl')) {
+            video.src = targetStreamUrl;
+            video.play().then(() => {
+              if (placeholder) placeholder.style.display = 'none';
+            }).catch(e => {
+              showAICameraOfflineNotice(currentAICamera.title);
+            });
           } else {
-            video.src = 'assets/video/demo-cctv.mp4';
-            video.play().catch(e => {});
+            showAICameraOfflineNotice(currentAICamera.title);
           }
         }
 
