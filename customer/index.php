@@ -7494,9 +7494,10 @@
 
         const video = document.getElementById('ai-video-player');
         const isWebcamRunning = video && video.srcObject !== null;
+        const isCCTVVideoPlaying = video && !video.paused && video.readyState >= 2 && video.videoWidth > 0;
 
-        // If no active webcam, render high-tech CCTV Surveillance Background
-        if (!isWebcamRunning) {
+        // If no active webcam and no CCTV video playing, render high-tech CCTV Surveillance Background
+        if (!isWebcamRunning && !isCCTVVideoPlaying) {
           drawSimulatedCCTVFeed(ctx, canvas.width, canvas.height);
         }
 
@@ -8254,11 +8255,68 @@
       `;
     }
 
-    function changeAICamera(camId) {
+    // Resolve live camera stream URL dynamically (supporting XMeye P2P and MediaMTX)
+    async function resolveCameraStreamUrl(cam) {
+      if (!cam) return null;
+      let streamUrl = cam.hls_url || cam.streamPath || '';
+
+      // 1. If XMeye P2P camera without active bcloud URL, resolve via jftech_gateway.php
+      if (cam.connection_type === 'xmeye_p2p' || (!streamUrl.includes('bcloud365.net') && cam.serial_number)) {
+        const sn = cam.serial_number || (streamUrl.match(/^xmeye_([a-fA-F0-9]+)/) ? streamUrl.match(/^xmeye_([a-fA-F0-9]+)/)[1] : '');
+        const ch = cam.channel || 1;
+        const devUser = cam.device_user || 'admin';
+        const devPass = cam.device_pass || '';
+
+        if (sn) {
+          try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 8000);
+            const res = await fetch(`../api/jftech_gateway.php?action=get_live_stream&sn=${encodeURIComponent(sn)}&channel=${encodeURIComponent(ch)}&stream=1&device_user=${encodeURIComponent(devUser)}&device_pass=${encodeURIComponent(devPass)}`, {
+              signal: controller.signal
+            });
+            clearTimeout(timeoutId);
+            const data = await res.json();
+            if (data.success && data.hls_url) {
+              streamUrl = data.hls_url;
+              cam.hls_url = data.hls_url;
+            }
+          } catch (e) {
+            console.warn('[AI Camera] Failed to resolve XMeye stream:', e);
+          }
+        }
+      }
+
+      // 2. Auto-fallback if only rtsp_url is present
+      if (!streamUrl && cam.rtsp_url) {
+        if (cam.rtsp_url.includes('103.164.101.50:8203') && cam.rtsp_url.includes('channel=1')) {
+          streamUrl = cam.rtsp_url.includes('stream=1') ? 'https://stream.loewixcctv.com/cctv_loewix_1_sub/index.m3u8' : 'https://stream.loewixcctv.com/cctv_loewix_1/index.m3u8';
+        } else if (cam.rtsp_url.includes('103.164.101.50:8203') && cam.rtsp_url.includes('channel=2')) {
+          streamUrl = cam.rtsp_url.includes('stream=1') ? 'https://stream.loewixcctv.com/cctv_loewix_2_sub/index.m3u8' : 'https://stream.loewixcctv.com/cctv_loewix_2/index.m3u8';
+        } else if (cam.rtsp_url.includes('103.164.101.50:8203') && cam.rtsp_url.includes('channel=3')) {
+          streamUrl = cam.rtsp_url.includes('stream=1') ? 'https://stream.loewixcctv.com/cctv_loewix_3_sub/index.m3u8' : 'https://stream.loewixcctv.com/cctv_loewix_3/index.m3u8';
+        } else {
+          const path = cam.streamPath || `cam_live_${cam.id}`;
+          streamUrl = `https://stream.loewixcctv.com/${path}/index.m3u8`;
+        }
+        cam.hls_url = streamUrl;
+      }
+
+      // 3. Normalization for MediaMTX / RTSP stream path
+      if (streamUrl && !streamUrl.startsWith('http://') && !streamUrl.startsWith('https://')) {
+        streamUrl = `https://stream.loewixcctv.com/${streamUrl}/index.m3u8`;
+      } else if (streamUrl && streamUrl.startsWith('http://')) {
+        streamUrl = streamUrl.replace('http://', 'https://');
+      }
+
+      return streamUrl;
+    }
+
+    async function changeAICamera(camId) {
       const select = document.getElementById('ai-camera-selector');
       if (select) select.value = camId;
       const statusLabel = document.getElementById('ai-active-mode-label');
       const placeholder = document.getElementById('ai-video-placeholder');
+      const video = document.getElementById('ai-video-player');
 
       if (camId === 'webcam') {
         if (placeholder) placeholder.style.display = 'none';
@@ -8288,40 +8346,74 @@
           targetSelect.value = activeTrackedFace.id;
         }
 
-        const video = document.getElementById('ai-video-player');
         if (video) {
           video.srcObject = null;
+          video.muted = true;
+          video.setAttribute('playsinline', 'true');
+          video.setAttribute('webkit-playsinline', 'true');
+          video.setAttribute('autoplay', '');
+          video.setAttribute('muted', '');
 
-          let targetStreamUrl = (cam && cam.hls_url) ? cam.hls_url : '';
-          // Avoid Mixed Content blocking on HTTPS
-          if (targetStreamUrl && window.location.protocol === 'https:' && targetStreamUrl.startsWith('http://')) {
-            targetStreamUrl = targetStreamUrl.replace('http://', 'https://');
+          if (placeholder) {
+            placeholder.style.display = 'flex';
+            placeholder.style.zIndex = '15';
+            placeholder.innerHTML = `
+              <div class="spinner-border text-info spinner-border-sm mb-2" role="status"></div>
+              <h6 class="text-white font-weight-bold mb-1" style="font-size: 13.5px;">Menghubungkan ke ${currentAICamera.title}...</h6>
+              <small class="text-muted" style="font-size: 11px;">Memuat siaran langsung HLS Stream</small>
+            `;
           }
 
-          if (targetStreamUrl && typeof Hls !== 'undefined' && Hls.isSupported()) {
-            if (window._aiHls) window._aiHls.destroy();
-            window._aiHls = new Hls({ enableWorker: true, lowLatencyMode: true });
-            window._aiHls.loadSource(targetStreamUrl);
-            window._aiHls.attachMedia(video);
-            window._aiHls.on(Hls.Events.MANIFEST_PARSED, () => {
-              if (placeholder) placeholder.style.display = 'none';
-              video.play().catch(e => {});
-            });
-            window._aiHls.on(Hls.Events.ERROR, (event, data) => {
-              if (data.fatal) {
-                console.warn('[AI Camera] HLS stream error:', data);
+          const streamUrl = await resolveCameraStreamUrl(cam);
+
+          if (!streamUrl) {
+            showAICameraOfflineNotice(currentAICamera.title);
+            return;
+          }
+
+          if (streamUrl.includes('.m3u8') || streamUrl.includes('bcloud365.net')) {
+            if (typeof Hls !== 'undefined' && Hls.isSupported()) {
+              if (window._aiHls) window._aiHls.destroy();
+              window._aiHls = new Hls({
+                enableWorker: true,
+                lowLatencyMode: true,
+                liveSyncDurationCount: 1,
+                maxBufferLength: 2,
+                manifestLoadingTimeOut: 8000,
+                manifestLoadingMaxRetry: 3,
+                xhrSetup: function(xhr, url) {
+                  try { xhr.withCredentials = false; } catch(e) {}
+                }
+              });
+              window._aiHls.loadSource(streamUrl);
+              window._aiHls.attachMedia(video);
+              window._aiHls.on(Hls.Events.MANIFEST_PARSED, () => {
+                if (placeholder) placeholder.style.display = 'none';
+                video.play().catch(e => {});
+              });
+              window._aiHls.on(Hls.Events.ERROR, (event, data) => {
+                if (data.fatal) {
+                  console.warn('[AI Camera] HLS stream error:', data);
+                  showAICameraOfflineNotice(currentAICamera.title);
+                }
+              });
+            } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+              video.src = streamUrl;
+              video.play().then(() => {
+                if (placeholder) placeholder.style.display = 'none';
+              }).catch(e => {
                 showAICameraOfflineNotice(currentAICamera.title);
-              }
-            });
-          } else if (targetStreamUrl && video.canPlayType('application/vnd.apple.mpegurl')) {
-            video.src = targetStreamUrl;
+              });
+            } else {
+              showAICameraOfflineNotice(currentAICamera.title);
+            }
+          } else {
+            video.src = streamUrl;
             video.play().then(() => {
               if (placeholder) placeholder.style.display = 'none';
             }).catch(e => {
               showAICameraOfflineNotice(currentAICamera.title);
             });
-          } else {
-            showAICameraOfflineNotice(currentAICamera.title);
           }
         }
 
