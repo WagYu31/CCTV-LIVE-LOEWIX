@@ -7380,6 +7380,13 @@
       }).join('');
     }
 
+    // Helper to get local date time formatted as YYYY-MM-DD HH:MM:SS in browser's local timezone (WIB)
+    function getLocalLogTimestamp() {
+      const pad = (n) => String(n).padStart(2, '0');
+      const d = new Date();
+      return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+    }
+
     // Render Live Feed Log Ticker
     function renderAILiveFeed(logs) {
       const container = document.getElementById('ai-live-feed-container');
@@ -7399,6 +7406,8 @@
         if (l.category === 'vip') badgeStyle = 'badge-success';
         if (l.category === 'blacklist') badgeStyle = 'badge-danger';
 
+        const timeStr = l.timestamp ? (l.timestamp.includes(' ') ? l.timestamp.split(' ')[1] : l.timestamp) : 'Baru saja';
+
         return `
           <div class="ai-live-card-item ${isBlacklist ? 'blacklist-alert' : ''}">
             <div class="d-flex align-items-center justify-content-between mb-1.5">
@@ -7415,7 +7424,7 @@
             </div>
             <div class="d-flex align-items-center justify-content-between" style="font-size: 11px;">
               <span style="color: #94a3b8;">${l.details}</span>
-              <span class="text-muted">${l.timestamp ? l.timestamp.split(' ')[1] : 'Baru saja'}</span>
+              <span class="text-muted" style="font-family: monospace; font-size: 11px;">${timeStr}</span>
             </div>
           </div>
         `;
@@ -7596,6 +7605,7 @@
                 fd.append('category', f.face.category || 'employee');
                 fd.append('confidence', f.confidence);
                 fd.append('details', `${f.face.role_title || 'Staff'} • Terverifikasi oleh face-api.js Neural Network`);
+                fd.append('timestamp', getLocalLogTimestamp());
                 fetch('../api/ai_analytics.php', { method: 'POST', body: fd }).then(() => loadAIData(true)).catch(e => {});
               });
             }
@@ -8098,6 +8108,7 @@
         try {
           const fd = new FormData();
           fd.append('action', 'log_detection');
+          fd.append('timestamp', getLocalLogTimestamp());
           for (const k in logPayload) {
             fd.append(k, logPayload[k]);
           }
@@ -8413,6 +8424,7 @@
       fd.append('category', category);
       fd.append('confidence', ent.confidence);
       fd.append('details', `${vehicleModel} • Palang Gate Masuk Terbuka`);
+      fd.append('timestamp', getLocalLogTimestamp());
       fetch('../api/ai_analytics.php', { method: 'POST', body: fd }).then(() => loadAIData()).catch(e => {});
     }
 
@@ -8685,6 +8697,7 @@
       fd.append('category', category);
       fd.append('confidence', ent.confidence);
       fd.append('details', `${roleTitle} • Terverifikasi oleh Face Recognition`);
+      fd.append('timestamp', getLocalLogTimestamp());
       fetch('../api/ai_analytics.php', { method: 'POST', body: fd }).then(() => loadAIData(true)).catch(e => {});
     }
 
@@ -8788,6 +8801,7 @@
         fd.append('category', ent.category);
         fd.append('confidence', ent.confidence);
         fd.append('details', `Multi-Target Face Recognition Detection`);
+        fd.append('timestamp', getLocalLogTimestamp());
         fetch('../api/ai_analytics.php', { method: 'POST', body: fd }).then(() => loadAIData(true)).catch(e => {});
       });
     }

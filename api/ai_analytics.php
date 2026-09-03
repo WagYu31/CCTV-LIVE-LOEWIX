@@ -15,6 +15,8 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'OPTIONS') {
     exit;
 }
 
+date_default_timezone_set('Asia/Jakarta');
+
 require_once __DIR__ . '/../config/db.php';
 
 $action = $_GET['action'] ?? ($_POST['action'] ?? 'get_ai_data');
@@ -319,7 +321,7 @@ if ($action === 'log_detection') {
         'confidence' => $confidence,
         'snapshot' => $snapshot,
         'details' => $details,
-        'timestamp' => date('Y-m-d H:i:s')
+        'timestamp' => !empty($_POST['timestamp']) ? trim($_POST['timestamp']) : date('Y-m-d H:i:s')
     ];
 
     array_unshift($db['ai_logs'], $newLog);

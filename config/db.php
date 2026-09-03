@@ -4,6 +4,9 @@
  * PT. LOEWIX INDONESIA - CCTV SURVEILLANCE PLATFORM
  */
 
+// Enforce Indonesian Western Standard Time (WIB / UTC+7) globally
+date_default_timezone_set('Asia/Jakarta');
+
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
