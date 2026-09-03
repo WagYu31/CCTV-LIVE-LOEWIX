@@ -7566,21 +7566,26 @@
               };
             });
 
-            // Auto-log and banner for the first (best) match
-            if (!window._lastAutoLogTime || (now - window._lastAutoLogTime > 45000)) {
+            // Auto-log and banner for detected faces (Instant on new face, 25s throttle for persistent presence)
+            const primary = lastFaceAPIResult.faces[0];
+            const pFace = primary.face || {};
+            const personKey = primary.name;
+            const isNewPerson = !window._lastAutoLogPerson || window._lastAutoLogPerson !== personKey;
+            const isIntervalPassed = !window._lastAutoLogTime || (now - window._lastAutoLogTime > 25000);
+
+            if (isNewPerson || isIntervalPassed) {
               window._lastAutoLogTime = now;
-              const primary = lastFaceAPIResult.faces[0];
-              const pFace = primary.face || {};
+              window._lastAutoLogPerson = personKey;
               const count = lastFaceAPIResult.faces.length;
               if (primary.face) {
                 showAIBanner(`${primary.name} (${pFace.role_title || 'Karyawan'})`, `Confidence: ${primary.confidence}% • face-api.js Neural Net`, pFace.category === 'vip' ? 'badge-success' : 'badge-primary', 'AI VERIFIED', 'fas fa-user-check', '#059669');
               } else {
                 showAIBanner(`Pengunjung Belum Terdaftar`, `Wajah tidak dikenal terdeteksi di kamera`, 'badge-warning', 'UNVERIFIED', 'fas fa-user-clock', '#f59e0b');
               }
-              // Log all detected
+              // Log all detected to database
               lastFaceAPIResult.faces.forEach(f => {
                 if (!f.face) return;
-                const activeCamTitle = currentAICamera ? currentAICamera.title : 'CAM LOEWIX CCTV';
+                const activeCamTitle = (currentAICamera && currentAICamera.title) ? currentAICamera.title : (isWebcamRunning ? 'LIVE WEBCAM LAPTOP' : 'CAM LOEWIX CCTV');
                 const activeCamId = currentAICamera ? currentAICamera.id : 5002;
                 const fd = new FormData();
                 fd.append('action', 'log_detection');
