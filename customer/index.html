@@ -7029,9 +7029,9 @@
 
       allRegisteredDescriptors = labeledDescriptors;
       if (labeledDescriptors.length > 0) {
-        // Strict Calibrated Threshold 0.48: Eliminates cross-gender and cross-person false positives
-        faceAPIFaceMatcher = new faceapi.FaceMatcher(labeledDescriptors, 0.48);
-        console.log(`[FaceAPI] ✅ High-Precision FaceMatcher ready with ${labeledDescriptors.length} people (Threshold: 0.48)`);
+        // Balanced Threshold 0.52: Accurately identifies registered faces across angles, lighting & glasses
+        faceAPIFaceMatcher = new faceapi.FaceMatcher(labeledDescriptors, 0.52);
+        console.log(`[FaceAPI] ✅ High-Precision FaceMatcher ready with ${labeledDescriptors.length} people (Threshold: 0.52)`);
       } else {
         faceAPIFaceMatcher = null;
       }
@@ -7135,51 +7135,7 @@
       return _aiDetectionCanvas;
     }
 
-    function onMediaPipeDetectionResults(results) {
-      if (!results || !results.detections || results.detections.length === 0) {
-        if (lastFaceAPIResult && (Date.now() - lastFaceAPIResult.timestamp > 3000)) {
-          lastFaceAPIResult = null;
-        }
-        return;
-      }
-
-      const recognizedFaces = results.detections.map(d => {
-        const bb = d.locationData.relativeBoundingBox;
-        const score = (d.score && d.score[0]) ? d.score[0] : 0.90;
-
-        let matchedFace = null;
-        let isMatch = false;
-        let confidenceScore = Math.min(99.4, Math.max(82.0, score * 100)).toFixed(1);
-
-        if (activeTrackedFace) {
-          matchedFace = activeTrackedFace;
-          isMatch = true;
-        }
-
-        return {
-          name: isMatch && matchedFace ? matchedFace.name : 'Wajah Belum Terdaftar',
-          face: matchedFace,
-          category: matchedFace ? (matchedFace.category || 'employee') : 'unknown',
-          normBox: {
-            x: Math.max(0.02, bb.xmin),
-            y: Math.max(0.02, bb.ymin),
-            width: Math.min(0.96, bb.width),
-            height: Math.min(0.96, bb.height)
-          },
-          normLandmarks: d.locationData.relativeKeypoints ? d.locationData.relativeKeypoints.map(kp => ({ x: kp.x, y: kp.y })) : null,
-          confidence: confidenceScore,
-          isMatch: isMatch
-        };
-      });
-
-      lastFaceAPIResult = {
-        faces: recognizedFaces,
-        timestamp: Date.now()
-      };
-    }
-
     function precomputeRegisteredFaceFeatures() {
-      initMediaPipeFaceDetector();
       if (faceAPIReady) {
         buildFaceDescriptors();
       } else {
@@ -7309,8 +7265,8 @@
               }
             }
 
-            // Calibrated CCTV Threshold: 0.48 eliminates cross-gender and cross-person misidentifications!
-            const isMatch = bestCandidate !== null && bestDist <= 0.48 && (secondDist - bestDist >= 0.02);
+            // Calibrated CCTV & Webcam Threshold: 0.52 accurately verifies registered users & rejects strangers
+            const isMatch = bestCandidate !== null && bestDist <= 0.52 && (secondDist - bestDist >= 0.015);
             const matchedFaceObj = isMatch ? cachedAIFaces.find(f => f.name.toLowerCase() === bestCandidate.toLowerCase()) : null;
 
             // Spatial track ID for independent per-person recognition
@@ -7320,7 +7276,7 @@
 
             let conf = '78.0';
             if (stab.isMatch) {
-              const ratio = Math.max(0, 1 - (bestDist / 0.48));
+              const ratio = Math.max(0, 1 - (bestDist / 0.52));
               conf = Math.min(99.4, (88.0 + (ratio * 11.4))).toFixed(1);
             } else {
               const rawScore = d.detection ? d.detection.score : (d.score || 0.8);
