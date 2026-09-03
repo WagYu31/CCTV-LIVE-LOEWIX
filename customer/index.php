@@ -7021,9 +7021,9 @@
       }
 
       if (labeledDescriptors.length > 0) {
-        // Optimal balanced threshold (0.58) for reliable multi-angle & real-world face recognition
-        faceAPIFaceMatcher = new faceapi.FaceMatcher(labeledDescriptors, 0.58);
-        console.log(`[FaceAPI] ✅ Balanced High-Precision FaceMatcher ready with ${labeledDescriptors.length} people (Threshold: 0.58)`);
+        // Strict high-precision threshold (0.46) to eliminate cross-person false positive identification
+        faceAPIFaceMatcher = new faceapi.FaceMatcher(labeledDescriptors, 0.46);
+        console.log(`[FaceAPI] ✅ High-Precision FaceMatcher ready with ${labeledDescriptors.length} people (Threshold: 0.46)`);
       } else {
         faceAPIFaceMatcher = null;
       }
@@ -7045,21 +7045,21 @@
       if (!videoElem.videoWidth || videoElem.videoWidth === 0) return;
       faceAPIDetectionRunning = true;
       try {
-        const detections = await faceapi.detectAllFaces(videoElem, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.20 }))
+        const detections = await faceapi.detectAllFaces(videoElem, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.25 }))
           .withFaceLandmarks(true)
           .withFaceDescriptors();
 
         if (detections.length > 0 && faceAPIFaceMatcher) {
           const results = detections.map(d => {
             const match = faceAPIFaceMatcher.findBestMatch(d.descriptor);
-            // Match check: must be recognized label and distance <= 0.60
-            const isMatch = match.label !== 'unknown' && match.distance <= 0.60;
-            let conf = '95.0';
+            // Strict match check: must have valid label and Euclidean distance <= 0.46
+            const isMatch = match.label !== 'unknown' && match.distance <= 0.46;
+            let conf = '75.0';
             if (isMatch) {
-              const matchRatio = Math.max(0, 1 - (match.distance / 0.60));
-              conf = Math.min(99.8, Math.max(96.2, 94.0 + (matchRatio * 5.8))).toFixed(1);
+              const matchRatio = Math.max(0, 1 - (match.distance / 0.46));
+              conf = Math.min(99.4, Math.max(88.0, 88.0 + (matchRatio * 11.4))).toFixed(1);
             } else {
-              conf = Math.max(70.0, ((1 - Math.min(1, match.distance)) * 100)).toFixed(1);
+              conf = Math.max(50.0, ((1 - Math.min(1, match.distance)) * 100)).toFixed(1);
             }
             return {
               box: d.detection.box,
@@ -7098,6 +7098,13 @@
             if (select && select.value !== firstKnown.face.id) {
               select.value = firstKnown.face.id;
             }
+          } else {
+            // When only unknown/unregistered faces are visible, do NOT retain old identity
+            activeTrackedFace = null;
+            const select = document.getElementById('ai-target-face-selector');
+            if (select && select.value !== 'auto') {
+              select.value = 'auto';
+            }
           }
         } else if (detections.length > 0 && !faceAPIFaceMatcher) {
           lastFaceAPIResult = {
@@ -7123,14 +7130,11 @@
     }
 
     function matchLiveVideoFace(videoElem) {
-      if (lastFaceAPIResult && lastFaceAPIResult.faces.length > 0 && Date.now() - lastFaceAPIResult.timestamp < 10000) {
+      if (lastFaceAPIResult && lastFaceAPIResult.faces.length > 0 && Date.now() - lastFaceAPIResult.timestamp < 5000) {
         const best = lastFaceAPIResult.faces[0];
         if (best.face) {
           return { face: best.face, confidence: best.confidence, score: parseFloat(best.confidence) / 100, box: best.box };
         }
-      }
-      if (activeTrackedFace) {
-        return { face: activeTrackedFace, confidence: '96.0', score: 0.96 };
       }
       return null;
     }
@@ -7147,43 +7151,33 @@
       }, 400);
     }
 
-    // Active Tracked Face
+    // Active Tracked Face (Null by default: Auto Detect Real-time)
     let activeTrackedFace = null;
 
     function populateAITargetFaceSelector() {
       const select = document.getElementById('ai-target-face-selector');
       if (!select) return;
 
-      const isWebcam = !currentAICamera || currentAICamera.id === 'webcam';
-      if (isWebcam || !activeTrackedFace) {
-        activeTrackedFace = cachedAIFaces.find(f => f.name.toLowerCase().includes('wagyu')) || cachedAIFaces[0];
-      }
-
-      let html = '<option value="auto">✨ Mode AI: Auto Match (Deteksi Wajah Real-time)</option>';
+      let html = '<option value="auto" selected>✨ Mode AI: Auto Detect & Match (Real-time)</option>';
       cachedAIFaces.forEach((f) => {
-        const isSelected = activeTrackedFace && (activeTrackedFace.id == f.id || activeTrackedFace.name.toLowerCase() === f.name.toLowerCase()) ? 'selected' : '';
         const roleStr = f.role_title ? ` (${f.role_title})` : '';
-        html += `<option value="${f.id}" ${isSelected}>👤 Wajah: ${f.name}${roleStr}</option>`;
+        html += `<option value="${f.id}">👤 Target: ${f.name}${roleStr}</option>`;
       });
 
       if (cachedAIFaces.length === 0) {
-        html = '<option value="">Belum ada wajah terdaftar</option>';
+        html = '<option value="auto">Belum ada wajah terdaftar</option>';
       }
 
       select.innerHTML = html;
-      if (activeTrackedFace) {
-        select.value = activeTrackedFace.id;
-      }
+      select.value = 'auto';
+      activeTrackedFace = null;
     }
 
     function selectAITargetFace(faceId) {
-      if (faceId === 'auto') {
-        const face = cachedAIFaces.find(f => f.name.toLowerCase().includes('chika')) || cachedAIFaces[0];
-        if (face) {
-          activeTrackedFace = face;
-          window._lastAutoLogTime = 0;
-          simulateCustomFaceDetection(face.name, face.category, face.role_title);
-        }
+      if (faceId === 'auto' || !faceId) {
+        activeTrackedFace = null;
+        lastFaceAPIResult = null;
+        activeAIEntities = [];
         return;
       }
       const face = cachedAIFaces.find(f => f.id == faceId || f.name.toLowerCase() === String(faceId).toLowerCase());
@@ -8340,11 +8334,6 @@
           statusLabel.innerHTML = `<span class="text-info"><i class="fas fa-video mr-1"></i> ${currentAICamera.title} (Live CCTV)</span>`;
         }
 
-        // Retain selected active target face or sync selector
-        const targetSelect = document.getElementById('ai-target-face-selector');
-        if (targetSelect && activeTrackedFace) {
-          targetSelect.value = activeTrackedFace.id;
-        }
 
         if (video) {
           video.srcObject = null;
@@ -8424,11 +8413,12 @@
         }
 
         window._lastAutoLogTime = 0;
-        if (activeTrackedFace) {
-          simulateCustomFaceDetection(activeTrackedFace.name, activeTrackedFace.category, activeTrackedFace.role_title);
-        } else {
-          initAIHUDCanvas();
-        }
+        activeAIEntities = [];
+        lastFaceAPIResult = null;
+        activeTrackedFace = null;
+        const targetSelect = document.getElementById('ai-target-face-selector');
+        if (targetSelect) targetSelect.value = 'auto';
+        initAIHUDCanvas();
       }
     }
 
