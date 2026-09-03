@@ -7000,15 +7000,22 @@
     }
 
     // Build face descriptors from registered photos
-    async function buildFaceDescriptors() {
+    let _faceDescriptorsBuiltHash = '';
+    async function buildFaceDescriptors(force = false) {
       if (!faceAPIReady) return;
+      const currentHash = cachedAIFaces.map(f => `${f.id}_${f.name}_${f.photo}`).join('|');
+      if (!force && _faceDescriptorsBuiltHash === currentHash && faceAPIFaceMatcher) {
+        return; // Cache valid: avoid re-processing images repeatedly
+      }
+      _faceDescriptorsBuiltHash = currentHash;
+
       const labeledDescriptors = [];
       for (const face of cachedAIFaces) {
         if (!face.photo) continue;
         try {
           const photoUrl = resolveFacePhotoUrl(face.photo);
           const img = await faceapi.fetchImage(photoUrl);
-          const detection = await faceapi.detectSingleFace(img, new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.3 }))
+          const detection = await faceapi.detectSingleFace(img, new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.15 }))
             .withFaceLandmarks(true)
             .withFaceDescriptor();
           if (detection) {
@@ -7030,6 +7037,84 @@
       } else {
         faceAPIFaceMatcher = null;
       }
+    }
+
+    // ========================================================
+    // BIOMETRIC TEMPORAL STABILIZER (Prevents Name Flickering)
+    // ========================================================
+    let _identityVotingBuffer = []; // Sliding window of candidates
+    let _lockedIdentity = null;     // Locked stable identity
+    let _lockedIdentityUntil = 0;   // Lock expiration timestamp
+
+    function getStabilizedIdentity(candidateMatch, candidateFace) {
+      const now = Date.now();
+
+      // 1. If user explicitly selected a target in the dropdown, respect user choice 100%!
+      if (activeTrackedFace) {
+        return {
+          name: activeTrackedFace.name,
+          face: activeTrackedFace,
+          category: activeTrackedFace.category || 'employee',
+          isMatch: true
+        };
+      }
+
+      const candidateLabel = (candidateMatch && candidateMatch.label !== 'unknown' && candidateMatch.distance <= 0.58) ? candidateMatch.label : null;
+
+      if (candidateLabel) {
+        _identityVotingBuffer.push(candidateLabel);
+        if (_identityVotingBuffer.length > 7) _identityVotingBuffer.shift();
+      }
+
+      // Count votes in sliding window
+      const votes = {};
+      _identityVotingBuffer.forEach(l => {
+        votes[l] = (votes[l] || 0) + 1;
+      });
+
+      let winner = null;
+      let maxVotes = 0;
+      for (const [lbl, count] of Object.entries(votes)) {
+        if (count > maxVotes) {
+          maxVotes = count;
+          winner = lbl;
+        }
+      }
+
+      // Require at least 3 consistent votes out of 7 to establish or switch identity
+      if (winner && maxVotes >= 3) {
+        const found = cachedAIFaces.find(f => f.name.toLowerCase() === winner.toLowerCase());
+        if (found) {
+          _lockedIdentity = found;
+          _lockedIdentityUntil = now + 4000; // Hold steady for 4 seconds without flickering
+        }
+      }
+
+      // If currently holding a stable identity, return it consistently!
+      if (_lockedIdentity && now < _lockedIdentityUntil) {
+        return {
+          name: _lockedIdentity.name,
+          face: _lockedIdentity,
+          category: _lockedIdentity.category || 'employee',
+          isMatch: true
+        };
+      }
+
+      if (candidateFace) {
+        return {
+          name: candidateFace.name,
+          face: candidateFace,
+          category: candidateFace.category || 'employee',
+          isMatch: true
+        };
+      }
+
+      return {
+        name: 'Wajah Belum Terdaftar',
+        face: null,
+        category: 'unknown',
+        isMatch: false
+      };
     }
 
     // ========================================================
@@ -7207,6 +7292,7 @@
               if (single) {
                 const m = faceAPIFaceMatcher.findBestMatch(single.descriptor);
                 if (m && m.label !== 'unknown' && m.distance <= 0.58) {
+                  mCandidate = m;
                   matchedFace = cachedAIFaces.find(f => f.name.toLowerCase() === m.label.toLowerCase());
                   if (matchedFace) {
                     isMatch = true;
@@ -7218,11 +7304,13 @@
             } catch(e) {}
           }
 
+          const stab = getStabilizedIdentity(mCandidate, matchedFace);
+
           lastFaceAPIResult = {
             faces: [{
-              name: isMatch && matchedFace ? matchedFace.name : (matchedFace ? matchedFace.name : 'Wajah Terdeteksi (Sudut Miring)'),
-              face: matchedFace,
-              category: matchedFace ? (matchedFace.category || 'employee') : 'unknown',
+              name: stab.name,
+              face: stab.face,
+              category: stab.category,
               normBox: nb,
               normLandmarks: [
                 { x: nb.x + nb.width * 0.32, y: nb.y + nb.height * 0.38 },
@@ -7233,7 +7321,7 @@
                 { x: nb.x + nb.width * 0.88, y: nb.y + nb.height * 0.45 }
               ],
               confidence: bestConfidence,
-              isMatch: isMatch
+              isMatch: stab.isMatch
             }],
             timestamp: Date.now()
           };
@@ -7315,11 +7403,12 @@
             }
 
             const faceObj = isMatch && match ? cachedAIFaces.find(f => f.name.toLowerCase() === match.label.toLowerCase()) : null;
+            const stab = getStabilizedIdentity(match, faceObj);
 
             results.push({
-              name: isMatch && faceObj ? faceObj.name : 'Wajah Belum Terdaftar',
-              face: faceObj,
-              category: faceObj ? (faceObj.category || 'employee') : 'unknown',
+              name: stab.name,
+              face: stab.face,
+              category: stab.category,
               normBox: {
                 x: d.box.x / frameW,
                 y: d.box.y / frameH,
@@ -7335,7 +7424,7 @@
                 { x: (d.box.x + d.box.width * 0.88) / frameW, y: (d.box.y + d.box.height * 0.45) / frameH }
               ],
               confidence: conf,
-              isMatch: isMatch
+              isMatch: stab.isMatch
             });
           }
 
@@ -7343,15 +7432,6 @@
             faces: results,
             timestamp: Date.now()
           };
-
-          const firstKnown = results.find(f => f.face !== null);
-          if (firstKnown && firstKnown.face) {
-            activeTrackedFace = firstKnown.face;
-            const select = document.getElementById('ai-target-face-selector');
-            if (select && select.value !== firstKnown.face.id) {
-              select.value = firstKnown.face.id;
-            }
-          }
         } else {
           // If frontal face not picked by neural net (head bowed), use salient subject tracker
           await detectSalientSubjectInFrame(frameCanvas);
