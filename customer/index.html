@@ -7040,14 +7040,60 @@
     let allRegisteredDescriptors = [];
 
     // ========================================================
-    // PER-PERSON SPATIAL STABILIZER (Multi-Person Independent Lock)
+    // SPATIAL CENTROID TRACKER & HYSTERESIS IDENTITY LOCK
     // ========================================================
     const _spatialTrackBuffers = new Map();
 
-    function getStabilizedIdentityForTrack(trackId, candidateLabel, candidateFace) {
+    // Find or create a stable spatial track based on physical face centroid (NOT array index i!)
+    function getStableSpatialTrack(box, frameW, frameH) {
+      const cx = (box.x + box.width / 2) / frameW;
+      const cy = (box.y + box.height / 2) / frameH;
       const now = Date.now();
 
-      // If user selected a specific target in dropdown, honor user target
+      // Clean up dead tracks older than 15 seconds
+      for (const [id, data] of _spatialTrackBuffers.entries()) {
+        if (now - data.lastSeen > 15000) {
+          _spatialTrackBuffers.delete(id);
+        }
+      }
+
+      // Match existing track within spatial proximity radius (0.22 normalized Euclidean radius)
+      let matchedTrack = null;
+      let minDistance = 0.22;
+
+      for (const [id, data] of _spatialTrackBuffers.entries()) {
+        const dist = Math.hypot(cx - data.lastX, cy - data.lastY);
+        if (dist < minDistance) {
+          minDistance = dist;
+          matchedTrack = data;
+        }
+      }
+
+      if (matchedTrack) {
+        matchedTrack.lastX = cx;
+        matchedTrack.lastY = cy;
+        matchedTrack.lastSeen = now;
+        return matchedTrack;
+      }
+
+      // Create new track anchored to this physical chair/position
+      const newId = `track_${Math.round(cx * 100)}_${Math.round(cy * 100)}`;
+      const newTrack = {
+        id: newId,
+        lastX: cx,
+        lastY: cy,
+        lastSeen: now,
+        lockedPerson: null,
+        lockedDistance: 1.0,
+        candidateVotes: {},
+        frameCount: 0
+      };
+      _spatialTrackBuffers.set(newId, newTrack);
+      return newTrack;
+    }
+
+    function getStabilizedIdentityFromTrack(track, candidateMatch, candidateFace, currentDistance, secondCandidate, secondDistance) {
+      // 1. If user selected a specific target in dropdown, honor user choice 100%
       if (activeTrackedFace) {
         return {
           name: activeTrackedFace.name,
@@ -7057,47 +7103,67 @@
         };
       }
 
-      if (!_spatialTrackBuffers.has(trackId)) {
-        _spatialTrackBuffers.set(trackId, { votes: [], locked: null, until: 0 });
-      }
-      const tb = _spatialTrackBuffers.get(trackId);
+      track.frameCount++;
 
-      if (candidateLabel) {
-        tb.votes.push(candidateLabel);
-        if (tb.votes.length > 8) tb.votes.shift();
-      }
+      // 2. If track is ALREADY locked to an established person (e.g. Hans):
+      if (track.lockedPerson) {
+        const lockedNameLower = track.lockedPerson.name.toLowerCase();
 
-      const voteCounts = {};
-      tb.votes.forEach(v => { voteCounts[v] = (voteCounts[v] || 0) + 1; });
+        // If the locked person is still among the top candidates (or within 0.04 margin):
+        const isLockedPersonStillInCandidates = (candidateMatch && candidateMatch.toLowerCase() === lockedNameLower) ||
+          (secondCandidate && secondCandidate.toLowerCase() === lockedNameLower && (secondDistance - currentDistance < 0.045));
 
-      let winner = null;
-      let maxV = 0;
-      for (const [lbl, cnt] of Object.entries(voteCounts)) {
-        if (cnt > maxV) {
-          maxV = cnt;
-          winner = lbl;
+        if (isLockedPersonStillInCandidates) {
+          // Re-affirm existing lock! (Immune to micro-flickers like ROYAN)
+          track.candidateVotes = {};
+          return {
+            name: track.lockedPerson.name,
+            face: track.lockedPerson,
+            category: track.lockedPerson.category || 'employee',
+            isMatch: true
+          };
         }
-      }
 
-      // Require at least 4 consistent matches out of 8 to lock identity
-      if (winner && maxV >= 4) {
-        const found = cachedAIFaces.find(f => f.name.toLowerCase() === winner.toLowerCase());
-        if (found) {
-          tb.locked = found;
-          tb.until = now + 4000;
+        // To replace an established person with a completely different person,
+        // the new candidate must beat the locked person continuously for 8 consecutive frames!
+        const otherCandidate = candidateMatch;
+        if (otherCandidate && currentDistance < 0.44) {
+          track.candidateVotes[otherCandidate] = (track.candidateVotes[otherCandidate] || 0) + 1;
+          if (track.candidateVotes[otherCandidate] >= 8) {
+            const newPerson = cachedAIFaces.find(f => f.name.toLowerCase() === otherCandidate.toLowerCase());
+            if (newPerson) {
+              track.lockedPerson = newPerson;
+              track.candidateVotes = {};
+            }
+          }
         }
-      }
 
-      if (tb.locked && now < tb.until) {
+        // Hold existing established person steadily
         return {
-          name: tb.locked.name,
-          face: tb.locked,
-          category: tb.locked.category || 'employee',
+          name: track.lockedPerson.name,
+          face: track.lockedPerson,
+          category: track.lockedPerson.category || 'employee',
           isMatch: true
         };
       }
 
-      if (candidateFace) {
+      // 3. Track not yet locked: Accumulate votes (need 3 consistent matches)
+      if (candidateMatch && candidateFace) {
+        track.candidateVotes[candidateMatch] = (track.candidateVotes[candidateMatch] || 0) + 1;
+        if (track.candidateVotes[candidateMatch] >= 3) {
+          track.lockedPerson = candidateFace;
+          track.lockedDistance = currentDistance;
+          return {
+            name: candidateFace.name,
+            face: candidateFace,
+            category: candidateFace.category || 'employee',
+            isMatch: true
+          };
+        }
+      }
+
+      // 4. Before 3 votes, if candidate is confident
+      if (candidateFace && track.frameCount >= 2) {
         return {
           name: candidateFace.name,
           face: candidateFace,
@@ -7248,6 +7314,7 @@
 
             let bestCandidate = null;
             let bestDist = 1.0;
+            let secondCandidate = null;
             let secondDist = 1.0;
 
             if (desc && allRegisteredDescriptors.length > 0) {
@@ -7256,10 +7323,12 @@
                   const dist = faceapi.euclideanDistance(desc, refDesc);
                   if (dist < bestDist) {
                     secondDist = bestDist;
+                    secondCandidate = bestCandidate;
                     bestDist = dist;
                     bestCandidate = ld.label;
                   } else if (dist < secondDist) {
                     secondDist = dist;
+                    secondCandidate = ld.label;
                   }
                 }
               }
@@ -7269,10 +7338,16 @@
             const isMatch = bestCandidate !== null && bestDist <= 0.52 && (secondDist - bestDist >= 0.015);
             const matchedFaceObj = isMatch ? cachedAIFaces.find(f => f.name.toLowerCase() === bestCandidate.toLowerCase()) : null;
 
-            // Spatial track ID for independent per-person recognition
-            const normCenter = (box.x + box.width / 2) / frameW;
-            const trackId = `track_${normCenter < 0.45 ? 'left' : (normCenter > 0.60 ? 'right' : 'center')}_${i}`;
-            const stab = getStabilizedIdentityForTrack(trackId, isMatch ? bestCandidate : null, matchedFaceObj);
+            // Stable physical centroid track (immune to other people entering or leaving the camera)
+            const track = getStableSpatialTrack(box, frameW, frameH);
+            const stab = getStabilizedIdentityFromTrack(
+              track,
+              isMatch ? bestCandidate : null,
+              matchedFaceObj,
+              bestDist,
+              secondCandidate,
+              secondDist
+            );
 
             let conf = '78.0';
             if (stab.isMatch) {
