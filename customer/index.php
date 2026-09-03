@@ -1882,7 +1882,7 @@
             <div id="ai-video-wrapper" class="position-relative" style="background: #020617; border-radius: 12px; overflow: hidden; border: 1px solid rgba(56, 189, 248, 0.3); min-height: 380px; display: flex; align-items: center; justify-content: center; user-select: none;">
               
               <!-- Video Layer -->
-              <video id="ai-video-player" autoplay loop muted playsinline style="width: 100%; height: 380px; object-fit: cover; display: block; filter: brightness(0.95) contrast(1.05); transition: transform 0.15s ease-out; transform-origin: center center;">
+              <video id="ai-video-player" autoplay loop muted playsinline crossorigin="anonymous" style="width: 100%; height: 380px; object-fit: cover; display: block; filter: brightness(0.95) contrast(1.05); transition: transform 0.15s ease-out; transform-origin: center center;">
                 <source src="assets/video/demo-cctv.mp4" type="video/mp4">
               </video>
 
@@ -7045,7 +7045,9 @@
       if (!videoElem.videoWidth || videoElem.videoWidth === 0) return;
       faceAPIDetectionRunning = true;
       try {
-        const detections = await faceapi.detectAllFaces(videoElem, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.25 }))
+        // Multi-scale resolution: 416px preserves small, distant faces in 1080P/6MP CCTV streams!
+        const cctvInputSize = (videoElem.videoWidth && videoElem.videoWidth >= 720) ? 416 : 320;
+        const detections = await faceapi.detectAllFaces(videoElem, new faceapi.TinyFaceDetectorOptions({ inputSize: cctvInputSize, scoreThreshold: 0.15 }))
           .withFaceLandmarks(true)
           .withFaceDescriptors();
 
@@ -8337,6 +8339,8 @@
 
         if (video) {
           video.srcObject = null;
+          video.crossOrigin = 'anonymous';
+          video.setAttribute('crossorigin', 'anonymous');
           video.muted = true;
           video.setAttribute('playsinline', 'true');
           video.setAttribute('webkit-playsinline', 'true');
