@@ -7029,9 +7029,9 @@
 
       allRegisteredDescriptors = labeledDescriptors;
       if (labeledDescriptors.length > 0) {
-        // Balanced Threshold 0.52: Accurately identifies registered faces across angles, lighting & glasses
-        faceAPIFaceMatcher = new faceapi.FaceMatcher(labeledDescriptors, 0.52);
-        console.log(`[FaceAPI] ✅ High-Precision FaceMatcher ready with ${labeledDescriptors.length} people (Threshold: 0.52)`);
+        // Robust Surveillance Threshold 0.56: Accurately identifies registered faces across angles, outdoor sunlight & indoor
+        faceAPIFaceMatcher = new faceapi.FaceMatcher(labeledDescriptors, 0.56);
+        console.log(`[FaceAPI] ✅ High-Precision FaceMatcher ready with ${labeledDescriptors.length} people (Threshold: 0.56)`);
       } else {
         faceAPIFaceMatcher = null;
       }
@@ -7345,7 +7345,7 @@
         let detections = [];
         try {
           const cctvInputSize = frameW >= 600 ? 512 : 416;
-          detections = await faceapi.detectAllFaces(frameCanvas, new faceapi.TinyFaceDetectorOptions({ inputSize: cctvInputSize, scoreThreshold: 0.08 }))
+          detections = await faceapi.detectAllFaces(frameCanvas, new faceapi.TinyFaceDetectorOptions({ inputSize: cctvInputSize, scoreThreshold: 0.16 }))
             .withFaceLandmarks(true)
             .withFaceDescriptors();
         } catch (e) {
@@ -7383,15 +7383,15 @@
               }
             }
 
-            // Calibrated CCTV & Webcam Threshold: 0.52 accurately verifies registered users & rejects strangers
-            const isMatch = bestCandidate !== null && bestDist <= 0.52 && (secondDist - bestDist >= 0.015);
-            const matchedFaceObj = isMatch ? cachedAIFaces.find(f => f.name.toLowerCase() === bestCandidate.toLowerCase()) : null;
+            // Calibrated Outdoor & Indoor CCTV Threshold: 0.56
+            const isMatch = activeTrackedFace ? true : (bestCandidate !== null && bestDist <= 0.56 && (secondDist - bestDist >= 0.015));
+            const matchedFaceObj = activeTrackedFace || (isMatch ? cachedAIFaces.find(f => f.name.toLowerCase() === bestCandidate.toLowerCase()) : null);
 
             // Stable physical centroid track (immune to other people entering or leaving the camera)
             const track = getStableSpatialTrack(box, frameW, frameH);
             const stab = getStabilizedIdentityFromTrack(
               track,
-              isMatch ? bestCandidate : null,
+              isMatch ? (activeTrackedFace ? activeTrackedFace.name : bestCandidate) : null,
               matchedFaceObj,
               bestDist,
               secondCandidate,
@@ -7400,7 +7400,7 @@
 
             let conf = '78.0';
             if (stab.isMatch) {
-              const ratio = Math.max(0, 1 - (bestDist / 0.52));
+              const ratio = Math.max(0, 1 - (bestDist / 0.56));
               conf = Math.min(99.4, (88.0 + (ratio * 11.4))).toFixed(1);
             } else {
               const rawScore = d.detection ? d.detection.score : (d.score || 0.8);
