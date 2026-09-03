@@ -7024,9 +7024,9 @@
       }
 
       if (labeledDescriptors.length > 0) {
-        // Strict high-precision threshold (0.46) to eliminate cross-person false positive identification
-        faceAPIFaceMatcher = new faceapi.FaceMatcher(labeledDescriptors, 0.46);
-        console.log(`[FaceAPI] ✅ High-Precision FaceMatcher ready with ${labeledDescriptors.length} people (Threshold: 0.46)`);
+        // Balanced CCTV surveillance threshold (0.58) recognizes registered faces across camera angles & lighting
+        faceAPIFaceMatcher = new faceapi.FaceMatcher(labeledDescriptors, 0.58);
+        console.log(`[FaceAPI] ✅ High-Precision FaceMatcher ready with ${labeledDescriptors.length} people (Threshold: 0.58)`);
       } else {
         faceAPIFaceMatcher = null;
       }
@@ -7142,7 +7142,7 @@
     let faceAPIDetectionRunning = false;
 
     // Smart Salient Subject / Head Estimator for CCTV (handles heads looking down reading/working)
-    function detectSalientSubjectInFrame(frameCanvas) {
+    async function detectSalientSubjectInFrame(frameCanvas) {
       if (!frameCanvas || !isAutoTrackingActive) return;
       try {
         const ctx = frameCanvas.getContext('2d');
@@ -7176,8 +7176,8 @@
         if (skinCount >= 30) {
           const avgX = (sumX / skinCount) + sx;
           const avgY = (sumY / skinCount) + sy;
-          const estW = Math.min(w * 0.32, Math.max(w * 0.18, Math.sqrt(skinCount) * 11));
-          const estH = estW * 1.25;
+          const estW = Math.min(w * 0.35, Math.max(w * 0.18, Math.sqrt(skinCount) * 11));
+          const estH = estW * 1.35;
 
           const nb = {
             x: Math.max(0.05, (avgX - estW / 2) / w),
@@ -7186,10 +7186,41 @@
             height: Math.min(0.6, estH / h)
           };
 
-          const matchedFace = activeTrackedFace || null;
+          let matchedFace = activeTrackedFace || null;
+          let bestConfidence = '88.5';
+          let isMatch = !!matchedFace;
+
+          // Attempt facial recognition on the cropped head region
+          if (!matchedFace && faceAPIFaceMatcher && cachedAIFaces.length > 0) {
+            try {
+              const cropC = document.createElement('canvas');
+              cropC.width = 160;
+              cropC.height = 160;
+              const cropX = Math.max(0, Math.round(nb.x * w));
+              const cropY = Math.max(0, Math.round(nb.y * h));
+              const cropW = Math.min(w - cropX, Math.round(nb.width * w));
+              const cropH = Math.min(h - cropY, Math.round(nb.height * h));
+              cropC.getContext('2d').drawImage(frameCanvas, cropX, cropY, cropW, cropH, 0, 0, 160, 160);
+              const single = await faceapi.detectSingleFace(cropC, new faceapi.TinyFaceDetectorOptions({ inputSize: 160, scoreThreshold: 0.08 }))
+                .withFaceLandmarks(true)
+                .withFaceDescriptor();
+              if (single) {
+                const m = faceAPIFaceMatcher.findBestMatch(single.descriptor);
+                if (m && m.label !== 'unknown' && m.distance <= 0.58) {
+                  matchedFace = cachedAIFaces.find(f => f.name.toLowerCase() === m.label.toLowerCase());
+                  if (matchedFace) {
+                    isMatch = true;
+                    const ratio = Math.max(0, 1 - (m.distance / 0.58));
+                    bestConfidence = Math.min(99.4, (88.0 + (ratio * 11.4))).toFixed(1);
+                  }
+                }
+              }
+            } catch(e) {}
+          }
+
           lastFaceAPIResult = {
             faces: [{
-              name: matchedFace ? matchedFace.name : 'Wajah Terdeteksi (Sudut Miring)',
+              name: isMatch && matchedFace ? matchedFace.name : (matchedFace ? matchedFace.name : 'Wajah Terdeteksi (Sudut Miring)'),
               face: matchedFace,
               category: matchedFace ? (matchedFace.category || 'employee') : 'unknown',
               normBox: nb,
@@ -7201,8 +7232,8 @@
                 { x: nb.x + nb.width * 0.12, y: nb.y + nb.height * 0.45 },
                 { x: nb.x + nb.width * 0.88, y: nb.y + nb.height * 0.45 }
               ],
-              confidence: '88.5',
-              isMatch: !!matchedFace
+              confidence: bestConfidence,
+              isMatch: isMatch
             }],
             timestamp: Date.now()
           };
@@ -7249,14 +7280,35 @@
                 const desc = await faceapi.computeFaceDescriptor(frameCanvas, landmarks);
                 if (desc) {
                   match = faceAPIFaceMatcher.findBestMatch(desc);
-                  isMatch = match.label !== 'unknown' && match.distance <= 0.46;
+                  isMatch = match.label !== 'unknown' && match.distance <= 0.58;
+                }
+              } catch(e) {}
+            }
+
+            // High-contrast crop fallback if landmarks on full frame were slightly misaligned
+            if (!isMatch && d.box && faceAPIFaceMatcher) {
+              try {
+                const cropC = document.createElement('canvas');
+                cropC.width = 160;
+                cropC.height = 160;
+                const cropCtx = cropC.getContext('2d');
+                cropCtx.drawImage(frameCanvas, d.box.x, d.box.y, d.box.width, d.box.height, 0, 0, 160, 160);
+                const cropDet = await faceapi.detectSingleFace(cropC, new faceapi.TinyFaceDetectorOptions({ inputSize: 160, scoreThreshold: 0.08 }))
+                  .withFaceLandmarks(true)
+                  .withFaceDescriptor();
+                if (cropDet) {
+                  const m = faceAPIFaceMatcher.findBestMatch(cropDet.descriptor);
+                  if (m && m.label !== 'unknown' && m.distance <= 0.58) {
+                    match = m;
+                    isMatch = true;
+                  }
                 }
               } catch(e) {}
             }
 
             let conf = '85.0';
             if (isMatch && match) {
-              const matchRatio = Math.max(0, 1 - (match.distance / 0.46));
+              const matchRatio = Math.max(0, 1 - (match.distance / 0.58));
               conf = Math.min(99.4, Math.max(88.0, 88.0 + (matchRatio * 11.4))).toFixed(1);
             } else {
               conf = Math.max(78.0, (d.score * 100)).toFixed(1);
@@ -7302,7 +7354,7 @@
           }
         } else {
           // If frontal face not picked by neural net (head bowed), use salient subject tracker
-          detectSalientSubjectInFrame(frameCanvas);
+          await detectSalientSubjectInFrame(frameCanvas);
         }
       } catch (err) {
         console.warn('[FaceAPI] Detection error:', err.message);
@@ -8419,7 +8471,7 @@
         showAIBanner('🔍 Memindai Frame CCTV...', 'Sedang menganalisis wajah & biometrik pada frame aktif', 'badge-info', 'SCANNING', 'fas fa-search', '#0284c7');
         await runFaceAPIDetection(video, frameCanvas);
         if (!lastFaceAPIResult || lastFaceAPIResult.faces.length === 0) {
-          detectSalientSubjectInFrame(frameCanvas);
+          await detectSalientSubjectInFrame(frameCanvas);
         }
       }
     }
