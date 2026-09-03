@@ -8359,8 +8359,8 @@
             placeholder.style.zIndex = '15';
             placeholder.innerHTML = `
               <div class="spinner-border text-info spinner-border-sm mb-2" role="status"></div>
-              <h6 class="text-white font-weight-bold mb-1" style="font-size: 13.5px;">Menghubungkan ke ${currentAICamera.title}...</h6>
-              <small class="text-muted" style="font-size: 11px;">Memuat siaran langsung HLS Stream</small>
+              <h6 class="text-white font-weight-bold mb-1" style="font-size: 13.5px;">Menghubungkan Stream ${currentAICamera.title}...</h6>
+              <small class="text-muted" style="font-size: 11px;">Handshake Cloud P2P & Buffer HLS Segmen 1 (1-3 detik)</small>
             `;
           }
 
@@ -8371,6 +8371,11 @@
             return;
           }
 
+          // Hide placeholder as soon as actual video frames start rendering
+          video.addEventListener('playing', () => {
+            if (placeholder) placeholder.style.display = 'none';
+          }, { once: true });
+
           if (streamUrl.includes('.m3u8') || streamUrl.includes('bcloud365.net')) {
             if (typeof Hls !== 'undefined' && Hls.isSupported()) {
               if (window._aiHls) window._aiHls.destroy();
@@ -8378,9 +8383,11 @@
                 enableWorker: true,
                 lowLatencyMode: true,
                 liveSyncDurationCount: 1,
-                maxBufferLength: 2,
-                manifestLoadingTimeOut: 8000,
-                manifestLoadingMaxRetry: 3,
+                maxBufferLength: 1,
+                maxMaxBufferLength: 2,
+                initialLiveManifestSize: 1,
+                manifestLoadingTimeOut: 6000,
+                manifestLoadingMaxRetry: 2,
                 xhrSetup: function(xhr, url) {
                   try { xhr.withCredentials = false; } catch(e) {}
                 }
@@ -8388,7 +8395,6 @@
               window._aiHls.loadSource(streamUrl);
               window._aiHls.attachMedia(video);
               window._aiHls.on(Hls.Events.MANIFEST_PARSED, () => {
-                if (placeholder) placeholder.style.display = 'none';
                 video.play().catch(e => {});
               });
               window._aiHls.on(Hls.Events.ERROR, (event, data) => {
