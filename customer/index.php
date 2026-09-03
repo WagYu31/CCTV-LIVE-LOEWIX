@@ -7212,17 +7212,17 @@
     let lastFaceAPIResult = null;
     let faceAPIDetectionRunning = false;
 
-    // Smart Salient Subject / Head Estimator for CCTV (handles heads looking down reading/working)
+    // Smart Salient Subject / Head Estimator for Long-Range & Angled CCTV Cameras
     async function detectSalientSubjectInFrame(frameCanvas) {
       if (!frameCanvas || !isAutoTrackingActive) return;
       try {
         const ctx = frameCanvas.getContext('2d');
         const w = frameCanvas.width;
         const h = frameCanvas.height;
-        const sx = Math.round(w * 0.20);
-        const sy = Math.round(h * 0.20);
-        const sw = Math.round(w * 0.60);
-        const sh = Math.round(h * 0.65);
+        const sx = Math.round(w * 0.05);
+        const sy = Math.round(h * 0.05);
+        const sw = Math.round(w * 0.90);
+        const sh = Math.round(h * 0.90);
         const imgData = ctx.getImageData(sx, sy, sw, sh);
         const data = imgData.data;
 
@@ -7244,25 +7244,74 @@
           }
         }
 
-        if (skinCount >= 30) {
+        if (skinCount >= 25) {
           const avgX = (sumX / skinCount) + sx;
           const avgY = (sumY / skinCount) + sy;
-          const estW = Math.min(w * 0.35, Math.max(w * 0.18, Math.sqrt(skinCount) * 11));
+          const estW = Math.min(w * 0.35, Math.max(w * 0.16, Math.sqrt(skinCount) * 11));
           const estH = estW * 1.35;
 
           const nb = {
-            x: Math.max(0.05, (avgX - estW / 2) / w),
-            y: Math.max(0.08, (avgY - estH / 2) / h),
+            x: Math.max(0.04, (avgX - estW / 2) / w),
+            y: Math.max(0.04, (avgY - estH / 2) / h),
             width: Math.min(0.5, estW / w),
             height: Math.min(0.6, estH / h)
           };
 
-          // If manual target is selected, apply it; otherwise honest 'Wajah Terdeteksi (Menunduk)'
           let matchedFace = activeTrackedFace || null;
+          let isMatch = !!matchedFace;
+          let bestConfidence = matchedFace ? '88.5' : '82.0';
+
+          // Crop and run deep face recognition on the head area (top 55% of estimated box)
+          if (!matchedFace && allRegisteredDescriptors.length > 0) {
+            try {
+              const headCropC = document.createElement('canvas');
+              headCropC.width = 224;
+              headCropC.height = 224;
+              const cropX = Math.max(0, Math.round(nb.x * w));
+              const cropY = Math.max(0, Math.round(nb.y * h));
+              const cropW = Math.min(w - cropX, Math.round(nb.width * w));
+              const cropH = Math.min(h - cropY, Math.round(nb.height * 0.55 * h));
+              headCropC.getContext('2d').drawImage(frameCanvas, cropX, cropY, cropW, cropH, 0, 0, 224, 224);
+
+              const single = await faceapi.detectSingleFace(headCropC, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.05 }))
+                .withFaceLandmarks(true)
+                .withFaceDescriptor();
+
+              if (single && single.descriptor) {
+                let bestC = null;
+                let bestD = 1.0;
+                let secondD = 1.0;
+
+                for (const ld of allRegisteredDescriptors) {
+                  for (const refDesc of ld.descriptors) {
+                    const dist = faceapi.euclideanDistance(single.descriptor, refDesc);
+                    if (dist < bestD) {
+                      secondD = bestD;
+                      bestD = dist;
+                      bestC = ld.label;
+                    } else if (dist < secondD) {
+                      secondD = dist;
+                    }
+                  }
+                }
+
+                // Threshold 0.54 for outdoor long-distance CCTV cameras
+                if (bestC && bestD <= 0.54 && (secondD - bestD >= 0.015)) {
+                  matchedFace = cachedAIFaces.find(f => f.name.toLowerCase() === bestC.toLowerCase());
+                  if (matchedFace) {
+                    isMatch = true;
+                    const ratio = Math.max(0, 1 - (bestD / 0.54));
+                    bestConfidence = Math.min(99.4, (88.0 + (ratio * 11.4))).toFixed(1);
+                    nb.height = nb.height * 0.65; // Tighten box onto head
+                  }
+                }
+              }
+            } catch (e) {}
+          }
 
           lastFaceAPIResult = {
             faces: [{
-              name: matchedFace ? matchedFace.name : 'Wajah Terdeteksi (Menunduk)',
+              name: isMatch && matchedFace ? matchedFace.name : (matchedFace ? matchedFace.name : 'Wajah Belum Terdaftar'),
               face: matchedFace,
               category: matchedFace ? (matchedFace.category || 'employee') : 'unknown',
               normBox: nb,
@@ -7274,8 +7323,8 @@
                 { x: nb.x + nb.width * 0.12, y: nb.y + nb.height * 0.45 },
                 { x: nb.x + nb.width * 0.88, y: nb.y + nb.height * 0.45 }
               ],
-              confidence: matchedFace ? '88.5' : '82.0',
-              isMatch: !!matchedFace
+              confidence: bestConfidence,
+              isMatch: isMatch
             }],
             timestamp: Date.now()
           };
@@ -7295,8 +7344,8 @@
       try {
         let detections = [];
         try {
-          const cctvInputSize = frameW >= 500 ? 416 : 320;
-          detections = await faceapi.detectAllFaces(frameCanvas, new faceapi.TinyFaceDetectorOptions({ inputSize: cctvInputSize, scoreThreshold: 0.12 }))
+          const cctvInputSize = frameW >= 600 ? 512 : 416;
+          detections = await faceapi.detectAllFaces(frameCanvas, new faceapi.TinyFaceDetectorOptions({ inputSize: cctvInputSize, scoreThreshold: 0.08 }))
             .withFaceLandmarks(true)
             .withFaceDescriptors();
         } catch (e) {
@@ -8624,6 +8673,9 @@
     }
 
     async function changeAICamera(camId) {
+      _spatialTrackBuffers.clear();
+      lastFaceAPIResult = null;
+      activeAIEntities = [];
       const select = document.getElementById('ai-camera-selector');
       if (select) select.value = camId;
       const statusLabel = document.getElementById('ai-active-mode-label');
