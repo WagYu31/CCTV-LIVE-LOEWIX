@@ -180,16 +180,24 @@ if ($action === 'get_ai_data') {
         }
     }
 
-    // Sort logs newest first
-    usort($logs, function($a, $b) {
-        return strcmp($b['timestamp'] ?? '', $a['timestamp'] ?? '');
-    });
+    $cameras = [];
+    if (isset($db['cameras']) && is_array($db['cameras'])) {
+        foreach ($db['cameras'] as $cam) {
+            if ($isSuperAdmin || (int)($cam['user_id'] ?? 0) === $userId || (int)($cam['user_id'] ?? 0) === 0) {
+                if (!empty($cam['hls_url']) && strpos($cam['hls_url'], 'http://stream.loewixcctv.com') === 0) {
+                    $cam['hls_url'] = str_replace('http://', 'https://', $cam['hls_url']);
+                }
+                $cameras[] = $cam;
+            }
+        }
+    }
 
     echo json_encode([
         'success' => true,
         'faces' => $faces,
         'plates' => $plates,
         'logs' => $logs,
+        'cameras' => $cameras,
         'settings' => $db['ai_settings'] ?? [],
         'stats' => [
             'total_faces' => count($faces),

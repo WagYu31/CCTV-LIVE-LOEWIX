@@ -1848,9 +1848,6 @@
                 </span>
                 <select class="form-control form-control-sm form-control-dark" id="ai-camera-selector" onchange="changeAICamera(this.value)" style="width: auto; max-width: 320px; font-size: 12.5px; border-radius: 8px;">
                   <option value="webcam">📸 Live Webcam Laptop (Uji Scan Wajah Anda)</option>
-                  <option value="5002" selected>CAM LOEWIX JAKARTA 1 - LOBBY UTAMA</option>
-                  <option value="5003">CAM LOEWIX GATE MASUK & PARKIR</option>
-                  <option value="5001">CAM LOEWIX SIANTAR 1</option>
                 </select>
                 <select class="form-control form-control-sm form-control-dark" id="ai-target-face-selector" onchange="selectAITargetFace(this.value)" style="width: auto; max-width: 210px; font-size: 11.5px; border-radius: 8px; border-color: rgba(56, 189, 248, 0.4); background: rgba(15, 23, 42, 0.9);" title="Pilih target orang / wajah yang ingin di-track & diverifikasi AI">
                   <option value="auto">👤 Target: WAGYU</option>
@@ -3650,6 +3647,13 @@
   <script>
     let currentCustomer = null;
     let customerCameras = [];
+    try {
+      const _cachedCams = localStorage.getItem('loewix_customer_cameras');
+      if (_cachedCams) {
+        const _parsed = JSON.parse(_cachedCams);
+        if (Array.isArray(_parsed) && _parsed.length > 0) customerCameras = _parsed;
+      }
+    } catch(e) {}
     let hlsInstance = null;
 
     // Modal Helper functions (safe for jQuery and Vanilla JS)
@@ -3720,6 +3724,7 @@
 
     // Initialize Customer Dashboard
     document.addEventListener('DOMContentLoaded', () => {
+      populateAICameraSelector();
       initCustomerSession();
       startNetworkTelemetry();
     });
@@ -3932,6 +3937,9 @@
 
         if (data.success && Array.isArray(data.cameras)) {
           customerCameras = data.cameras;
+          try {
+            localStorage.setItem('loewix_customer_cameras', JSON.stringify(customerCameras));
+          } catch(e) {}
           
           // Update card stats
           const onlineCount = customerCameras.filter(c => c.status !== 'offline').length;
@@ -4879,6 +4887,7 @@
       } else if (tabId === 'tab-admin-transactions') {
         loadAdminTransactionsList();
       } else if (tabId === 'tab-ai-vision') {
+        populateAICameraSelector();
         loadAIData();
         setTimeout(initAIHUDCanvas, 150);
       } else if (tabId !== 'tab-cameras') {
@@ -6915,6 +6924,12 @@
         const data = await res.json();
 
         if (data.success) {
+          if (Array.isArray(data.cameras) && data.cameras.length > 0) {
+            customerCameras = data.cameras;
+            try {
+              localStorage.setItem('loewix_customer_cameras', JSON.stringify(customerCameras));
+            } catch(e) {}
+          }
           cachedAIFaces = data.faces || [];
           cachedAIPlates = data.plates || [];
           cachedAILogs = data.logs || [];
@@ -7517,10 +7532,35 @@
       }
     }
 
-    // Populate Camera Selector with all 12 Real Customer Cameras
-    function populateAICameraSelector() {
+    // Populate Camera Selector with all Real Customer / Tenant Cameras
+    async function populateAICameraSelector() {
       const select = document.getElementById('ai-camera-selector');
       if (!select) return;
+
+      // 1. Fallback to localStorage if customerCameras in memory is empty
+      if (!Array.isArray(customerCameras) || customerCameras.length === 0) {
+        try {
+          const _cached = localStorage.getItem('loewix_customer_cameras');
+          if (_cached) {
+            const _parsed = JSON.parse(_cached);
+            if (Array.isArray(_parsed) && _parsed.length > 0) customerCameras = _parsed;
+          }
+        } catch(e) {}
+      }
+
+      // 2. If STILL empty, dynamically fetch from API
+      if (!Array.isArray(customerCameras) || customerCameras.length === 0) {
+        try {
+          const u = currentCustomer || (localStorage.getItem('loewix_user') ? JSON.parse(localStorage.getItem('loewix_user')) : null);
+          const uid = u ? u.id : '';
+          const res = await fetch(`../api/customer_portal.php?action=my_cameras&user_id=${uid}`);
+          const data = await res.json();
+          if (data && data.success && Array.isArray(data.cameras) && data.cameras.length > 0) {
+            customerCameras = data.cameras;
+            try { localStorage.setItem('loewix_customer_cameras', JSON.stringify(customerCameras)); } catch(e) {}
+          }
+        } catch(e) {}
+      }
 
       const currentVal = select.value;
       let html = '<option value="webcam" ' + (currentVal === 'webcam' ? 'selected' : '') + '>📸 Live Webcam Laptop (Uji Scan Wajah Anda)</option>';
@@ -7529,7 +7569,7 @@
         customerCameras.forEach((cam, idx) => {
           const statusIcon = cam.status !== 'offline' ? '🟢' : '🔴';
           const cityStr = cam.city ? ` [${cam.city.toUpperCase()}]` : '';
-          const isSelected = (currentVal == cam.id) || (idx === 0 && (!currentVal || currentVal === '5002')) ? 'selected' : '';
+          const isSelected = (currentVal && currentVal == cam.id) || (!currentVal && idx === 0) ? 'selected' : '';
           html += `<option value="${cam.id}" ${isSelected}>📹 ${statusIcon} ${cam.title}${cityStr}</option>`;
         });
       } else {
