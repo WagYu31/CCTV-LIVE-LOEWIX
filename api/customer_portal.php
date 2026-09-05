@@ -126,6 +126,13 @@ if ($action === 'my_cameras') {
             $cam['hls_url'] = str_replace('http://', 'https://', $cam['hls_url']);
         }
 
+        // Auto-repair corrupted HLS URLs that contain rtsp:// inside them
+        if (!empty($cam['hls_url']) && strpos($cam['hls_url'], 'rtsp://') !== false) {
+            $cleanPath = (!empty($cam['streamPath']) && strpos($cam['streamPath'], 'rtsp://') === false) ? $cam['streamPath'] : 'cam_live_' . $cam['id'];
+            $cam['streamPath'] = $cleanPath;
+            $cam['hls_url'] = "https://stream.loewixcctv.com/{$cleanPath}/index.m3u8";
+        }
+
         // Auto-resolve RTSP cameras missing HLS URL or streamPath
         if (($cam['connection_type'] ?? '') === 'rtsp' && !empty($cam['rtsp_url'])) {
             if (empty($cam['streamPath'])) {
@@ -354,9 +361,12 @@ if ($action === 'save_camera') {
         exit;
     }
 
-    // If user pasted rtsp:// into hls_url field, move it to rtsp_url
-    if (strpos($hls_url, 'rtsp://') === 0) {
-        if (empty($rtsp_url)) $rtsp_url = $hls_url;
+    // If user pasted rtsp:// into hls_url field, or hls_url contains rtsp://, clean it up
+    if (strpos($hls_url, 'rtsp://') !== false) {
+        $extractedRtsp = preg_replace('#^https?://[^/]+/#i', '', $hls_url);
+        if (empty($rtsp_url) && strpos($extractedRtsp, 'rtsp://') === 0) {
+            $rtsp_url = $extractedRtsp;
+        }
         $hls_url = '';
     }
 

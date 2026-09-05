@@ -4169,7 +4169,11 @@
       if (connInput) connInput.value = cam.connection_type || 'rtsp';
       
       const hlsInput = document.getElementById('cust-cam-hls');
-      if (hlsInput) hlsInput.value = cam.hls_url || cam.streamPath || '';
+      if (hlsInput) {
+        let val = cam.hls_url || cam.streamPath || '';
+        if (val.includes('rtsp://')) val = '';
+        hlsInput.value = val;
+      }
       
       const rtspInput = document.getElementById('cust-cam-rtsp');
       if (rtspInput) rtspInput.value = cam.rtsp_url || '';
@@ -4328,6 +4332,12 @@
       }
 
       let streamUrl = cam.hls_url || cam.streamPath || '';
+      // Auto-sanitize corrupted streamUrl containing rtsp://
+      if (streamUrl && streamUrl.includes('rtsp://')) {
+        const path = (cam.streamPath && !cam.streamPath.includes('rtsp://')) ? cam.streamPath : `cam_live_${camId}`;
+        streamUrl = `https://stream.loewixcctv.com/${path}/index.m3u8`;
+        cam.hls_url = streamUrl;
+      }
 
       // If XMeye P2P camera without active bcloud URL, resolve via jftech_gateway.php
       if (cam.connection_type === 'xmeye_p2p' || (!streamUrl.includes('bcloud365.net') && cam.serial_number)) {
