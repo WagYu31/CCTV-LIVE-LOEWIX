@@ -79,6 +79,17 @@ paths:
     runOnDemand: ffmpeg -nostdin -loglevel error -rtsp_transport tcp -timeout 8000000 -i "rtsp://192.168.11.200:554/user=admin&password=&channel=1&stream=0.sdp" -c:v libx264 -preset ultrafast -tune zerolatency -pix_fmt yuv420p -r 20 -fps_mode cfr -g 40 -keyint_min 40 -sc_threshold 0 -b:v 2500k -maxrate 3000k -bufsize 6000k -an -f rtsp -pkt_size 1316 -rtsp_transport tcp rtsp://127.0.0.1:8554/cam_live_5019_hd
     runOnDemandRestart: yes
 
+  # ==========================================
+  # RTSP LOCAL STG (Office LAN 192.168.11.160)
+  # ==========================================
+  cam_live_5020:
+    runOnInit: ffmpeg -nostdin -loglevel error -rtsp_transport tcp -timeout 8000000 -i "rtsp://admin:123456@192.168.11.160:554/mpeg4" -vf "scale='min(1280,iw)':-2" -c:v libx264 -preset ultrafast -tune zerolatency -pix_fmt yuv420p -r 20 -fps_mode cfr -g 40 -keyint_min 40 -sc_threshold 0 -b:v 1200k -maxrate 1500k -bufsize 3000k -an -f rtsp -pkt_size 1316 -rtsp_transport tcp rtsp://127.0.0.1:8554/cam_live_5020
+    runOnInitRestart: yes
+
+  cam_live_5020_hd:
+    runOnDemand: ffmpeg -nostdin -loglevel error -rtsp_transport tcp -timeout 8000000 -i "rtsp://admin:123456@192.168.11.160:554/mpeg4" -c:v libx264 -preset ultrafast -tune zerolatency -pix_fmt yuv420p -r 20 -fps_mode cfr -g 40 -keyint_min 40 -sc_threshold 0 -b:v 2500k -maxrate 3000k -bufsize 6000k -an -f rtsp -pkt_size 1316 -rtsp_transport tcp rtsp://127.0.0.1:8554/cam_live_5020_hd
+    runOnDemandRestart: yes
+
 
   # ==========================================
   # LOEWIX DVR 16-CHANNELS (Direct LAN 192.168.11.161 On-Demand)

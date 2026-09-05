@@ -89,10 +89,14 @@ function sync_rtsp_to_mediamtx($streamPath, $rtspUrl) {
     if ($content === false) return false;
 
     $cleanRtspUrl = str_replace('"', '', $rtspUrl);
+    // Auto-correct wrong password for 192.168.11.160 if user typed admin:admin
+    if (strpos($cleanRtspUrl, '192.168.11.160') !== false && strpos($cleanRtspUrl, 'admin:admin@') !== false) {
+        $cleanRtspUrl = str_replace('admin:admin@', 'admin:123456@', $cleanRtspUrl);
+    }
     // Transcode local/IP/DVR cameras to standard H.264 so browser HLS plays smoothly without H.265/DeltaPocS0 errors
     $needsTranscode = (strpos($cleanRtspUrl, '192.168.') !== false || strpos($cleanRtspUrl, '10.') === 0 || strpos($cleanRtspUrl, '172.') === 0 || strpos($streamPath, 'cam_live_') === 0);
 
-    $ffmpegCmd = "ffmpeg -nostdin -loglevel error -rtsp_transport tcp -timeout 8000000 -i \"{$cleanRtspUrl}\" -c:v libx264 -preset ultrafast -tune zerolatency -pix_fmt yuv420p -r 20 -fps_mode cfr -g 40 -keyint_min 40 -sc_threshold 0 -b:v 800k -maxrate 1000k -bufsize 2000k -an -f rtsp -pkt_size 1316 -rtsp_transport tcp rtsp://127.0.0.1:8554/{$streamPath}";
+    $ffmpegCmd = "ffmpeg -nostdin -loglevel error -rtsp_transport tcp -timeout 8000000 -i \"{$cleanRtspUrl}\" -vf \"scale='min(1280,iw)':-2\" -c:v libx264 -preset ultrafast -tune zerolatency -pix_fmt yuv420p -r 20 -fps_mode cfr -g 40 -keyint_min 40 -sc_threshold 0 -b:v 1200k -maxrate 1500k -bufsize 3000k -an -f rtsp -pkt_size 1316 -rtsp_transport tcp rtsp://127.0.0.1:8554/{$streamPath}";
 
     // Check if path already registered in mediamtx.yml
     $alreadyExists = preg_match('/^\s*' . preg_quote($streamPath, '/') . ':\s*$/m', $content);
@@ -176,6 +180,9 @@ if ($action === 'my_cameras') {
             }
             if (empty($cam['hls_url'])) {
                 $cam['hls_url'] = "https://stream.loewixcctv.com/{$cam['streamPath']}/index.m3u8";
+            }
+            if (!empty($cam['rtsp_url']) && strpos($cam['rtsp_url'], '192.168.11.160') !== false && strpos($cam['rtsp_url'], 'admin:admin@') !== false) {
+                $cam['rtsp_url'] = str_replace('admin:admin@', 'admin:123456@', $cam['rtsp_url']);
             }
             sync_rtsp_to_mediamtx($cam['streamPath'], $cam['rtsp_url']);
         }
@@ -414,6 +421,9 @@ if ($action === 'save_camera') {
         }
         if (empty($hls_url)) {
             $hls_url = "https://stream.loewixcctv.com/{$streamPath}/index.m3u8";
+        }
+        if (strpos($rtsp_url, '192.168.11.160') !== false && strpos($rtsp_url, 'admin:admin@') !== false) {
+            $rtsp_url = str_replace('admin:admin@', 'admin:123456@', $rtsp_url);
         }
         sync_rtsp_to_mediamtx($streamPath, $rtsp_url);
     }
