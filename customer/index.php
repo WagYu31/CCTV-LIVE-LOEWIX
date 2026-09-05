@@ -4460,10 +4460,12 @@
           hls = new Hls({
             enableWorker: true,
             lowLatencyMode: true,
-            liveSyncDurationCount: 1,
-            maxBufferLength: 2,
-            manifestLoadingTimeOut: 6000,
-            manifestLoadingMaxRetry: 2,
+            liveSyncDurationCount: 2,
+            maxBufferLength: 6,
+            manifestLoadingTimeOut: 10000,
+            manifestLoadingMaxRetry: 10,
+            levelLoadingMaxRetry: 10,
+            fragLoadingMaxRetry: 10,
             xhrSetup: function(xhr, url) {
               try {
                 xhr.setRequestHeader('Bypass-Tunnel-Reminder', 'true');

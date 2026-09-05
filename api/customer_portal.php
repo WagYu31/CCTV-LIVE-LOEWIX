@@ -92,7 +92,7 @@ function sync_rtsp_to_mediamtx($streamPath, $rtspUrl) {
     // Transcode local/IP/DVR cameras to standard H.264 so browser HLS plays smoothly without H.265/DeltaPocS0 errors
     $needsTranscode = (strpos($cleanRtspUrl, '192.168.') !== false || strpos($cleanRtspUrl, '10.') === 0 || strpos($cleanRtspUrl, '172.') === 0 || strpos($streamPath, 'cam_live_') === 0);
 
-    $ffmpegCmd = "ffmpeg -nostdin -loglevel error -rtsp_transport tcp -timeout 5000000 -i \"{$cleanRtspUrl}\" -c:v libx264 -preset ultrafast -tune zerolatency -pix_fmt yuv420p -r 20 -fps_mode cfr -g 40 -keyint_min 40 -sc_threshold 0 -b:v 800k -maxrate 1000k -bufsize 2000k -an -f rtsp -rtsp_transport tcp rtsp://127.0.0.1:8554/{$streamPath}";
+    $ffmpegCmd = "ffmpeg -nostdin -loglevel error -rtsp_transport tcp -timeout 8000000 -i \"{$cleanRtspUrl}\" -c:v libx264 -preset ultrafast -tune zerolatency -pix_fmt yuv420p -r 20 -fps_mode cfr -g 40 -keyint_min 40 -sc_threshold 0 -b:v 800k -maxrate 1000k -bufsize 2000k -an -f rtsp -pkt_size 1316 -rtsp_transport tcp rtsp://127.0.0.1:8554/{$streamPath}";
 
     // Check if path already registered in mediamtx.yml
     $alreadyExists = preg_match('/^\s*' . preg_quote($streamPath, '/') . ':\s*$/m', $content);
