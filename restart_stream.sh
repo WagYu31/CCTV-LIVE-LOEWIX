@@ -4,6 +4,7 @@
 echo "Stopping existing streaming processes..."
 killall -9 mediamtx 2>/dev/null || pkill -9 -x mediamtx 2>/dev/null || true
 killall -9 go2rtc 2>/dev/null || pkill -9 -x go2rtc 2>/dev/null || true
+killall -9 ffmpeg 2>/dev/null || pkill -9 -x ffmpeg 2>/dev/null || true
 sleep 1
 
 # Start go2rtc if installed

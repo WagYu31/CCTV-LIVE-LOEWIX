@@ -88,30 +88,58 @@ function sync_rtsp_to_mediamtx($streamPath, $rtspUrl) {
     $content = @file_get_contents($mediamtxFile);
     if ($content === false) return false;
 
-    // Check if path already registered
-    if (preg_match('/^\s*' . preg_quote($streamPath, '/') . ':\s*$/m', $content)) {
-        return true;
+    $cleanRtspUrl = str_replace('"', '', $rtspUrl);
+    // Transcode local/IP/DVR cameras to standard H.264 so browser HLS plays smoothly without H.265/DeltaPocS0 errors
+    $needsTranscode = (strpos($cleanRtspUrl, '192.168.') !== false || strpos($cleanRtspUrl, '10.') === 0 || strpos($cleanRtspUrl, '172.') === 0 || strpos($streamPath, 'cam_live_') === 0);
+
+    $ffmpegCmd = "ffmpeg -nostdin -loglevel error -rtsp_transport tcp -timeout 5000000 -i \"{$cleanRtspUrl}\" -c:v libx264 -preset ultrafast -tune zerolatency -pix_fmt yuv420p -r 20 -fps_mode cfr -g 40 -keyint_min 40 -sc_threshold 0 -b:v 800k -maxrate 1000k -bufsize 2000k -an -f rtsp -rtsp_transport tcp rtsp://127.0.0.1:8554/{$streamPath}";
+
+    // Check if path already registered in mediamtx.yml
+    $alreadyExists = preg_match('/^\s*' . preg_quote($streamPath, '/') . ':\s*$/m', $content);
+
+    if (!$alreadyExists) {
+        // Append path to mediamtx.yml
+        if ($needsTranscode) {
+            $newEntry = "\n  {$streamPath}:\n    runOnInit: {$ffmpegCmd}\n    runOnInitRestart: yes\n";
+        } else {
+            $newEntry = "\n  {$streamPath}:\n    source: {$cleanRtspUrl}\n    rtspTransport: tcp\n    sourceOnDemand: yes\n";
+        }
+        $content .= $newEntry;
+        @file_put_contents($mediamtxFile, $content);
     }
 
-    // Append path to mediamtx.yml
-    $newEntry = "\n  {$streamPath}:\n    source: {$rtspUrl}\n    rtspTransport: tcp\n    sourceOnDemand: yes\n";
-    $content .= $newEntry;
-    @file_put_contents($mediamtxFile, $content);
-
-    // Try notifying MediaMTX API via curl
+    // Update MediaMTX live configuration via API (9997)
     try {
+        $apiPayload = $needsTranscode ? [
+            'runOnInit' => $ffmpegCmd,
+            'runOnInitRestart' => true
+        ] : [
+            'source' => $cleanRtspUrl,
+            'rtspTransport' => 'tcp',
+            'sourceOnDemand' => true
+        ];
+
         $ch = curl_init("http://127.0.0.1:9997/v3/config/paths/add/" . urlencode($streamPath));
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode([
-            'source' => $rtspUrl,
-            'rtspTransport' => 'tcp',
-            'sourceOnDemand' => true
-        ]));
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($apiPayload));
         curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
         curl_setopt($ch, CURLOPT_TIMEOUT, 2);
-        @curl_exec($ch);
+        $res = @curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         @curl_close($ch);
+
+        // If path already exists, update/replace it
+        if ($httpCode === 400 || $alreadyExists) {
+            $ch = curl_init("http://127.0.0.1:9997/v3/config/paths/replace/" . urlencode($streamPath));
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_POST, true);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($apiPayload));
+            curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 2);
+            @curl_exec($ch);
+            @curl_close($ch);
+        }
     } catch (Exception $e) {}
 
     return true;
