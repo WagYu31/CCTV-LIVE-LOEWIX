@@ -4492,19 +4492,30 @@
             if (data.fatal) {
               if (data.type === Hls.ErrorTypes.NETWORK_ERROR) {
                 netRetryCount++;
-                if (netRetryCount <= 2) {
+                if (netRetryCount <= 10) {
                   setTimeout(() => {
                     if (activeInlinePlayers.has(camId)) {
                       hls.startLoad();
                     }
-                  }, 1200);
+                  }, 1500);
                 } else {
-                  showInlineError('Siaran Belum Aktif', 'Stream 404 di server streaming.');
+                  // Automatically retry reconnecting every 3s for 24/7 continuous monitoring
+                  netRetryCount = 0;
+                  setTimeout(() => {
+                    if (activeInlinePlayers.has(camId)) {
+                      hls.loadSource(streamUrl);
+                      hls.startLoad();
+                    }
+                  }, 3000);
                 }
               } else if (data.type === Hls.ErrorTypes.MEDIA_ERROR) {
                 hls.recoverMediaError();
               } else {
-                showInlineError('Gagal Memuat Siaran', 'Stream offline / error.');
+                setTimeout(() => {
+                  if (activeInlinePlayers.has(camId)) {
+                    hls.recoverMediaError();
+                  }
+                }, 2000);
               }
             }
           });
