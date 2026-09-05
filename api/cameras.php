@@ -51,9 +51,19 @@ if ($action === 'public_list' || $action === 'list') {
     }
 
     $cityFilter = $_GET['city'] ?? 'all';
-    $userIdFilter = ($user['role'] === 'super_admin') 
-        ? (isset($_GET['user_id']) ? (int)$_GET['user_id'] : null) 
-        : (int)$user['id']; // Customers can ONLY view their own cameras
+    $isSuperAdmin = ($user['role'] === 'super_admin');
+    
+    // Check if an explicit tenant/customer filter is requested
+    $explicitTenant = isset($_GET['tenant_id']) ? (int)$_GET['tenant_id'] : (isset($_GET['customer_id']) ? (int)$_GET['customer_id'] : null);
+    if ($isSuperAdmin && !empty($_GET['user_id'])) {
+        $reqUid = (int)$_GET['user_id'];
+        if ($reqUid !== (int)$user['id']) {
+            $explicitTenant = $reqUid;
+        }
+    }
+
+    // Regular customers see only their own cameras; Super Admin sees ALL cameras across all tenants
+    $userIdFilter = $isSuperAdmin ? $explicitTenant : (int)$user['id'];
 
     $userCameras = [];
     $snSnapshotCache = [];
@@ -66,6 +76,13 @@ if ($action === 'public_list' || $action === 'list') {
             // Force HTTPS for stream.loewixcctv.com to prevent mixed-content blocking
             if (!empty($cam['hls_url']) && strpos($cam['hls_url'], 'http://stream.loewixcctv.com') === 0) {
                 $cam['hls_url'] = str_replace('http://', 'https://', $cam['hls_url']);
+            }
+
+            // Auto-repair corrupted HLS URLs containing rtsp://
+            if (!empty($cam['hls_url']) && strpos($cam['hls_url'], 'rtsp://') !== false) {
+                $cleanP = (!empty($cam['streamPath']) && strpos($cam['streamPath'], 'rtsp://') === false) ? $cam['streamPath'] : ('cam_live_' . $cam['id']);
+                $cam['hls_url'] = 'https://stream.loewixcctv.com/' . $cleanP . '/index.m3u8';
+                $cam['streamPath'] = $cleanP;
             }
 
             // Auto-resolve RTSP cameras to MediaMTX HLS streams (e.g. Yamaha DDS, TESS)
