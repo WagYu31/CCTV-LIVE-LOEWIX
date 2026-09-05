@@ -8,7 +8,7 @@ echo ================================================================
 echo.
 
 :: Default settings
-set RTSP_LOCAL=rtsp://admin:@192.168.11.182:554/user=admin^&password=^&channel=1^&stream=0.sdp
+set RTSP_LOCAL=rtsp://admin:@192.168.11.182:554/user=admin^&password=^&channel=1^&stream=1.sdp
 set STREAM_NAME=cam_live_5018
 set CLOUD_SERVER=stream.loewixcctv.com
 set CLOUD_PORT=8554

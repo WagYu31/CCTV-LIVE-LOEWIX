@@ -8,7 +8,7 @@ DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CONFIG_FILE="$DIR/bridge_config.ini"
 
 # Default values
-RTSP_LOCAL="rtsp://admin:@192.168.11.182:554/user=admin&password=&channel=1&stream=0.sdp"
+RTSP_LOCAL="rtsp://admin:@192.168.11.182:554/user=admin&password=&channel=1&stream=1.sdp"
 STREAM_NAME="cam_live_5018"
 CLOUD_SERVER="stream.loewixcctv.com"
 CLOUD_PORT="8554"
