@@ -50,11 +50,11 @@ paths:
   # RTSP LOCAL (Office LAN 192.168.11.182)
   # ==========================================
   cam_live_5018:
-    runOnInit: ffmpeg -nostdin -loglevel error -rtsp_transport tcp -i "rtsp://192.168.11.182:554/user=admin&password=&channel=1&stream=1.sdp" -c:v libx264 -preset ultrafast -tune zerolatency -pix_fmt yuv420p -g 30 -an -f rtsp -rtsp_transport tcp rtsp://127.0.0.1:8554/cam_live_5018
+    runOnInit: ffmpeg -re -nostdin -loglevel error -rtsp_transport tcp -i "rtsp://192.168.11.182:554/user=admin&password=&channel=1&stream=1.sdp" -c:v libx264 -preset ultrafast -tune zerolatency -pix_fmt yuv420p -r 20 -fps_mode cfr -g 40 -keyint_min 40 -sc_threshold 0 -b:v 800k -maxrate 1000k -bufsize 2000k -an -f rtsp -rtsp_transport tcp rtsp://127.0.0.1:8554/cam_live_5018
     runOnInitRestart: yes
 
   cam_live_5018_hd:
-    runOnDemand: ffmpeg -nostdin -loglevel error -rtsp_transport tcp -i "rtsp://192.168.11.182:554/user=admin&password=&channel=1&stream=0.sdp" -c:v libx264 -preset ultrafast -tune zerolatency -pix_fmt yuv420p -g 30 -an -f rtsp -rtsp_transport tcp rtsp://127.0.0.1:8554/cam_live_5018_hd
+    runOnDemand: ffmpeg -re -nostdin -loglevel error -rtsp_transport tcp -i "rtsp://192.168.11.182:554/user=admin&password=&channel=1&stream=0.sdp" -c:v libx264 -preset ultrafast -tune zerolatency -pix_fmt yuv420p -r 20 -fps_mode cfr -g 40 -keyint_min 40 -sc_threshold 0 -b:v 2500k -maxrate 3000k -bufsize 6000k -an -f rtsp -rtsp_transport tcp rtsp://127.0.0.1:8554/cam_live_5018_hd
     runOnDemandRestart: yes
 
 
