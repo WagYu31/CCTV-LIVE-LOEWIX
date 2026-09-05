@@ -47,6 +47,20 @@ paths:
     source: publisher
 
   # ==========================================
+  # RTSP LOCAL (Office LAN 192.168.11.182)
+  # ==========================================
+  cam_live_5018:
+    source: rtsp://admin:@192.168.11.182:554/user=admin&password=&channel=1&stream=1.sdp
+    rtspTransport: tcp
+    sourceOnDemand: yes
+
+  cam_live_5018_hd:
+    source: rtsp://admin:@192.168.11.182:554/user=admin&password=&channel=1&stream=0.sdp
+    rtspTransport: tcp
+    sourceOnDemand: yes
+
+
+  # ==========================================
   # LOEWIX DVR 16-CHANNELS (Direct LAN 192.168.11.161 On-Demand)
   # ==========================================
   xmeye_848f3922aa2875eb_ch1:
