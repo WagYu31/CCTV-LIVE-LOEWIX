@@ -7208,17 +7208,17 @@
 
       track.frameCount++;
 
-      // 2. If track is ALREADY locked to an established person (e.g. Hans):
+      // 2. If track is ALREADY locked to an established person:
       if (track.lockedPerson) {
-        const lockedNameLower = track.lockedPerson.name.toLowerCase();
-
-        // If the locked person is still among the top candidates (or within 0.04 margin):
-        const isLockedPersonStillInCandidates = (candidateMatch && candidateMatch.toLowerCase() === lockedNameLower) ||
-          (secondCandidate && secondCandidate.toLowerCase() === lockedNameLower && (secondDistance - currentDistance < 0.045));
-
-        if (isLockedPersonStillInCandidates) {
-          // Re-affirm existing lock! (Immune to micro-flickers like ROYAN)
-          track.candidateVotes = {};
+        // If distance has degraded beyond 0.58 for 4 frames, drop the lock
+        if (currentDistance > 0.58) {
+          track.candidateVotes['mismatch'] = (track.candidateVotes['mismatch'] || 0) + 1;
+          if (track.candidateVotes['mismatch'] >= 4) {
+            track.lockedPerson = null;
+            track.candidateVotes = {};
+          }
+        } else {
+          track.candidateVotes['mismatch'] = 0;
           return {
             name: track.lockedPerson.name,
             face: track.lockedPerson,
@@ -7226,32 +7226,10 @@
             isMatch: true
           };
         }
-
-        // To replace an established person with a completely different person,
-        // the new candidate must beat the locked person continuously for 8 consecutive frames!
-        const otherCandidate = candidateMatch;
-        if (otherCandidate && currentDistance < 0.44) {
-          track.candidateVotes[otherCandidate] = (track.candidateVotes[otherCandidate] || 0) + 1;
-          if (track.candidateVotes[otherCandidate] >= 8) {
-            const newPerson = cachedAIFaces.find(f => f.name.toLowerCase() === otherCandidate.toLowerCase());
-            if (newPerson) {
-              track.lockedPerson = newPerson;
-              track.candidateVotes = {};
-            }
-          }
-        }
-
-        // Hold existing established person steadily
-        return {
-          name: track.lockedPerson.name,
-          face: track.lockedPerson,
-          category: track.lockedPerson.category || 'employee',
-          isMatch: true
-        };
       }
 
-      // 3. Track not yet locked: Lock quickly on candidate match
-      if (candidateMatch && candidateFace) {
+      // 3. Track not yet locked: Lock strictly on candidate match <= 0.58
+      if (candidateMatch && candidateFace && currentDistance <= 0.58) {
         track.candidateVotes[candidateMatch] = (track.candidateVotes[candidateMatch] || 0) + 1;
         track.lockedPerson = candidateFace;
         track.lockedDistance = currentDistance;
@@ -7263,8 +7241,8 @@
         };
       }
 
-      // 4. Fallback: If candidate face exists
-      if (candidateFace) {
+      // 4. Fallback: If candidate face exists with valid distance
+      if (candidateFace && currentDistance <= 0.58) {
         return {
           name: candidateFace.name,
           face: candidateFace,
@@ -7322,16 +7300,64 @@
 
       const frameW = frameCanvas.width;
       const frameH = frameCanvas.height;
+      const isCam162 = currentAICamera && ((currentAICamera.title || '').includes('162') || (currentAICamera.city || '').toLowerCase().includes('jakarta') || String(currentAICamera.id || '').includes('162'));
 
       try {
         let detections = [];
+
+        // 1. Primary Full-Frame Scan (scoreThreshold 0.28 rejects cardboard box textures/smudges)
         try {
           const cctvInputSize = frameW >= 600 ? 512 : 416;
-          detections = await faceapi.detectAllFaces(frameCanvas, new faceapi.TinyFaceDetectorOptions({ inputSize: cctvInputSize, scoreThreshold: 0.15 }))
+          detections = await faceapi.detectAllFaces(frameCanvas, new faceapi.TinyFaceDetectorOptions({ inputSize: cctvInputSize, scoreThreshold: 0.28 }))
             .withFaceLandmarks(true)
             .withFaceDescriptors();
         } catch (e) {
-          console.warn('[FaceAPI] Pipeline error:', e.message);
+          console.warn('[FaceAPI] Primary scan error:', e.message);
+        }
+
+        // 2. High-Zoom Corridor Scan for Warehouse Aisle (Camera 162)
+        // Magnifies people standing 4-8 meters away in the walking corridor
+        if (isCam162 && (!detections || detections.length === 0)) {
+          try {
+            const cropX = Math.round(frameW * 0.08);
+            const cropY = Math.round(frameH * 0.22);
+            const cropW = Math.round(frameW * 0.36);
+            const cropH = Math.round(frameH * 0.62);
+
+            const cCanvas = document.createElement('canvas');
+            cCanvas.width = 512;
+            cCanvas.height = 512;
+            const cCtx = cCanvas.getContext('2d');
+            cCtx.drawImage(frameCanvas, cropX, cropY, cropW, cropH, 0, 0, 512, 512);
+
+            const cDets = await faceapi.detectAllFaces(cCanvas, new faceapi.TinyFaceDetectorOptions({ inputSize: 512, scoreThreshold: 0.25 }))
+              .withFaceLandmarks(true)
+              .withFaceDescriptors();
+
+            if (cDets && cDets.length > 0) {
+              const scaleBackX = cropW / 512;
+              const scaleBackY = cropH / 512;
+              detections = cDets.map(cd => {
+                const cb = cd.detection ? cd.detection.box : cd.box;
+                const gX = cropX + cb.x * scaleBackX;
+                const gY = cropY + cb.y * scaleBackY;
+                const gW = cb.width * scaleBackX;
+                const gH = cb.height * scaleBackY;
+                const gLandmarks = cd.landmarks ? (cd.landmarks.positions || cd.landmarks).map(p => ({
+                  x: cropX + p.x * scaleBackX,
+                  y: cropY + p.y * scaleBackY
+                })) : null;
+                return {
+                  ...cd,
+                  box: { x: gX, y: gY, width: gW, height: gH },
+                  landmarks: gLandmarks ? { positions: gLandmarks } : null,
+                  descriptor: cd.descriptor
+                };
+              });
+            }
+          } catch (e) {
+            console.warn('[FaceAPI] Corridor scan error:', e.message);
+          }
         }
 
         if (detections && detections.length > 0) {
@@ -7340,8 +7366,13 @@
           for (let i = 0; i < detections.length; i++) {
             const d = detections[i];
             const box = d.detection ? d.detection.box : d.box;
-            const landmarks = d.landmarks ? d.landmarks.positions : null;
+            const landmarks = d.landmarks ? (d.landmarks.positions || d.landmarks) : null;
             const desc = d.descriptor || null;
+
+            // In Camera 162: Strictly ignore any detection on the static cardboard box stacks (x > 0.43)
+            if (isCam162 && (box.x / frameW) > 0.43) {
+              continue;
+            }
 
             let bestCandidate = null;
             let bestDist = 1.0;
@@ -7365,11 +7396,11 @@
               }
             }
 
-            // Calibrated Outdoor & Indoor CCTV Threshold: 0.65
-            const isMatch = activeTrackedFace ? true : (bestCandidate !== null && bestDist <= 0.65);
+            // Calibrated CCTV Recognition Distance Threshold: 0.58
+            const isMatch = activeTrackedFace ? true : (bestCandidate !== null && bestDist <= 0.58);
             const matchedFaceObj = activeTrackedFace || (isMatch ? cachedAIFaces.find(f => f.name.toLowerCase() === bestCandidate.toLowerCase()) : null);
 
-            // Stable physical centroid track (immune to other people entering or leaving the camera)
+            // Stable physical centroid track
             const track = getStableSpatialTrack(box, frameW, frameH);
             const stab = getStabilizedIdentityFromTrack(
               track,
@@ -7382,7 +7413,7 @@
 
             let conf = '78.0';
             if (stab.isMatch) {
-              const ratio = Math.max(0, 1 - (bestDist / 0.65));
+              const ratio = Math.max(0, 1 - (bestDist / 0.58));
               conf = Math.min(99.4, (89.0 + (ratio * 10.4))).toFixed(1);
             } else {
               const rawScore = d.detection ? d.detection.score : (d.score || 0.8);
@@ -7412,10 +7443,10 @@
             });
           }
 
-          lastFaceAPIResult = {
+          lastFaceAPIResult = results.length > 0 ? {
             faces: results,
             timestamp: Date.now()
-          };
+          } : null;
         } else {
           // Zero faces detected -> Immediately clear detection result so screen stays 100% clean
           lastFaceAPIResult = null;
