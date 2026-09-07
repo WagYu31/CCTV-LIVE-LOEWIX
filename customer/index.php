@@ -7720,19 +7720,8 @@
       const select = document.getElementById('ai-camera-selector');
       if (!select) return;
 
-      // 1. Check in-memory or localStorage
-      if (!Array.isArray(customerCameras) || customerCameras.length <= 3) {
-        try {
-          const _cached = localStorage.getItem('loewix_customer_cameras');
-          if (_cached) {
-            const _parsed = JSON.parse(_cached);
-            if (Array.isArray(_parsed) && _parsed.length > 3) customerCameras = _parsed;
-          }
-        } catch(e) {}
-      }
-
-      // 2. If still <= 3 cameras, dynamically fetch full fleet from AI Analytics API
-      if (!Array.isArray(customerCameras) || customerCameras.length <= 3) {
+      // 1. Fetch camera fleet from AI Analytics API if needed
+      if (!Array.isArray(customerCameras) || customerCameras.length === 0) {
         try {
           const u = currentCustomer || (localStorage.getItem('loewix_user') ? JSON.parse(localStorage.getItem('loewix_user')) : null);
           const uid = u ? u.id : 1;
@@ -7745,16 +7734,28 @@
         } catch(e) {}
       }
 
-      const currentVal = select.value || (currentAICamera ? currentAICamera.id : '');
+      // Filter out any testing channels
+      if (Array.isArray(customerCameras)) {
+        customerCameras = customerCameras.filter(c => {
+          const t = c.title || '';
+          return !t.includes('TESTING SELASA') && !t.includes('NVR 16 TEST') && !['5004','5005','5006','5007','5008','5009','5010','5011','5012','5013','5014','5015'].includes(String(c.id));
+        });
+      }
+
+      // Default camera is 162 [JAKARTA]
+      const cam162 = Array.isArray(customerCameras) ? customerCameras.find(c => (c.id == 5021 || (c.title && c.title.includes('162')))) : null;
+      const defaultCamId = cam162 ? cam162.id : (customerCameras && customerCameras[0] ? customerCameras[0].id : '5021');
+      const currentVal = (currentAICamera && currentAICamera.id) ? currentAICamera.id : defaultCamId;
+
       let html = '<option value="webcam" ' + (currentVal === 'webcam' ? 'selected' : '') + '>📸 Live Webcam Laptop (Uji Scan Wajah Anda)</option>';
 
       if (Array.isArray(customerCameras) && customerCameras.length > 0) {
-        customerCameras.forEach((cam, idx) => {
+        customerCameras.forEach((cam) => {
           const statusIcon = cam.status !== 'offline' ? '🟢' : '🔴';
           const title = cam.title || 'Camera';
           const cityUpper = (cam.city || '').toUpperCase();
           const cityStr = (cityUpper && !title.toUpperCase().includes(`[${cityUpper}]`)) ? ` [${cityUpper}]` : '';
-          const isSelected = (currentVal && currentVal == cam.id) || (!currentVal && (cam.id == 5021 || title.includes('162'))) ? 'selected' : '';
+          const isSelected = (currentVal == cam.id) ? 'selected' : '';
           html += `<option value="${cam.id}" ${isSelected}>📹 ${statusIcon} ${title}${cityStr}</option>`;
         });
       } else {
@@ -7762,6 +7763,12 @@
       }
 
       select.innerHTML = html;
+      select.value = currentVal;
+
+      // Auto-launch camera stream on first load if not running
+      if (!currentAICamera) {
+        changeAICamera(currentVal);
+      }
     }
 
     // Render Dynamic AI Simulator Buttons (For Every Registered Face & Plate)
