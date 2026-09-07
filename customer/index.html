@@ -7314,169 +7314,6 @@
     let lastFaceAPIResult = null;
     let faceAPIDetectionRunning = false;
 
-    // High-Precision Human Presence & Biometric Face Detector (Zero Ghost Detections on Empty Rooms)
-    async function detectSalientSubjectInFrame(frameCanvas) {
-      if (!frameCanvas || !isAutoTrackingActive) return;
-      try {
-        const ctx = frameCanvas.getContext('2d');
-        const w = frameCanvas.width;
-        const h = frameCanvas.height;
-        const isCam162 = currentAICamera && ((currentAICamera.title || '').includes('162') || (currentAICamera.city || '').toLowerCase().includes('jakarta') || String(currentAICamera.id || '').includes('162'));
-
-        // Walking & standing corridor search area
-        // In Cam 162: Scans the center walking aisle (x: 0.18 to 0.42, y: 0.28 to 0.82)
-        // Ignores static cardboard stacks on the right (x > 0.44) and ceiling lights (y < 0.25)
-        const sx = isCam162 ? Math.round(w * 0.18) : Math.round(w * 0.08);
-        const sy = isCam162 ? Math.round(h * 0.26) : Math.round(h * 0.08);
-        const sw = isCam162 ? Math.round(w * 0.25) : Math.round(w * 0.84);
-        const sh = isCam162 ? Math.round(h * 0.58) : Math.round(h * 0.84);
-
-        const imgData = ctx.getImageData(sx, sy, sw, sh);
-        const data = imgData.data;
-
-        let humanPixelCount = 0;
-        let sumX = 0;
-        let sumY = 0;
-        let minX = sw, maxX = 0, minY = sh, maxY = 0;
-
-        for (let y = 0; y < sh; y += 4) {
-          for (let x = 0; x < sw; x += 4) {
-            const idx = (y * sw + x) * 4;
-            const r = data[idx];
-            const g = data[idx + 1];
-            const b = data[idx + 2];
-
-            // 1. Concrete floor rejection: Uniform neutral grey floor in warehouse (|r-g| < 9 and |r-b| < 12 and r > 95)
-            const isConcreteFloor = Math.abs(r - g) < 9 && Math.abs(r - b) < 12 && r > 95 && r < 185;
-            if (isConcreteFloor) continue;
-
-            // 2. Human skin tone check
-            const isSkin = (r > 65 && g > 45 && b > 30 && (r - g) > 8 && (r - b) > 10 && Math.abs(r - g) < 75);
-
-            // 3. Human clothing / dark hair contrast against light floor
-            const isHumanClothingOrHair = (r < 55 && g < 55 && b < 65);
-
-            if (isSkin || isHumanClothingOrHair) {
-              humanPixelCount++;
-              sumX += x;
-              sumY += y;
-              if (x < minX) minX = x;
-              if (x > maxX) maxX = x;
-              if (y < minY) minY = y;
-              if (y > maxY) maxY = y;
-            }
-          }
-        }
-
-        // STRICT VALIDATION: If no human pixels detected in walking corridor -> EMPTY ROOM!
-        // Never fabricate or draw ghost boxes on empty floors!
-        const minRequiredHumanPixels = isCam162 ? 45 : 30;
-        if (humanPixelCount < minRequiredHumanPixels) {
-          lastFaceAPIResult = null;
-          return;
-        }
-
-        // Human presence confirmed: Calculate physical bounds of the standing/walking person
-        const personWidth = Math.max(w * 0.12, Math.min(w * 0.24, ((maxX - minX) / sw) * (sw / w) * w));
-        const personHeight = Math.max(h * 0.32, Math.min(h * 0.55, ((maxY - minY) / sh) * (sh / h) * h));
-        const centerX = (sumX / humanPixelCount) + sx;
-        const topY = minY + sy;
-
-        const nb = {
-          x: Math.max(0.04, (centerX - personWidth / 2) / w),
-          y: Math.max(0.04, topY / h),
-          width: Math.min(0.35, personWidth / w),
-          height: Math.min(0.60, personHeight / h)
-        };
-
-        let matchedFace = activeTrackedFace || null;
-        let isMatch = !!matchedFace;
-        let bestConfidence = matchedFace ? '97.4' : '82.0';
-
-        // Crop the actual head area (top 32% of the detected human body)
-        if (!matchedFace && allRegisteredDescriptors.length > 0) {
-          try {
-            const headCropC = document.createElement('canvas');
-            headCropC.width = 224;
-            headCropC.height = 224;
-            const cropX = Math.max(0, Math.round(nb.x * w));
-            const cropY = Math.max(0, Math.round(nb.y * h));
-            const cropW = Math.min(w - cropX, Math.round(nb.width * w));
-            const cropH = Math.min(h - cropY, Math.round(nb.height * 0.32 * h));
-            headCropC.getContext('2d').drawImage(frameCanvas, cropX, cropY, cropW, cropH, 0, 0, 224, 224);
-
-            const single = await faceapi.detectSingleFace(headCropC, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.05 }))
-              .withFaceLandmarks(true)
-              .withFaceDescriptor();
-
-            if (single && single.descriptor) {
-              let bestC = null;
-              let bestD = 1.0;
-              let secondD = 1.0;
-
-              for (const ld of allRegisteredDescriptors) {
-                for (const refDesc of ld.descriptors) {
-                  const dist = faceapi.euclideanDistance(single.descriptor, refDesc);
-                  if (dist < bestD) {
-                    secondD = bestD;
-                    bestD = dist;
-                    bestC = ld.label;
-                  } else if (dist < secondD) {
-                    secondD = dist;
-                  }
-                }
-              }
-
-              if (bestC && bestD <= 0.66) {
-                matchedFace = cachedAIFaces.find(f => f.name.toLowerCase() === bestC.toLowerCase());
-                if (matchedFace) {
-                  isMatch = true;
-                  const ratio = Math.max(0, 1 - (bestD / 0.66));
-                  bestConfidence = Math.min(99.4, (90.0 + (ratio * 9.4))).toFixed(1);
-                }
-              }
-            }
-          } catch (e) {}
-        }
-
-        // If human is verified standing in Camera 162, match with registered staff (e.g. Ricky)
-        if (isCam162 && !matchedFace) {
-          const ricky = cachedAIFaces.find(f => f.name.toLowerCase().includes('ricky')) ||
-                        cachedAIFaces.find(f => f.name.toLowerCase().includes('wagyu')) ||
-                        cachedAIFaces.find(f => f.category === 'employee' || f.category === 'vip');
-          if (ricky) {
-            matchedFace = ricky;
-            isMatch = true;
-            bestConfidence = (96.4 + Math.random() * 2.4).toFixed(1);
-          }
-        }
-
-        const headBox = { x: nb.x + nb.width * 0.15, y: nb.y, width: nb.width * 0.70, height: nb.height * 0.30 };
-
-        lastFaceAPIResult = {
-          faces: [{
-            name: isMatch && matchedFace ? matchedFace.name : (matchedFace ? matchedFace.name : 'Wajah Belum Terdaftar'),
-            face: matchedFace,
-            category: matchedFace ? (matchedFace.category || 'employee') : 'unknown',
-            normBox: nb,
-            normLandmarks: [
-              { x: headBox.x + headBox.width * 0.32, y: headBox.y + headBox.height * 0.38 },
-              { x: headBox.x + headBox.width * 0.68, y: headBox.y + headBox.height * 0.38 },
-              { x: headBox.x + headBox.width * 0.50, y: headBox.y + headBox.height * 0.55 },
-              { x: headBox.x + headBox.width * 0.50, y: headBox.y + headBox.height * 0.75 },
-              { x: headBox.x + headBox.width * 0.12, y: headBox.y + headBox.height * 0.45 },
-              { x: headBox.x + headBox.width * 0.88, y: headBox.y + headBox.height * 0.45 }
-            ],
-            confidence: bestConfidence,
-            isMatch: isMatch
-          }],
-          timestamp: Date.now()
-        };
-      } catch (e) {
-        lastFaceAPIResult = null;
-      }
-    }
-
     async function runFaceAPIDetection(videoElem, providedCanvas = null) {
       if (!faceAPIReady || faceAPIDetectionRunning) return;
       const frameCanvas = providedCanvas || getDetectionFrame(videoElem);
@@ -7490,7 +7327,7 @@
         let detections = [];
         try {
           const cctvInputSize = frameW >= 600 ? 512 : 416;
-          detections = await faceapi.detectAllFaces(frameCanvas, new faceapi.TinyFaceDetectorOptions({ inputSize: cctvInputSize, scoreThreshold: 0.10 }))
+          detections = await faceapi.detectAllFaces(frameCanvas, new faceapi.TinyFaceDetectorOptions({ inputSize: cctvInputSize, scoreThreshold: 0.15 }))
             .withFaceLandmarks(true)
             .withFaceDescriptors();
         } catch (e) {
@@ -7580,7 +7417,8 @@
             timestamp: Date.now()
           };
         } else {
-          await detectSalientSubjectInFrame(frameCanvas);
+          // Zero faces detected -> Immediately clear detection result so screen stays 100% clean
+          lastFaceAPIResult = null;
         }
       } catch (err) {
         console.warn('[FaceAPI] Detection error:', err.message);
