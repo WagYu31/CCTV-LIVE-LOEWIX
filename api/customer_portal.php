@@ -93,6 +93,15 @@ function sync_rtsp_to_mediamtx($streamPath, $rtspUrl) {
     if (strpos($cleanRtspUrl, '192.168.11.160') !== false && strpos($cleanRtspUrl, 'admin:admin@') !== false) {
         $cleanRtspUrl = str_replace('admin:admin@', 'admin:123456@', $cleanRtspUrl);
     }
+    // Auto-correct password and stream path for 192.168.11.162 (password 123456, path stream2)
+    if (strpos($cleanRtspUrl, '192.168.11.162') !== false) {
+        if (strpos($cleanRtspUrl, 'admin:@') !== false || strpos($cleanRtspUrl, 'admin:admin@') !== false || strpos($cleanRtspUrl, '@') === false) {
+            $cleanRtspUrl = preg_replace('#rtsp://([^@]+@)?#', 'rtsp://admin:123456@', $cleanRtspUrl);
+        }
+        if (strpos($cleanRtspUrl, 'user=admin') !== false || strpos($cleanRtspUrl, '.sdp') !== false) {
+            $cleanRtspUrl = 'rtsp://admin:123456@192.168.11.162:554/stream2';
+        }
+    }
     // Transcode local/IP/DVR cameras to standard H.264 so browser HLS plays smoothly without H.265/DeltaPocS0 errors
     $needsTranscode = (strpos($cleanRtspUrl, '192.168.') !== false || strpos($cleanRtspUrl, '10.') === 0 || strpos($cleanRtspUrl, '172.') === 0 || strpos($streamPath, 'cam_live_') === 0);
 
@@ -183,6 +192,14 @@ if ($action === 'my_cameras') {
             }
             if (!empty($cam['rtsp_url']) && strpos($cam['rtsp_url'], '192.168.11.160') !== false && strpos($cam['rtsp_url'], 'admin:admin@') !== false) {
                 $cam['rtsp_url'] = str_replace('admin:admin@', 'admin:123456@', $cam['rtsp_url']);
+            }
+            if (!empty($cam['rtsp_url']) && strpos($cam['rtsp_url'], '192.168.11.162') !== false) {
+                if (strpos($cam['rtsp_url'], 'admin:@') !== false || strpos($cam['rtsp_url'], 'admin:admin@') !== false || strpos($cam['rtsp_url'], '@') === false) {
+                    $cam['rtsp_url'] = preg_replace('#rtsp://([^@]+@)?#', 'rtsp://admin:123456@', $cam['rtsp_url']);
+                }
+                if (strpos($cam['rtsp_url'], 'user=admin') !== false || strpos($cam['rtsp_url'], '.sdp') !== false) {
+                    $cam['rtsp_url'] = 'rtsp://admin:123456@192.168.11.162:554/stream2';
+                }
             }
             sync_rtsp_to_mediamtx($cam['streamPath'], $cam['rtsp_url']);
         }
@@ -424,6 +441,14 @@ if ($action === 'save_camera') {
         }
         if (strpos($rtsp_url, '192.168.11.160') !== false && strpos($rtsp_url, 'admin:admin@') !== false) {
             $rtsp_url = str_replace('admin:admin@', 'admin:123456@', $rtsp_url);
+        }
+        if (strpos($rtsp_url, '192.168.11.162') !== false) {
+            if (strpos($rtsp_url, 'admin:@') !== false || strpos($rtsp_url, 'admin:admin@') !== false || strpos($rtsp_url, '@') === false) {
+                $rtsp_url = preg_replace('#rtsp://([^@]+@)?#', 'rtsp://admin:123456@', $rtsp_url);
+            }
+            if (strpos($rtsp_url, 'user=admin') !== false || strpos($rtsp_url, '.sdp') !== false) {
+                $rtsp_url = 'rtsp://admin:123456@192.168.11.162:554/stream2';
+            }
         }
         sync_rtsp_to_mediamtx($streamPath, $rtsp_url);
     }
