@@ -39,16 +39,26 @@ if (!isset($db['ai_faces']) || !is_array($db['ai_faces'])) {
     $db['ai_faces'] = [
         [
             'id' => 1,
+            'user_id' => 1,
+            'name' => 'Wahyu Utomo',
+            'category' => 'vip', // vip, employee, resident, blacklist, guest
+            'role_title' => 'Super Admin & Owner',
+            'photo' => 'assets/image/avatar-default.png',
+            'notes' => 'Akses penuh VIP Master & Owner Loewix 24/7',
+            'created_at' => '2026-08-20 10:00:00'
+        ],
+        [
+            'id' => 2,
             'user_id' => 3,
             'name' => 'Bambang Supriyanto',
-            'category' => 'vip', // vip, employee, resident, blacklist, guest
+            'category' => 'vip',
             'role_title' => 'Direktur Operasional',
             'photo' => 'assets/image/avatar-default.png',
             'notes' => 'Akses penuh VIP 24/7',
             'created_at' => '2026-08-20 10:00:00'
         ],
         [
-            'id' => 2,
+            'id' => 3,
             'user_id' => 3,
             'name' => 'Siti Rahmawati',
             'category' => 'employee',
@@ -58,7 +68,7 @@ if (!isset($db['ai_faces']) || !is_array($db['ai_faces'])) {
             'created_at' => '2026-08-21 11:30:00'
         ],
         [
-            'id' => 3,
+            'id' => 4,
             'user_id' => 3,
             'name' => 'Tersangka Residu DPO (Peringatan)',
             'category' => 'blacklist',

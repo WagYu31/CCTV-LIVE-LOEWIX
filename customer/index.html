@@ -3177,10 +3177,14 @@
               </div>
 
               <!-- Scan Action Buttons -->
-              <div class="mt-3 d-flex justify-content-center gap-2">
-                <button type="button" id="btn-capture-face" class="btn btn-info font-weight-bold px-4 py-2" onclick="captureFaceFromWebcam()" style="border-radius: 10px; font-size: 13px; background: linear-gradient(135deg, #0284c7, #00f0ff); color: #000; border: none; box-shadow: 0 0 15px rgba(0, 240, 255, 0.4);">
-                  <i class="fas fa-camera mr-1.5"></i> Scan Wajah Sekarang
+              <div class="mt-3 d-flex flex-wrap justify-content-center gap-2">
+                <button type="button" id="btn-capture-face" class="btn btn-info font-weight-bold px-3 py-2" onclick="captureFaceFromWebcam()" style="border-radius: 10px; font-size: 12px; background: linear-gradient(135deg, #0284c7, #00f0ff); color: #000; border: none; box-shadow: 0 0 15px rgba(0, 240, 255, 0.4);">
+                  <i class="fas fa-camera mr-1.5"></i> Scan Kamera
                 </button>
+                <label class="btn btn-outline-info font-weight-bold px-3 py-2 mb-0" style="border-radius: 10px; font-size: 12px; cursor: pointer;">
+                  <i class="fas fa-upload mr-1.5"></i> Unggah Galeri
+                  <input type="file" id="face-file-upload" accept="image/*" style="display: none;" onchange="handleFaceFileUpload(this)">
+                </label>
                 <button type="button" id="btn-rescan-face" class="btn btn-outline-warning font-weight-bold px-3 py-2" onclick="startFaceEnrollmentCamera()" style="display: none; border-radius: 10px; font-size: 12px;">
                   <i class="fas fa-sync-alt mr-1"></i> Scan Ulang
                 </button>
@@ -3188,7 +3192,7 @@
 
               <input type="hidden" id="face-edit-id" value="">
               <input type="hidden" id="face-input-photo" value="" required>
-              <small class="text-muted d-block mt-2" style="font-size: 11px;">Posisikan wajah tegak, pencahayaan jelas, tanpa masker/kacamata hitam.</small>
+              <small class="text-muted d-block mt-2" style="font-size: 11px;">Bisa scan langsung via kamera, pilih foto dari galeri HP, atau daftarkan snapshot CCTV di feed.</small>
             </div>
 
             <!-- Form Fields -->
@@ -8042,10 +8046,16 @@
                       <td class="lbl"><i class="fas fa-tag mr-1 text-info"></i> Info</td>
                       <td class="val text-truncate" style="max-width: 130px; color:#cbd5e1;" title="${l.details || '-'}">${l.details || (isStranger ? 'Wajah Tidak Dikenal' : 'Whitelist Terverifikasi')}</td>
                     </tr>
-                  </tbody>
                 </table>
               </div>
             </div>
+            ${isStranger ? `
+            <div class="mt-2 pt-1.5 border-top text-center" style="border-color: rgba(255,255,255,0.07) !important;">
+              <button type="button" class="btn btn-xs w-100 py-1 font-weight-bold" style="font-size: 11px; border-radius: 6px; background: rgba(0, 255, 136, 0.12); border: 1px solid #00ff88; color: #00ff88; letter-spacing: 0.2px;" onclick="quickRegisterStranger('${snapshotSrc ? encodeURIComponent(snapshotSrc) : ''}')">
+                <i class="fas fa-user-plus mr-1"></i> + Daftarkan Wajah Ini (VIP / Staff)
+              </button>
+            </div>
+            ` : ''}
           </div>
         `;
       }).join('');
@@ -8769,62 +8779,53 @@
         });
       }
 
-      // 6. Compact Professional VMS Floating Tag (Matches Gambar 2)
-      const cleanLabel = isUnknown ? 'STRANGER' : String(label).toUpperCase();
+      // 6. Commercial VMS Identification Tag (High-contrast, bold, crisp on mobile)
+      const isStranger = isUnknown;
+      let displayLabel = isStranger ? 'STRANGER' : String(label).toUpperCase();
+      let roleTag = isVIP ? ' [VIP]' : (isBlacklist ? ' [DPO]' : (isStranger ? ' (Pengunjung)' : ''));
+      let fullTagText = `${displayLabel}${roleTag}`;
+
+      ctx.font = '800 13px "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, sans-serif';
+      const textW = ctx.measureText(fullTagText).width;
       const confStr = (confidence && String(confidence).includes('%')) ? confidence : `${confidence || 98.4}%`;
-      const roleStr = isBlacklist ? 'DPO' : (isVIP ? 'VIP' : (isUnknown ? 'UNREGISTERED' : 'STAFF'));
-      const textToMeasure = `${cleanLabel} [${confStr}]`;
+      ctx.font = '800 11.5px monospace';
+      const confW = ctx.measureText(confStr).width;
 
-      ctx.font = '700 11px "Plus Jakarta Sans", monospace';
-      const textMetrics = ctx.measureText(textToMeasure);
-      const badgeW = Math.max(w, Math.min(220, textMetrics.width + 24));
-      const badgeH = 22;
+      const tagH = 26;
+      const tagW = Math.max(w, textW + confW + 36);
       const canvasW = ctx.canvas ? ctx.canvas.width : 640;
-      const badgeX = Math.max(6, Math.min(canvasW - badgeW - 6, x));
-      let badgeY = y - badgeH - 5;
-      if (badgeY < 6) {
-        badgeY = y + 5; // clamp inside box if too high near top edge
-      }
+      const tagX = Math.max(4, Math.min(canvasW - tagW - 4, x + (w - tagW) / 2));
+      let tagY = y - tagH - 5;
+      if (tagY < 4) tagY = y + 5; // clamp inside box if near top edge
 
-      // Compact Pill Background
-      ctx.fillStyle = isBlacklist ? 'rgba(239, 68, 68, 0.90)' : (isVIP ? 'rgba(5, 150, 105, 0.90)' : (isUnknown ? 'rgba(15, 23, 42, 0.92)' : 'rgba(2, 132, 199, 0.90)'));
+      // Solid High-Contrast Cyber Tag
+      ctx.fillStyle = 'rgba(2, 6, 23, 0.96)';
       ctx.strokeStyle = strokeColor;
-      ctx.lineWidth = 1.2;
+      ctx.lineWidth = 1.8;
       ctx.shadowColor = glowColor;
-      ctx.shadowBlur = 8;
-
-      const rad = 4;
+      ctx.shadowBlur = 10;
       ctx.beginPath();
-      ctx.moveTo(badgeX + rad, badgeY);
-      ctx.lineTo(badgeX + badgeW - rad, badgeY);
-      ctx.quadraticCurveTo(badgeX + badgeW, badgeY, badgeX + badgeW, badgeY + rad);
-      ctx.lineTo(badgeX + badgeW, badgeY + badgeH - rad);
-      ctx.quadraticCurveTo(badgeX + badgeW, badgeY + badgeH, badgeX + badgeW - rad, badgeY + badgeH);
-      ctx.lineTo(badgeX + rad, badgeY + badgeH);
-      ctx.quadraticCurveTo(badgeX, badgeY + badgeH, badgeX, badgeY + badgeH - rad);
-      ctx.lineTo(badgeX, badgeY + rad);
-      ctx.quadraticCurveTo(badgeX, badgeY, badgeX + rad, badgeY);
-      ctx.closePath();
+      ctx.roundRect ? ctx.roundRect(tagX, tagY, tagW, tagH, 6) : ctx.rect(tagX, tagY, tagW, tagH);
       ctx.fill();
       ctx.stroke();
 
-      // Pulsing Dot inside tag
+      // Dot beacon / icon
       ctx.shadowBlur = 0;
-      ctx.fillStyle = isBlacklist ? '#ffffff' : (isVIP ? '#ffffff' : '#00f0ff');
+      ctx.fillStyle = strokeColor;
       ctx.beginPath();
-      ctx.arc(badgeX + 8, badgeY + badgeH / 2, 2.5, 0, Math.PI * 2);
+      ctx.arc(tagX + 11, tagY + tagH / 2, 3.5, 0, Math.PI * 2);
       ctx.fill();
 
-      // Text inside tag
+      // Label Name + Role
       ctx.fillStyle = '#ffffff';
-      ctx.font = '700 10.5px "Plus Jakarta Sans", monospace';
-      ctx.fillText(`${cleanLabel}`, badgeX + 16, badgeY + 15);
+      ctx.font = '800 12.5px "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, sans-serif';
+      ctx.fillText(fullTagText, tagX + 22, tagY + 17.5);
 
-      // Score on the right of tag
-      ctx.font = '800 9.5px monospace';
-      ctx.fillStyle = isUnknown ? '#00ff88' : '#ffffff';
+      // Confidence Pill
+      ctx.fillStyle = isStranger ? '#00ff88' : (isBlacklist ? '#ef4444' : '#38bdf8');
+      ctx.font = '800 11.5px monospace';
       ctx.textAlign = 'right';
-      ctx.fillText(`${confStr}`, badgeX + badgeW - 6, badgeY + 15);
+      ctx.fillText(confStr, tagX + tagW - 8, tagY + 17.5);
       ctx.textAlign = 'left';
 
       ctx.restore();
@@ -9885,7 +9886,7 @@
     }
 
     // Modal Action Openers
-    function openRegisterFaceModal() {
+    function openRegisterFaceModal(skipCamera = false) {
       const form = document.getElementById('formRegisterFace');
       if (form) form.reset();
       const editIdInput = document.getElementById('face-edit-id');
@@ -9894,6 +9895,15 @@
       const hiddenInput = document.getElementById('face-input-photo');
       if (img) img.src = '';
       if (hiddenInput) hiddenInput.value = '';
+
+      const previewBox = document.getElementById('face-scanned-preview-box');
+      const viewFinder = document.getElementById('face-scanner-viewfinder');
+      const btnRescan = document.getElementById('btn-rescan-face');
+      const btnCapture = document.getElementById('btn-capture-face');
+      if (previewBox) previewBox.style.display = 'none';
+      if (viewFinder) viewFinder.style.display = 'block';
+      if (btnRescan) btnRescan.style.display = 'none';
+      if (btnCapture) btnCapture.style.display = 'inline-block';
 
       const modalTitle = document.querySelector('#modalRegisterFace .modal-title');
       if (modalTitle) {
@@ -9905,9 +9915,82 @@
       }
 
       openModalHelper('modalRegisterFace');
-      setTimeout(() => {
-        startFaceEnrollmentCamera();
-      }, 300);
+      if (!skipCamera) {
+        setTimeout(() => {
+          startFaceEnrollmentCamera();
+        }, 300);
+      }
+    }
+
+    function quickRegisterStranger(encodedSnapUrl) {
+      const snapUrl = encodedSnapUrl ? decodeURIComponent(encodedSnapUrl) : '';
+      openRegisterFaceModal(true);
+
+      const modalTitle = document.querySelector('#modalRegisterFace .modal-title');
+      if (modalTitle) {
+        modalTitle.innerHTML = '<i class="fas fa-user-plus text-success mr-2"></i> Daftarkan Wajah Hasil Deteksi CCTV';
+      }
+
+      if (snapUrl) {
+        stopFaceWebcam();
+
+        const img = document.getElementById('face-preview-img');
+        const hiddenInput = document.getElementById('face-input-photo');
+        const previewBox = document.getElementById('face-scanned-preview-box');
+        const viewFinder = document.getElementById('face-scanner-viewfinder');
+        const btnRescan = document.getElementById('btn-rescan-face');
+        const btnCapture = document.getElementById('btn-capture-face');
+
+        if (img) img.src = snapUrl;
+        if (hiddenInput) hiddenInput.value = snapUrl;
+        if (previewBox) {
+          previewBox.style.display = 'block';
+          const badge = previewBox.querySelector('.font-weight-bold');
+          if (badge) badge.innerHTML = '<i class="fas fa-check-circle mr-1"></i> Snapshot Wajah dari CCTV Siap Didaftarkan!';
+        }
+        if (viewFinder) viewFinder.style.display = 'none';
+        if (btnRescan) btnRescan.style.display = 'inline-block';
+        if (btnCapture) btnCapture.style.display = 'none';
+
+        const nameInput = document.getElementById('face-input-name');
+        if (nameInput) {
+          nameInput.value = 'Wahyu Utomo';
+          setTimeout(() => nameInput.focus(), 350);
+        }
+        const catInput = document.getElementById('face-input-category');
+        if (catInput) catInput.value = 'vip';
+        const roleInput = document.getElementById('face-input-role');
+        if (roleInput) roleInput.value = 'Super Admin & Owner';
+      }
+    }
+
+    function handleFaceFileUpload(input) {
+      if (!input.files || !input.files[0]) return;
+      const file = input.files[0];
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const base64Data = e.target.result;
+        stopFaceWebcam();
+
+        const img = document.getElementById('face-preview-img');
+        const hiddenInput = document.getElementById('face-input-photo');
+        const previewBox = document.getElementById('face-scanned-preview-box');
+        const viewFinder = document.getElementById('face-scanner-viewfinder');
+        const btnRescan = document.getElementById('btn-rescan-face');
+        const btnCapture = document.getElementById('btn-capture-face');
+
+        if (img) img.src = base64Data;
+        if (hiddenInput) hiddenInput.value = base64Data;
+        if (previewBox) {
+          previewBox.style.display = 'block';
+          const badge = previewBox.querySelector('.font-weight-bold');
+          if (badge) badge.innerHTML = '<i class="fas fa-check-circle mr-1"></i> Foto Galeri Berhasil Diunggah!';
+        }
+        if (viewFinder) viewFinder.style.display = 'none';
+        if (btnRescan) btnRescan.style.display = 'inline-block';
+        if (btnCapture) btnCapture.style.display = 'none';
+      };
+      reader.readAsDataURL(file);
     }
 
     function openEditFaceModal(faceId) {
@@ -10108,6 +10191,8 @@
     window.toggleAISound = toggleAISound;
     window.toggleAIAutoTracking = toggleAIAutoTracking;
     window.openRegisterFaceModal = openRegisterFaceModal;
+    window.quickRegisterStranger = quickRegisterStranger;
+    window.handleFaceFileUpload = handleFaceFileUpload;
     window.openEditFaceModal = openEditFaceModal;
     window.startFaceEnrollmentCamera = startFaceEnrollmentCamera;
     window.captureFaceFromWebcam = captureFaceFromWebcam;
