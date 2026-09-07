@@ -7063,6 +7063,7 @@
       try {
         console.log('[FaceAPI] Loading neural network models...');
         await Promise.all([
+          faceapi.nets.ssdMobilenetv1.loadFromUri(FACE_API_MODEL_URL).catch(e => console.warn('[FaceAPI] SSD model warning:', e)),
           faceapi.nets.tinyFaceDetector.loadFromUri(FACE_API_MODEL_URL),
           faceapi.nets.faceLandmark68TinyNet.loadFromUri(FACE_API_MODEL_URL),
           faceapi.nets.faceRecognitionNet.loadFromUri(FACE_API_MODEL_URL)
@@ -7299,20 +7300,11 @@
       try {
         const leftEye = positions[36];
         const rightEye = positions[45];
-        const nose = positions[30];
         const mouth = positions[57];
-
-        // 1. Mouth must be below nose
-        if (mouth && nose && mouth.y <= nose.y) return false;
-
-        // 2. Nose must be below the eyes
-        if (leftEye && rightEye && nose) {
+        // Mouth must be lower than eyes
+        if (leftEye && rightEye && mouth) {
           const eyeY = (leftEye.y + rightEye.y) / 2;
-          if (nose.y <= eyeY) return false;
-
-          // 3. Eyes must have realistic horizontal separation (between 12% and 85% of box width)
-          const eyeDist = Math.hypot(rightEye.x - leftEye.x, rightEye.y - leftEye.y);
-          if (eyeDist < box.width * 0.12 || eyeDist > box.width * 0.85) return false;
+          if (mouth.y <= eyeY) return false;
         }
       } catch (e) {}
       return true;
@@ -7388,17 +7380,31 @@
       try {
         let detections = [];
 
-        // 1. Primary Full-Frame High-Sensitivity Detection (Threshold 0.18 for CCTV overhead angles)
-        try {
-          const cctvInputSize = frameW >= 600 ? 512 : 416;
-          detections = await faceapi.detectAllFaces(frameCanvas, new faceapi.TinyFaceDetectorOptions({ inputSize: cctvInputSize, scoreThreshold: 0.18 }))
-            .withFaceLandmarks(true)
-            .withFaceDescriptors();
-        } catch (e) {
-          console.warn('[FaceAPI] Primary scan error:', e.message);
+        // 1. Primary Enterprise Multi-Face Detection: SSD MobileNet V1
+        // Detects multiple simultaneous faces from afar at any angle (as in commercial VMS)
+        if (typeof faceapi.nets.ssdMobilenetv1 !== 'undefined' && faceapi.nets.ssdMobilenetv1.isLoaded) {
+          try {
+            detections = await faceapi.detectAllFaces(frameCanvas, new faceapi.SsdMobilenetv1Options({ minConfidence: 0.15, maxResults: 10 }))
+              .withFaceLandmarks(true)
+              .withFaceDescriptors();
+          } catch (e) {
+            console.warn('[FaceAPI] SSD scan warning:', e.message);
+          }
         }
 
-        // 2. Smart CCTV Hardware Bounding Box Head-Hunter (if full-frame missed or face is tilted down at phone)
+        // 2. High-Sensitivity TinyFaceDetector Fallback / Complement
+        if (!detections || detections.length === 0) {
+          try {
+            const cctvInputSize = frameW >= 600 ? 512 : 416;
+            detections = await faceapi.detectAllFaces(frameCanvas, new faceapi.TinyFaceDetectorOptions({ inputSize: cctvInputSize, scoreThreshold: 0.12 }))
+              .withFaceLandmarks(true)
+              .withFaceDescriptors();
+          } catch (e) {
+            console.warn('[FaceAPI] Tiny scan error:', e.message);
+          }
+        }
+
+        // 3. Smart CCTV Hardware Green-Box Tracker (Catches people looking down at phones or in dark lighting)
         if (!detections || detections.length === 0) {
           try {
             const smartBoxes = findSmartCameraHumanBoxes(frameCanvas);
@@ -7421,7 +7427,7 @@
 
                   let headDet = null;
                   try {
-                    headDet = await faceapi.detectSingleFace(headCanvas, new faceapi.TinyFaceDetectorOptions({ inputSize: 256, scoreThreshold: 0.10 }))
+                    headDet = await faceapi.detectSingleFace(headCanvas, new faceapi.TinyFaceDetectorOptions({ inputSize: 256, scoreThreshold: 0.08 }))
                       .withFaceLandmarks(true)
                       .withFaceDescriptor();
                   } catch (e) {}
@@ -7430,23 +7436,13 @@
                     const hBox = headDet.detection ? headDet.detection.box : headDet.box;
                     const scaleBackX = cropW / 256;
                     const scaleBackY = cropH / 256;
-                    const gX = cropX + hBox.x * scaleBackX;
-                    const gY = cropY + hBox.y * scaleBackY;
-                    const gW = hBox.width * scaleBackX;
-                    const gH = hBox.height * scaleBackY;
-                    const gLandmarks = headDet.landmarks ? (headDet.landmarks.positions || headDet.landmarks).map(p => ({
-                      x: cropX + p.x * scaleBackX,
-                      y: cropY + p.y * scaleBackY
-                    })) : null;
-
                     detections.push({
                       ...headDet,
-                      box: { x: gX, y: gY, width: gW, height: gH },
-                      landmarks: gLandmarks ? { positions: gLandmarks } : null,
+                      box: { x: cropX + hBox.x * scaleBackX, y: cropY + hBox.y * scaleBackY, width: hBox.width * scaleBackX, height: hBox.height * scaleBackY },
+                      landmarks: headDet.landmarks ? (headDet.landmarks.positions || headDet.landmarks).map(p => ({ x: cropX + p.x * scaleBackX, y: cropY + p.y * scaleBackY })) : null,
                       descriptor: headDet.descriptor
                     });
                   } else {
-                    // Head is tilted down looking at phone: Track the verified head position
                     const gLandmarks = [
                       { x: cropX + cropW * 0.32, y: cropY + cropH * 0.38 },
                       { x: cropX + cropW * 0.68, y: cropY + cropH * 0.38 },
@@ -7459,14 +7455,14 @@
                       box: { x: cropX, y: cropY, width: cropW, height: cropH },
                       landmarks: { positions: gLandmarks },
                       descriptor: null,
-                      score: 0.92
+                      score: 0.94
                     });
                   }
                 }
               }
             }
           } catch (e) {
-            console.warn('[FaceAPI] Smart box head scan error:', e.message);
+            console.warn('[FaceAPI] Smart box scan error:', e.message);
           }
         }
 
@@ -7479,7 +7475,7 @@
             const landmarks = d.landmarks ? (d.landmarks.positions || d.landmarks) : null;
             const desc = d.descriptor || null;
 
-            // Reject false positives on cardboard box stamps using anatomical geometry check
+            // Reject false positives using gentle landmark check
             if (!isValidHumanFaceLandmarks(landmarks, box)) {
               continue;
             }
@@ -7533,18 +7529,25 @@
             );
 
             let conf = '78.0';
-            if (stab.isMatch) {
+            let labelName = 'STRANGER';
+            let categoryType = 'guest';
+
+            if (stab.isMatch && stab.name && stab.name !== 'Wajah Belum Terdaftar' && stab.name !== 'STRANGER') {
               const ratio = Math.max(0, 1 - (bestDist / 0.58));
               conf = Math.min(99.4, (89.0 + (ratio * 10.4))).toFixed(1);
+              labelName = stab.name.toUpperCase();
+              categoryType = stab.category || 'employee';
             } else {
-              const rawScore = d.detection ? d.detection.score : (d.score || 0.84);
+              const rawScore = d.detection ? d.detection.score : (d.score || 0.86);
               conf = Math.max(76.0, (rawScore * 100)).toFixed(1);
+              labelName = 'STRANGER';
+              categoryType = 'guest';
             }
 
             results.push({
-              name: stab.name,
+              name: labelName,
               face: stab.face,
-              category: stab.category,
+              category: categoryType,
               normBox: {
                 x: box.x / frameW,
                 y: box.y / frameH,
@@ -8216,15 +8219,15 @@
             if (isNewPerson || isIntervalPassed) {
               window._lastAutoLogTime = now;
               window._lastAutoLogPerson = personKey;
-              const count = lastFaceAPIResult.faces.length;
-              if (primary.face) {
-                showAIBanner(`${primary.name} (${pFace.role_title || 'Karyawan'})`, `Confidence: ${primary.confidence}% • face-api.js Neural Net`, pFace.category === 'vip' ? 'badge-success' : 'badge-primary', 'AI VERIFIED', 'fas fa-user-check', '#059669');
+              const isPrimaryKnown = primary.face && primary.name !== 'STRANGER';
+              if (isPrimaryKnown) {
+                showAIBanner(`${primary.name} (${pFace.role_title || 'Karyawan'})`, `Similarity: ${primary.confidence}% • Whitelist Matched`, pFace.category === 'vip' ? 'badge-success' : 'badge-primary', 'WHITELIST', 'fas fa-user-check', '#059669');
               } else {
-                showAIBanner(`Pengunjung Belum Terdaftar`, `Wajah tidak dikenal terdeteksi di kamera`, 'badge-warning', 'UNVERIFIED', 'fas fa-user-clock', '#f59e0b');
+                showAIBanner(`STRANGER DETECTED`, `Pengunjung tidak dikenal terdeteksi (${primary.confidence}%)`, 'badge-warning', 'STRANGER', 'fas fa-user-clock', '#059669');
               }
-              // Log all detected to database
+              // Log all detected faces (Both Whitelist and Stranger!) to database & sidebar
               lastFaceAPIResult.faces.forEach(f => {
-                if (!f.face) return;
+                const isKnown = f.face && f.name !== 'STRANGER';
                 const activeCamTitle = (currentAICamera && currentAICamera.title) ? currentAICamera.title : (isWebcamRunning ? 'LIVE WEBCAM LAPTOP' : 'CAM LOEWIX CCTV');
                 const activeCamId = currentAICamera ? currentAICamera.id : 5002;
                 const fd = new FormData();
@@ -8233,9 +8236,9 @@
                 fd.append('camera_id', activeCamId);
                 fd.append('camera_title', activeCamTitle);
                 fd.append('label', f.name);
-                fd.append('category', f.face.category || 'employee');
+                fd.append('category', isKnown ? (f.face.category || 'employee') : 'guest');
                 fd.append('confidence', f.confidence);
-                fd.append('details', `${f.face.role_title || 'Staff'} • Terverifikasi oleh face-api.js Neural Network`);
+                fd.append('details', isKnown ? `${f.face.role_title || 'Staff'} • Whitelist Verified` : 'Stranger • Wajah Pengunjung Tidak Dikenal');
                 fd.append('timestamp', getLocalLogTimestamp());
                 fetch('../api/ai_analytics.php', { method: 'POST', body: fd }).then(() => loadAIData(true)).catch(e => {});
               });
@@ -8372,11 +8375,12 @@
       const { x, y, w, h, label, category, confidence } = ent;
       const isBlacklist = category === 'blacklist';
       const isVIP = category === 'vip';
-      const isUnknown = category === 'unknown' || category === 'guest' || String(label).toLowerCase().includes('belum terdaftar') || String(label).toLowerCase().includes('tidak dikenal') || String(label).toLowerCase().includes('pengunjung');
+      const isUnknown = category === 'unknown' || category === 'guest' || String(label).toLowerCase().includes('stranger') || String(label).toLowerCase().includes('belum terdaftar') || String(label).toLowerCase().includes('tidak dikenal') || String(label).toLowerCase().includes('pengunjung');
 
-      const strokeColor = isBlacklist ? '#ef4444' : (isVIP ? '#10b981' : (isUnknown ? '#f59e0b' : '#00f0ff'));
-      const glowColor = isBlacklist ? 'rgba(239, 68, 68, 0.6)' : (isVIP ? 'rgba(16, 185, 129, 0.6)' : (isUnknown ? 'rgba(245, 158, 11, 0.6)' : 'rgba(0, 240, 255, 0.6)'));
-      const boxBg = isBlacklist ? 'rgba(239, 68, 68, 0.08)' : (isVIP ? 'rgba(16, 185, 129, 0.08)' : (isUnknown ? 'rgba(245, 158, 11, 0.08)' : 'rgba(0, 240, 255, 0.06)'));
+      // In enterprise VMS (matching user reference), stranger faces use clean vibrant neon green (#00ff88), VIP uses emerald (#10b981), Staff uses cyan (#00f0ff)
+      const strokeColor = isBlacklist ? '#ef4444' : (isVIP ? '#10b981' : (isUnknown ? '#00ff88' : '#00f0ff'));
+      const glowColor = isBlacklist ? 'rgba(239, 68, 68, 0.6)' : (isVIP ? 'rgba(16, 185, 129, 0.6)' : (isUnknown ? 'rgba(0, 255, 136, 0.55)' : 'rgba(0, 240, 255, 0.6)'));
+      const boxBg = isBlacklist ? 'rgba(239, 68, 68, 0.08)' : (isVIP ? 'rgba(16, 185, 129, 0.08)' : (isUnknown ? 'rgba(0, 255, 136, 0.06)' : 'rgba(0, 240, 255, 0.06)'));
 
       ctx.save();
 
@@ -8634,13 +8638,13 @@
       ctx.shadowBlur = 0;
       ctx.fillStyle = '#ffffff';
       ctx.font = '700 13px "Plus Jakarta Sans", -apple-system, sans-serif';
-      const cleanLabel = isUnknown ? 'WAJAH TIDAK DIKENAL' : String(label).toUpperCase();
+      const cleanLabel = isUnknown ? 'STRANGER' : String(label).toUpperCase();
       ctx.fillText(cleanLabel, badgeX + 28, badgeY + 17);
 
       // Subtitle Tag (Role / Access)
-      ctx.fillStyle = isBlacklist ? '#fca5a5' : (isVIP ? '#6ee7b7' : (isUnknown ? '#fde047' : '#7dd3fc'));
+      ctx.fillStyle = isBlacklist ? '#fca5a5' : (isVIP ? '#6ee7b7' : (isUnknown ? '#86efac' : '#7dd3fc'));
       ctx.font = '600 9.5px "Plus Jakarta Sans", sans-serif';
-      const subText = isBlacklist ? '🚨 DPO / BLACKLIST' : (isVIP ? '⭐ VIP ACCESSED' : (isUnknown ? '❓ BELUM TERDAFTAR • UNVERIFIED' : '👤 VERIFIED EMPLOYEE'));
+      const subText = isBlacklist ? '🚨 DPO / BLACKLIST' : (isVIP ? '⭐ VIP ACCESSED' : (isUnknown ? '👤 STRANGER • TIDAK TERDAFTAR' : '👤 VERIFIED EMPLOYEE'));
       ctx.fillText(subText, badgeX + 28, badgeY + 29);
 
       // Score / Confidence Pill on the Right
@@ -8649,7 +8653,7 @@
       const pillX = badgeX + badgeW - pillW - 8;
       const pillY = badgeY + (badgeH - pillH) / 2;
 
-      ctx.fillStyle = isBlacklist ? 'rgba(239, 68, 68, 0.28)' : (isVIP ? 'rgba(16, 185, 129, 0.28)' : (isUnknown ? 'rgba(245, 158, 11, 0.28)' : 'rgba(0, 240, 255, 0.22)'));
+      ctx.fillStyle = isBlacklist ? 'rgba(239, 68, 68, 0.28)' : (isVIP ? 'rgba(16, 185, 129, 0.28)' : (isUnknown ? 'rgba(0, 255, 136, 0.22)' : 'rgba(0, 240, 255, 0.22)'));
       ctx.strokeStyle = strokeColor;
       ctx.lineWidth = 1.1;
       ctx.beginPath();
@@ -8657,7 +8661,7 @@
       ctx.fill();
       ctx.stroke();
 
-      ctx.fillStyle = isUnknown ? '#fde047' : '#ffffff';
+      ctx.fillStyle = isUnknown ? '#86efac' : '#ffffff';
       ctx.font = '800 10px monospace';
       ctx.textAlign = 'center';
       const confStr = (confidence && String(confidence).includes('%')) ? confidence : `${confidence || 98.4}%`;
