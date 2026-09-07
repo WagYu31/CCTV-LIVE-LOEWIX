@@ -313,7 +313,28 @@ if ($action === 'log_detection') {
     $category = trim($_POST['category'] ?? 'unknown');
     $confidence = (float)($_POST['confidence'] ?? 95.0);
     $snapshot = trim($_POST['snapshot'] ?? '');
+    $registeredPhoto = trim($_POST['registered_photo'] ?? '');
+    $gender = trim($_POST['gender'] ?? 'Male');
+    $mask = trim($_POST['mask'] ?? 'Not worn');
     $details = trim($_POST['details'] ?? 'Terdeteksi oleh AI Scanner');
+
+    // If base64 snapshot provided, save to disk to optimize database performance
+    if (!empty($snapshot) && strpos($snapshot, 'data:image') === 0) {
+        $uploadDir = __DIR__ . '/../assets/snapshots/';
+        if (!is_dir($uploadDir)) {
+            @mkdir($uploadDir, 0777, true);
+        }
+        $parts = explode(',', $snapshot);
+        if (count($parts) === 2) {
+            $binaryData = base64_decode($parts[1]);
+            if ($binaryData !== false) {
+                $filename = 'snap_' . time() . '_' . rand(1000, 9999) . '.jpg';
+                if (@file_put_contents($uploadDir . $filename, $binaryData)) {
+                    $snapshot = 'assets/snapshots/' . $filename;
+                }
+            }
+        }
+    }
 
     $existingIds = array_column($db['ai_logs'], 'id');
     $newId = count($existingIds) > 0 ? max($existingIds) + 1 : 1;
@@ -328,6 +349,9 @@ if ($action === 'log_detection') {
         'category' => $category,
         'confidence' => $confidence,
         'snapshot' => $snapshot,
+        'registered_photo' => $registeredPhoto,
+        'gender' => $gender,
+        'mask' => $mask,
         'details' => $details,
         'timestamp' => !empty($_POST['timestamp']) ? trim($_POST['timestamp']) : date('Y-m-d H:i:s')
     ];

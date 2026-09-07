@@ -1432,10 +1432,10 @@
     }
 
     .ai-live-card-item {
-      background: rgba(15, 23, 42, 0.75);
+      background: rgba(15, 23, 42, 0.82);
       border: 1px solid rgba(56, 189, 248, 0.2);
       border-radius: 12px;
-      padding: 12px;
+      padding: 11px;
       margin-bottom: 10px;
       transition: all 0.25s ease;
       animation: fadeInSlide 0.3s ease;
@@ -1443,14 +1443,66 @@
 
     .ai-live-card-item:hover {
       border-color: rgba(56, 189, 248, 0.5);
-      background: rgba(15, 23, 42, 0.9);
+      background: rgba(15, 23, 42, 0.95);
       transform: translateX(3px);
     }
 
     .ai-live-card-item.blacklist-alert {
       border-color: rgba(239, 68, 68, 0.6);
-      background: rgba(239, 68, 68, 0.12);
+      background: rgba(239, 68, 68, 0.14);
       box-shadow: 0 0 16px rgba(239, 68, 68, 0.25);
+    }
+
+    .ai-feed-thumb-box {
+      width: 60px;
+      height: 72px;
+      border-radius: 7px;
+      overflow: hidden;
+      background: #020617;
+      border: 1.5px solid rgba(56, 189, 248, 0.4);
+      flex-shrink: 0;
+      position: relative;
+      cursor: pointer;
+    }
+    .ai-feed-thumb-box.stranger-thumb {
+      border-color: #00ff88;
+      box-shadow: 0 0 10px rgba(0, 255, 136, 0.25);
+    }
+    .ai-feed-thumb-box.whitelist-thumb {
+      border-color: #10b981;
+      box-shadow: 0 0 10px rgba(16, 185, 129, 0.25);
+    }
+    .ai-feed-thumb-box.blacklist-thumb {
+      border-color: #ef4444;
+      box-shadow: 0 0 12px rgba(239, 68, 68, 0.35);
+    }
+    .ai-feed-thumb-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform 0.2s ease;
+    }
+    .ai-feed-thumb-box:hover img {
+      transform: scale(1.08);
+    }
+    .ai-feed-meta-table {
+      width: 100%;
+      font-size: 11px;
+      color: #94a3b8;
+    }
+    .ai-feed-meta-table td {
+      padding: 1.5px 0;
+      vertical-align: middle;
+    }
+    .ai-feed-meta-table td.lbl {
+      width: 52px;
+      color: #64748b;
+      font-weight: 500;
+    }
+    .ai-feed-meta-table td.val {
+      color: #e2e8f0;
+      font-weight: 600;
     }
 
     .ai-face-card {
@@ -7367,6 +7419,31 @@
       return [];
     }
 
+    // High-Resolution Live Face Crop Snapshot Tool (Matches VMS Sidebar Snapshot Reference)
+    function createFaceCropSnapshot(sourceCanvas, box, frameW, frameH) {
+      try {
+        if (!sourceCanvas) return '';
+        // Expand box slightly (32% margin) so hair, ears, chin, and neck context are cleanly captured
+        const padX = Math.round(box.width * 0.32);
+        const padY = Math.round(box.height * 0.32);
+        const cropX = Math.max(0, Math.round(box.x - padX));
+        const cropY = Math.max(0, Math.round(box.y - padY));
+        const cropW = Math.min(frameW - cropX, Math.round(box.width + padX * 2));
+        const cropH = Math.min(frameH - cropY, Math.round(box.height + padY * 2));
+
+        if (cropW < 14 || cropH < 14) return '';
+
+        const cropCanvas = document.createElement('canvas');
+        cropCanvas.width = 120;
+        cropCanvas.height = 144;
+        const ctx = cropCanvas.getContext('2d');
+        ctx.drawImage(sourceCanvas, cropX, cropY, cropW, cropH, 0, 0, 120, 144);
+        return cropCanvas.toDataURL('image/jpeg', 0.85);
+      } catch (e) {
+        return '';
+      }
+    }
+
     async function runFaceAPIDetection(videoElem, providedCanvas = null) {
       if (!faceAPIReady || faceAPIDetectionRunning) return;
       const frameCanvas = providedCanvas || getDetectionFrame(videoElem);
@@ -7548,6 +7625,7 @@
               name: labelName,
               face: stab.face,
               category: categoryType,
+              snapshot: createFaceCropSnapshot(frameCanvas, box, frameW, frameH),
               normBox: {
                 x: box.x / frameW,
                 y: box.y / frameH,
@@ -7871,47 +7949,163 @@
       return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
     }
 
-    // Render Live Feed Log Ticker
+    // Image Snapshot Preview Lightbox Modal
+    function previewImageModal(src) {
+      if (!src) return;
+      const overlay = document.createElement('div');
+      overlay.style.cssText = 'position: fixed; inset: 0; z-index: 99999; background: rgba(0,0,0,0.88); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; cursor: pointer; animation: fadeIn 0.2s ease;';
+      overlay.innerHTML = `
+        <div style="text-align: center; max-width: 90vw; max-height: 90vh;">
+          <img src="${src}" style="max-width: 100%; max-height: 80vh; border-radius: 12px; border: 2px solid #00ff88; box-shadow: 0 0 35px rgba(0,255,136,0.45); object-fit: contain;">
+          <div style="margin-top: 12px; color: #fff; font-size: 13px; font-weight: 600; text-shadow: 0 2px 4px rgba(0,0,0,0.8);">
+            <i class="fas fa-camera text-success mr-1"></i> CCTV Live Face Crop Snapshot &bull; Klik di mana saja untuk menutup
+          </div>
+        </div>
+      `;
+      overlay.onclick = () => overlay.remove();
+      document.body.appendChild(overlay);
+    }
+
+    // Render Live Feed Log Ticker (Photo Gallery Format - Matches Gambar 2 Reference)
     function renderAILiveFeed(logs) {
       const container = document.getElementById('ai-live-feed-container');
       if (!container) return;
 
       if (logs.length === 0) {
-        container.innerHTML = '<div class="text-center py-4 text-muted" style="font-size: 12px;">Belum ada riwayat deteksi. Jalankan simulator di samping.</div>';
+        container.innerHTML = '<div class="text-center py-4 text-muted" style="font-size: 12px;"><i class="fas fa-camera mb-2 fa-2x text-secondary"></i><br>Belum ada riwayat deteksi.<br>Menunggu wajah di kamera CCTV...</div>';
         return;
       }
 
       container.innerHTML = logs.map(l => {
+        const isFace = l.type === 'face';
         const isBlacklist = l.category === 'blacklist';
-        let iconHtml = l.type === 'face' ? '<i class="fas fa-user-check text-info"></i>' : '<i class="fas fa-car text-emerald" style="color: #34d399;"></i>';
-        if (isBlacklist) iconHtml = '<i class="fas fa-shield-virus text-danger"></i>';
+        const isVIP = l.category === 'vip';
+        const isEmployee = l.category === 'employee' || l.category === 'resident';
+        const isWhitelist = isVIP || isEmployee;
+        const isUnknown = !isBlacklist && !isWhitelist;
 
-        let badgeStyle = 'badge-info';
-        if (l.category === 'vip') badgeStyle = 'badge-success';
-        if (l.category === 'blacklist') badgeStyle = 'badge-danger';
+        const fullTime = l.timestamp || 'Baru saja';
+        const snapUrl = (l.snapshot && l.snapshot.trim().length > 5) ? l.snapshot : '';
+        const registeredPhoto = l.registered_photo || (l.face && l.face.photo) || '';
 
-        const timeStr = l.timestamp ? (l.timestamp.includes(' ') ? l.timestamp.split(' ')[1] : l.timestamp) : 'Baru saja';
+        const badgeStyle = isBlacklist ? 'badge-danger' : (isWhitelist ? 'badge-success' : 'badge-warning');
+        const badgeText = isBlacklist ? 'BLACKLIST DPO' : (isWhitelist ? 'WHITELIST' : 'STRANGER');
+        const confVal = l.confidence ? (String(l.confidence).includes('%') ? l.confidence : l.confidence + '%') : '96.5%';
 
-        return `
-          <div class="ai-live-card-item ${isBlacklist ? 'blacklist-alert' : ''}">
-            <div class="d-flex align-items-center justify-content-between mb-1.5">
-              <div class="d-flex align-items-center gap-2">
-                ${iconHtml}
-                <strong class="text-white" style="font-size: 13px;">${l.label}</strong>
+        if (isFace && isWhitelist) {
+          // Whitelist: Dual-Photo Comparison Layout (Matching Gambar 2 Reference)
+          return `
+            <div class="ai-live-card-item">
+              <div class="d-flex align-items-center justify-content-between mb-1.5 pb-1 border-bottom" style="border-color: rgba(255,255,255,0.08) !important;">
+                <span style="font-family: monospace; font-size: 10.5px; color: #94a3b8;">
+                  <i class="far fa-clock mr-1 text-info"></i>${fullTime}
+                </span>
+                <span class="badge ${badgeStyle} px-2 py-0.5" style="font-size: 9px; font-weight: 700;">
+                  ${badgeText}
+                </span>
               </div>
-              <span class="badge ${badgeStyle} px-2 py-0.5" style="font-size: 9.5px; font-weight: 700;">
-                ${l.confidence ? l.confidence + '%' : '97.5%'}
-              </span>
+              <div class="d-flex align-items-center gap-2 mb-2">
+                <div class="ai-feed-thumb-box whitelist-thumb" title="Klik untuk perbesar Snapshot CCTV">
+                  ${snapUrl ? `<img src="${snapUrl}" alt="Live Crop" onclick="previewImageModal(this.src)">` : `<div class="d-flex flex-column align-items-center justify-content-center h-100 text-info"><i class="fas fa-camera"></i><span style="font-size:7px;">LIVE</span></div>`}
+                </div>
+                <div class="d-flex flex-column align-items-center justify-content-center px-1">
+                  <span class="badge badge-success px-1.5 py-0.5" style="font-size: 8.5px; font-weight: 800; background: #059669; letter-spacing: 0.2px;">
+                    ${confVal}
+                  </span>
+                  <span style="font-size: 8px; color: #34d399; margin-top: 2px; font-weight: 600;">Similarity</span>
+                </div>
+                <div class="ai-feed-thumb-box whitelist-thumb" title="Foto Terdaftar di Database">
+                  <img src="${registeredPhoto || 'assets/image/avatar-default.png'}" alt="Database" onclick="previewImageModal(this.src)">
+                </div>
+              </div>
+              <table class="ai-feed-meta-table">
+                <tr>
+                  <td class="lbl">Event:</td>
+                  <td class="val"><span class="badge badge-success px-1.5 py-0.2" style="font-size: 9px; background: rgba(16,185,129,0.25); color: #6ee7b7; border: 1px solid #10b981;">Whitelist</span></td>
+                </tr>
+                <tr>
+                  <td class="lbl">Name:</td>
+                  <td class="val"><strong class="text-white" style="font-size: 12px;">${l.label}</strong></td>
+                </tr>
+                <tr>
+                  <td class="lbl">Gender:</td>
+                  <td class="val">${l.gender || 'Male'} &bull; <span class="text-muted">Mask: ${l.mask || 'Not worn'}</span></td>
+                </tr>
+                <tr>
+                  <td class="lbl">Camera:</td>
+                  <td class="val text-truncate" style="max-width: 140px; color: #7dd3fc; font-size: 10px;">${l.camera_title}</td>
+                </tr>
+              </table>
             </div>
-            <div class="text-muted mb-1" style="font-size: 11px;">
-              <i class="fas fa-video mr-1 text-info"></i> ${l.camera_title}
+          `;
+        } else if (isFace) {
+          // Stranger / Blacklist: Single Face Snapshot Layout (Matching Gambar 2 Reference)
+          const isDanger = isBlacklist;
+          return `
+            <div class="ai-live-card-item ${isDanger ? 'blacklist-alert' : ''}">
+              <div class="d-flex align-items-center justify-content-between mb-1.5 pb-1 border-bottom" style="border-color: rgba(255,255,255,0.08) !important;">
+                <span style="font-family: monospace; font-size: 10.5px; color: #94a3b8;">
+                  <i class="far fa-clock mr-1 text-info"></i>${fullTime}
+                </span>
+                <span class="badge ${badgeStyle} px-2 py-0.5" style="font-size: 9px; font-weight: 700;">
+                  ${confVal}
+                </span>
+              </div>
+              <div class="d-flex align-items-start gap-2.5">
+                <div class="ai-feed-thumb-box ${isDanger ? 'blacklist-thumb' : 'stranger-thumb'}" title="Klik untuk perbesar Snapshot CCTV">
+                  ${snapUrl ? `<img src="${snapUrl}" alt="Live Face" onclick="previewImageModal(this.src)">` : `<div class="d-flex flex-column align-items-center justify-content-center h-100" style="color: ${isDanger ? '#ef4444' : '#00ff88'};"><i class="fas fa-user-circle fa-2x"></i><span style="font-size:7px; margin-top:2px;">SNAPSHOT</span></div>`}
+                </div>
+                <div class="flex-fill" style="min-width: 0;">
+                  <table class="ai-feed-meta-table">
+                    <tr>
+                      <td class="lbl">Type:</td>
+                      <td class="val"><span class="badge badge-info px-1 py-0" style="font-size: 8.5px; background: rgba(14,165,233,0.2); color: #38bdf8;">Face</span></td>
+                    </tr>
+                    <tr>
+                      <td class="lbl">Status:</td>
+                      <td class="val">${isDanger ? '<strong class="text-danger" style="font-size: 11px;">🚨 BLACKLIST DPO</strong>' : '<strong style="color: #00ff88; font-size: 11.5px;">Stranger</strong>'}</td>
+                    </tr>
+                    <tr>
+                      <td class="lbl">Gender:</td>
+                      <td class="val">${l.gender || 'Male'} &bull; <span class="text-muted">Mask: ${l.mask || 'Not worn'}</span></td>
+                    </tr>
+                    <tr>
+                      <td class="lbl">Camera:</td>
+                      <td class="val text-truncate" style="max-width: 130px; color: #7dd3fc; font-size: 10px;">${l.camera_title}</td>
+                    </tr>
+                  </table>
+                </div>
+              </div>
             </div>
-            <div class="d-flex align-items-center justify-content-between" style="font-size: 11px;">
-              <span style="color: #94a3b8;">${l.details}</span>
-              <span class="text-muted" style="font-family: monospace; font-size: 11px;">${timeStr}</span>
+          `;
+        } else {
+          // ANPR (Plat Kendaraan)
+          return `
+            <div class="ai-live-card-item">
+              <div class="d-flex align-items-center justify-content-between mb-1.5 pb-1 border-bottom" style="border-color: rgba(255,255,255,0.08) !important;">
+                <span style="font-family: monospace; font-size: 10.5px; color: #94a3b8;">
+                  <i class="far fa-clock mr-1 text-info"></i>${fullTime}
+                </span>
+                <span class="badge badge-primary px-2 py-0.5" style="font-size: 9px; font-weight: 700;">
+                  ${confVal}
+                </span>
+              </div>
+              <div class="d-flex align-items-center gap-2">
+                <div class="ai-feed-thumb-box" style="border-color: #38bdf8; display: flex; align-items: center; justify-content: center; background: rgba(14,165,233,0.12);">
+                  <i class="fas fa-car fa-2x text-info"></i>
+                </div>
+                <div class="flex-fill">
+                  <div class="d-flex align-items-center justify-content-between">
+                    <strong class="text-white" style="font-family: monospace; font-size: 13px; letter-spacing: 0.5px;">${l.label}</strong>
+                    <span class="badge badge-success px-1.5 py-0.5" style="font-size: 8.5px;">ANPR VERIFIED</span>
+                  </div>
+                  <div class="text-muted" style="font-size: 10px; margin-top: 2px;">${l.details}</div>
+                  <div style="font-size: 10px; color: #7dd3fc; margin-top: 1px;"><i class="fas fa-video mr-1"></i>${l.camera_title}</div>
+                </div>
+              </div>
             </div>
-          </div>
-        `;
+          `;
+        }
       }).join('');
     }
 
@@ -8238,6 +8432,12 @@
                 fd.append('label', f.name);
                 fd.append('category', isKnown ? (f.face.category || 'employee') : 'guest');
                 fd.append('confidence', f.confidence);
+                fd.append('snapshot', f.snapshot || '');
+                if (isKnown && f.face && f.face.photo) {
+                  fd.append('registered_photo', f.face.photo);
+                }
+                fd.append('gender', (f.face && f.face.gender) ? f.face.gender : 'Male');
+                fd.append('mask', 'Not worn');
                 fd.append('details', isKnown ? `${f.face.role_title || 'Staff'} • Whitelist Verified` : 'Stranger • Wajah Pengunjung Tidak Dikenal');
                 fd.append('timestamp', getLocalLogTimestamp());
                 fetch('../api/ai_analytics.php', { method: 'POST', body: fd }).then(() => loadAIData(true)).catch(e => {});
@@ -8583,89 +8783,49 @@
       ctx.lineTo(cx, cy + 8);
       ctx.stroke();
 
-      // 7. Ultra-Sleek Glassmorphic Floating Identification Badge
-      const badgeW = Math.max(w + 16, 216);
-      const badgeH = 36;
-      const canvasW = ctx.canvas ? ctx.canvas.width : 640;
-      const badgeX = Math.max(8, Math.min(canvasW - badgeW - 8, x + (w - badgeW) / 2));
-      let badgeY = y - badgeH - 10;
-      if (badgeY < 8) {
-        badgeY = y + 8; // clamp inside box if too high near canvas edge
-      }
-
-      // Rounded Badge Card Background with Dark Glassmorphic Gradient
-      ctx.fillStyle = 'rgba(4, 9, 22, 0.92)';
-      ctx.strokeStyle = strokeColor;
-      ctx.lineWidth = 1.3;
-      ctx.shadowColor = glowColor;
-      ctx.shadowBlur = 12;
-
-      const rad = 9;
-      ctx.beginPath();
-      ctx.moveTo(badgeX + rad, badgeY);
-      ctx.lineTo(badgeX + badgeW - rad, badgeY);
-      ctx.quadraticCurveTo(badgeX + badgeW, badgeY, badgeX + badgeW, badgeY + rad);
-      ctx.lineTo(badgeX + badgeW, badgeY + badgeH - rad);
-      ctx.quadraticCurveTo(badgeX + badgeW, badgeY + badgeH, badgeX + badgeW - rad, badgeY + badgeH);
-      ctx.lineTo(badgeX + rad, badgeY + badgeH);
-      ctx.quadraticCurveTo(badgeX, badgeY + badgeH, badgeX, badgeY + badgeH - rad);
-      ctx.lineTo(badgeX, badgeY + rad);
-      ctx.quadraticCurveTo(badgeX, badgeY, badgeX + rad, badgeY);
-      ctx.closePath();
-      ctx.fill();
-      ctx.stroke();
-
-      // Top Highlight Rim Line for 3D Glass Look
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.25)';
-      ctx.lineWidth = 1;
-      ctx.shadowBlur = 0;
-      ctx.beginPath();
-      ctx.moveTo(badgeX + rad, badgeY + 1);
-      ctx.lineTo(badgeX + badgeW - rad, badgeY + 1);
-      ctx.stroke();
-
-      // Live Pulsing Beacon Dot inside badge
-      const pulseTime = Date.now() / 250;
-      const pulseRadius = 3.6 + Math.sin(pulseTime) * 1.2;
-      ctx.fillStyle = isBlacklist ? '#ef4444' : (isVIP ? '#10b981' : (isUnknown ? '#f59e0b' : '#00f0ff'));
-      ctx.shadowColor = ctx.fillStyle;
-      ctx.shadowBlur = 9;
-      ctx.beginPath();
-      ctx.arc(badgeX + 16, badgeY + badgeH / 2, pulseRadius, 0, Math.PI * 2);
-      ctx.fill();
-
-      // Person Name
-      ctx.shadowBlur = 0;
-      ctx.fillStyle = '#ffffff';
-      ctx.font = '700 13px "Plus Jakarta Sans", -apple-system, sans-serif';
-      const cleanLabel = isUnknown ? 'STRANGER' : String(label).toUpperCase();
-      ctx.fillText(cleanLabel, badgeX + 28, badgeY + 17);
-
-      // Subtitle Tag (Role / Access)
-      ctx.fillStyle = isBlacklist ? '#fca5a5' : (isVIP ? '#6ee7b7' : (isUnknown ? '#86efac' : '#7dd3fc'));
-      ctx.font = '600 9.5px "Plus Jakarta Sans", sans-serif';
-      const subText = isBlacklist ? '🚨 DPO / BLACKLIST' : (isVIP ? '⭐ VIP ACCESSED' : (isUnknown ? '👤 STRANGER • TIDAK TERDAFTAR' : '👤 VERIFIED EMPLOYEE'));
-      ctx.fillText(subText, badgeX + 28, badgeY + 29);
-
-      // Score / Confidence Pill on the Right
-      const pillW = 62;
-      const pillH = 21;
-      const pillX = badgeX + badgeW - pillW - 8;
-      const pillY = badgeY + (badgeH - pillH) / 2;
-
-      ctx.fillStyle = isBlacklist ? 'rgba(239, 68, 68, 0.28)' : (isVIP ? 'rgba(16, 185, 129, 0.28)' : (isUnknown ? 'rgba(0, 255, 136, 0.22)' : 'rgba(0, 240, 255, 0.22)'));
-      ctx.strokeStyle = strokeColor;
-      ctx.lineWidth = 1.1;
-      ctx.beginPath();
-      ctx.roundRect ? ctx.roundRect(pillX, pillY, pillW, pillH, 6) : ctx.rect(pillX, pillY, pillW, pillH);
-      ctx.fill();
-      ctx.stroke();
-
-      ctx.fillStyle = isUnknown ? '#86efac' : '#ffffff';
-      ctx.font = '800 10px monospace';
-      ctx.textAlign = 'center';
+      // 7. Commercial VMS Identification Tag (Clean, directly above the face box as in Gambar 2)
+      const cleanLabel = isUnknown ? 'Stranger' : String(label);
+      ctx.font = '700 12px "Plus Jakarta Sans", sans-serif';
+      const textW = ctx.measureText(cleanLabel).width;
       const confStr = (confidence && String(confidence).includes('%')) ? confidence : `${confidence || 98.4}%`;
-      ctx.fillText(confStr, pillX + pillW / 2, pillY + 15);
+      ctx.font = '800 10.5px monospace';
+      const confW = ctx.measureText(confStr).width;
+
+      const tagH = 22;
+      const tagW = Math.max(w, textW + confW + 28);
+      const canvasW = ctx.canvas ? ctx.canvas.width : 640;
+      const tagX = Math.max(4, Math.min(canvasW - tagW - 4, x + (w - tagW) / 2));
+      let tagY = y - tagH - 4;
+      if (tagY < 4) tagY = y + 4; // clamp inside box if near top edge
+
+      // Translucent Cyber Tag
+      ctx.fillStyle = 'rgba(5, 12, 28, 0.90)';
+      ctx.strokeStyle = strokeColor;
+      ctx.lineWidth = 1.2;
+      ctx.shadowColor = glowColor;
+      ctx.shadowBlur = 8;
+      ctx.beginPath();
+      ctx.roundRect ? ctx.roundRect(tagX, tagY, tagW, tagH, 5) : ctx.rect(tagX, tagY, tagW, tagH);
+      ctx.fill();
+      ctx.stroke();
+
+      // Dot beacon
+      ctx.shadowBlur = 0;
+      ctx.fillStyle = strokeColor;
+      ctx.beginPath();
+      ctx.arc(tagX + 8, tagY + tagH / 2, 3, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Label Name
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '700 12px "Plus Jakarta Sans", sans-serif';
+      ctx.fillText(cleanLabel, tagX + 16, tagY + 15);
+
+      // Confidence Pill
+      ctx.fillStyle = isUnknown ? '#00ff88' : (isBlacklist ? '#ef4444' : '#38bdf8');
+      ctx.font = '800 10px monospace';
+      ctx.textAlign = 'right';
+      ctx.fillText(confStr, tagX + tagW - 6, tagY + 15);
       ctx.textAlign = 'left';
 
       ctx.restore();
@@ -8701,6 +8861,10 @@
           label: 'Bambang Supriyanto',
           category: 'vip',
           confidence: 97.8,
+          snapshot: 'assets/image/avatar-default.png',
+          registered_photo: 'assets/image/avatar-default.png',
+          gender: 'Male',
+          mask: 'Not worn',
           details: 'Terdeteksi di Lobby Utama • Akses VIP Terbuka'
         };
       } else if (type === 'blacklist_face') {
@@ -8724,6 +8888,10 @@
           label: 'Tersangka Residu DPO',
           category: 'blacklist',
           confidence: 95.4,
+          snapshot: 'assets/image/avatar-default.png',
+          registered_photo: 'assets/image/avatar-default.png',
+          gender: 'Male',
+          mask: 'Not worn',
           details: 'ALERT KEAMANAN: DPO Pencurian Terdeteksi di Lobby'
         };
       } else if (type === 'vip_plate') {
@@ -9530,6 +9698,8 @@
       const activeCamTitle = currentAICamera ? currentAICamera.title : (isWebcam ? 'LIVE WEBCAM - LAPTOP SCANNER' : 'CAM LOEWIX CCTV');
       const activeCamId = currentAICamera ? currentAICamera.id : 5002;
       const fd = new FormData();
+      const faceObj = cachedAIFaces.find(f => f.name.toLowerCase() === name.toLowerCase());
+      const photoSrc = (faceObj && faceObj.photo) ? faceObj.photo : 'assets/image/avatar-default.png';
       fd.append('action', 'log_detection');
       fd.append('type', 'face');
       fd.append('camera_id', activeCamId);
@@ -9537,6 +9707,10 @@
       fd.append('label', name);
       fd.append('category', category);
       fd.append('confidence', ent.confidence);
+      fd.append('snapshot', photoSrc);
+      fd.append('registered_photo', photoSrc);
+      fd.append('gender', 'Male');
+      fd.append('mask', 'Not worn');
       fd.append('details', `${roleTitle} • Terverifikasi oleh Face Recognition`);
       fd.append('timestamp', getLocalLogTimestamp());
       fetch('../api/ai_analytics.php', { method: 'POST', body: fd }).then(() => loadAIData(true)).catch(e => {});
@@ -9634,6 +9808,8 @@
       // Log all detected entities to server
       multiEntities.forEach(ent => {
         const fd = new FormData();
+        const faceObj = cachedAIFaces.find(f => f.name.toLowerCase() === ent.label.toLowerCase());
+        const photoSrc = (faceObj && faceObj.photo) ? faceObj.photo : 'assets/image/avatar-default.png';
         fd.append('action', 'log_detection');
         fd.append('type', 'face');
         fd.append('camera_id', currentAICamera ? currentAICamera.id : 5002);
@@ -9641,6 +9817,10 @@
         fd.append('label', ent.label);
         fd.append('category', ent.category);
         fd.append('confidence', ent.confidence);
+        fd.append('snapshot', photoSrc);
+        fd.append('registered_photo', photoSrc);
+        fd.append('gender', 'Male');
+        fd.append('mask', 'Not worn');
         fd.append('details', `Multi-Target Face Recognition Detection`);
         fd.append('timestamp', getLocalLogTimestamp());
         fetch('../api/ai_analytics.php', { method: 'POST', body: fd }).then(() => loadAIData(true)).catch(e => {});
