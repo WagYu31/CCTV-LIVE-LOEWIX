@@ -1410,6 +1410,16 @@
     .act-btn-delete:hover { background: #ef4444; color: #fff; box-shadow: 0 0 12px rgba(239, 68, 68, 0.6); }
 
     /* AI Vision Suite Cyber HUD Styles */
+    #ai-video-wrapper:fullscreen,
+    #ai-video-wrapper:-webkit-full-screen {
+      width: 100vw !important;
+      height: 100vh !important;
+      max-height: none !important;
+      min-height: 100vh !important;
+      border-radius: 0 !important;
+      border: none !important;
+    }
+
     .ai-scanline-overlay {
       position: absolute;
       top: 0;
@@ -1837,31 +1847,38 @@
       <div class="row">
         
         <!-- Left: Live AI Scanner Stream with HUD Overlay -->
-        <div class="col-lg-8 mb-4">
-          <div class="billing-card p-4" style="background: #090e1a; border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 16px;">
+        <div class="col-lg-8 mb-4 transition-all" id="ai-video-col" style="transition: all 0.35s ease-in-out;">
+          <div class="billing-card p-3.5 p-md-4" style="background: #090e1a; border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
             
-            <!-- Video Header Toolbar -->
-            <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+            <!-- Video Header Toolbar (Clean, High-Tech Command Bar) -->
+            <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3 pb-2.5 border-bottom" style="border-color: rgba(255,255,255,0.08) !important;">
               <div class="d-flex align-items-center gap-2 flex-wrap">
-                <span class="badge badge-danger px-2.5 py-1" style="font-size: 11px; font-weight: 800; letter-spacing: 0.5px;">
-                  <span class="pulse-dot" style="background: #ffffff; margin-right: 4px;"></span> AI LIVE SCAN
+                <span class="badge badge-danger px-2.5 py-1.5" style="font-size: 11.5px; font-weight: 800; letter-spacing: 0.5px; border-radius: 8px;">
+                  <span class="pulse-dot" style="background: #ffffff; margin-right: 5px;"></span> AI LIVE SCAN
                 </span>
-                <select class="form-control form-control-sm form-control-dark" id="ai-camera-selector" onchange="changeAICamera(this.value)" style="width: auto; max-width: 320px; font-size: 12.5px; border-radius: 8px;">
+                <select class="form-control form-control-sm form-control-dark" id="ai-camera-selector" onchange="changeAICamera(this.value)" style="width: auto; min-width: 200px; max-width: 320px; font-size: 12.5px; border-radius: 8px; font-weight: 600; border-color: rgba(56, 189, 248, 0.4);">
                   <option value="webcam">📸 Live Webcam Laptop (Uji Scan Wajah Anda)</option>
                 </select>
-                <select class="form-control form-control-sm form-control-dark" id="ai-target-face-selector" onchange="selectAITargetFace(this.value)" style="width: auto; max-width: 210px; font-size: 11.5px; border-radius: 8px; border-color: rgba(56, 189, 248, 0.4); background: rgba(15, 23, 42, 0.9);" title="Pilih target orang / wajah yang ingin di-track & diverifikasi AI">
+                <select class="form-control form-control-sm form-control-dark" id="ai-target-face-selector" onchange="selectAITargetFace(this.value)" style="width: auto; max-width: 210px; font-size: 11.5px; border-radius: 8px; border-color: rgba(56, 189, 248, 0.3); background: rgba(15, 23, 42, 0.9);" title="Pilih target orang / wajah yang ingin di-track & diverifikasi AI">
                   <option value="auto">👤 Target: WAGYU</option>
                 </select>
                 <button class="btn btn-sm btn-outline-info font-weight-bold px-2.5 py-1" onclick="startAIWebcamLive()" style="border-radius: 8px; font-size: 11px;" title="Nyalakan kamera laptop untuk scan wajah langsung">
-                  <i class="fas fa-camera mr-1"></i> Scan Wajah Saya (Webcam)
+                  <i class="fas fa-camera mr-1"></i> Webcam
                 </button>
                 <button id="btn-toggle-autoscan" class="btn btn-sm btn-success font-weight-bold px-2.5 py-1" onclick="toggleAIAutoTracking()" style="border-radius: 8px; font-size: 11px; background: #059669; border: none; box-shadow: 0 0 10px rgba(5, 150, 105, 0.4);" title="Otomatis mendeteksi wajah tanpa perlu klik tombol">
                   <i class="fas fa-bolt mr-1"></i> Auto-Scan: AKTIF
                 </button>
               </div>
 
-              <div class="d-flex align-items-center gap-2">
-                <span class="text-muted" style="font-size: 12px;">Status: <strong class="text-emerald" id="ai-active-mode-label" style="color: #34d399;"><i class="fas fa-circle text-success mr-1" style="font-size: 8px;"></i> Auto Face-ID Active</strong></span>
+              <!-- Expansive / Theater Mode & Fullscreen Controls -->
+              <div class="d-flex align-items-center gap-2 flex-wrap ml-auto">
+                <button type="button" class="btn btn-sm btn-outline-info font-weight-bold px-3 py-1 text-nowrap" id="btn-toggle-theater" onclick="toggleAITheaterMode()" style="border-radius: 8px; font-size: 11.5px; background: rgba(56, 189, 248, 0.12); border-color: rgba(56, 189, 248, 0.5); transition: all 0.2s ease;" title="Perluas tampilan video ke 100% lebar layar agar lega dan leluasa">
+                  <i class="fas fa-arrows-alt-h mr-1 text-info"></i> Mode Luas (100%)
+                </button>
+                <button type="button" class="btn btn-sm btn-outline-secondary font-weight-bold px-2.5 py-1 text-white text-nowrap" onclick="toggleAIFullscreen()" style="border-radius: 8px; font-size: 11.5px; background: rgba(15, 23, 42, 0.85); border-color: rgba(255, 255, 255, 0.2);" title="Tampilkan Layar Penuh di Monitor">
+                  <i class="fas fa-expand mr-1 text-warning"></i> Layar Penuh
+                </button>
+                <span class="text-muted d-none d-xl-inline ml-1" style="font-size: 11.5px;">Status: <strong class="text-emerald" id="ai-active-mode-label" style="color: #34d399;"><i class="fas fa-circle text-success mr-1" style="font-size: 8px;"></i> Aktif</strong></span>
               </div>
             </div>
 
@@ -1875,11 +1892,11 @@
               </filter>
             </svg>
 
-            <!-- Video Player & Canvas HUD Overlay Container -->
-            <div id="ai-video-wrapper" class="position-relative" style="background: #020617; border-radius: 12px; overflow: hidden; border: 1px solid rgba(56, 189, 248, 0.3); min-height: 380px; display: flex; align-items: center; justify-content: center; user-select: none;">
+            <!-- Video Player & Canvas HUD Overlay Container (Spacious Widescreen 16:9) -->
+            <div id="ai-video-wrapper" class="position-relative" style="background: #020617; border-radius: 14px; overflow: hidden; border: 1.5px solid rgba(56, 189, 248, 0.35); box-shadow: 0 10px 35px rgba(0, 0, 0, 0.65), inset 0 0 20px rgba(56, 189, 248, 0.05); min-height: 460px; max-height: 640px; aspect-ratio: 16 / 9; width: 100%; display: flex; align-items: center; justify-content: center; user-select: none; transition: all 0.3s ease-in-out;">
               
               <!-- Video Layer -->
-              <video id="ai-video-player" autoplay loop muted playsinline crossorigin="anonymous" style="width: 100%; height: 380px; object-fit: cover; display: block; filter: brightness(0.95) contrast(1.05); transition: transform 0.15s ease-out; transform-origin: center center;">
+              <video id="ai-video-player" autoplay loop muted playsinline crossorigin="anonymous" style="width: 100%; height: 100%; object-fit: cover; display: block; filter: brightness(0.96) contrast(1.05); transition: transform 0.15s ease-out; transform-origin: center center;">
                 <source src="assets/video/demo-cctv.mp4" type="video/mp4">
               </video>
 
@@ -1902,6 +1919,16 @@
                 <span id="ai-hud-status-text">AI SCANNER: TRACKING ENTITIES</span>
               </div>
 
+              <!-- Floating Quick Fullscreen & Mode Controls in Video Overlay (Top Right) -->
+              <div class="position-absolute d-flex align-items-center gap-1.5" style="top: 14px; right: 14px; z-index: 15;">
+                <button type="button" class="btn btn-xs btn-dark text-info border-info" onclick="toggleAITheaterMode()" style="background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(8px); border: 1px solid rgba(56, 189, 248, 0.4); border-radius: 6px; padding: 4px 8px; font-size: 11px;" title="Mode Luas / Theater">
+                  <i class="fas fa-arrows-alt-h"></i>
+                </button>
+                <button type="button" class="btn btn-xs btn-dark text-warning border-warning" onclick="toggleAIFullscreen()" style="background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(8px); border: 1px solid rgba(234, 179, 8, 0.4); border-radius: 6px; padding: 4px 8px; font-size: 11px;" title="Layar Penuh">
+                  <i class="fas fa-expand"></i>
+                </button>
+              </div>
+
               <!-- Live Detection Banner Toast (Popup inside video) -->
               <div id="ai-hud-detection-banner" class="position-absolute" style="bottom: 14px; left: 14px; right: 14px; background: rgba(15, 23, 42, 0.9); backdrop-filter: blur(10px); border: 1.5px solid #38bdf8; border-radius: 10px; padding: 10px 14px; font-size: 12.5px; z-index: 10; display: none; align-items: center; justify-content: space-between; box-shadow: 0 4px 20px rgba(0,0,0,0.6);">
                 <div class="d-flex align-items-center gap-3">
@@ -1919,7 +1946,7 @@
             </div>
 
             <!-- AI Super-Sharpness & Digital Zoom Toolbar -->
-            <div class="mt-2 p-2.5 d-flex align-items-center justify-content-between flex-wrap gap-2" style="background: rgba(15, 23, 42, 0.85); border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 10px;">
+            <div class="mt-2.5 p-2.5 d-flex align-items-center justify-content-between flex-wrap gap-2" style="background: rgba(15, 23, 42, 0.75); border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 10px; backdrop-filter: blur(8px);">
               <div class="d-flex align-items-center gap-2 flex-wrap">
                 <span class="text-white font-weight-bold" style="font-size: 11.5px; color: #38bdf8;">
                   <i class="fas fa-wand-magic-sparkles mr-1"></i> Penjernih AI:
@@ -1955,20 +1982,33 @@
                 <button type="button" class="btn btn-sm btn-outline-warning px-2.5 py-1 font-weight-bold" onclick="resetAIVideoPanZoom()" style="font-size: 11px;" title="Reset Zoom dan Posisi">
                   <i class="fas fa-rotate-left mr-1"></i> Reset
                 </button>
+                <button type="button" class="btn btn-sm btn-outline-info px-2.5 py-1 font-weight-bold text-white ml-1" onclick="toggleAIFullscreen()" style="font-size: 11px; border-radius: 6px; background: rgba(56, 189, 248, 0.1);" title="Perbesar Layar Penuh">
+                  <i class="fas fa-expand mr-1 text-warning"></i> Fullscreen
+                </button>
               </div>
             </div>
 
-            <!-- Live AI Simulation & Testing Toolbar -->
-            <div class="mt-3 p-3" style="background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px;">
-              <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-2">
-                <span class="text-white font-weight-bold" style="font-size: 12.5px;">
-                  <i class="fas fa-wand-magic-sparkles text-info mr-1"></i> Live Trigger & Simulator Deteksi AI:
-                </span>
-                <small class="text-muted" style="font-size: 11px;">Klik salah satu entitas di bawah untuk menguji respon pengenalan AI di video</small>
+            <!-- Live AI Simulation & Testing Toolbar (Collapsible for cleaner, more spacious view) -->
+            <div class="mt-2.5 p-2.5" style="background: rgba(15, 23, 42, 0.65); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; backdrop-filter: blur(8px);">
+              <div class="d-flex align-items-center justify-content-between flex-wrap gap-2" style="cursor: pointer;" onclick="toggleAISimulatorPanel()">
+                <div class="d-flex align-items-center gap-2">
+                  <span class="text-white font-weight-bold" style="font-size: 12px;">
+                    <i class="fas fa-flask text-info mr-1.5"></i> Panel Simulator & Trigger Uji Coba AI
+                  </span>
+                  <span class="badge badge-dark text-cyan px-2 py-0.5" style="font-size: 10px; border: 1px solid rgba(56, 189, 248, 0.3);">Uji Respon Entitas</span>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                  <small class="text-muted d-none d-sm-inline" style="font-size: 11px;">Klik untuk buka / tutup tombol uji coba</small>
+                  <button type="button" class="btn btn-xs btn-outline-info px-2.5 py-1 font-weight-bold" id="btn-toggle-sim-panel" style="font-size: 10.5px; border-radius: 6px;">
+                    <i class="fas fa-flask mr-1"></i> Buka Simulator Uji Coba
+                  </button>
+                </div>
               </div>
 
-              <div class="d-flex align-items-center flex-wrap gap-2" id="ai-simulator-buttons-container">
-                <!-- Dynamically populated from registered faces & plates -->
+              <div id="ai-simulator-collapsible" style="display: none; margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(255, 255, 255, 0.06);">
+                <div class="d-flex align-items-center flex-wrap gap-2" id="ai-simulator-buttons-container">
+                  <!-- Dynamically populated from registered faces & plates -->
+                </div>
               </div>
             </div>
 
@@ -1976,19 +2016,24 @@
         </div>
 
         <!-- Right: Real-time Live Detection Feed (Log Stream) -->
-        <div class="col-lg-4 mb-4">
-          <div class="billing-card p-4 h-100 d-flex flex-column" style="background: #090e1a; border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 16px;">
+        <div class="col-lg-4 mb-4 transition-all" id="ai-feed-col" style="transition: all 0.35s ease-in-out;">
+          <div class="billing-card p-4 h-100 d-flex flex-column" style="background: #090e1a; border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
             <div class="d-flex align-items-center justify-content-between mb-3">
               <h5 class="billing-card-title mb-0" style="font-size: 15px;">
                 <i class="fas fa-bolt text-warning mr-1"></i> Live Stream Deteksi AI
               </h5>
-              <button class="btn btn-sm btn-link text-muted p-0" onclick="clearAILogs()" style="font-size: 11px; text-decoration: none;">
-                <i class="fas fa-trash-alt mr-1"></i> Bersihkan Log
-              </button>
+              <div class="d-flex align-items-center gap-2">
+                <button class="btn btn-xs btn-outline-secondary px-2 py-1 font-weight-bold text-muted" id="btn-toggle-feed" onclick="toggleAILogSidebar()" style="font-size: 10.5px; border-radius: 6px; text-decoration: none;" title="Sembunyikan log agar tampilan video makin luas">
+                  <i class="fas fa-eye-slash mr-1"></i> Sembunyikan
+                </button>
+                <button class="btn btn-sm btn-link text-muted p-0" onclick="clearAILogs()" style="font-size: 11px; text-decoration: none;" title="Bersihkan riwayat log">
+                  <i class="fas fa-trash-alt"></i>
+                </button>
+              </div>
             </div>
 
             <!-- Feed Stream List Container -->
-            <div id="ai-live-feed-container" class="flex-fill" style="max-height: 480px; overflow-y: auto; padding-right: 4px;">
+            <div id="ai-live-feed-container" class="flex-fill" style="max-height: 540px; overflow-y: auto; padding-right: 4px;">
               <!-- Dynamically populated live detection cards -->
             </div>
 
@@ -7833,6 +7878,140 @@
       }
     }
 
+    // Interactive View Modes: Theater Mode (100% Wide), Fullscreen & Collapsible Drawer
+    let isAITheaterMode = false;
+
+    function toggleAITheaterMode() {
+      isAITheaterMode = !isAITheaterMode;
+      const videoCol = document.getElementById('ai-video-col');
+      const feedCol = document.getElementById('ai-feed-col');
+      const btnTheater = document.getElementById('btn-toggle-theater');
+      const videoWrapper = document.getElementById('ai-video-wrapper');
+
+      if (isAITheaterMode) {
+        if (videoCol) {
+          videoCol.classList.remove('col-lg-8');
+          videoCol.classList.add('col-lg-12');
+        }
+        if (feedCol) {
+          feedCol.style.display = 'none';
+        }
+        if (btnTheater) {
+          btnTheater.innerHTML = '<i class="fas fa-compress-arrows-alt mr-1 text-warning"></i> Mode Standar';
+          btnTheater.classList.remove('btn-outline-info');
+          btnTheater.classList.add('btn-warning');
+        }
+        if (videoWrapper) {
+          videoWrapper.style.maxHeight = '780px';
+          videoWrapper.style.minHeight = '520px';
+        }
+      } else {
+        if (videoCol) {
+          videoCol.classList.remove('col-lg-12');
+          videoCol.classList.add('col-lg-8');
+        }
+        if (feedCol) {
+          feedCol.style.display = '';
+        }
+        if (btnTheater) {
+          btnTheater.innerHTML = '<i class="fas fa-arrows-alt-h mr-1 text-info"></i> Mode Luas (100%)';
+          btnTheater.classList.remove('btn-warning');
+          btnTheater.classList.add('btn-outline-info');
+        }
+        if (videoWrapper) {
+          videoWrapper.style.maxHeight = '640px';
+          videoWrapper.style.minHeight = '460px';
+        }
+      }
+
+      setTimeout(() => {
+        const canvas = document.getElementById('ai-hud-canvas');
+        if (canvas && canvas.parentElement) {
+          canvas.width = canvas.parentElement.clientWidth;
+          canvas.height = canvas.parentElement.clientHeight;
+        }
+      }, 360);
+    }
+
+    function toggleAILogSidebar() {
+      const feedCol = document.getElementById('ai-feed-col');
+      const videoCol = document.getElementById('ai-video-col');
+      const btnToggleFeed = document.getElementById('btn-toggle-feed');
+      if (!feedCol) return;
+
+      if (feedCol.style.display === 'none') {
+        feedCol.style.display = '';
+        if (videoCol && !isAITheaterMode) {
+          videoCol.classList.remove('col-lg-12');
+          videoCol.classList.add('col-lg-8');
+        }
+        if (btnToggleFeed) btnToggleFeed.innerHTML = '<i class="fas fa-eye-slash mr-1"></i> Sembunyikan';
+      } else {
+        feedCol.style.display = 'none';
+        if (videoCol) {
+          videoCol.classList.remove('col-lg-8');
+          videoCol.classList.add('col-lg-12');
+        }
+        if (btnToggleFeed) btnToggleFeed.innerHTML = '<i class="fas fa-eye mr-1"></i> Tampilkan Log';
+      }
+
+      setTimeout(() => {
+        const canvas = document.getElementById('ai-hud-canvas');
+        if (canvas && canvas.parentElement) {
+          canvas.width = canvas.parentElement.clientWidth;
+          canvas.height = canvas.parentElement.clientHeight;
+        }
+      }, 360);
+    }
+
+    function toggleAIFullscreen() {
+      const wrapper = document.getElementById('ai-video-wrapper');
+      if (!wrapper) return;
+
+      if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+        if (wrapper.requestFullscreen) {
+          wrapper.requestFullscreen();
+        } else if (wrapper.webkitRequestFullscreen) {
+          wrapper.webkitRequestFullscreen();
+        } else if (wrapper.msRequestFullscreen) {
+          wrapper.msRequestFullscreen();
+        }
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        } else if (document.webkitExitFullscreen) {
+          document.webkitExitFullscreen();
+        } else if (document.msExitFullscreen) {
+          document.msExitFullscreen();
+        }
+      }
+    }
+
+    document.addEventListener('fullscreenchange', () => {
+      const canvas = document.getElementById('ai-hud-canvas');
+      const wrapper = document.getElementById('ai-video-wrapper');
+      if (canvas && wrapper) {
+        setTimeout(() => {
+          canvas.width = wrapper.clientWidth;
+          canvas.height = wrapper.clientHeight;
+        }, 200);
+      }
+    });
+
+    function toggleAISimulatorPanel() {
+      const panel = document.getElementById('ai-simulator-collapsible');
+      const btn = document.getElementById('btn-toggle-sim-panel');
+      if (!panel) return;
+
+      if (panel.style.display === 'none' || panel.style.display === '') {
+        panel.style.display = 'block';
+        if (btn) btn.innerHTML = '<i class="fas fa-chevron-up mr-1"></i> Tutup Simulator';
+      } else {
+        panel.style.display = 'none';
+        if (btn) btn.innerHTML = '<i class="fas fa-flask mr-1"></i> Buka Simulator Uji Coba';
+      }
+    }
+
     // AI Canvas HUD Animation
     function initAIHUDCanvas() {
       const canvas = document.getElementById('ai-hud-canvas');
@@ -7840,9 +8019,9 @@
 
       const parent = canvas.parentElement;
       const w = parent ? parent.clientWidth : 640;
-      const h = parent ? parent.clientHeight : 380;
+      const h = parent ? parent.clientHeight : 460;
       canvas.width = (w && w > 100) ? w : 640;
-      canvas.height = (h && h > 100) ? h : 380;
+      canvas.height = (h && h > 100) ? h : 460;
       canvas.style.zIndex = '20';
 
       if (!aiHUDAnimationId) {
@@ -7869,9 +8048,9 @@
       function loop() {
         const now = Date.now();
         // Ensure size
-        if (canvas.parentElement && canvas.parentElement.clientWidth > 100 && canvas.width !== canvas.parentElement.clientWidth) {
+        if (canvas.parentElement && canvas.parentElement.clientWidth > 100 && (canvas.width !== canvas.parentElement.clientWidth || canvas.height !== canvas.parentElement.clientHeight)) {
           canvas.width = canvas.parentElement.clientWidth;
-          canvas.height = canvas.parentElement.clientHeight || 380;
+          canvas.height = canvas.parentElement.clientHeight || 460;
         }
 
         ctx.clearRect(0, 0, canvas.width, canvas.height);
