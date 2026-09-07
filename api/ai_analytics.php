@@ -163,15 +163,11 @@ if ($action === 'get_ai_data') {
     $logs = [];
 
     foreach ($db['ai_faces'] as $f) {
-        if ($isSuperAdmin || (int)($f['user_id'] ?? 0) === $userId || (int)($f['user_id'] ?? 0) === 0) {
-            $faces[] = $f;
-        }
+        $faces[] = $f;
     }
 
     foreach ($db['ai_plates'] as $p) {
-        if ($isSuperAdmin || (int)($p['user_id'] ?? 0) === $userId || (int)($p['user_id'] ?? 0) === 0) {
-            $plates[] = $p;
-        }
+        $plates[] = $p;
     }
 
     foreach ($db['ai_logs'] as $l) {

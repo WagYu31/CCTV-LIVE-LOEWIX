@@ -1920,6 +1920,9 @@
                 <button id="btn-toggle-autoscan" class="btn btn-sm btn-success font-weight-bold px-2.5 py-1" onclick="toggleAIAutoTracking()" style="border-radius: 8px; font-size: 11px; background: #059669; border: none; box-shadow: 0 0 10px rgba(5, 150, 105, 0.4);" title="Otomatis mendeteksi wajah tanpa perlu klik tombol">
                   <i class="fas fa-bolt mr-1"></i> Auto-Scan: AKTIF
                 </button>
+                <button id="btn-toggle-autoframing" class="btn btn-sm btn-info font-weight-bold px-2.5 py-1" onclick="toggleAIAutoFraming()" style="border-radius: 8px; font-size: 11px; background: rgba(14, 165, 233, 0.25); border: 1px solid #38bdf8; color: #38bdf8; box-shadow: 0 0 10px rgba(56, 189, 248, 0.3);" title="Auto-Zoom Pintar: Kamera otomatis memperbesar dan mengejar wajah/orang saat terdeteksi">
+                  <i class="fas fa-crosshairs mr-1"></i> Auto-Zoom: AKTIF
+                </button>
               </div>
 
               <!-- Expansive / Theater Mode & Fullscreen Controls -->
@@ -2022,9 +2025,12 @@
               <!-- Digital Zoom & Pan Controls -->
               <div class="d-flex align-items-center gap-2 flex-wrap">
                 <span class="text-white" style="font-size: 11.5px;">
-                  <i class="fas fa-magnifying-glass-plus mr-1 text-warning"></i> Zoom Plat:
+                  <i class="fas fa-magnifying-glass-plus mr-1 text-warning"></i> Zoom Kamera:
                 </span>
                 <div class="btn-group btn-group-sm" role="group">
+                  <button type="button" class="btn btn-sm btn-info px-2.5 py-1 font-weight-bold" id="btn-zoom-auto" onclick="toggleAIAutoFraming(true)" style="font-size: 11px; background: #0284c7; border-color: #38bdf8;" title="Otomatis memperbesar dan mengejar wajah/orang di CCTV">
+                    <i class="fas fa-crosshairs mr-1"></i> Auto-Zoom
+                  </button>
                   <button type="button" class="btn btn-sm btn-outline-info px-2 py-1" onclick="setAIVideoZoom(1)" style="font-size: 11px;">1x</button>
                   <button type="button" class="btn btn-sm btn-outline-info px-2 py-1" onclick="setAIVideoZoom(1.5)" style="font-size: 11px;">1.5x</button>
                   <button type="button" class="btn btn-sm btn-outline-info px-2 py-1" onclick="setAIVideoZoom(2)" style="font-size: 11px;">2x</button>
@@ -8489,6 +8495,84 @@
         ctx.fillStyle = 'rgba(255, 255, 255, 0.45)';
         ctx.fillText('PT. LOEWIX INDONESIA • AI NEURAL VISION ENGINE V3.4 • 60 FPS LERP • 1080P', 18, canvas.height - 16);
 
+        // ========================================================
+        // SMART AI AUTO-ZOOM & E-PTZ AUTO-FRAMING (60 FPS LERP GLIDE)
+        // ========================================================
+        if (isAIAutoFramingActive && !isAiPanning) {
+          if (activeAIEntities && activeAIEntities.length > 0) {
+            const primaryEnt = activeAIEntities[0];
+            lastTargetSeenTime = now;
+
+            // Target center coordinates on canvas
+            const targetCX = primaryEnt.x + (primaryEnt.w / 2);
+            const targetCY = primaryEnt.y + (primaryEnt.h * 0.40);
+
+            // Auto-scale calculation: Far away objects (small bounding box) are zoomed in deeper
+            const targetSize = Math.max(primaryEnt.w, primaryEnt.h);
+            let desiredScale = 1.0;
+            if (targetSize < 85) {
+              desiredScale = 2.4; // Very far person (e.g. warehouse ceiling CCTV)
+            } else if (targetSize < 135) {
+              desiredScale = 2.0;
+            } else if (targetSize < 185) {
+              desiredScale = 1.6;
+            } else if (targetSize < 240) {
+              desiredScale = 1.3;
+            } else {
+              desiredScale = 1.0;
+            }
+
+            // Calculate pan translation so target moves towards upper-center of screen
+            const maxPanX = (canvas.width * (desiredScale - 1)) / (2 * desiredScale);
+            const maxPanY = (canvas.height * (desiredScale - 1)) / (2 * desiredScale);
+            const rawPanX = (canvas.width / 2 - targetCX) / desiredScale;
+            const rawPanY = (canvas.height * 0.42 - targetCY) / desiredScale;
+
+            targetAutoZoom = desiredScale;
+            targetAutoPanX = Math.max(-maxPanX, Math.min(maxPanX, rawPanX));
+            targetAutoPanY = Math.max(-maxPanY, Math.min(maxPanY, rawPanY));
+
+            // Smooth 60 FPS LERP glide (factor 0.08 for smooth, natural camera tracking)
+            aiVideoZoomLevel += (targetAutoZoom - aiVideoZoomLevel) * 0.08;
+            aiVideoPanX += (targetAutoPanX - aiVideoPanX) * 0.08;
+            aiVideoPanY += (targetAutoPanY - aiVideoPanY) * 0.08;
+            applyAIVideoTransform();
+
+            // Render high-tech Auto-Zoom Tracking HUD pill
+            if (aiVideoZoomLevel > 1.08) {
+              ctx.save();
+              const badgeText = `🎯 AUTO-ZOOM: ${aiVideoZoomLevel.toFixed(1)}X`;
+              ctx.font = '800 10.5px monospace';
+              const bWidth = ctx.measureText(badgeText).width + 18;
+              const badgeX = canvas.width / 2 - bWidth / 2;
+              const badgeY = 44;
+              ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
+              ctx.strokeStyle = '#38bdf8';
+              ctx.lineWidth = 1;
+              ctx.beginPath();
+              ctx.roundRect ? ctx.roundRect(badgeX, badgeY, bWidth, 22, 6) : ctx.rect(badgeX, badgeY, bWidth, 22);
+              ctx.fill();
+              ctx.stroke();
+              ctx.fillStyle = '#38bdf8';
+              ctx.fillText(badgeText, badgeX + 9, badgeY + 15);
+              ctx.restore();
+            }
+          } else if (now - lastTargetSeenTime > 3500) {
+            // No target for 3.5 seconds -> Smoothly glide back to wide angle (1.0x)
+            if (aiVideoZoomLevel > 1.01 || Math.abs(aiVideoPanX) > 1 || Math.abs(aiVideoPanY) > 1) {
+              aiVideoZoomLevel += (1.0 - aiVideoZoomLevel) * 0.05;
+              aiVideoPanX += (0 - aiVideoPanX) * 0.05;
+              aiVideoPanY += (0 - aiVideoPanY) * 0.05;
+              if (Math.abs(aiVideoZoomLevel - 1.0) < 0.01) {
+                aiVideoZoomLevel = 1.0;
+                aiVideoPanX = 0;
+                aiVideoPanY = 0;
+              }
+              applyAIVideoTransform();
+            }
+          }
+        }
+
         ctx.restore();
         aiHUDAnimationId = requestAnimationFrame(loop);
       }
@@ -9208,6 +9292,56 @@
     let aiPanStartY = 0;
     let currentAIFilterMode = 'normal';
 
+    // Smart ePTZ Auto-Framing Variables (Enabled by default)
+    let isAIAutoFramingActive = true;
+    let lastTargetSeenTime = 0;
+    let targetAutoZoom = 1.0;
+    let targetAutoPanX = 0;
+    let targetAutoPanY = 0;
+
+    function toggleAIAutoFraming(forceState) {
+      if (typeof forceState === 'boolean') {
+        isAIAutoFramingActive = forceState;
+      } else {
+        isAIAutoFramingActive = !isAIAutoFramingActive;
+      }
+
+      const btnTop = document.getElementById('btn-toggle-autoframing');
+      const btnGroup = document.getElementById('btn-zoom-auto');
+
+      if (isAIAutoFramingActive) {
+        if (btnTop) {
+          btnTop.className = 'btn btn-sm btn-info font-weight-bold px-2.5 py-1';
+          btnTop.innerHTML = '<i class="fas fa-crosshairs mr-1"></i> Auto-Zoom: AKTIF';
+          btnTop.style.background = 'rgba(14, 165, 233, 0.25)';
+          btnTop.style.borderColor = '#38bdf8';
+          btnTop.style.color = '#38bdf8';
+          btnTop.style.boxShadow = '0 0 10px rgba(56, 189, 248, 0.3)';
+        }
+        if (btnGroup) {
+          btnGroup.className = 'btn btn-sm btn-info px-2.5 py-1 font-weight-bold';
+          btnGroup.style.background = '#0284c7';
+          btnGroup.style.borderColor = '#38bdf8';
+        }
+        showAIBanner('AUTO-ZOOM AI AKTIF', 'Kamera otomatis memperbesar dan mengejar wajah/orang di area CCTV', 'badge-info', 'AUTO-ZOOM', 'fas fa-crosshairs', '#0284c7');
+      } else {
+        if (btnTop) {
+          btnTop.className = 'btn btn-sm btn-outline-secondary font-weight-bold px-2.5 py-1 text-muted';
+          btnTop.innerHTML = '<i class="fas fa-crosshairs mr-1"></i> Auto-Zoom: OFF';
+          btnTop.style.background = 'rgba(255, 255, 255, 0.05)';
+          btnTop.style.borderColor = 'rgba(255, 255, 255, 0.15)';
+          btnTop.style.color = '#94a3b8';
+          btnTop.style.boxShadow = 'none';
+        }
+        if (btnGroup) {
+          btnGroup.className = 'btn btn-sm btn-outline-info px-2 py-1';
+          btnGroup.style.background = '';
+          btnGroup.style.borderColor = '';
+        }
+        resetAIVideoPanZoom();
+      }
+    }
+
     function setAIVideoFilter(mode) {
       currentAIFilterMode = mode;
       const video = document.getElementById('ai-video-player');
@@ -9235,6 +9369,25 @@
     }
 
     function setAIVideoZoom(scale) {
+      // Manual selection temporarily suspends auto-framing
+      if (isAIAutoFramingActive) {
+        isAIAutoFramingActive = false;
+        const btnTop = document.getElementById('btn-toggle-autoframing');
+        const btnGroup = document.getElementById('btn-zoom-auto');
+        if (btnTop) {
+          btnTop.className = 'btn btn-sm btn-outline-secondary font-weight-bold px-2.5 py-1 text-muted';
+          btnTop.innerHTML = '<i class="fas fa-crosshairs mr-1"></i> Auto-Zoom: OFF';
+          btnTop.style.background = 'rgba(255, 255, 255, 0.05)';
+          btnTop.style.borderColor = 'rgba(255, 255, 255, 0.15)';
+          btnTop.style.color = '#94a3b8';
+          btnTop.style.boxShadow = 'none';
+        }
+        if (btnGroup) {
+          btnGroup.className = 'btn btn-sm btn-outline-info px-2 py-1';
+          btnGroup.style.background = '';
+          btnGroup.style.borderColor = '';
+        }
+      }
       aiVideoZoomLevel = scale;
       if (scale === 1) {
         aiVideoPanX = 0;
