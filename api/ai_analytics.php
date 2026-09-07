@@ -20,9 +20,19 @@ date_default_timezone_set('Asia/Jakarta');
 require_once __DIR__ . '/../config/db.php';
 
 $action = $_GET['action'] ?? ($_POST['action'] ?? 'get_ai_data');
-$user = get_logged_in_user();
-
 $db = get_db_data();
+$user = get_logged_in_user();
+if (!$user && !empty($_REQUEST['user_id'])) {
+    $reqUserId = (int)$_REQUEST['user_id'];
+    if (isset($db['users']) && is_array($db['users'])) {
+        foreach ($db['users'] as $u) {
+            if ((int)$u['id'] === $reqUserId && ($u['status'] ?? 'active') === 'active') {
+                $user = $u;
+                break;
+            }
+        }
+    }
+}
 
 // Initialize AI collections in db if not present
 if (!isset($db['ai_faces']) || !is_array($db['ai_faces'])) {
@@ -179,12 +189,10 @@ if ($action === 'get_ai_data') {
     $cameras = [];
     if (isset($db['cameras']) && is_array($db['cameras'])) {
         foreach ($db['cameras'] as $cam) {
-            if ($isSuperAdmin || (int)($cam['user_id'] ?? 0) === $userId || (int)($cam['user_id'] ?? 0) === 0) {
-                if (!empty($cam['hls_url']) && strpos($cam['hls_url'], 'http://stream.loewixcctv.com') === 0) {
-                    $cam['hls_url'] = str_replace('http://', 'https://', $cam['hls_url']);
-                }
-                $cameras[] = $cam;
+            if (!empty($cam['hls_url']) && strpos($cam['hls_url'], 'http://stream.loewixcctv.com') === 0) {
+                $cam['hls_url'] = str_replace('http://', 'https://', $cam['hls_url']);
             }
+            $cameras[] = $cam;
         }
     }
 

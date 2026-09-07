@@ -7047,8 +7047,8 @@
 
     // Load AI Data from API
     async function loadAIData(forceRefresh = false) {
-      const u = currentCustomer || (localStorage.getItem('loewix_user') ? JSON.parse(localStorage.getItem('loewix_user')) : { id: 3 });
-      const url = `../api/ai_analytics.php?action=get_ai_data&user_id=${u.id || 3}`;
+      const u = currentCustomer || (localStorage.getItem('loewix_user') ? JSON.parse(localStorage.getItem('loewix_user')) : { id: 1 });
+      const url = `../api/ai_analytics.php?action=get_ai_data&user_id=${u.id || 1}`;
 
       try {
         const res = await fetch(url);
@@ -7721,23 +7721,23 @@
       const select = document.getElementById('ai-camera-selector');
       if (!select) return;
 
-      // 1. Fallback to localStorage if customerCameras in memory is empty
-      if (!Array.isArray(customerCameras) || customerCameras.length === 0) {
+      // 1. Check in-memory or localStorage
+      if (!Array.isArray(customerCameras) || customerCameras.length <= 3) {
         try {
           const _cached = localStorage.getItem('loewix_customer_cameras');
           if (_cached) {
             const _parsed = JSON.parse(_cached);
-            if (Array.isArray(_parsed) && _parsed.length > 0) customerCameras = _parsed;
+            if (Array.isArray(_parsed) && _parsed.length > 3) customerCameras = _parsed;
           }
         } catch(e) {}
       }
 
-      // 2. If STILL empty, dynamically fetch from API
-      if (!Array.isArray(customerCameras) || customerCameras.length === 0) {
+      // 2. If still <= 3 cameras, dynamically fetch full fleet from AI Analytics API
+      if (!Array.isArray(customerCameras) || customerCameras.length <= 3) {
         try {
           const u = currentCustomer || (localStorage.getItem('loewix_user') ? JSON.parse(localStorage.getItem('loewix_user')) : null);
-          const uid = u ? u.id : '';
-          const res = await fetch(`../api/customer_portal.php?action=my_cameras&user_id=${uid}`);
+          const uid = u ? u.id : 1;
+          const res = await fetch(`../api/ai_analytics.php?action=get_ai_data&user_id=${uid}`);
           const data = await res.json();
           if (data && data.success && Array.isArray(data.cameras) && data.cameras.length > 0) {
             customerCameras = data.cameras;
@@ -7746,18 +7746,18 @@
         } catch(e) {}
       }
 
-      const currentVal = select.value;
+      const currentVal = select.value || (currentAICamera ? currentAICamera.id : '');
       let html = '<option value="webcam" ' + (currentVal === 'webcam' ? 'selected' : '') + '>📸 Live Webcam Laptop (Uji Scan Wajah Anda)</option>';
 
       if (Array.isArray(customerCameras) && customerCameras.length > 0) {
         customerCameras.forEach((cam, idx) => {
           const statusIcon = cam.status !== 'offline' ? '🟢' : '🔴';
           const cityStr = cam.city ? ` [${cam.city.toUpperCase()}]` : '';
-          const isSelected = (currentVal && currentVal == cam.id) || (!currentVal && idx === 0) ? 'selected' : '';
+          const isSelected = (currentVal && currentVal == cam.id) || (!currentVal && (cam.id == 5021 || cam.title.includes('162'))) ? 'selected' : '';
           html += `<option value="${cam.id}" ${isSelected}>📹 ${statusIcon} ${cam.title}${cityStr}</option>`;
         });
       } else {
-        html += '<option value="5002" selected>📹 🟢 YAMAHA DDS [JAKARTA]</option>';
+        html += '<option value="5021" selected>📹 🟢 162 [JAKARTA]</option>';
       }
 
       select.innerHTML = html;

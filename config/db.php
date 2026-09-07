@@ -439,6 +439,174 @@ function get_db_data() {
         ];
         file_put_contents(DB_FILE, json_encode($data, JSON_PRETTY_PRINT));
     }
+
+    // Auto-migration: Ensure all core cameras (162, RTSP LOCAL, TEST DDNS 1, etc.) are always registered
+    if (!isset($data['cameras']) || !is_array($data['cameras'])) {
+        $data['cameras'] = [];
+    }
+
+    $coreCameras = [
+        [
+            'id' => 5001,
+            'user_id' => 1,
+            'title' => 'TESS',
+            'city' => 'siantar',
+            'connection_type' => 'rtsp',
+            'streamPath' => 'cctv_loewix_1',
+            'hls_url' => 'https://stream.loewixcctv.com/cctv_loewix_1/index.m3u8',
+            'thumbnail' => 'assets/image/thumbnail/default-thumbnail.png',
+            'lat' => '2.9750',
+            'lng' => '99.0789',
+            'platform' => 'mediamtx',
+            'status' => 'online',
+            'created_at' => '2026-08-14 00:00:00'
+        ],
+        [
+            'id' => 5002,
+            'user_id' => 1,
+            'title' => 'CAM LOEWIX JAKARTA 1',
+            'city' => 'jakarta',
+            'connection_type' => 'rtsp',
+            'streamPath' => 'cctv_loewix_2',
+            'hls_url' => 'https://stream.loewixcctv.com/cctv_loewix_2/index.m3u8',
+            'thumbnail' => 'assets/image/thumbnail/default-thumbnail.png',
+            'lat' => '-6.2088',
+            'lng' => '106.8456',
+            'platform' => 'mediamtx',
+            'status' => 'online',
+            'created_at' => '2026-08-14 00:00:00'
+        ],
+        [
+            'id' => 5003,
+            'user_id' => 1,
+            'title' => 'ONEFIFTEENH BALI CAM 1',
+            'city' => 'bali',
+            'connection_type' => 'rtsp',
+            'streamPath' => 'cctv_loewix_3',
+            'hls_url' => 'https://stream.loewixcctv.com/cctv_loewix_3/index.m3u8',
+            'thumbnail' => 'assets/image/thumbnail/default-thumbnail.png',
+            'lat' => '-8.6705',
+            'lng' => '115.2126',
+            'platform' => 'mediamtx',
+            'status' => 'online',
+            'created_at' => '2026-08-15 00:00:00'
+        ],
+        [
+            'id' => 5016,
+            'user_id' => 1,
+            'title' => 'TEST DDNS 1',
+            'city' => 'siantar',
+            'connection_type' => 'rtsp',
+            'rtsp_url' => 'rtsp://192.168.11.201:554/user=admin&password=&channel=1&stream=1.sdp',
+            'streamPath' => 'cam_live_5016',
+            'hls_url' => 'https://stream.loewixcctv.com/cam_live_5016/index.m3u8',
+            'thumbnail' => 'assets/image/snapshots/cam_5016.jpg',
+            'lat' => '2.9568',
+            'lng' => '99.0619',
+            'platform' => 'mediamtx',
+            'status' => 'online',
+            'created_at' => '2026-09-01 00:00:00'
+        ],
+        [
+            'id' => 5018,
+            'user_id' => 1,
+            'title' => 'RTSP LOCAL',
+            'city' => 'jakarta',
+            'connection_type' => 'rtsp',
+            'rtsp_url' => 'rtsp://192.168.11.182:554/user=admin&password=&channel=1&stream=1.sdp',
+            'streamPath' => 'cam_live_5018',
+            'hls_url' => 'https://stream.loewixcctv.com/cam_live_5018/index.m3u8',
+            'thumbnail' => 'assets/image/snapshots/cam_5018.jpg',
+            'lat' => '-6.2088',
+            'lng' => '106.8456',
+            'platform' => 'mediamtx',
+            'status' => 'online',
+            'created_at' => '2026-09-02 00:00:00'
+        ],
+        [
+            'id' => 5019,
+            'user_id' => 1,
+            'title' => 'RTSP LOCAL L8 Arah wihara',
+            'city' => 'jakarta',
+            'connection_type' => 'rtsp',
+            'rtsp_url' => 'rtsp://192.168.11.200:554/user=admin&password=&channel=1&stream=1.sdp',
+            'streamPath' => 'cam_live_5019',
+            'hls_url' => 'https://stream.loewixcctv.com/cam_live_5019/index.m3u8',
+            'thumbnail' => 'assets/image/snapshots/cam_5019.jpg',
+            'lat' => '-6.2088',
+            'lng' => '106.8456',
+            'platform' => 'mediamtx',
+            'status' => 'online',
+            'created_at' => '2026-09-05 00:00:00'
+        ],
+        [
+            'id' => 5020,
+            'user_id' => 1,
+            'title' => 'RTSP LOCAL STG',
+            'city' => 'jakarta',
+            'connection_type' => 'rtsp',
+            'rtsp_url' => 'rtsp://admin:123456@192.168.11.160:554/mpeg4',
+            'streamPath' => 'cam_live_5020',
+            'hls_url' => 'https://stream.loewixcctv.com/cam_live_5020/index.m3u8',
+            'thumbnail' => 'assets/image/snapshots/cam_5020.jpg',
+            'lat' => '-6.2088',
+            'lng' => '106.8456',
+            'platform' => 'mediamtx',
+            'status' => 'online',
+            'created_at' => '2026-09-06 00:00:00'
+        ],
+        [
+            'id' => 5021,
+            'user_id' => 1,
+            'title' => '162 [JAKARTA]',
+            'city' => 'jakarta',
+            'connection_type' => 'rtsp',
+            'rtsp_url' => 'rtsp://admin:123456@192.168.11.162:554/stream1',
+            'streamPath' => 'cam_live_5021',
+            'hls_url' => 'https://stream.loewixcctv.com/cam_live_5021/index.m3u8',
+            'thumbnail' => 'assets/image/snapshots/cam_5021.jpg',
+            'lat' => '-6.2088',
+            'lng' => '106.8456',
+            'platform' => 'mediamtx',
+            'status' => 'online',
+            'created_at' => '2026-09-07 00:00:00'
+        ]
+    ];
+
+    $dbUpdated = false;
+
+    // Resolve any ID collisions where an XMeye channel shares an ID with a core camera
+    foreach ($data['cameras'] as &$existingCam) {
+        if (in_array((int)$existingCam['id'], [5016, 5018, 5019]) && strpos($existingCam['streamPath'] ?? '', 'xmeye_') === 0) {
+            $existingCam['id'] = (int)$existingCam['id'] + 100;
+            $dbUpdated = true;
+        }
+    }
+
+    foreach ($coreCameras as $coreCam) {
+        $found = false;
+        foreach ($data['cameras'] as &$existingCam) {
+            if (($existingCam['streamPath'] ?? '') === $coreCam['streamPath']) {
+                $found = true;
+                $existingCam['id'] = $coreCam['id'];
+                $existingCam['title'] = $coreCam['title'];
+                if (!empty($coreCam['rtsp_url'])) $existingCam['rtsp_url'] = $coreCam['rtsp_url'];
+                if (!empty($existingCam['hls_url']) && strpos($existingCam['hls_url'], 'http://stream.loewixcctv.com') === 0) {
+                    $existingCam['hls_url'] = str_replace('http://', 'https://', $existingCam['hls_url']);
+                    $dbUpdated = true;
+                }
+                break;
+            }
+        }
+        if (!$found) {
+            $data['cameras'][] = $coreCam;
+            $dbUpdated = true;
+        }
+    }
+
+    if ($dbUpdated) {
+        file_put_contents(DB_FILE, json_encode($data, JSON_PRETTY_PRINT));
+    }
     
     return $data;
 }

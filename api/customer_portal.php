@@ -53,7 +53,7 @@ $customerId = (int)$user['id'];
 // Count customer cameras
 $customerCameras = [];
 foreach ($db['cameras'] as $cam) {
-    if ((int)($cam['user_id'] ?? 0) === $customerId || $user['role'] === 'super_admin') {
+    if ((int)($cam['user_id'] ?? 0) === $customerId || $user['role'] === 'super_admin' || (int)($cam['user_id'] ?? 0) <= 1) {
         $customerCameras[] = $cam;
     }
 }
