@@ -7118,7 +7118,8 @@
           faceapi.nets.ssdMobilenetv1.loadFromUri(FACE_API_MODEL_URL).catch(e => console.warn('[FaceAPI] SSD model warning:', e)),
           faceapi.nets.tinyFaceDetector.loadFromUri(FACE_API_MODEL_URL),
           faceapi.nets.faceLandmark68TinyNet.loadFromUri(FACE_API_MODEL_URL),
-          faceapi.nets.faceRecognitionNet.loadFromUri(FACE_API_MODEL_URL)
+          faceapi.nets.faceRecognitionNet.loadFromUri(FACE_API_MODEL_URL),
+          faceapi.nets.ageGenderNet.loadFromUri(FACE_API_MODEL_URL).catch(e => console.warn('[FaceAPI] AgeGenderNet warning:', e))
         ]);
         faceAPIReady = true;
         faceAPILoading = false;
@@ -7263,10 +7264,10 @@
 
       // 2. If track is ALREADY locked to an established person:
       if (track.lockedPerson) {
-        // If distance has degraded beyond 0.58 for 4 frames, drop the lock
-        if (currentDistance > 0.58) {
+        // If distance degrades beyond 0.52 for 6 consecutive frames, drop the lock
+        if (currentDistance > 0.52) {
           track.candidateVotes['mismatch'] = (track.candidateVotes['mismatch'] || 0) + 1;
-          if (track.candidateVotes['mismatch'] >= 4) {
+          if (track.candidateVotes['mismatch'] >= 6) {
             track.lockedPerson = null;
             track.candidateVotes = {};
           }
@@ -7281,33 +7282,27 @@
         }
       }
 
-      // 3. Track not yet locked: Lock strictly on candidate match <= 0.58
-      if (candidateMatch && candidateFace && currentDistance <= 0.58) {
+      // 3. Track not yet locked: Only lock on genuine verified match (distance <= 0.52)
+      if (candidateMatch && candidateFace && currentDistance <= 0.52) {
         track.candidateVotes[candidateMatch] = (track.candidateVotes[candidateMatch] || 0) + 1;
-        track.lockedPerson = candidateFace;
-        track.lockedDistance = currentDistance;
-        return {
-          name: candidateFace.name,
-          face: candidateFace,
-          category: candidateFace.category || 'employee',
-          isMatch: true
-        };
+        // Require at least 2 consecutive positive match frames to lock identity
+        if (track.candidateVotes[candidateMatch] >= 2) {
+          track.lockedPerson = candidateFace;
+          track.lockedDistance = currentDistance;
+          return {
+            name: candidateFace.name,
+            face: candidateFace,
+            category: candidateFace.category || 'employee',
+            isMatch: true
+          };
+        }
       }
 
-      // 4. Fallback: If candidate face exists with valid distance
-      if (candidateFace && currentDistance <= 0.58) {
-        return {
-          name: candidateFace.name,
-          face: candidateFace,
-          category: candidateFace.category || 'employee',
-          isMatch: true
-        };
-      }
-
+      // 4. Default for unverified / visitor: Consistently STRANGER
       return {
-        name: 'Wajah Belum Terdaftar',
+        name: 'STRANGER',
         face: null,
-        category: 'unknown',
+        category: 'guest',
         isMatch: false
       };
     }
@@ -7519,21 +7514,6 @@
                       landmarks: headDet.landmarks ? (headDet.landmarks.positions || headDet.landmarks).map(p => ({ x: cropX + p.x * scaleBackX, y: cropY + p.y * scaleBackY })) : null,
                       descriptor: headDet.descriptor
                     });
-                  } else {
-                    const gLandmarks = [
-                      { x: cropX + cropW * 0.32, y: cropY + cropH * 0.38 },
-                      { x: cropX + cropW * 0.68, y: cropY + cropH * 0.38 },
-                      { x: cropX + cropW * 0.50, y: cropY + cropH * 0.55 },
-                      { x: cropX + cropW * 0.50, y: cropY + cropH * 0.75 },
-                      { x: cropX + cropW * 0.12, y: cropY + cropH * 0.45 },
-                      { x: cropX + cropW * 0.88, y: cropY + cropH * 0.45 }
-                    ];
-                    detections.push({
-                      box: { x: cropX, y: cropY, width: cropW, height: cropH },
-                      landmarks: { positions: gLandmarks },
-                      descriptor: null,
-                      score: 0.94
-                    });
                   }
                 }
               }
@@ -7579,22 +7559,11 @@
               }
             }
 
-            // Calibrated CCTV Recognition Distance Threshold: 0.58
-            let isMatch = activeTrackedFace ? true : (bestCandidate !== null && bestDist <= 0.58);
-            let matchedFaceObj = activeTrackedFace || (isMatch ? cachedAIFaces.find(f => f.name.toLowerCase() === bestCandidate.toLowerCase()) : null);
+            // Calibrated CCTV Face Matching: Strict <= 0.52 to prevent false identity mix-up
+            const isMatch = activeTrackedFace ? true : (bestCandidate !== null && desc !== null && bestDist <= 0.52);
+            const matchedFaceObj = activeTrackedFace || (isMatch ? cachedAIFaces.find(f => f.name.toLowerCase() === bestCandidate.toLowerCase()) : null);
 
-            // Special Warehouse Camera: Link verified standing person to registered Ricky/Staff
-            if (!isMatch && isCam162) {
-              const ricky = cachedAIFaces.find(f => f.name.toLowerCase().includes('ricky')) ||
-                            cachedAIFaces.find(f => f.name.toLowerCase().includes('wagyu'));
-              if (ricky && (desc === null || bestDist <= 0.65)) {
-                matchedFaceObj = ricky;
-                isMatch = true;
-                bestDist = 0.42;
-              }
-            }
-
-            // Stable physical centroid track
+            // Stable physical centroid track with hysteresis
             const track = getStableSpatialTrack(box, frameW, frameH);
             const stab = getStabilizedIdentityFromTrack(
               track,
@@ -7609,23 +7578,24 @@
             let labelName = 'STRANGER';
             let categoryType = 'guest';
 
-            if (stab.isMatch && stab.name && stab.name !== 'Wajah Belum Terdaftar' && stab.name !== 'STRANGER') {
-              const ratio = Math.max(0, 1 - (bestDist / 0.58));
-              conf = Math.min(99.4, (89.0 + (ratio * 10.4))).toFixed(1);
+            if (stab.isMatch && stab.name && stab.name !== 'STRANGER') {
+              const ratio = Math.max(0, 1 - (bestDist / 0.52));
+              conf = Math.min(99.4, (90.0 + (ratio * 9.4))).toFixed(1);
               labelName = stab.name.toUpperCase();
               categoryType = stab.category || 'employee';
             } else {
-              const rawScore = d.detection ? d.detection.score : (d.score || 0.86);
-              conf = Math.max(76.0, (rawScore * 100)).toFixed(1);
+              const rawScore = d.detection ? d.detection.score : (d.score || 0.82);
+              conf = Math.max(76.0, Math.min(95.0, (rawScore * 100))).toFixed(1);
               labelName = 'STRANGER';
               categoryType = 'guest';
             }
+
+            const detectedGender = d.gender ? d.gender : (stab.isMatch && stab.face ? stab.face.gender : null);
 
             results.push({
               name: labelName,
               face: stab.face,
               category: categoryType,
-              snapshot: createFaceCropSnapshot(frameCanvas, box, frameW, frameH),
               normBox: {
                 x: box.x / frameW,
                 y: box.y / frameH,
@@ -7641,6 +7611,8 @@
                 { x: (box.x + box.width * 0.88) / frameW, y: (box.y + box.height * 0.45) / frameH }
               ],
               confidence: conf,
+              gender: detectedGender,
+              snapshot: createFaceCropSnapshot(frameCanvas, box, frameW, frameH),
               isMatch: stab.isMatch
             });
           }
@@ -8029,7 +8001,7 @@
                 </tr>
                 <tr>
                   <td class="lbl">Gender:</td>
-                  <td class="val">${l.gender || 'Male'} &bull; <span class="text-muted">Mask: ${l.mask || 'Not worn'}</span></td>
+                  <td class="val">${l.gender && l.gender !== 'Male' && l.gender !== 'Female' ? l.gender : (l.gender === 'Female' ? 'Perempuan' : (l.gender === 'Male' ? 'Laki-laki' : 'Staff'))} &bull; <span class="text-muted">Mask: ${l.mask || 'Not worn'}</span></td>
                 </tr>
                 <tr>
                   <td class="lbl">Camera:</td>
@@ -8067,7 +8039,7 @@
                     </tr>
                     <tr>
                       <td class="lbl">Gender:</td>
-                      <td class="val">${l.gender || 'Male'} &bull; <span class="text-muted">Mask: ${l.mask || 'Not worn'}</span></td>
+                      <td class="val">${l.gender && l.gender !== 'Male' && l.gender !== 'Female' ? l.gender : (l.gender === 'Female' ? 'Perempuan' : (l.gender === 'Male' ? 'Laki-laki' : 'Pengunjung'))} &bull; <span class="text-muted">Mask: ${l.mask || 'Not worn'}</span></td>
                     </tr>
                     <tr>
                       <td class="lbl">Camera:</td>
@@ -8382,10 +8354,21 @@
               };
             });
 
-            // Smooth 60 FPS LERP Interpolation (0.35 factor) for zero-lag, silky tracking
-            activeAIEntities = targetEntities.map((t, idx) => {
-              const prev = activeAIEntities[idx];
-              if (!prev || typeof prev.x !== 'number') {
+            // Smooth spatial centroid tracking interpolation (Prevents boxes jumping across screen)
+            activeAIEntities = targetEntities.map((t) => {
+              let bestPrev = null;
+              let bestDist = 140;
+              for (const prev of activeAIEntities) {
+                if (typeof prev.x === 'number') {
+                  const dist = Math.hypot(t.targetX - prev.x, t.targetY - prev.y);
+                  if (dist < bestDist) {
+                    bestDist = dist;
+                    bestPrev = prev;
+                  }
+                }
+              }
+
+              if (!bestPrev) {
                 return {
                   ...t,
                   x: t.targetX,
@@ -8394,21 +8377,22 @@
                   h: t.targetH
                 };
               }
+
               return {
                 ...t,
-                x: Math.round(prev.x + (t.targetX - prev.x) * 0.35),
-                y: Math.round(prev.y + (t.targetY - prev.y) * 0.35),
-                w: Math.round(prev.w + (t.targetW - prev.w) * 0.35),
-                h: Math.round(prev.h + (t.targetH - prev.h) * 0.35)
+                x: Math.round(bestPrev.x + (t.targetX - bestPrev.x) * 0.40),
+                y: Math.round(bestPrev.y + (t.targetY - bestPrev.y) * 0.40),
+                w: Math.round(bestPrev.w + (t.targetW - bestPrev.w) * 0.40),
+                h: Math.round(bestPrev.h + (t.targetH - bestPrev.h) * 0.40)
               };
             });
 
-            // Auto-log and banner for detected faces (Instant on new face, 25s throttle for persistent presence)
+            // Auto-log and banner for detected faces (Instant on new face, 45s throttle for persistent presence)
             const primary = lastFaceAPIResult.faces[0];
             const pFace = primary.face || {};
             const personKey = primary.name;
             const isNewPerson = !window._lastAutoLogPerson || window._lastAutoLogPerson !== personKey;
-            const isIntervalPassed = !window._lastAutoLogTime || (now - window._lastAutoLogTime > 25000);
+            const isIntervalPassed = !window._lastAutoLogTime || (now - window._lastAutoLogTime > 45000);
 
             if (isNewPerson || isIntervalPassed) {
               window._lastAutoLogTime = now;
@@ -8417,7 +8401,7 @@
               if (isPrimaryKnown) {
                 showAIBanner(`${primary.name} (${pFace.role_title || 'Karyawan'})`, `Similarity: ${primary.confidence}% • Whitelist Matched`, pFace.category === 'vip' ? 'badge-success' : 'badge-primary', 'WHITELIST', 'fas fa-user-check', '#059669');
               } else {
-                showAIBanner(`STRANGER DETECTED`, `Pengunjung tidak dikenal terdeteksi (${primary.confidence}%)`, 'badge-warning', 'STRANGER', 'fas fa-user-clock', '#059669');
+                showAIBanner(`STRANGER DETECTED`, `Pengunjung tidak dikenal terdeteksi (${primary.confidence}%)`, 'badge-warning', 'STRANGER', 'fas fa-user-clock', '#d97706');
               }
               // Log all detected faces (Both Whitelist and Stranger!) to database & sidebar
               lastFaceAPIResult.faces.forEach(f => {
@@ -8432,13 +8416,14 @@
                 fd.append('label', f.name);
                 fd.append('category', isKnown ? (f.face.category || 'employee') : 'guest');
                 fd.append('confidence', f.confidence);
-                fd.append('snapshot', f.snapshot || '');
+                fd.append('snapshot', f.snapshot || 'assets/image/avatar-default.png');
                 if (isKnown && f.face && f.face.photo) {
                   fd.append('registered_photo', f.face.photo);
                 }
-                fd.append('gender', (f.face && f.face.gender) ? f.face.gender : 'Male');
-                fd.append('mask', 'Not worn');
-                fd.append('details', isKnown ? `${f.face.role_title || 'Staff'} • Whitelist Verified` : 'Stranger • Wajah Pengunjung Tidak Dikenal');
+                const detectedGender = f.gender ? (f.gender === 'female' ? 'Perempuan' : 'Laki-laki') : (isKnown ? (f.face.gender || 'Staff') : 'Pengunjung');
+                fd.append('gender', detectedGender);
+                fd.append('mask', f.mask || 'Not worn');
+                fd.append('details', isKnown ? `${f.face.role_title || 'Staff'} • Whitelist Verified` : 'Stranger • Pengunjung Tidak Terdaftar');
                 fd.append('timestamp', getLocalLogTimestamp());
                 fetch('../api/ai_analytics.php', { method: 'POST', body: fd }).then(() => loadAIData(true)).catch(e => {});
               });
@@ -8732,58 +8717,9 @@
           ctx.arc(pt.x, pt.y, 2.8, 0, Math.PI * 2);
           ctx.fill();
         });
-      } else {
-        // Fallback 5-Node Constellation
-        const landmarks = [
-          [cx - w * 0.18, cy - h * 0.12], // Left Eye
-          [cx + w * 0.18, cy - h * 0.12], // Right Eye
-          [cx, cy + h * 0.05],            // Nose Bridge
-          [cx - w * 0.14, cy + h * 0.22], // Mouth Left
-          [cx + w * 0.14, cy + h * 0.22]  // Mouth Right
-        ];
-
-        ctx.strokeStyle = isBlacklist ? 'rgba(239, 68, 68, 0.25)' : (isVIP ? 'rgba(16, 185, 129, 0.25)' : 'rgba(0, 240, 255, 0.25)');
-        ctx.lineWidth = 1;
-        ctx.setLineDash([2, 2]);
-        ctx.beginPath();
-        ctx.moveTo(landmarks[0][0], landmarks[0][1]);
-        ctx.lineTo(landmarks[1][0], landmarks[1][1]);
-        ctx.lineTo(landmarks[2][0], landmarks[2][1]);
-        ctx.lineTo(landmarks[0][0], landmarks[0][1]);
-        ctx.moveTo(landmarks[2][0], landmarks[2][1]);
-        ctx.lineTo(landmarks[3][0], landmarks[3][1]);
-        ctx.lineTo(landmarks[4][0], landmarks[4][1]);
-        ctx.lineTo(landmarks[2][0], landmarks[2][1]);
-        ctx.stroke();
-        ctx.setLineDash([]);
-
-        landmarks.forEach(([lx, ly]) => {
-          ctx.fillStyle = strokeColor;
-          ctx.shadowColor = glowColor;
-          ctx.shadowBlur = 8;
-          ctx.beginPath();
-          ctx.arc(lx, ly, 2.2, 0, Math.PI * 2);
-          ctx.fill();
-        });
       }
 
-      // 6. Center Biometric Target Reticle
-      ctx.strokeStyle = strokeColor;
-      ctx.lineWidth = 1;
-      ctx.shadowBlur = 4;
-      ctx.beginPath();
-      ctx.arc(cx, cy, 14, 0, Math.PI * 2);
-      ctx.stroke();
-
-      // Reticle Crosshairs
-      ctx.beginPath();
-      ctx.moveTo(cx - 8, cy);
-      ctx.lineTo(cx + 8, cy);
-      ctx.moveTo(cx, cy - 8);
-      ctx.lineTo(cx, cy + 8);
-      ctx.stroke();
-
-      // 7. Commercial VMS Identification Tag (Clean, directly above the face box as in Gambar 2)
+      // 6. Commercial VMS Identification Tag (Clean, directly above the face box as in Gambar 2)
       const cleanLabel = isUnknown ? 'Stranger' : String(label);
       ctx.font = '700 12px "Plus Jakarta Sans", sans-serif';
       const textW = ctx.measureText(cleanLabel).width;
