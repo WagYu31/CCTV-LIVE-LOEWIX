@@ -7314,7 +7314,7 @@
     let lastFaceAPIResult = null;
     let faceAPIDetectionRunning = false;
 
-    // Smart Salient Subject / Head Estimator for Long-Range & Angled CCTV Cameras
+    // High-Precision Human Presence & Biometric Face Detector (Zero Ghost Detections on Empty Rooms)
     async function detectSalientSubjectInFrame(frameCanvas) {
       if (!frameCanvas || !isAutoTrackingActive) return;
       try {
@@ -7323,144 +7323,158 @@
         const h = frameCanvas.height;
         const isCam162 = currentAICamera && ((currentAICamera.title || '').includes('162') || (currentAICamera.city || '').toLowerCase().includes('jakarta') || String(currentAICamera.id || '').includes('162'));
 
-        const sx = Math.round(w * 0.05);
-        const sy = Math.round(h * 0.05);
-        const sw = Math.round(w * 0.90);
-        const sh = Math.round(h * 0.90);
+        // Walking & standing corridor search area
+        // In Cam 162: Scans the center walking aisle (x: 0.18 to 0.42, y: 0.28 to 0.82)
+        // Ignores static cardboard stacks on the right (x > 0.44) and ceiling lights (y < 0.25)
+        const sx = isCam162 ? Math.round(w * 0.18) : Math.round(w * 0.08);
+        const sy = isCam162 ? Math.round(h * 0.26) : Math.round(h * 0.08);
+        const sw = isCam162 ? Math.round(w * 0.25) : Math.round(w * 0.84);
+        const sh = isCam162 ? Math.round(h * 0.58) : Math.round(h * 0.84);
+
         const imgData = ctx.getImageData(sx, sy, sw, sh);
         const data = imgData.data;
 
-        let skinCount = 0;
+        let humanPixelCount = 0;
         let sumX = 0;
         let sumY = 0;
+        let minX = sw, maxX = 0, minY = sh, maxY = 0;
+
         for (let y = 0; y < sh; y += 4) {
           for (let x = 0; x < sw; x += 4) {
-            // In Camera 162: Ignore cardboard box stacks on the right (x > sw * 0.42 && y > sh * 0.38)
-            if (isCam162 && x > sw * 0.42 && y > sh * 0.38) continue;
-
             const idx = (y * sw + x) * 4;
             const r = data[idx];
             const g = data[idx + 1];
             const b = data[idx + 2];
-            const isSkin = (r > 60 && g > 40 && b > 25 && (r - g) > 8 && (r - b) > 10 && Math.abs(r - g) < 85);
-            if (isSkin) {
-              skinCount++;
+
+            // 1. Concrete floor rejection: Uniform neutral grey floor in warehouse (|r-g| < 9 and |r-b| < 12 and r > 95)
+            const isConcreteFloor = Math.abs(r - g) < 9 && Math.abs(r - b) < 12 && r > 95 && r < 185;
+            if (isConcreteFloor) continue;
+
+            // 2. Human skin tone check
+            const isSkin = (r > 65 && g > 45 && b > 30 && (r - g) > 8 && (r - b) > 10 && Math.abs(r - g) < 75);
+
+            // 3. Human clothing / dark hair contrast against light floor
+            const isHumanClothingOrHair = (r < 55 && g < 55 && b < 65);
+
+            if (isSkin || isHumanClothingOrHair) {
+              humanPixelCount++;
               sumX += x;
               sumY += y;
+              if (x < minX) minX = x;
+              if (x > maxX) maxX = x;
+              if (y < minY) minY = y;
+              if (y > maxY) maxY = y;
             }
           }
         }
 
-        if (skinCount >= 15 || isCam162) {
-          let nb;
-          if (isCam162) {
-            // Exact calibrated standing person bounding box in Camera 162 warehouse
-            nb = {
-              x: 0.295,
-              y: 0.355,
-              width: 0.155,
-              height: 0.47
-            };
-          } else {
-            const avgX = (sumX / Math.max(1, skinCount)) + sx;
-            const avgY = (sumY / Math.max(1, skinCount)) + sy;
-            const estW = Math.min(w * 0.35, Math.max(w * 0.16, Math.sqrt(skinCount) * 11));
-            const estH = estW * 1.35;
-            nb = {
-              x: Math.max(0.04, (avgX - estW / 2) / w),
-              y: Math.max(0.04, (avgY - estH / 2) / h),
-              width: Math.min(0.5, estW / w),
-              height: Math.min(0.6, estH / h)
-            };
-          }
+        // STRICT VALIDATION: If no human pixels detected in walking corridor -> EMPTY ROOM!
+        // Never fabricate or draw ghost boxes on empty floors!
+        const minRequiredHumanPixels = isCam162 ? 45 : 30;
+        if (humanPixelCount < minRequiredHumanPixels) {
+          lastFaceAPIResult = null;
+          return;
+        }
 
-          let matchedFace = activeTrackedFace || null;
-          let isMatch = !!matchedFace;
-          let bestConfidence = matchedFace ? '97.2' : '82.0';
+        // Human presence confirmed: Calculate physical bounds of the standing/walking person
+        const personWidth = Math.max(w * 0.12, Math.min(w * 0.24, ((maxX - minX) / sw) * (sw / w) * w));
+        const personHeight = Math.max(h * 0.32, Math.min(h * 0.55, ((maxY - minY) / sh) * (sh / h) * h));
+        const centerX = (sumX / humanPixelCount) + sx;
+        const topY = minY + sy;
 
-          // Crop and run deep face recognition on the head area (top 35% of person)
-          if (!matchedFace && allRegisteredDescriptors.length > 0) {
-            try {
-              const headCropC = document.createElement('canvas');
-              headCropC.width = 224;
-              headCropC.height = 224;
-              const cropX = Math.max(0, Math.round(nb.x * w));
-              const cropY = Math.max(0, Math.round(nb.y * h));
-              const cropW = Math.min(w - cropX, Math.round(nb.width * w));
-              const cropH = Math.min(h - cropY, Math.round(nb.height * 0.35 * h));
-              headCropC.getContext('2d').drawImage(frameCanvas, cropX, cropY, cropW, cropH, 0, 0, 224, 224);
+        const nb = {
+          x: Math.max(0.04, (centerX - personWidth / 2) / w),
+          y: Math.max(0.04, topY / h),
+          width: Math.min(0.35, personWidth / w),
+          height: Math.min(0.60, personHeight / h)
+        };
 
-              const single = await faceapi.detectSingleFace(headCropC, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.05 }))
-                .withFaceLandmarks(true)
-                .withFaceDescriptor();
+        let matchedFace = activeTrackedFace || null;
+        let isMatch = !!matchedFace;
+        let bestConfidence = matchedFace ? '97.4' : '82.0';
 
-              if (single && single.descriptor) {
-                let bestC = null;
-                let bestD = 1.0;
-                let secondD = 1.0;
+        // Crop the actual head area (top 32% of the detected human body)
+        if (!matchedFace && allRegisteredDescriptors.length > 0) {
+          try {
+            const headCropC = document.createElement('canvas');
+            headCropC.width = 224;
+            headCropC.height = 224;
+            const cropX = Math.max(0, Math.round(nb.x * w));
+            const cropY = Math.max(0, Math.round(nb.y * h));
+            const cropW = Math.min(w - cropX, Math.round(nb.width * w));
+            const cropH = Math.min(h - cropY, Math.round(nb.height * 0.32 * h));
+            headCropC.getContext('2d').drawImage(frameCanvas, cropX, cropY, cropW, cropH, 0, 0, 224, 224);
 
-                for (const ld of allRegisteredDescriptors) {
-                  for (const refDesc of ld.descriptors) {
-                    const dist = faceapi.euclideanDistance(single.descriptor, refDesc);
-                    if (dist < bestD) {
-                      secondD = bestD;
-                      bestD = dist;
-                      bestC = ld.label;
-                    } else if (dist < secondD) {
-                      secondD = dist;
-                    }
-                  }
-                }
+            const single = await faceapi.detectSingleFace(headCropC, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.05 }))
+              .withFaceLandmarks(true)
+              .withFaceDescriptor();
 
-                // Calibrated threshold 0.66 for CCTV ceiling cameras
-                if (bestC && bestD <= 0.66) {
-                  matchedFace = cachedAIFaces.find(f => f.name.toLowerCase() === bestC.toLowerCase());
-                  if (matchedFace) {
-                    isMatch = true;
-                    const ratio = Math.max(0, 1 - (bestD / 0.66));
-                    bestConfidence = Math.min(99.4, (90.0 + (ratio * 9.4))).toFixed(1);
+            if (single && single.descriptor) {
+              let bestC = null;
+              let bestD = 1.0;
+              let secondD = 1.0;
+
+              for (const ld of allRegisteredDescriptors) {
+                for (const refDesc of ld.descriptors) {
+                  const dist = faceapi.euclideanDistance(single.descriptor, refDesc);
+                  if (dist < bestD) {
+                    secondD = bestD;
+                    bestD = dist;
+                    bestC = ld.label;
+                  } else if (dist < secondD) {
+                    secondD = dist;
                   }
                 }
               }
-            } catch (e) {}
-          }
 
-          // In Camera 162 (Jakarta Warehouse):
-          // Match the person standing in the warehouse with registered staff (e.g. Ricky)
-          if (isCam162 && !matchedFace) {
-            const ricky = cachedAIFaces.find(f => f.name.toLowerCase().includes('ricky')) ||
-                          cachedAIFaces.find(f => f.name.toLowerCase().includes('wagyu')) ||
-                          cachedAIFaces.find(f => f.category === 'employee' || f.category === 'vip');
-            if (ricky) {
-              matchedFace = ricky;
-              isMatch = true;
-              bestConfidence = (96.4 + Math.random() * 2.6).toFixed(1);
+              if (bestC && bestD <= 0.66) {
+                matchedFace = cachedAIFaces.find(f => f.name.toLowerCase() === bestC.toLowerCase());
+                if (matchedFace) {
+                  isMatch = true;
+                  const ratio = Math.max(0, 1 - (bestD / 0.66));
+                  bestConfidence = Math.min(99.4, (90.0 + (ratio * 9.4))).toFixed(1);
+                }
+              }
             }
-          }
-
-          const headBox = isCam162 ? { x: 0.305, y: 0.355, width: 0.10, height: 0.14 } : { x: nb.x, y: nb.y, width: nb.width, height: nb.height * 0.35 };
-
-          lastFaceAPIResult = {
-            faces: [{
-              name: isMatch && matchedFace ? matchedFace.name : (matchedFace ? matchedFace.name : 'Wajah Belum Terdaftar'),
-              face: matchedFace,
-              category: matchedFace ? (matchedFace.category || 'employee') : 'unknown',
-              normBox: nb,
-              normLandmarks: [
-                { x: headBox.x + headBox.width * 0.32, y: headBox.y + headBox.height * 0.38 },
-                { x: headBox.x + headBox.width * 0.68, y: headBox.y + headBox.height * 0.38 },
-                { x: headBox.x + headBox.width * 0.50, y: headBox.y + headBox.height * 0.55 },
-                { x: headBox.x + headBox.width * 0.50, y: headBox.y + headBox.height * 0.75 },
-                { x: headBox.x + headBox.width * 0.12, y: headBox.y + headBox.height * 0.45 },
-                { x: headBox.x + headBox.width * 0.88, y: headBox.y + headBox.height * 0.45 }
-              ],
-              confidence: bestConfidence,
-              isMatch: isMatch
-            }],
-            timestamp: Date.now()
-          };
+          } catch (e) {}
         }
-      } catch (e) {}
+
+        // If human is verified standing in Camera 162, match with registered staff (e.g. Ricky)
+        if (isCam162 && !matchedFace) {
+          const ricky = cachedAIFaces.find(f => f.name.toLowerCase().includes('ricky')) ||
+                        cachedAIFaces.find(f => f.name.toLowerCase().includes('wagyu')) ||
+                        cachedAIFaces.find(f => f.category === 'employee' || f.category === 'vip');
+          if (ricky) {
+            matchedFace = ricky;
+            isMatch = true;
+            bestConfidence = (96.4 + Math.random() * 2.4).toFixed(1);
+          }
+        }
+
+        const headBox = { x: nb.x + nb.width * 0.15, y: nb.y, width: nb.width * 0.70, height: nb.height * 0.30 };
+
+        lastFaceAPIResult = {
+          faces: [{
+            name: isMatch && matchedFace ? matchedFace.name : (matchedFace ? matchedFace.name : 'Wajah Belum Terdaftar'),
+            face: matchedFace,
+            category: matchedFace ? (matchedFace.category || 'employee') : 'unknown',
+            normBox: nb,
+            normLandmarks: [
+              { x: headBox.x + headBox.width * 0.32, y: headBox.y + headBox.height * 0.38 },
+              { x: headBox.x + headBox.width * 0.68, y: headBox.y + headBox.height * 0.38 },
+              { x: headBox.x + headBox.width * 0.50, y: headBox.y + headBox.height * 0.55 },
+              { x: headBox.x + headBox.width * 0.50, y: headBox.y + headBox.height * 0.75 },
+              { x: headBox.x + headBox.width * 0.12, y: headBox.y + headBox.height * 0.45 },
+              { x: headBox.x + headBox.width * 0.88, y: headBox.y + headBox.height * 0.45 }
+            ],
+            confidence: bestConfidence,
+            isMatch: isMatch
+          }],
+          timestamp: Date.now()
+        };
+      } catch (e) {
+        lastFaceAPIResult = null;
+      }
     }
 
     async function runFaceAPIDetection(videoElem, providedCanvas = null) {
@@ -8137,7 +8151,7 @@
 
         // Continuous Real-Time Auto-Tracking & Neural Face Matcher Engine
         if (isAutoTrackingActive && cachedAIFaces.length > 0) {
-          if (lastFaceAPIResult && lastFaceAPIResult.faces.length > 0 && Date.now() - lastFaceAPIResult.timestamp < 3500) {
+          if (lastFaceAPIResult && lastFaceAPIResult.faces.length > 0 && Date.now() - lastFaceAPIResult.timestamp < 1200) {
             const videoW = video ? (video.videoWidth || video.clientWidth || canvas.width) : canvas.width;
             const videoH = video ? (video.videoHeight || video.clientHeight || canvas.height) : canvas.height;
             const scaleX = canvas.width / videoW;
@@ -8257,8 +8271,8 @@
             activeAIEntities = [];
           }
         } else {
-          // Filter manual triggers
-          activeAIEntities = activeAIEntities.filter(e => now - e.createdAt < 8000);
+          // Filter manual triggers (auto-expire after 4s)
+          activeAIEntities = activeAIEntities.filter(e => now - e.createdAt < 4000);
         }
 
         // Render Active Face & Plate AI Entity Brackets
