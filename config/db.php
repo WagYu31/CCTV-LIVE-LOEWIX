@@ -492,6 +492,222 @@ function get_db_data() {
             'created_at' => '2026-08-15 00:00:00'
         ],
         [
+            'id' => 5004,
+            'user_id' => 1,
+            'title' => 'TEST L02',
+            'city' => 'siantar',
+            'connection_type' => 'xmeye_p2p',
+            'serial_number' => '2be21ca7a3021e5c',
+            'channel' => 1,
+            'stream_quality' => 'sub',
+            'streamPath' => 'xmeye_2be21ca7a3021e5c_ch1',
+            'hls_url' => 'https://stream.loewixcctv.com/xmeye_2be21ca7a3021e5c_ch1/index.m3u8',
+            'thumbnail' => 'assets/image/thumbnail/default-thumbnail.png',
+            'lat' => '2.9568',
+            'lng' => '99.0619',
+            'platform' => 'xmeye_p2p',
+            'status' => 'online',
+            'created_at' => '2026-08-20 10:00:00'
+        ],
+        [
+            'id' => 5005,
+            'user_id' => 1,
+            'title' => 'I 5MP',
+            'city' => 'siantar',
+            'connection_type' => 'xmeye_p2p',
+            'serial_number' => '552531553268b7f7',
+            'channel' => 1,
+            'stream_quality' => 'sub',
+            'streamPath' => 'xmeye_552531553268b7f7_ch1',
+            'hls_url' => 'https://stream.loewixcctv.com/xmeye_552531553268b7f7_ch1/index.m3u8',
+            'thumbnail' => 'assets/image/thumbnail/default-thumbnail.png',
+            'lat' => '2.9568',
+            'lng' => '99.0619',
+            'platform' => 'xmeye_p2p',
+            'status' => 'online',
+            'created_at' => '2026-08-20 10:00:00'
+        ],
+        [
+            'id' => 5006,
+            'user_id' => 1,
+            'title' => 'I 6MP',
+            'city' => 'siantar',
+            'connection_type' => 'xmeye_p2p',
+            'serial_number' => 'b130901412a6d884',
+            'channel' => 1,
+            'stream_quality' => 'sub',
+            'streamPath' => 'xmeye_b130901412a6d884_ch1',
+            'hls_url' => 'https://stream.loewixcctv.com/xmeye_b130901412a6d884_ch1/index.m3u8',
+            'thumbnail' => 'assets/image/thumbnail/default-thumbnail.png',
+            'lat' => '2.9568',
+            'lng' => '99.0619',
+            'platform' => 'xmeye_p2p',
+            'status' => 'online',
+            'created_at' => '2026-08-20 10:00:00'
+        ],
+        [
+            'id' => 5007,
+            'user_id' => 1,
+            'title' => 'I 4MP',
+            'city' => 'siantar',
+            'connection_type' => 'xmeye_p2p',
+            'serial_number' => '2bac673c046ec1df',
+            'channel' => 1,
+            'stream_quality' => 'sub',
+            'streamPath' => 'xmeye_2bac673c046ec1df_ch1',
+            'hls_url' => 'https://stream.loewixcctv.com/xmeye_2bac673c046ec1df_ch1/index.m3u8',
+            'thumbnail' => 'assets/image/thumbnail/default-thumbnail.png',
+            'lat' => '2.9568',
+            'lng' => '99.0619',
+            'platform' => 'xmeye_p2p',
+            'status' => 'online',
+            'created_at' => '2026-08-20 10:00:00'
+        ],
+        [
+            'id' => 5008,
+            'user_id' => 1,
+            'title' => 'I 6MP THAI',
+            'city' => 'siantar',
+            'connection_type' => 'xmeye_p2p',
+            'serial_number' => '1d1cfe889bd2a81e',
+            'channel' => 1,
+            'stream_quality' => 'sub',
+            'streamPath' => 'xmeye_1d1cfe889bd2a81e_ch1',
+            'hls_url' => 'https://stream.loewixcctv.com/xmeye_1d1cfe889bd2a81e_ch1/index.m3u8',
+            'thumbnail' => 'assets/image/thumbnail/default-thumbnail.png',
+            'lat' => '2.9568',
+            'lng' => '99.0619',
+            'platform' => 'xmeye_p2p',
+            'status' => 'online',
+            'created_at' => '2026-08-20 10:00:00'
+        ],
+        [
+            'id' => 5009,
+            'user_id' => 1,
+            'title' => 'T01 THAI',
+            'city' => 'siantar',
+            'connection_type' => 'xmeye_p2p',
+            'serial_number' => '2be21ca7a3021e5c',
+            'channel' => 2,
+            'stream_quality' => 'sub',
+            'streamPath' => 'xmeye_2be21ca7a3021e5c_ch2',
+            'hls_url' => 'https://stream.loewixcctv.com/xmeye_2be21ca7a3021e5c_ch2/index.m3u8',
+            'thumbnail' => 'assets/image/thumbnail/default-thumbnail.png',
+            'lat' => '2.9568',
+            'lng' => '99.0619',
+            'platform' => 'xmeye_p2p',
+            'status' => 'online',
+            'created_at' => '2026-08-20 10:00:00'
+        ],
+        [
+            'id' => 5010,
+            'user_id' => 1,
+            'title' => 'T02 THAI',
+            'city' => 'siantar',
+            'connection_type' => 'xmeye_p2p',
+            'serial_number' => 'a66f19761130fe4e',
+            'channel' => 1,
+            'stream_quality' => 'sub',
+            'streamPath' => 'xmeye_a66f19761130fe4e_ch1',
+            'hls_url' => 'https://stream.loewixcctv.com/xmeye_a66f19761130fe4e_ch1/index.m3u8',
+            'thumbnail' => 'assets/image/thumbnail/default-thumbnail.png',
+            'lat' => '2.9568',
+            'lng' => '99.0619',
+            'platform' => 'xmeye_p2p',
+            'status' => 'online',
+            'created_at' => '2026-08-20 10:00:00'
+        ],
+        [
+            'id' => 5011,
+            'user_id' => 1,
+            'title' => 'T04 THAI',
+            'city' => 'siantar',
+            'connection_type' => 'xmeye_p2p',
+            'serial_number' => '41a01f71ae5d167f',
+            'channel' => 1,
+            'stream_quality' => 'sub',
+            'streamPath' => 'xmeye_41a01f71ae5d167f_ch1',
+            'hls_url' => 'https://stream.loewixcctv.com/xmeye_41a01f71ae5d167f_ch1/index.m3u8',
+            'thumbnail' => 'assets/image/thumbnail/default-thumbnail.png',
+            'lat' => '2.9568',
+            'lng' => '99.0619',
+            'platform' => 'xmeye_p2p',
+            'status' => 'online',
+            'created_at' => '2026-08-20 10:00:00'
+        ],
+        [
+            'id' => 5012,
+            'user_id' => 1,
+            'title' => 'L03',
+            'city' => 'siantar',
+            'connection_type' => 'xmeye_p2p',
+            'serial_number' => 'ff04b1e4876d928c',
+            'channel' => 1,
+            'stream_quality' => 'sub',
+            'streamPath' => 'xmeye_ff04b1e4876d928c_ch1',
+            'hls_url' => 'https://stream.loewixcctv.com/xmeye_ff04b1e4876d928c_ch1/index.m3u8',
+            'thumbnail' => 'assets/image/thumbnail/default-thumbnail.png',
+            'lat' => '2.9568',
+            'lng' => '99.0619',
+            'platform' => 'xmeye_p2p',
+            'status' => 'online',
+            'created_at' => '2026-08-20 10:00:00'
+        ],
+        [
+            'id' => 5013,
+            'user_id' => 1,
+            'title' => 'L05',
+            'city' => 'siantar',
+            'connection_type' => 'xmeye_p2p',
+            'serial_number' => 'aa044fa9e30cc4a0',
+            'channel' => 1,
+            'stream_quality' => 'sub',
+            'streamPath' => 'xmeye_aa044fa9e30cc4a0_ch1',
+            'hls_url' => 'https://stream.loewixcctv.com/xmeye_aa044fa9e30cc4a0_ch1/index.m3u8',
+            'thumbnail' => 'assets/image/thumbnail/default-thumbnail.png',
+            'lat' => '2.9568',
+            'lng' => '99.0619',
+            'platform' => 'xmeye_p2p',
+            'status' => 'online',
+            'created_at' => '2026-08-20 10:00:00'
+        ],
+        [
+            'id' => 5014,
+            'user_id' => 1,
+            'title' => 'T 8MP S THAI',
+            'city' => 'siantar',
+            'connection_type' => 'xmeye_p2p',
+            'serial_number' => 'cbd53157b083f5cderb5',
+            'channel' => 1,
+            'stream_quality' => 'sub',
+            'streamPath' => 'xmeye_cbd53157b083f5cderb5_ch1',
+            'hls_url' => 'https://stream.loewixcctv.com/xmeye_cbd53157b083f5cderb5_ch1/index.m3u8',
+            'thumbnail' => 'assets/image/thumbnail/default-thumbnail.png',
+            'lat' => '2.9568',
+            'lng' => '99.0619',
+            'platform' => 'xmeye_p2p',
+            'status' => 'online',
+            'created_at' => '2026-08-20 10:00:00'
+        ],
+        [
+            'id' => 5015,
+            'user_id' => 1,
+            'title' => 'T 8MP LOW',
+            'city' => 'siantar',
+            'connection_type' => 'xmeye_p2p',
+            'serial_number' => '658989a30234a35dmpd7',
+            'channel' => 1,
+            'stream_quality' => 'sub',
+            'streamPath' => 'xmeye_658989a30234a35dmpd7_ch1',
+            'hls_url' => 'https://stream.loewixcctv.com/xmeye_658989a30234a35dmpd7_ch1/index.m3u8',
+            'thumbnail' => 'assets/image/thumbnail/default-thumbnail.png',
+            'lat' => '2.9568',
+            'lng' => '99.0619',
+            'platform' => 'xmeye_p2p',
+            'status' => 'online',
+            'created_at' => '2026-08-20 10:00:00'
+        ],
+        [
             'id' => 5016,
             'user_id' => 1,
             'title' => 'TEST DDNS 1',
@@ -570,29 +786,197 @@ function get_db_data() {
             'platform' => 'mediamtx',
             'status' => 'online',
             'created_at' => '2026-09-07 00:00:00'
+        ],
+        [
+            'id' => 5022,
+            'user_id' => 1,
+            'title' => 'NVR 16 TEST (CH 1)',
+            'city' => 'siantar',
+            'connection_type' => 'xmeye_p2p',
+            'serial_number' => 'b4cd29eeee6fa7c7crc6',
+            'channel' => 1,
+            'stream_quality' => 'sub',
+            'streamPath' => 'xmeye_b4cd29eeee6fa7c7crc6_ch1',
+            'hls_url' => 'https://stream.loewixcctv.com/xmeye_b4cd29eeee6fa7c7crc6_ch1/index.m3u8',
+            'thumbnail' => 'assets/image/thumbnail/default-thumbnail.png',
+            'lat' => '2.9568',
+            'lng' => '99.0619',
+            'platform' => 'xmeye_p2p',
+            'status' => 'online',
+            'created_at' => '2026-08-25 10:00:00'
+        ],
+        [
+            'id' => 5023,
+            'user_id' => 1,
+            'title' => 'NVR 16 TEST (CH 2)',
+            'city' => 'siantar',
+            'connection_type' => 'xmeye_p2p',
+            'serial_number' => 'b4cd29eeee6fa7c7crc6',
+            'channel' => 2,
+            'stream_quality' => 'sub',
+            'streamPath' => 'xmeye_b4cd29eeee6fa7c7crc6_ch2',
+            'hls_url' => 'https://stream.loewixcctv.com/xmeye_b4cd29eeee6fa7c7crc6_ch2/index.m3u8',
+            'thumbnail' => 'assets/image/thumbnail/default-thumbnail.png',
+            'lat' => '2.9568',
+            'lng' => '99.0619',
+            'platform' => 'xmeye_p2p',
+            'status' => 'online',
+            'created_at' => '2026-08-25 10:00:00'
+        ],
+        [
+            'id' => 5024,
+            'user_id' => 1,
+            'title' => 'NVR 16 TEST (CH 3)',
+            'city' => 'siantar',
+            'connection_type' => 'xmeye_p2p',
+            'serial_number' => 'b4cd29eeee6fa7c7crc6',
+            'channel' => 3,
+            'stream_quality' => 'sub',
+            'streamPath' => 'xmeye_b4cd29eeee6fa7c7crc6_ch3',
+            'hls_url' => 'https://stream.loewixcctv.com/xmeye_b4cd29eeee6fa7c7crc6_ch3/index.m3u8',
+            'thumbnail' => 'assets/image/thumbnail/default-thumbnail.png',
+            'lat' => '2.9568',
+            'lng' => '99.0619',
+            'platform' => 'xmeye_p2p',
+            'status' => 'online',
+            'created_at' => '2026-08-25 10:00:00'
+        ],
+        [
+            'id' => 5025,
+            'user_id' => 1,
+            'title' => 'NVR 16 TEST (CH 4)',
+            'city' => 'siantar',
+            'connection_type' => 'xmeye_p2p',
+            'serial_number' => 'b4cd29eeee6fa7c7crc6',
+            'channel' => 4,
+            'stream_quality' => 'sub',
+            'streamPath' => 'xmeye_b4cd29eeee6fa7c7crc6_ch4',
+            'hls_url' => 'https://stream.loewixcctv.com/xmeye_b4cd29eeee6fa7c7crc6_ch4/index.m3u8',
+            'thumbnail' => 'assets/image/thumbnail/default-thumbnail.png',
+            'lat' => '2.9568',
+            'lng' => '99.0619',
+            'platform' => 'xmeye_p2p',
+            'status' => 'online',
+            'created_at' => '2026-08-25 10:00:00'
+        ],
+        [
+            'id' => 5026,
+            'user_id' => 1,
+            'title' => 'NVR 16 TEST (CH 5)',
+            'city' => 'siantar',
+            'connection_type' => 'xmeye_p2p',
+            'serial_number' => 'b4cd29eeee6fa7c7crc6',
+            'channel' => 5,
+            'stream_quality' => 'sub',
+            'streamPath' => 'xmeye_b4cd29eeee6fa7c7crc6_ch5',
+            'hls_url' => 'https://stream.loewixcctv.com/xmeye_b4cd29eeee6fa7c7crc6_ch5/index.m3u8',
+            'thumbnail' => 'assets/image/thumbnail/default-thumbnail.png',
+            'lat' => '2.9568',
+            'lng' => '99.0619',
+            'platform' => 'xmeye_p2p',
+            'status' => 'online',
+            'created_at' => '2026-08-25 10:00:00'
+        ],
+        [
+            'id' => 5027,
+            'user_id' => 1,
+            'title' => 'NVR 16 TEST (CH 6)',
+            'city' => 'siantar',
+            'connection_type' => 'xmeye_p2p',
+            'serial_number' => 'b4cd29eeee6fa7c7crc6',
+            'channel' => 6,
+            'stream_quality' => 'sub',
+            'streamPath' => 'xmeye_b4cd29eeee6fa7c7crc6_ch6',
+            'hls_url' => 'https://stream.loewixcctv.com/xmeye_b4cd29eeee6fa7c7crc6_ch6/index.m3u8',
+            'thumbnail' => 'assets/image/thumbnail/default-thumbnail.png',
+            'lat' => '2.9568',
+            'lng' => '99.0619',
+            'platform' => 'xmeye_p2p',
+            'status' => 'online',
+            'created_at' => '2026-08-25 10:00:00'
+        ],
+        [
+            'id' => 5028,
+            'user_id' => 1,
+            'title' => 'NVR 16 TEST (CH 7)',
+            'city' => 'siantar',
+            'connection_type' => 'xmeye_p2p',
+            'serial_number' => 'b4cd29eeee6fa7c7crc6',
+            'channel' => 7,
+            'stream_quality' => 'sub',
+            'streamPath' => 'xmeye_b4cd29eeee6fa7c7crc6_ch7',
+            'hls_url' => 'https://stream.loewixcctv.com/xmeye_b4cd29eeee6fa7c7crc6_ch7/index.m3u8',
+            'thumbnail' => 'assets/image/thumbnail/default-thumbnail.png',
+            'lat' => '2.9568',
+            'lng' => '99.0619',
+            'platform' => 'xmeye_p2p',
+            'status' => 'online',
+            'created_at' => '2026-08-25 10:00:00'
+        ],
+        [
+            'id' => 5030,
+            'user_id' => 1,
+            'title' => 'YAMAHA DDS',
+            'city' => 'jakarta',
+            'connection_type' => 'rtsp',
+            'streamPath' => 'cctv_loewix_yamaha',
+            'hls_url' => 'https://stream.loewixcctv.com/cctv_loewix_1/index.m3u8',
+            'thumbnail' => 'assets/image/thumbnail/default-thumbnail.png',
+            'lat' => '-6.2088',
+            'lng' => '106.8456',
+            'platform' => 'mediamtx',
+            'status' => 'online',
+            'created_at' => '2026-08-14 00:00:00'
         ]
     ];
 
-    $dbUpdated = false;
-
-    // Resolve any ID collisions where an XMeye channel shares an ID with a core camera
-    foreach ($data['cameras'] as &$existingCam) {
-        if (in_array((int)$existingCam['id'], [5016, 5018, 5019]) && strpos($existingCam['streamPath'] ?? '', 'xmeye_') === 0) {
-            $existingCam['id'] = (int)$existingCam['id'] + 100;
-            $dbUpdated = true;
-        }
+    for ($ch = 1; $ch <= 16; $ch++) {
+        $coreCameras[] = [
+            'id' => 5040 + $ch,
+            'user_id' => 1,
+            'title' => "TESTING SELASA (CH {$ch})",
+            'city' => 'siantar',
+            'connection_type' => 'xmeye_p2p',
+            'serial_number' => '848f3922aa2875eb',
+            'device_user' => 'admin',
+            'device_pass' => 'LoewixL12',
+            'channel' => $ch,
+            'stream_quality' => 'sub',
+            'streamPath' => "xmeye_848f3922aa2875eb_ch{$ch}",
+            'hls_url' => "https://stream.loewixcctv.com/xmeye_848f3922aa2875eb_ch{$ch}/index.m3u8",
+            'thumbnail' => 'assets/image/thumbnail/default-thumbnail.png',
+            'lat' => '2.9568',
+            'lng' => '99.0619',
+            'platform' => 'xmeye_p2p',
+            'status' => 'online',
+            'created_at' => '2026-08-18 18:00:00'
+        ];
     }
+
+    $dbUpdated = false;
 
     foreach ($coreCameras as $coreCam) {
         $found = false;
         foreach ($data['cameras'] as &$existingCam) {
-            if (($existingCam['streamPath'] ?? '') === $coreCam['streamPath']) {
+            $isSameStream = (!empty($coreCam['streamPath']) && ($existingCam['streamPath'] ?? '') === $coreCam['streamPath']);
+            $isSameSN = (!empty($coreCam['serial_number']) && ($existingCam['serial_number'] ?? '') === $coreCam['serial_number'] && (int)($existingCam['channel'] ?? 1) === (int)($coreCam['channel'] ?? 1));
+            $isSameId = ((int)($existingCam['id'] ?? 0) === (int)$coreCam['id']);
+
+            if ($isSameStream || $isSameSN || $isSameId) {
                 $found = true;
                 $existingCam['id'] = $coreCam['id'];
                 $existingCam['title'] = $coreCam['title'];
+                $existingCam['city'] = $coreCam['city'];
+                $existingCam['connection_type'] = $coreCam['connection_type'];
+                if (!empty($coreCam['serial_number'])) $existingCam['serial_number'] = $coreCam['serial_number'];
+                if (!empty($coreCam['channel'])) $existingCam['channel'] = $coreCam['channel'];
+                if (!empty($coreCam['device_user'])) $existingCam['device_user'] = $coreCam['device_user'];
+                if (!empty($coreCam['device_pass'])) $existingCam['device_pass'] = $coreCam['device_pass'];
+                if (!empty($coreCam['stream_quality'])) $existingCam['stream_quality'] = $coreCam['stream_quality'];
                 if (!empty($coreCam['rtsp_url'])) $existingCam['rtsp_url'] = $coreCam['rtsp_url'];
-                if (!empty($existingCam['hls_url']) && strpos($existingCam['hls_url'], 'http://stream.loewixcctv.com') === 0) {
-                    $existingCam['hls_url'] = str_replace('http://', 'https://', $existingCam['hls_url']);
+                if (!empty($coreCam['streamPath'])) $existingCam['streamPath'] = $coreCam['streamPath'];
+                if (empty($existingCam['hls_url']) || strpos($existingCam['hls_url'], 'http://') === 0) {
+                    $existingCam['hls_url'] = $coreCam['hls_url'];
                     $dbUpdated = true;
                 }
                 break;

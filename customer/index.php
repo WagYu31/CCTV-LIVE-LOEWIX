@@ -7747,9 +7747,11 @@
       if (Array.isArray(customerCameras) && customerCameras.length > 0) {
         customerCameras.forEach((cam, idx) => {
           const statusIcon = cam.status !== 'offline' ? '🟢' : '🔴';
-          const cityStr = cam.city ? ` [${cam.city.toUpperCase()}]` : '';
-          const isSelected = (currentVal && currentVal == cam.id) || (!currentVal && (cam.id == 5021 || cam.title.includes('162'))) ? 'selected' : '';
-          html += `<option value="${cam.id}" ${isSelected}>📹 ${statusIcon} ${cam.title}${cityStr}</option>`;
+          const title = cam.title || 'Camera';
+          const cityUpper = (cam.city || '').toUpperCase();
+          const cityStr = (cityUpper && !title.toUpperCase().includes(`[${cityUpper}]`)) ? ` [${cityUpper}]` : '';
+          const isSelected = (currentVal && currentVal == cam.id) || (!currentVal && (cam.id == 5021 || title.includes('162'))) ? 'selected' : '';
+          html += `<option value="${cam.id}" ${isSelected}>📹 ${statusIcon} ${title}${cityStr}</option>`;
         });
       } else {
         html += '<option value="5021" selected>📹 🟢 162 [JAKARTA]</option>';
@@ -8472,8 +8474,9 @@
         ctx.save();
         const dateStr = new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
         const timeStr = new Date().toLocaleTimeString('id-ID');
-        const activeCamTitle = currentAICamera ? currentAICamera.title.toUpperCase() : (Array.isArray(customerCameras) && customerCameras[0] ? customerCameras[0].title.toUpperCase() : 'YAMAHA DDS');
-        const activeCamCity = currentAICamera && currentAICamera.city ? ` [${currentAICamera.city.toUpperCase()}]` : '';
+        const activeCamTitle = currentAICamera ? currentAICamera.title.toUpperCase() : (Array.isArray(customerCameras) && customerCameras[0] ? customerCameras[0].title.toUpperCase() : '162 [JAKARTA]');
+        const cityUpper = currentAICamera && currentAICamera.city ? currentAICamera.city.toUpperCase() : '';
+        const activeCamCity = (cityUpper && !activeCamTitle.includes(`[${cityUpper}]`)) ? ` [${cityUpper}]` : '';
 
         // Dynamically update the top-left HTML status pill without any overlapping text!
         const statusTextElem = document.getElementById('ai-hud-status-text');
@@ -8623,8 +8626,9 @@
       ctx.fillStyle = '#ef4444';
       ctx.fillText('🔴 REC', 18, 30);
 
-      const activeCamTitle = currentAICamera ? currentAICamera.title.toUpperCase() : (Array.isArray(customerCameras) && customerCameras[0] ? customerCameras[0].title.toUpperCase() : 'YAMAHA DDS');
-      const activeCamCity = currentAICamera && currentAICamera.city ? ` [${currentAICamera.city.toUpperCase()}]` : '';
+      const activeCamTitle = currentAICamera ? currentAICamera.title.toUpperCase() : (Array.isArray(customerCameras) && customerCameras[0] ? customerCameras[0].title.toUpperCase() : '162 [JAKARTA]');
+      const cityUpper = currentAICamera && currentAICamera.city ? currentAICamera.city.toUpperCase() : '';
+      const activeCamCity = (cityUpper && !activeCamTitle.includes(`[${cityUpper}]`)) ? ` [${cityUpper}]` : '';
 
       ctx.fillStyle = '#38bdf8';
       ctx.fillText(`CAM: ${activeCamTitle}${activeCamCity}`, 75, 30);
