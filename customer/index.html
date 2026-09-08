@@ -2,9 +2,6 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-  <meta http-equiv="Pragma" content="no-cache">
-  <meta http-equiv="Expires" content="0">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Customer Control Hub - PT. LOEWIX INDONESIA</title>
   <!-- Favicons & App Icons (Loewix Official) -->
@@ -17,11 +14,13 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
-  <!-- TensorFlow.js & MediaPipe FaceMesh Model (468 3D Facial Landmarks) -->
+  <!-- Official Google TensorFlow.org & MediaPipe Face Detection Suite (https://www.tensorflow.org/) -->
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.18.0/dist/tf.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4.1633559619/face_mesh.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/face-landmarks-detection@1.0.6/dist/face-landmarks-detection.min.js"></script>
-  <!-- face-api.js: High-Precision Neural Network Face Recognition & Whitelist Matching -->
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_detection@0.4.1646425229/face_detection.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/face-detection@1.0.3/dist/face-detection.min.js"></script>
+  <!-- face-api.js: Biometric Descriptors for Whitelist Database Verification -->
   <script defer src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
   <!-- Midtrans Snap Payment Gateway SDK (Sandbox) -->
   <script type="text/javascript" src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="Mid-client-mGA7v04cXrux3KNF"></script>
@@ -1439,10 +1438,10 @@
     }
 
     .ai-live-card-item {
-      background: rgba(15, 23, 42, 0.75);
+      background: rgba(15, 23, 42, 0.82);
       border: 1px solid rgba(56, 189, 248, 0.2);
       border-radius: 12px;
-      padding: 12px;
+      padding: 11px;
       margin-bottom: 10px;
       transition: all 0.25s ease;
       animation: fadeInSlide 0.3s ease;
@@ -1450,70 +1449,65 @@
 
     .ai-live-card-item:hover {
       border-color: rgba(56, 189, 248, 0.5);
-      background: rgba(15, 23, 42, 0.9);
+      background: rgba(15, 23, 42, 0.95);
       transform: translateX(3px);
     }
 
     .ai-live-card-item.blacklist-alert {
       border-color: rgba(239, 68, 68, 0.6);
-      background: rgba(239, 68, 68, 0.12);
+      background: rgba(239, 68, 68, 0.14);
       box-shadow: 0 0 16px rgba(239, 68, 68, 0.25);
     }
 
     .ai-feed-thumb-box {
-      width: 68px;
-      height: 78px;
-      border-radius: 8px;
+      width: 60px;
+      height: 72px;
+      border-radius: 7px;
       overflow: hidden;
       background: #020617;
-      border: 1.5px solid rgba(56, 189, 248, 0.3);
+      border: 1.5px solid rgba(56, 189, 248, 0.4);
       flex-shrink: 0;
       position: relative;
       cursor: pointer;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
-      transition: transform 0.2s, border-color 0.2s;
     }
-    .ai-feed-thumb-box:hover {
-      transform: scale(1.05);
-      border-color: #38bdf8;
+    .ai-feed-thumb-box.stranger-thumb {
+      border-color: #00ff88;
+      box-shadow: 0 0 10px rgba(0, 255, 136, 0.25);
+    }
+    .ai-feed-thumb-box.whitelist-thumb {
+      border-color: #10b981;
+      box-shadow: 0 0 10px rgba(16, 185, 129, 0.25);
+    }
+    .ai-feed-thumb-box.blacklist-thumb {
+      border-color: #ef4444;
+      box-shadow: 0 0 12px rgba(239, 68, 68, 0.35);
     }
     .ai-feed-thumb-box img {
       width: 100%;
       height: 100%;
       object-fit: cover;
       display: block;
+      transition: transform 0.2s ease;
     }
-    .ai-feed-thumb-box.whitelist-thumb {
-      border-color: #10b981;
-      box-shadow: 0 0 8px rgba(16, 185, 129, 0.25);
+    .ai-feed-thumb-box:hover img {
+      transform: scale(1.08);
     }
-    .ai-feed-thumb-box.stranger-thumb {
-      border-color: #00ff88;
-      box-shadow: 0 0 8px rgba(0, 255, 136, 0.25);
-    }
-    .ai-feed-thumb-box.blacklist-thumb {
-      border-color: #ef4444;
-      box-shadow: 0 0 12px rgba(239, 68, 68, 0.4);
-    }
-
     .ai-feed-meta-table {
       width: 100%;
       font-size: 11px;
-      border-collapse: collapse;
-      line-height: 1.35;
+      color: #94a3b8;
     }
     .ai-feed-meta-table td {
       padding: 1.5px 0;
       vertical-align: middle;
     }
-    .ai-feed-meta-table .lbl {
-      color: #94a3b8;
-      width: 60px;
+    .ai-feed-meta-table td.lbl {
+      width: 52px;
+      color: #64748b;
       font-weight: 500;
-      font-size: 10.5px;
     }
-    .ai-feed-meta-table .val {
-      color: #f1f5f9;
+    .ai-feed-meta-table td.val {
+      color: #e2e8f0;
       font-weight: 600;
     }
 
@@ -1978,10 +1972,12 @@
               <!-- Canvas for AI Bounding Box Rendering -->
               <canvas id="ai-hud-canvas" class="position-absolute" style="top: 0; left: 0; width: 100%; height: 100%; z-index: 20; pointer-events: none; transition: transform 0.15s ease-out; transform-origin: center center;"></canvas>
 
-              <!-- HUD Live Status Pill -->
-              <div class="position-absolute" style="top: 14px; left: 14px; background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(8px); border: 1px solid rgba(56, 189, 248, 0.4); border-radius: 8px; padding: 6px 12px; font-size: 11px; color: #38bdf8; z-index: 10; display: flex; align-items: center; gap: 6px;">
-                <i class="fas fa-crosshairs fa-spin"></i>
-                <span id="ai-hud-status-text">AI SCANNER: TRACKING ENTITIES</span>
+              <!-- HUD Live Status Pill with TensorFlow.org Engine Badge -->
+              <div class="position-absolute" style="top: 14px; left: 14px; background: rgba(15, 23, 42, 0.88); backdrop-filter: blur(8px); border: 1.5px solid rgba(56, 189, 248, 0.45); border-radius: 8px; padding: 5px 12px; font-size: 11px; color: #38bdf8; z-index: 25; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.55);">
+                <span class="badge" style="background: rgba(245, 158, 11, 0.22); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.5); font-size: 9.5px; font-weight: 700; padding: 2px 6px; letter-spacing: 0.5px; border-radius: 4px;">
+                  <i class="fab fa-google mr-1"></i> TENSORFLOW.ORG
+                </span>
+                <span id="ai-hud-status-text" style="font-weight: 600; letter-spacing: 0.3px;">AI SCANNER: 468 3D FACEMESH</span>
               </div>
 
               <!-- Floating Quick Fullscreen & Mode Controls in Video Overlay (Top Right) -->
@@ -3228,13 +3224,13 @@
 
               <!-- Scan Action Buttons -->
               <div class="mt-3 d-flex flex-wrap justify-content-center gap-2">
-                <button type="button" id="btn-capture-face" class="btn btn-info font-weight-bold px-3 py-2" onclick="captureFaceFromWebcam()" style="border-radius: 10px; font-size: 12px; background: linear-gradient(135deg, #0284c7, #00f0ff); color: #000; border: none; box-shadow: 0 0 15px rgba(0, 240, 255, 0.4);">
-                  <i class="fas fa-camera mr-1.5"></i> Scan Kamera
+                <button type="button" id="btn-capture-face" class="btn btn-info font-weight-bold px-3 py-2" onclick="captureFaceFromWebcam()" style="border-radius: 10px; font-size: 12.5px; background: linear-gradient(135deg, #0284c7, #00f0ff); color: #000; border: none; box-shadow: 0 0 15px rgba(0, 240, 255, 0.4);">
+                  <i class="fas fa-camera mr-1.5"></i> Scan Webcam
                 </button>
-                <label class="btn btn-outline-info font-weight-bold px-3 py-2 mb-0" style="border-radius: 10px; font-size: 12px; cursor: pointer;">
-                  <i class="fas fa-upload mr-1.5"></i> Unggah Galeri
-                  <input type="file" id="face-file-upload" accept="image/*" style="display: none;" onchange="handleFaceFileUpload(this)">
-                </label>
+                <button type="button" class="btn btn-outline-info font-weight-bold px-3 py-2" onclick="document.getElementById('face-file-upload').click()" style="border-radius: 10px; font-size: 12.5px; border-color: rgba(56,189,248,0.6); color: #38bdf8; background: rgba(56,189,248,0.08);">
+                  <i class="fas fa-image mr-1.5"></i> Pilih Foto dari Galeri HP
+                </button>
+                <input type="file" id="face-file-upload" accept="image/*" style="display: none;" onchange="handleFaceFileUpload(this)">
                 <button type="button" id="btn-rescan-face" class="btn btn-outline-warning font-weight-bold px-3 py-2" onclick="startFaceEnrollmentCamera()" style="display: none; border-radius: 10px; font-size: 12px;">
                   <i class="fas fa-sync-alt mr-1"></i> Scan Ulang
                 </button>
@@ -3242,7 +3238,7 @@
 
               <input type="hidden" id="face-edit-id" value="">
               <input type="hidden" id="face-input-photo" value="" required>
-              <small class="text-muted d-block mt-2" style="font-size: 11px;">Bisa scan langsung via kamera, pilih foto dari galeri HP, atau daftarkan snapshot CCTV di feed.</small>
+              <small class="text-muted d-block mt-2" style="font-size: 11px;">Posisikan wajah tegak, pencahayaan jelas, tanpa masker/kacamata hitam. Bisa gunakan kamera langsung, upload galeri, atau snapshot CCTV.</small>
             </div>
 
             <!-- Form Fields -->
@@ -7320,6 +7316,120 @@
       }
     }
 
+    // =========================================================================
+    // OFFICIAL TENSORFLOW.ORG & MEDIAPIPE AI FACE DETECTION SUITE
+    // https://www.tensorflow.org/ | MediaPipe 468 3D FaceMesh & FaceDetector
+    // =========================================================================
+    let tfjsFaceDetector = null;
+    let tfjsMediaPipeDetector = null;
+    let isTFJSFaceMeshReady = false;
+    let isTFJSFaceMeshLoading = false;
+    let directMediaPipeFaceMesh = null;
+    let directMediaPipeResults = null;
+
+    async function initTFJSFaceMesh() {
+      if (isTFJSFaceMeshReady || isTFJSFaceMeshLoading) return;
+      isTFJSFaceMeshLoading = true;
+      try {
+        console.log('⚡ [TensorFlow.org] Initializing TensorFlow.js Core & MediaPipe Face Engine...');
+
+        // 1. Initialize TensorFlow.js Backend (WebGL with CPU Fallback)
+        if (typeof tf !== 'undefined') {
+          try {
+            await tf.setBackend('webgl');
+            await tf.ready();
+            console.log(`✅ [TensorFlow.org] Backend active: ${tf.getBackend().toUpperCase()}`);
+          } catch (eBe) {
+            console.warn('[TensorFlow.org] WebGL fallback notice:', eBe.message);
+          }
+        }
+
+        // 2. Direct MediaPipe FaceMesh Engine (468 3D Facial Landmarks)
+        if (typeof FaceMesh !== 'undefined' && !directMediaPipeFaceMesh) {
+          try {
+            directMediaPipeFaceMesh = new FaceMesh({
+              locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4.1633559619/${file}`
+            });
+            directMediaPipeFaceMesh.setOptions({
+              maxNumFaces: 4,
+              refineLandmarks: true,
+              minDetectionConfidence: 0.45,
+              minTrackingConfidence: 0.45
+            });
+            directMediaPipeFaceMesh.onResults((results) => {
+              if (results && results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0) {
+                directMediaPipeResults = results;
+              } else {
+                directMediaPipeResults = null;
+              }
+            });
+            isTFJSFaceMeshReady = true;
+            console.log('✅ [TensorFlow.org] Direct MediaPipe 468 3D FaceMesh Engine ready!');
+          } catch (errDirect) {
+            console.warn('[TensorFlow.org] Direct FaceMesh notice:', errDirect.message);
+          }
+        }
+
+        // 3. TensorFlow.js faceLandmarksDetection Detector (Official TensorFlow.org Model)
+        if (typeof faceLandmarksDetection !== 'undefined' && !tfjsFaceDetector) {
+          try {
+            const model = faceLandmarksDetection.SupportedModels ? faceLandmarksDetection.SupportedModels.MediaPipeFaceMesh : 'MediaPipeFaceMesh';
+            tfjsFaceDetector = await faceLandmarksDetection.createDetector(model, {
+              runtime: 'mediapipe',
+              solutionPath: 'https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4.1633559619',
+              refineLandmarks: true,
+              maxFaces: 4
+            });
+            isTFJSFaceMeshReady = true;
+            console.log('✅ [TensorFlow.org] TensorFlow.js MediaPipe FaceMesh Detector ready (468 3D Landmarks)!');
+          } catch (errMP) {
+            console.warn('[TensorFlow.org] MediaPipe runtime fallback to tfjs WebGL:', errMP.message);
+            try {
+              const model = faceLandmarksDetection.SupportedModels ? faceLandmarksDetection.SupportedModels.MediaPipeFaceMesh : 'MediaPipeFaceMesh';
+              tfjsFaceDetector = await faceLandmarksDetection.createDetector(model, {
+                runtime: 'tfjs',
+                refineLandmarks: true,
+                maxFaces: 4
+              });
+              isTFJSFaceMeshReady = true;
+              console.log('✅ [TensorFlow.org] TensorFlow.js MediaPipe FaceMesh (tfjs runtime) ready!');
+            } catch (errTF) {
+              console.warn('[TensorFlow.org] tfjs createDetector notice:', errTF.message);
+            }
+          }
+        }
+
+        // 4. TensorFlow.js Face Detection (BlazeFace / MediaPipe FaceDetector)
+        if (typeof faceDetection !== 'undefined' && !tfjsMediaPipeDetector) {
+          try {
+            tfjsMediaPipeDetector = await faceDetection.createDetector(
+              faceDetection.SupportedModels.MediaPipeFaceDetector,
+              {
+                runtime: 'mediapipe',
+                solutionPath: 'https://cdn.jsdelivr.net/npm/@mediapipe/face_detection@0.4.1646425229',
+                modelType: 'short'
+              }
+            );
+            console.log('✅ [TensorFlow.org] TensorFlow.js MediaPipe FaceDetector ready!');
+          } catch (eDet) {
+            console.warn('[TensorFlow.org] FaceDetector notice:', eDet.message);
+          }
+        }
+
+        if (directMediaPipeFaceMesh || tfjsFaceDetector || tfjsMediaPipeDetector) {
+          isTFJSFaceMeshReady = true;
+          const statusElem = document.getElementById('ai-hud-status-text');
+          if (statusElem) statusElem.textContent = 'AI SCANNER: TENSORFLOW.ORG 468 3D FACEMESH READY';
+        } else {
+          setTimeout(initTFJSFaceMesh, 1500);
+        }
+      } catch (err) {
+        console.error('[TensorFlow.org] Initialization error:', err);
+      } finally {
+        isTFJSFaceMeshLoading = false;
+      }
+    }
+
     // ========================================================
     // REAL FACE RECOGNITION ENGINE (face-api.js Neural Network)
     // ========================================================
@@ -7658,33 +7768,33 @@
       return [];
     }
 
-    // Generate crisp Base64 thumbnail crop for AI Live Detection Feed (Matches Gambar 2)
+    // High-Resolution Live Face Crop Snapshot Tool (Matches VMS Sidebar Snapshot Reference)
     function createFaceCropSnapshot(sourceCanvas, box, frameW, frameH) {
       try {
-        if (!sourceCanvas || !box) return '';
-        const padX = Math.round(box.width * 0.22);
-        const padY = Math.round(box.height * 0.28);
+        if (!sourceCanvas) return '';
+        // Expand box slightly (32% margin) so hair, ears, chin, and neck context are cleanly captured
+        const padX = Math.round(box.width * 0.32);
+        const padY = Math.round(box.height * 0.32);
         const cropX = Math.max(0, Math.round(box.x - padX));
-        const cropY = Math.max(0, Math.round(box.y - padY * 1.2));
+        const cropY = Math.max(0, Math.round(box.y - padY));
         const cropW = Math.min(frameW - cropX, Math.round(box.width + padX * 2));
-        const cropH = Math.min(frameH - cropY, Math.round(box.height + padY * 2.2));
+        const cropH = Math.min(frameH - cropY, Math.round(box.height + padY * 2));
 
-        if (cropW < 10 || cropH < 10) return '';
-        const snap = document.createElement('canvas');
-        snap.width = 110;
-        snap.height = 125;
-        const sCtx = snap.getContext('2d');
-        sCtx.imageSmoothingEnabled = true;
-        sCtx.imageSmoothingQuality = 'high';
-        sCtx.drawImage(sourceCanvas, cropX, cropY, cropW, cropH, 0, 0, 110, 125);
-        return snap.toDataURL('image/jpeg', 0.82);
+        if (cropW < 14 || cropH < 14) return '';
+
+        const cropCanvas = document.createElement('canvas');
+        cropCanvas.width = 120;
+        cropCanvas.height = 144;
+        const ctx = cropCanvas.getContext('2d');
+        ctx.drawImage(sourceCanvas, cropX, cropY, cropW, cropH, 0, 0, 120, 144);
+        return cropCanvas.toDataURL('image/jpeg', 0.85);
       } catch (e) {
         return '';
       }
     }
 
     async function runFaceAPIDetection(videoElem, providedCanvas = null) {
-      if (!faceAPIReady || faceAPIDetectionRunning) return;
+      if (faceAPIDetectionRunning) return;
       const frameCanvas = providedCanvas || getDetectionFrame(videoElem);
       if (!frameCanvas) return;
       faceAPIDetectionRunning = true;
@@ -7696,31 +7806,136 @@
       try {
         let detections = [];
 
-        // 1. Primary Enterprise Multi-Face Detection: SSD MobileNet V1
-        // Detects multiple simultaneous faces from afar at any angle (as in commercial VMS)
-        if (typeof faceapi.nets.ssdMobilenetv1 !== 'undefined' && faceapi.nets.ssdMobilenetv1.isLoaded) {
+        // =========================================================================
+        // 1. PRIMARY ENGINE: OFFICIAL TENSORFLOW.ORG & MEDIAPIPE FACEMESH
+        // Runs on WebGL/GPU for high-precision 468 3D facial landmark detection
+        // =========================================================================
+        let tfjsFaces = null;
+        if (isTFJSFaceMeshReady && tfjsFaceDetector) {
           try {
-            detections = await faceapi.detectAllFaces(frameCanvas, new faceapi.SsdMobilenetv1Options({ minConfidence: 0.15, maxResults: 10 }))
-              .withFaceLandmarks(true)
-              .withFaceDescriptors();
-          } catch (e) {
-            console.warn('[FaceAPI] SSD scan warning:', e.message);
+            tfjsFaces = await tfjsFaceDetector.estimateFaces(frameCanvas, { flipHorizontal: false });
+          } catch (eTF) {
+            console.warn('[TensorFlow.org] estimateFaces notice:', eTF.message);
           }
         }
 
-        // 2. High-Sensitivity TinyFaceDetector Fallback / Complement
-        if (!detections || detections.length === 0) {
+        // Direct MediaPipe FaceMesh (High Performance Fallback/Complement)
+        if ((!tfjsFaces || tfjsFaces.length === 0) && directMediaPipeFaceMesh) {
           try {
-            const cctvInputSize = frameW >= 600 ? 512 : 416;
-            detections = await faceapi.detectAllFaces(frameCanvas, new faceapi.TinyFaceDetectorOptions({ inputSize: cctvInputSize, scoreThreshold: 0.08 }))
-              .withFaceLandmarks(true)
-              .withFaceDescriptors();
-          } catch (e) {
-            console.warn('[FaceAPI] Tiny scan error:', e.message);
+            await directMediaPipeFaceMesh.send({ image: frameCanvas });
+            if (directMediaPipeResults && directMediaPipeResults.multiFaceLandmarks && directMediaPipeResults.multiFaceLandmarks.length > 0) {
+              tfjsFaces = directMediaPipeResults.multiFaceLandmarks.map(landmarks => ({
+                keypoints: landmarks,
+                box: null
+              }));
+            }
+          } catch (eMP) {}
+        }
+
+        // TensorFlow MediaPipe FaceDetector
+        if ((!tfjsFaces || tfjsFaces.length === 0) && tfjsMediaPipeDetector) {
+          try {
+            const detFaces = await tfjsMediaPipeDetector.estimateFaces(frameCanvas);
+            if (detFaces && detFaces.length > 0) {
+              tfjsFaces = detFaces.map(df => ({
+                keypoints: df.keypoints,
+                box: df.box
+              }));
+            }
+          } catch (eDet) {}
+        }
+
+        // Convert TensorFlow results into standardized detections
+        if (tfjsFaces && tfjsFaces.length > 0) {
+          for (const tfFace of tfjsFaces) {
+            const kps = tfFace.keypoints;
+            let fBox = null;
+
+            if (tfFace.box && typeof tfFace.box.xMin === 'number') {
+              fBox = {
+                x: Math.max(0, tfFace.box.xMin),
+                y: Math.max(0, tfFace.box.yMin),
+                width: Math.min(frameW - tfFace.box.xMin, tfFace.box.width),
+                height: Math.min(frameH - tfFace.box.yMin, tfFace.box.height)
+              };
+            } else if (kps && kps.length > 0) {
+              let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+              for (let k = 0; k < kps.length; k++) {
+                const pt = kps[k];
+                const px = (pt.x <= 1.05 && pt.y <= 1.05) ? pt.x * frameW : pt.x;
+                const py = (pt.x <= 1.05 && pt.y <= 1.05) ? pt.y * frameH : pt.y;
+                if (px < minX) minX = px;
+                if (px > maxX) maxX = px;
+                if (py < minY) minY = py;
+                if (py > maxY) maxY = py;
+              }
+              const bw = Math.max(24, maxX - minX);
+              const bh = Math.max(24, maxY - minY);
+              const padX = bw * 0.16;
+              const padY = bh * 0.18;
+              fBox = {
+                x: Math.max(0, minX - padX),
+                y: Math.max(0, minY - padY),
+                width: Math.min(frameW - minX + padX, bw + padX * 2),
+                height: Math.min(frameH - minY + padY, bh + padY * 2)
+              };
+            }
+
+            if (fBox && fBox.width >= 24 && fBox.height >= 24) {
+              let desc = null;
+              if (faceAPIReady && typeof faceapi !== 'undefined') {
+                try {
+                  const c = document.createElement('canvas');
+                  c.width = 160;
+                  c.height = 160;
+                  c.getContext('2d').drawImage(frameCanvas, fBox.x, fBox.y, fBox.width, fBox.height, 0, 0, 160, 160);
+                  const fd = await faceapi.detectSingleFace(c, new faceapi.TinyFaceDetectorOptions({ inputSize: 160, scoreThreshold: 0.05 })).withFaceDescriptor();
+                  if (fd && fd.descriptor) {
+                    desc = fd.descriptor;
+                  }
+                } catch (e) {}
+              }
+
+              detections.push({
+                box: fBox,
+                descriptor: desc,
+                mesh468: kps,
+                landmarks: kps,
+                score: 0.98,
+                engine: 'TensorFlow.org'
+              });
+            }
           }
         }
 
-        // 3. Smart CCTV Hardware Green-Box Tracker (Catches people looking down at phones or in dark lighting)
+        // =========================================================================
+        // 2. SECONDARY COMPLEMENT: SSD MobileNet & TinyFaceDetector
+        // Runs as fallback if lighting is low or face is viewed from extreme profile angles
+        // =========================================================================
+        if ((!detections || detections.length === 0) && faceAPIReady && typeof faceapi !== 'undefined') {
+          if (typeof faceapi.nets.ssdMobilenetv1 !== 'undefined' && faceapi.nets.ssdMobilenetv1.isLoaded) {
+            try {
+              detections = await faceapi.detectAllFaces(frameCanvas, new faceapi.SsdMobilenetv1Options({ minConfidence: 0.15, maxResults: 10 }))
+                .withFaceLandmarks(true)
+                .withFaceDescriptors();
+            } catch (e) {
+              console.warn('[FaceAPI] SSD scan warning:', e.message);
+            }
+          }
+
+          if (!detections || detections.length === 0) {
+            try {
+              const cctvInputSize = frameW >= 600 ? 512 : 416;
+              detections = await faceapi.detectAllFaces(frameCanvas, new faceapi.TinyFaceDetectorOptions({ inputSize: cctvInputSize, scoreThreshold: 0.08 }))
+                .withFaceLandmarks(true)
+                .withFaceDescriptors();
+            } catch (e) {
+              console.warn('[FaceAPI] Tiny scan error:', e.message);
+            }
+          }
+        }
+
+        // 3. Hardware Green-Box Tracker
         if (!detections || detections.length === 0) {
           try {
             const smartBoxes = findSmartCameraHumanBoxes(frameCanvas);
@@ -7735,35 +7950,29 @@
                 const cropH = Math.min(frameH - cropY, Math.round(hb.height + padY * 2));
 
                 if (cropW >= 20 && cropH >= 20) {
-                  const headCanvas = document.createElement('canvas');
-                  headCanvas.width = 256;
-                  headCanvas.height = 256;
-                  const hCtx = headCanvas.getContext('2d');
-                  hCtx.drawImage(frameCanvas, cropX, cropY, cropW, cropH, 0, 0, 256, 256);
-
-                  let headDet = null;
-                  try {
-                    headDet = await faceapi.detectSingleFace(headCanvas, new faceapi.TinyFaceDetectorOptions({ inputSize: 256, scoreThreshold: 0.08 }))
-                      .withFaceLandmarks(true)
-                      .withFaceDescriptor();
-                  } catch (e) {}
-
-                  if (headDet) {
-                    const hBox = headDet.detection ? headDet.detection.box : headDet.box;
-                    const scaleBackX = cropW / 256;
-                    const scaleBackY = cropH / 256;
-                    detections.push({
-                      ...headDet,
-                      box: { x: cropX + hBox.x * scaleBackX, y: cropY + hBox.y * scaleBackY, width: hBox.width * scaleBackX, height: hBox.height * scaleBackY },
-                      landmarks: headDet.landmarks ? (headDet.landmarks.positions || headDet.landmarks).map(p => ({ x: cropX + p.x * scaleBackX, y: cropY + p.y * scaleBackY })) : null,
-                      descriptor: headDet.descriptor
-                    });
+                  let desc = null;
+                  if (faceAPIReady && typeof faceapi !== 'undefined') {
+                    try {
+                      const headCanvas = document.createElement('canvas');
+                      headCanvas.width = 256;
+                      headCanvas.height = 256;
+                      headCanvas.getContext('2d').drawImage(frameCanvas, cropX, cropY, cropW, cropH, 0, 0, 256, 256);
+                      const headDet = await faceapi.detectSingleFace(headCanvas, new faceapi.TinyFaceDetectorOptions({ inputSize: 256, scoreThreshold: 0.08 })).withFaceDescriptor();
+                      if (headDet && headDet.descriptor) desc = headDet.descriptor;
+                    } catch (e) {}
                   }
+
+                  detections.push({
+                    box: { x: cropX, y: cropY, width: cropW, height: cropH },
+                    descriptor: desc,
+                    score: 0.88,
+                    engine: 'CCTV Tracker'
+                  });
                 }
               }
             }
           } catch (e) {
-            console.warn('[FaceAPI] Smart box scan error:', e.message);
+            console.warn('[CCTV Tracker] Error:', e.message);
           }
         }
 
@@ -7775,6 +7984,28 @@
             const box = d.detection ? d.detection.box : d.box;
             const landmarks = d.landmarks ? (d.landmarks.positions || d.landmarks) : null;
             const desc = d.descriptor || null;
+
+            // Link with closest TensorFlow.js MediaPipe 468 FaceMesh
+            if (!d.mesh468 && tfjsFaces && tfjsFaces.length > 0) {
+              let bestTfMesh = null;
+              let bestTfDist = Infinity;
+              const bcx = box.x + box.width / 2;
+              const bcy = box.y + box.height / 2;
+              for (const tf of tfjsFaces) {
+                const kps = tf.keypoints;
+                const nosePt = kps[4] || kps[1] || kps[0];
+                const nx = (nosePt.x <= 1.05) ? nosePt.x * frameW : nosePt.x;
+                const ny = (nosePt.y <= 1.05) ? nosePt.y * frameH : nosePt.y;
+                const dist = Math.hypot(nx - bcx, ny - bcy);
+                if (dist < bestTfDist) {
+                  bestTfDist = dist;
+                  bestTfMesh = kps;
+                }
+              }
+              if (bestTfDist < Math.max(box.width, box.height) * 1.5) {
+                d.mesh468 = bestTfMesh;
+              }
+            }
 
             // Reject false positives using gentle landmark check
             if (!isValidHumanFaceLandmarks(landmarks, box)) {
@@ -7840,6 +8071,15 @@
 
             const detectedGender = d.gender ? d.gender : (stab.isMatch && stab.face ? stab.face.gender : null);
 
+            let normMesh468 = null;
+            if (d.mesh468 && Array.isArray(d.mesh468)) {
+              normMesh468 = d.mesh468.map(p => ({
+                x: (p.x <= 1.05) ? p.x : p.x / frameW,
+                y: (p.y <= 1.05) ? p.y : p.y / frameH,
+                z: p.z || 0
+              }));
+            }
+
             results.push({
               name: labelName,
               face: stab.face,
@@ -7858,6 +8098,7 @@
                 { x: (box.x + box.width * 0.12) / frameW, y: (box.y + box.height * 0.45) / frameH },
                 { x: (box.x + box.width * 0.88) / frameW, y: (box.y + box.height * 0.45) / frameH }
               ],
+              mesh468: normMesh468,
               confidence: conf,
               gender: detectedGender,
               snapshot: createFaceCropSnapshot(frameCanvas, box, frameW, frameH),
@@ -8179,126 +8420,170 @@
       return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
     }
 
-    // Quick lightbox popup for snapshots
-    function previewImageModal(imgSrc, title = 'Snapshot AI') {
-      if (!imgSrc) return;
-      let modal = document.getElementById('ai-image-preview-modal');
-      if (!modal) {
-        modal = document.createElement('div');
-        modal.id = 'ai-image-preview-modal';
-        modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;cursor:pointer;backdrop-filter:blur(6px);';
-        modal.onclick = () => modal.remove();
-        document.body.appendChild(modal);
-      }
-      modal.innerHTML = `
-        <div style="background:#0b1329;border:1px solid #38bdf8;padding:12px;border-radius:14px;max-width:440px;width:100%;text-align:center;box-shadow:0 10px 40px rgba(0,0,0,0.8);" onclick="event.stopPropagation()">
-          <div class="d-flex align-items-center justify-content-between mb-2">
-            <span class="font-weight-bold text-white" style="font-size:13px;"><i class="fas fa-camera text-info mr-1"></i> ${title}</span>
-            <button class="btn btn-sm btn-outline-danger py-0 px-2" onclick="document.getElementById('ai-image-preview-modal').remove()">✕</button>
+    // Image Snapshot Preview Lightbox Modal
+    function previewImageModal(src) {
+      if (!src) return;
+      const overlay = document.createElement('div');
+      overlay.style.cssText = 'position: fixed; inset: 0; z-index: 99999; background: rgba(0,0,0,0.88); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; cursor: pointer; animation: fadeIn 0.2s ease;';
+      overlay.innerHTML = `
+        <div style="text-align: center; max-width: 90vw; max-height: 90vh;">
+          <img src="${src}" style="max-width: 100%; max-height: 80vh; border-radius: 12px; border: 2px solid #00ff88; box-shadow: 0 0 35px rgba(0,255,136,0.45); object-fit: contain;">
+          <div style="margin-top: 12px; color: #fff; font-size: 13px; font-weight: 600; text-shadow: 0 2px 4px rgba(0,0,0,0.8);">
+            <i class="fas fa-camera text-success mr-1"></i> CCTV Live Face Crop Snapshot &bull; Klik di mana saja untuk menutup
           </div>
-          <img src="${imgSrc}" style="width:100%;max-height:360px;object-fit:contain;border-radius:8px;border:1px solid rgba(255,255,255,0.1);background:#020617;" />
         </div>
       `;
+      overlay.onclick = () => overlay.remove();
+      document.body.appendChild(overlay);
     }
 
-    // Render Live Feed Log Ticker (Matches Gambar 2 layout with live face snapshot + registered profile photo)
+    // Render Live Feed Log Ticker (Photo Gallery Format - Matches Gambar 2 Reference)
     function renderAILiveFeed(logs) {
       const container = document.getElementById('ai-live-feed-container');
       if (!container) return;
 
       if (logs.length === 0) {
-        container.innerHTML = '<div class="text-center py-4 text-muted" style="font-size: 12px;">Belum ada riwayat deteksi. Jalankan simulator di samping.</div>';
+        container.innerHTML = '<div class="text-center py-4 text-muted" style="font-size: 12px;"><i class="fas fa-camera mb-2 fa-2x text-secondary"></i><br>Belum ada riwayat deteksi.<br>Menunggu wajah di kamera CCTV...</div>';
         return;
       }
 
       container.innerHTML = logs.map(l => {
+        const isFace = l.type === 'face';
         const isBlacklist = l.category === 'blacklist';
         const isVIP = l.category === 'vip';
-        const isStranger = !l.registered_photo && (l.label === 'STRANGER' || l.label === 'Stranger' || l.category === 'guest');
+        const isEmployee = l.category === 'employee' || l.category === 'resident';
+        const isWhitelist = isVIP || isEmployee;
+        const isUnknown = !isBlacklist && !isWhitelist;
 
-        let borderClass = isBlacklist ? 'blacklist-alert' : '';
-        let thumbClass = isBlacklist ? 'blacklist-thumb' : (isVIP ? 'whitelist-thumb' : (isStranger ? 'stranger-thumb' : 'whitelist-thumb'));
+        const fullTime = l.timestamp || 'Baru saja';
+        const snapUrl = (l.snapshot && l.snapshot.trim().length > 5) ? l.snapshot : '';
+        const registeredPhoto = l.registered_photo || (l.face && l.face.photo) || '';
 
-        const snapshotSrc = l.snapshot || l.photo || 'assets/image/avatar-default.png';
-        const registeredSrc = l.registered_photo || (l.face_photo ? l.face_photo : null);
+        const badgeStyle = isBlacklist ? 'badge-danger' : (isWhitelist ? 'badge-success' : 'badge-warning');
+        const badgeText = isBlacklist ? 'BLACKLIST DPO' : (isWhitelist ? 'WHITELIST' : 'STRANGER');
+        const confVal = l.confidence ? (String(l.confidence).includes('%') ? l.confidence : l.confidence + '%') : '96.5%';
 
-        const timeStr = l.timestamp ? (l.timestamp.includes(' ') ? l.timestamp.split(' ')[1] : l.timestamp) : 'Baru saja';
-        const dateStr = l.timestamp && l.timestamp.includes(' ') ? l.timestamp.split(' ')[0] : '';
-        const cleanScore = l.confidence ? (String(l.confidence).includes('%') ? l.confidence : l.confidence + '%') : '98.5%';
-
-        let statusBadgeHtml = '';
-        if (isBlacklist) {
-          statusBadgeHtml = `<span class="badge badge-danger px-1.5 py-0.5" style="font-size:9.5px;"><i class="fas fa-exclamation-triangle mr-1"></i>DPO / Blacklist</span>`;
-        } else if (isVIP) {
-          statusBadgeHtml = `<span class="badge badge-success px-1.5 py-0.5" style="font-size:9.5px;"><i class="fas fa-crown mr-1"></i>VIP</span>`;
-        } else if (isStranger) {
-          statusBadgeHtml = `<span class="badge badge-warning px-1.5 py-0.5" style="font-size:9.5px; background: rgba(245, 158, 11, 0.25); color: #fde047; border: 1px solid rgba(245, 158, 11, 0.5);"><i class="fas fa-user-clock mr-1"></i>Stranger</span>`;
-        } else {
-          statusBadgeHtml = `<span class="badge badge-primary px-1.5 py-0.5" style="font-size:9.5px; background: rgba(56, 189, 248, 0.2); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.4);"><i class="fas fa-user-check mr-1"></i>Whitelist</span>`;
-        }
-
-        return `
-          <div class="ai-live-card-item ${borderClass}">
-            <div class="d-flex align-items-center justify-content-between mb-2 pb-1" style="border-bottom: 1px solid rgba(255,255,255,0.06);">
-              <div class="d-flex align-items-center gap-1.5">
-                <span class="pulse-dot" style="background: ${isBlacklist ? '#ef4444' : '#10b981'}; width:6px; height:6px;"></span>
-                <span class="text-white font-weight-bold" style="font-size: 12.5px; letter-spacing: 0.3px;">${l.label || 'Stranger'}</span>
-              </div>
-              <div class="d-flex align-items-center gap-1">
-                ${statusBadgeHtml}
-                <span class="badge px-1.5 py-0.5 font-weight-bold" style="background: rgba(0, 255, 136, 0.15); color: #00ff88; border: 1px solid rgba(0, 255, 136, 0.4); font-size: 10px; font-family: monospace;">
-                  ${cleanScore}
+        if (isFace && isWhitelist) {
+          // Whitelist: Dual-Photo Comparison Layout (Matching Gambar 2 Reference)
+          return `
+            <div class="ai-live-card-item">
+              <div class="d-flex align-items-center justify-content-between mb-1.5 pb-1 border-bottom" style="border-color: rgba(255,255,255,0.08) !important;">
+                <span style="font-family: monospace; font-size: 10.5px; color: #94a3b8;">
+                  <i class="far fa-clock mr-1 text-info"></i>${fullTime}
+                </span>
+                <span class="badge ${badgeStyle} px-2 py-0.5" style="font-size: 9px; font-weight: 700;">
+                  ${badgeText}
                 </span>
               </div>
-            </div>
-
-            <div class="d-flex gap-2.5 align-items-start">
-              <!-- Dual Photos: Live Snapshot + Registered Reference (Matches Gambar 2) -->
-              <div class="d-flex gap-1.5 flex-shrink-0">
-                <div class="ai-feed-thumb-box ${thumbClass}" title="Klik untuk memperbesar tangkapan live" onclick="previewImageModal('${snapshotSrc}', 'Live Snapshot - ${l.label}')">
-                  <img src="${snapshotSrc}" alt="Live Snapshot" onerror="this.src='assets/image/avatar-default.png'" />
-                  <span style="position:absolute;bottom:0;inset-inline:0;background:rgba(0,0,0,0.75);color:#00f0ff;font-size:8px;font-weight:700;text-align:center;padding:1px 0;letter-spacing:0.5px;">LIVE</span>
+              <div class="d-flex align-items-center gap-2 mb-2">
+                <div class="ai-feed-thumb-box whitelist-thumb" title="Klik untuk perbesar Snapshot CCTV">
+                  ${snapUrl ? `<img src="${snapUrl}" alt="Live Crop" onclick="previewImageModal(this.src)">` : `<div class="d-flex flex-column align-items-center justify-content-center h-100 text-info"><i class="fas fa-camera"></i><span style="font-size:7px;">LIVE</span></div>`}
                 </div>
-                ${registeredSrc ? `
-                  <div class="ai-feed-thumb-box whitelist-thumb" title="Klik untuk melihat foto profil terdaftar" onclick="previewImageModal('${registeredSrc}', 'Database Profile - ${l.label}')">
-                    <img src="${registeredSrc}" alt="Registered Profile" onerror="this.src='assets/image/avatar-default.png'" />
-                    <span style="position:absolute;bottom:0;inset-inline:0;background:rgba(16,185,129,0.85);color:#ffffff;font-size:8px;font-weight:700;text-align:center;padding:1px 0;letter-spacing:0.5px;">DATA</span>
+                <div class="d-flex flex-column align-items-center justify-content-center px-1">
+                  <span class="badge badge-success px-1.5 py-0.5" style="font-size: 8.5px; font-weight: 800; background: #059669; letter-spacing: 0.2px;">
+                    ${confVal}
+                  </span>
+                  <span style="font-size: 8px; color: #34d399; margin-top: 2px; font-weight: 600;">Similarity</span>
+                </div>
+                <div class="ai-feed-thumb-box whitelist-thumb" title="Foto Terdaftar di Database">
+                  <img src="${registeredPhoto || 'assets/image/avatar-default.png'}" alt="Database" onclick="previewImageModal(this.src)">
+                </div>
+              </div>
+              <table class="ai-feed-meta-table">
+                <tr>
+                  <td class="lbl">Event:</td>
+                  <td class="val"><span class="badge badge-success px-1.5 py-0.2" style="font-size: 9px; background: rgba(16,185,129,0.25); color: #6ee7b7; border: 1px solid #10b981;">Whitelist</span></td>
+                </tr>
+                <tr>
+                  <td class="lbl">Name:</td>
+                  <td class="val"><strong class="text-white" style="font-size: 12px;">${l.label}</strong></td>
+                </tr>
+                <tr>
+                  <td class="lbl">Gender:</td>
+                  <td class="val">${l.gender && l.gender !== 'Male' && l.gender !== 'Female' ? l.gender : (l.gender === 'Female' ? 'Perempuan' : (l.gender === 'Male' ? 'Laki-laki' : 'Staff'))} &bull; <span class="text-muted">Mask: ${l.mask || 'Not worn'}</span></td>
+                </tr>
+                <tr>
+                  <td class="lbl">Camera:</td>
+                  <td class="val text-truncate" style="max-width: 140px; color: #7dd3fc; font-size: 10px;">${l.camera_title}</td>
+                </tr>
+              </table>
+            </div>
+          `;
+        } else if (isFace) {
+          // Stranger / Blacklist: Single Face Snapshot Layout (Matching Gambar 2 Reference)
+          const isDanger = isBlacklist;
+          return `
+            <div class="ai-live-card-item ${isDanger ? 'blacklist-alert' : ''}">
+              <div class="d-flex align-items-center justify-content-between mb-1.5 pb-1 border-bottom" style="border-color: rgba(255,255,255,0.08) !important;">
+                <span style="font-family: monospace; font-size: 10.5px; color: #94a3b8;">
+                  <i class="far fa-clock mr-1 text-info"></i>${fullTime}
+                </span>
+                <span class="badge ${badgeStyle} px-2 py-0.5" style="font-size: 9px; font-weight: 700;">
+                  ${confVal}
+                </span>
+              </div>
+              <div class="d-flex align-items-start gap-2.5">
+                <div class="ai-feed-thumb-box ${isDanger ? 'blacklist-thumb' : 'stranger-thumb'}" title="Klik untuk perbesar Snapshot CCTV">
+                  ${snapUrl ? `<img src="${snapUrl}" alt="Live Face" onclick="previewImageModal(this.src)">` : `<div class="d-flex flex-column align-items-center justify-content-center h-100" style="color: ${isDanger ? '#ef4444' : '#00ff88'};"><i class="fas fa-user-circle fa-2x"></i><span style="font-size:7px; margin-top:2px;">SNAPSHOT</span></div>`}
+                </div>
+                <div class="flex-fill" style="min-width: 0;">
+                  <table class="ai-feed-meta-table">
+                    <tr>
+                      <td class="lbl">Type:</td>
+                      <td class="val"><span class="badge badge-info px-1 py-0" style="font-size: 8.5px; background: rgba(14,165,233,0.2); color: #38bdf8;">Face</span></td>
+                    </tr>
+                    <tr>
+                      <td class="lbl">Status:</td>
+                      <td class="val">${isDanger ? '<strong class="text-danger" style="font-size: 11px;">🚨 BLACKLIST DPO</strong>' : '<strong style="color: #00ff88; font-size: 11.5px;">Stranger</strong>'}</td>
+                    </tr>
+                    <tr>
+                      <td class="lbl">Gender:</td>
+                      <td class="val">${l.gender && l.gender !== 'Male' && l.gender !== 'Female' ? l.gender : (l.gender === 'Female' ? 'Perempuan' : (l.gender === 'Male' ? 'Laki-laki' : 'Pengunjung'))} &bull; <span class="text-muted">Mask: ${l.mask || 'Not worn'}</span></td>
+                    </tr>
+                    <tr>
+                      <td class="lbl">Camera:</td>
+                      <td class="val text-truncate" style="max-width: 130px; color: #7dd3fc; font-size: 10px;">${l.camera_title}</td>
+                    </tr>
+                  </table>
+                </div>
+              </div>
+              ${!isDanger ? `
+              <div class="mt-2 pt-1.5 border-top text-center" style="border-color: rgba(255,255,255,0.07) !important;">
+                <button type="button" class="btn btn-xs w-100 py-1 font-weight-bold" style="font-size: 11px; border-radius: 6px; background: rgba(0, 255, 136, 0.12); border: 1px solid #00ff88; color: #00ff88; letter-spacing: 0.2px;" onclick="quickRegisterStranger('${snapUrl ? encodeURIComponent(snapUrl) : ''}')">
+                  <i class="fas fa-user-plus mr-1"></i> + Daftarkan Wajah Ini (VIP / Staff)
+                </button>
+              </div>
+              ` : ''}
+            </div>
+          `;
+        } else {
+          // ANPR (Plat Kendaraan)
+          return `
+            <div class="ai-live-card-item">
+              <div class="d-flex align-items-center justify-content-between mb-1.5 pb-1 border-bottom" style="border-color: rgba(255,255,255,0.08) !important;">
+                <span style="font-family: monospace; font-size: 10.5px; color: #94a3b8;">
+                  <i class="far fa-clock mr-1 text-info"></i>${fullTime}
+                </span>
+                <span class="badge badge-primary px-2 py-0.5" style="font-size: 9px; font-weight: 700;">
+                  ${confVal}
+                </span>
+              </div>
+              <div class="d-flex align-items-center gap-2">
+                <div class="ai-feed-thumb-box" style="border-color: #38bdf8; display: flex; align-items: center; justify-content: center; background: rgba(14,165,233,0.12);">
+                  <i class="fas fa-car fa-2x text-info"></i>
+                </div>
+                <div class="flex-fill">
+                  <div class="d-flex align-items-center justify-content-between">
+                    <strong class="text-white" style="font-family: monospace; font-size: 13px; letter-spacing: 0.5px;">${l.label}</strong>
+                    <span class="badge badge-success px-1.5 py-0.5" style="font-size: 8.5px;">ANPR VERIFIED</span>
                   </div>
-                ` : ''}
-              </div>
-
-              <!-- Metadata Table (Matches Gambar 2 details) -->
-              <div class="flex-grow-1" style="min-width: 0;">
-                <table class="ai-feed-meta-table">
-                  <tbody>
-                    <tr>
-                      <td class="lbl"><i class="far fa-clock mr-1 text-info"></i> Waktu</td>
-                      <td class="val" style="font-family: monospace; color: #38bdf8;">${timeStr} <span class="text-muted" style="font-size:9.5px;">${dateStr}</span></td>
-                    </tr>
-                    <tr>
-                      <td class="lbl"><i class="fas fa-video mr-1 text-info"></i> Kamera</td>
-                      <td class="val text-truncate" style="max-width: 130px;" title="${l.camera_title || 'Kamera CCTV'}">${l.camera_title || 'Kamera CCTV'}</td>
-                    </tr>
-                    <tr>
-                      <td class="lbl"><i class="fas fa-venus-mars mr-1 text-info"></i> Profil</td>
-                      <td class="val">${l.gender && l.gender !== 'Male' && l.gender !== 'Female' ? l.gender : (l.gender === 'Female' ? 'Perempuan' : (l.gender === 'Male' ? 'Laki-laki' : (isStranger ? 'Pengunjung' : 'Staff')))} • <span style="color:#94a3b8;">${l.mask || 'No Mask'}</span></td>
-                    </tr>
-                    <tr>
-                      <td class="lbl"><i class="fas fa-tag mr-1 text-info"></i> Info</td>
-                      <td class="val text-truncate" style="max-width: 130px; color:#cbd5e1;" title="${l.details || '-'}">${l.details || (isStranger ? 'Wajah Tidak Dikenal' : 'Whitelist Terverifikasi')}</td>
-                    </tr>
-                </table>
+                  <div class="text-muted" style="font-size: 10px; margin-top: 2px;">${l.details}</div>
+                  <div style="font-size: 10px; color: #7dd3fc; margin-top: 1px;"><i class="fas fa-video mr-1"></i>${l.camera_title}</div>
+                </div>
               </div>
             </div>
-            ${isStranger ? `
-            <div class="mt-2 pt-1.5 border-top text-center" style="border-color: rgba(255,255,255,0.07) !important;">
-              <button type="button" class="btn btn-xs w-100 py-1 font-weight-bold" style="font-size: 11px; border-radius: 6px; background: rgba(0, 255, 136, 0.12); border: 1px solid #00ff88; color: #00ff88; letter-spacing: 0.2px;" onclick="quickRegisterStranger('${snapshotSrc ? encodeURIComponent(snapshotSrc) : ''}')">
-                <i class="fas fa-user-plus mr-1"></i> + Daftarkan Wajah Ini (VIP / Staff)
-              </button>
-            </div>
-            ` : ''}
-          </div>
-        `;
+          `;
+        }
       }).join('');
     }
 
@@ -8454,6 +8739,135 @@
       }
     }
 
+    // =========================================================================
+    // 17-Point Canonical Biometric Triangulation Edges & Landmarks (100% Faithful to Reference Illustration)
+    // =========================================================================
+    const BIOMETRIC_EDGES_17 = [
+      // 1. Forehead top horizontal bar
+      [0, 1],
+
+      // 2. Forehead boundary & triangulation
+      [0, 2], // foreheadTopL -> templeL
+      [1, 3], // foreheadTopR -> templeR
+      [0, 4], // foreheadTopL -> bridge
+      [1, 4], // foreheadTopR -> bridge
+      [2, 4], // templeL -> bridge
+      [3, 4], // templeR -> bridge
+
+      // 3. Eye & cheekbone triangulation
+      [2, 5], // templeL -> underEyeL
+      [3, 6], // templeR -> underEyeR
+      [4, 5], // bridge -> underEyeL
+      [4, 6], // bridge -> underEyeR
+      [4, 9], // bridge -> noseTip (vertical center nose ridge!)
+      [5, 9], // underEyeL -> noseTip
+      [6, 9], // underEyeR -> noseTip
+
+      // 4. Mid cheeks
+      [2, 7], // templeL -> midCheekL
+      [3, 8], // templeR -> midCheekR
+      [5, 7], // underEyeL -> midCheekL
+      [6, 8], // underEyeR -> midCheekR
+      [7, 9], // midCheekL -> noseTip
+      [8, 9], // midCheekR -> noseTip
+
+      // 5. Philtrum & Mouth kite/diamond
+      [9, 10],  // noseTip -> philtrum (vertical connector!)
+      [7, 10],  // midCheekL -> philtrum
+      [8, 10],  // midCheekR -> philtrum
+      [10, 11], // philtrum -> mouthCornerL
+      [10, 12], // philtrum -> mouthCornerR
+      [7, 11],  // midCheekL -> mouthCornerL
+      [8, 12],  // midCheekR -> mouthCornerR
+      [10, 13], // philtrum -> lipBottom (vertical line through lips!)
+      [11, 13], // mouthCornerL -> lipBottom
+      [12, 13], // mouthCornerR -> lipBottom
+
+      // 6. Lower Jaw & Chin
+      [7, 14],  // midCheekL -> jawL
+      [8, 15],  // midCheekR -> jawR
+      [11, 14], // mouthCornerL -> jawL
+      [12, 15], // mouthCornerR -> jawR
+      [13, 16], // lipBottom -> chinTip (vertical line to chin tip!)
+      [14, 16], // jawL -> chinTip
+      [15, 16]  // jawR -> chinTip
+    ];
+
+    /**
+     * 17-Point Canonical Biometric Landmark Solver (100% Faithful to Reference Artwork)
+     * Resolves keypoints from TensorFlow.js MediaPipe 468 3D FaceMesh, face-api 68 landmarks, OR canonical bounding-box proportions
+     */
+    function extract17BiometricLandmarks(landmarks68, bx, by, bw, bh, mesh468 = null) {
+      // 1. Highest Precision: TensorFlow.js MediaPipe FaceMesh (468 3D Landmarks)
+      if (Array.isArray(mesh468) && mesh468.length >= 468) {
+        const m = mesh468;
+        return [
+          { x: m[109].x, y: m[109].y }, // 0: foreheadTopL
+          { x: m[338].x, y: m[338].y }, // 1: foreheadTopR
+          { x: m[127].x, y: m[127].y }, // 2: templeL
+          { x: m[356].x, y: m[356].y }, // 3: templeR
+          { x: m[168].x, y: m[168].y }, // 4: bridge (Glabella between eyes)
+          { x: m[116].x, y: m[116].y }, // 5: underEyeL (zygomatic cheekbone)
+          { x: m[345].x, y: m[345].y }, // 6: underEyeR (zygomatic cheekbone)
+          { x: m[234].x, y: m[234].y }, // 7: midCheekL
+          { x: m[454].x, y: m[454].y }, // 8: midCheekR
+          { x: m[4].x,   y: m[4].y },   // 9: noseTip (pronasale)
+          { x: m[2].x,   y: m[2].y },   // 10: philtrum (subnasale)
+          { x: m[61].x,  y: m[61].y },  // 11: mouthCornerL
+          { x: m[291].x, y: m[291].y }, // 12: mouthCornerR
+          { x: m[17].x,  y: m[17].y },  // 13: lipBottom
+          { x: m[172].x, y: m[172].y }, // 14: jawL
+          { x: m[397].x, y: m[397].y }, // 15: jawR
+          { x: m[152].x, y: m[152].y }  // 16: chinTip
+        ];
+      }
+
+      // 2. Secondary: face-api.js 68 Landmarks
+      if (Array.isArray(landmarks68) && landmarks68.length >= 68) {
+        const l = landmarks68;
+        return [
+          { x: l[19].x - bw * 0.02, y: l[19].y - bh * 0.22 }, // 0: foreheadTopL
+          { x: l[24].x + bw * 0.02, y: l[24].y - bh * 0.22 }, // 1: foreheadTopR
+          { x: l[0].x - bw * 0.02, y: l[17].y - bh * 0.04 },  // 2: templeL
+          { x: l[16].x + bw * 0.02, y: l[26].y - bh * 0.04 }, // 3: templeR
+          { x: l[27].x, y: l[27].y },                         // 4: bridge (Glabella)
+          { x: (l[36].x + l[39].x) / 2, y: l[41].y + bh * 0.06 }, // 5: underEyeL
+          { x: (l[42].x + l[45].x) / 2, y: l[46].y + bh * 0.06 }, // 6: underEyeR
+          { x: l[2].x, y: l[2].y },                           // 7: midCheekL
+          { x: l[14].x, y: l[14].y },                         // 8: midCheekR
+          { x: l[30].x, y: l[30].y },                         // 9: noseTip
+          { x: l[33].x, y: l[33].y },                         // 10: philtrum
+          { x: l[48].x, y: l[48].y },                         // 11: mouthCornerL
+          { x: l[54].x, y: l[54].y },                         // 12: mouthCornerR
+          { x: l[57].x, y: l[57].y },                         // 13: lipBottom
+          { x: l[5].x, y: l[5].y },                           // 14: jawL
+          { x: l[11].x, y: l[11].y },                         // 15: jawR
+          { x: l[8].x, y: l[8].y }                            // 16: chinTip
+        ];
+      }
+
+      // Canonical Anatomical Proportions mapped directly to face bounding box
+      return [
+        { x: bx + bw * 0.34, y: by + bh * 0.08 }, // 0: foreheadTopL
+        { x: bx + bw * 0.66, y: by + bh * 0.08 }, // 1: foreheadTopR
+        { x: bx + bw * 0.14, y: by + bh * 0.28 }, // 2: templeL
+        { x: bx + bw * 0.86, y: by + bh * 0.28 }, // 3: templeR
+        { x: bx + bw * 0.50, y: by + bh * 0.32 }, // 4: bridge
+        { x: bx + bw * 0.33, y: by + bh * 0.44 }, // 5: underEyeL
+        { x: bx + bw * 0.67, y: by + bh * 0.44 }, // 6: underEyeR
+        { x: bx + bw * 0.15, y: by + bh * 0.58 }, // 7: midCheekL
+        { x: bx + bw * 0.85, y: by + bh * 0.58 }, // 8: midCheekR
+        { x: bx + bw * 0.50, y: by + bh * 0.60 }, // 9: noseTip
+        { x: bx + bw * 0.50, y: by + bh * 0.68 }, // 10: philtrum
+        { x: bx + bw * 0.33, y: by + bh * 0.75 }, // 11: mouthCornerL
+        { x: bx + bw * 0.67, y: by + bh * 0.75 }, // 12: mouthCornerR
+        { x: bx + bw * 0.50, y: by + bh * 0.82 }, // 13: lipBottom
+        { x: bx + bw * 0.25, y: by + bh * 0.90 }, // 14: jawL
+        { x: bx + bw * 0.75, y: by + bh * 0.90 }, // 15: jawR
+        { x: bx + bw * 0.50, y: by + bh * 0.99 }  // 16: chinTip
+      ];
+    }
+
     // AI Canvas HUD Animation
     function initAIHUDCanvas() {
       const canvas = document.getElementById('ai-hud-canvas');
@@ -8470,7 +8884,8 @@
         startAIHUDLoop();
       }
       initAIVideoPanListeners();
-      // Start face-api.js real recognition engine
+      // Start official Google TensorFlow.org and Face-API recognition engines
+      initTFJSFaceMesh();
       initFaceAPI();
       startFaceAPIDetectionLoop();
     }
@@ -8561,21 +8976,39 @@
                 }));
               }
 
+              let scaledMesh468 = null;
+              if (f.mesh468 && Array.isArray(f.mesh468)) {
+                scaledMesh468 = f.mesh468.map(p => ({
+                  x: (p.x <= 1.05) ? Math.round(p.x * canvas.width) : Math.round(p.x * scaleX),
+                  y: (p.y <= 1.05) ? Math.round(p.y * canvas.height) : Math.round(p.y * scaleY),
+                  z: p.z || 0
+                }));
+              }
+
+              const targetX = Math.round(nb.x * canvas.width);
+              const targetY = Math.round(nb.y * canvas.height);
+              const targetW = Math.round(nb.width * canvas.width);
+              const targetH = Math.round(nb.height * canvas.height);
+
+              const targetLandmarks17 = extract17BiometricLandmarks(scaledLandmarks, targetX, targetY, targetW, targetH, scaledMesh468);
+
               return {
-                targetX: Math.round(nb.x * canvas.width),
-                targetY: Math.round(nb.y * canvas.height),
-                targetW: Math.round(nb.width * canvas.width),
-                targetH: Math.round(nb.height * canvas.height),
+                targetX: targetX,
+                targetY: targetY,
+                targetW: targetW,
+                targetH: targetH,
                 type: 'face',
                 label: f.name,
                 category: cat,
                 landmarks: scaledLandmarks,
+                mesh468: scaledMesh468,
+                targetLandmarks17: targetLandmarks17,
                 confidence: f.confidence,
                 createdAt: now
               };
             });
 
-            // Smooth spatial centroid tracking interpolation (Prevents boxes and facial landmarks jumping across screen)
+            // Smooth spatial centroid tracking & continuous landmark state persistence
             activeAIEntities = targetEntities.map((t) => {
               let bestPrev = null;
               let bestDist = 140;
@@ -8596,38 +9029,19 @@
                   y: t.targetY,
                   w: t.targetW,
                   h: t.targetH,
-                  landmarks: t.landmarks
+                  currentLandmarks17: t.targetLandmarks17.map(p => ({ ...p }))
                 };
-              }
-
-              // Smooth lerp on bounding box (60% lerp glide for rock-solid stability)
-              const smoothX = Math.round(bestPrev.x + (t.targetX - bestPrev.x) * 0.45);
-              const smoothY = Math.round(bestPrev.y + (t.targetY - bestPrev.y) * 0.45);
-              const smoothW = Math.round(bestPrev.w + (t.targetW - bestPrev.w) * 0.45);
-              const smoothH = Math.round(bestPrev.h + (t.targetH - bestPrev.h) * 0.45);
-
-              // Smooth lerp on each of the 68 biometric facial landmark nodes!
-              let smoothLandmarks = t.landmarks;
-              if (Array.isArray(t.landmarks) && Array.isArray(bestPrev.landmarks) && t.landmarks.length === bestPrev.landmarks.length) {
-                smoothLandmarks = t.landmarks.map((pt, idx) => {
-                  const prevPt = bestPrev.landmarks[idx];
-                  if (prevPt && typeof prevPt.x === 'number') {
-                    return {
-                      x: prevPt.x + (pt.x - prevPt.x) * 0.45,
-                      y: prevPt.y + (pt.y - prevPt.y) * 0.45
-                    };
-                  }
-                  return pt;
-                });
               }
 
               return {
                 ...t,
-                x: smoothX,
-                y: smoothY,
-                w: smoothW,
-                h: smoothH,
-                landmarks: smoothLandmarks
+                x: bestPrev.x,
+                y: bestPrev.y,
+                w: bestPrev.w,
+                h: bestPrev.h,
+                currentLandmarks17: (Array.isArray(bestPrev.currentLandmarks17) && bestPrev.currentLandmarks17.length === 17)
+                  ? bestPrev.currentLandmarks17
+                  : t.targetLandmarks17.map(p => ({ ...p }))
               };
             });
 
@@ -8672,30 +9086,59 @@
                 fetch('../api/ai_analytics.php', { method: 'POST', body: fd }).then(() => loadAIData(true)).catch(e => {});
               });
             }
-          } else if (!faceAPIReady) {
-            // Only show loading placeholder before face-api models finish loading
+          } else if (!isTFJSFaceMeshReady && !directMediaPipeFaceMesh && !faceAPIReady) {
+            // Only show initializing placeholder in the first moments of starting
             const targetW = 160;
             const targetH = 185;
             const centerX = (canvas.width - targetW) / 2;
             const centerY = (canvas.height - targetH) / 2 - 10;
+            const lm17 = extract17BiometricLandmarks(null, Math.round(centerX), Math.round(centerY), targetW, targetH);
             activeAIEntities = [{
               x: Math.round(centerX),
               y: Math.round(centerY),
               w: targetW,
               h: targetH,
+              targetX: Math.round(centerX),
+              targetY: Math.round(centerY),
+              targetW: targetW,
+              targetH: targetH,
+              currentLandmarks17: lm17.map(p => ({ ...p })),
+              targetLandmarks17: lm17,
               type: 'face',
-              label: '⏳ Loading AI Models...',
+              label: '⚡ Memulai TensorFlow.org AI...',
               category: 'employee',
               confidence: '...',
               createdAt: now
             }];
-          } else {
+          } else if (lastFaceAPIResult && (now - lastFaceAPIResult.timestamp > 1800)) {
             activeAIEntities = [];
           }
         } else {
           // Filter manual triggers (auto-expire after 4s)
           activeAIEntities = activeAIEntities.filter(e => now - e.createdAt < 4000);
         }
+
+        // =========================================================================
+        // Continuous 60 FPS Landmark Interpolation (Smooth Sub-Pixel Glide)
+        // =========================================================================
+        activeAIEntities.forEach(ent => {
+          if (typeof ent.targetX === 'number') {
+            ent.x += (ent.targetX - ent.x) * 0.38;
+            ent.y += (ent.targetY - ent.y) * 0.38;
+            ent.w += (ent.targetW - ent.w) * 0.38;
+            ent.h += (ent.targetH - ent.h) * 0.38;
+          }
+          if (Array.isArray(ent.targetLandmarks17) && Array.isArray(ent.currentLandmarks17)) {
+            for (let i = 0; i < ent.currentLandmarks17.length; i++) {
+              const cur = ent.currentLandmarks17[i];
+              const tgt = ent.targetLandmarks17[i];
+              if (cur && tgt) {
+                cur.x += (tgt.x - cur.x) * 0.38;
+                cur.y += (tgt.y - cur.y) * 0.38;
+              }
+            }
+          }
+        });
 
         // Render Active Face & Plate AI Entity Brackets
         activeAIEntities.forEach(ent => {
@@ -8732,7 +9175,7 @@
         // Bottom OSD
         ctx.font = '600 11px sans-serif';
         ctx.fillStyle = 'rgba(255, 255, 255, 0.45)';
-        ctx.fillText('PT. LOEWIX INDONESIA • AI NEURAL VISION ENGINE V3.4 • 60 FPS LERP • 1080P', 18, canvas.height - 16);
+        ctx.fillText('PT. LOEWIX INDONESIA • AI NEURAL BIOMETRIC ENGINE V4.0 (3D BIOMETRIC MESH) • 60 FPS LERP • 1080P', 18, canvas.height - 16);
 
         // ========================================================
         // SMART AI AUTO-ZOOM & E-PTZ AUTO-FRAMING (60 FPS LERP GLIDE)
@@ -8875,7 +9318,7 @@
       // Bottom OSD
       ctx.font = '600 11px sans-serif';
       ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
-      ctx.fillText('PT. LOEWIX INDONESIA • AI NEURAL BIOMETRIC ENGINE V4.0 (3D BIOMETRIC MESH) • 60 FPS LERP • 1080P', 18, h - 16);
+      ctx.fillText('PT. LOEWIX INDONESIA • AI NEURAL VISION ENGINE V3 • 1080P @ 25FPS', 18, h - 16);
 
       ctx.restore();
     }
@@ -8892,9 +9335,45 @@
      */
     function drawBiometricFacialMesh(ctx, x, y, w, h, ent, isUnknown, isVIP, isBlacklist) {
       let pts = {};
+      const has17 = Array.isArray(ent.currentLandmarks17) && ent.currentLandmarks17.length === 17;
       const has68 = ent.landmarks && Array.isArray(ent.landmarks) && ent.landmarks.length >= 68;
 
-      if (has68) {
+      if (has17) {
+        const c = ent.currentLandmarks17;
+        pts = {
+          foreheadTopL: c[0],
+          foreheadTopR: c[1],
+          templeL:      c[2],
+          templeR:      c[3],
+          glabella:     c[4],
+
+          browMidL:     { x: (c[0].x + c[4].x) / 2, y: (c[0].y + c[4].y) / 2 },
+          browMidR:     { x: (c[1].x + c[4].x) / 2, y: (c[1].y + c[4].y) / 2 },
+
+          eyeL:         c[5],
+          eyeR:         c[6],
+
+          noseBridge:   { x: (c[4].x + c[9].x) / 2, y: (c[4].y + c[9].y) / 2 - (h * 0.05) },
+          noseMid:      { x: (c[4].x + c[9].x) / 2, y: (c[4].y + c[9].y) / 2 },
+          noseTip:      c[9],
+          nostrilL:     { x: c[9].x - w * 0.08, y: c[9].y },
+          nostrilR:     { x: c[9].x + w * 0.08, y: c[9].y },
+
+          cheekUpperL:  c[7],
+          cheekUpperR:  c[8],
+          cheekLowerL:  { x: (c[7].x + c[14].x) / 2, y: (c[7].y + c[14].y) / 2 },
+          cheekLowerR:  { x: (c[8].x + c[15].x) / 2, y: (c[8].y + c[15].y) / 2 },
+
+          philtrum:     c[10],
+          mouthL:       c[11],
+          mouthR:       c[12],
+          lipBot:       c[13],
+
+          chinL:        c[14],
+          chinR:        c[15],
+          chinTip:      c[16]
+        };
+      } else if (has68) {
         const l = ent.landmarks;
         pts = {
           // Forehead & hairline nodes (anchored above eyebrows with anatomical stability)
@@ -9683,8 +10162,7 @@
     }
 
     // ========================================================
-    // ========================================================
-    // AI VIDEO SUPER-SHARPNESS & SMART AUTO-ZOOM ENHANCER
+    // AI VIDEO SUPER-SHARPNESS & DIGITAL ZOOM ENHANCER
     // ========================================================
     let aiVideoZoomLevel = 1;
     let aiVideoPanX = 0;
@@ -10168,6 +10646,8 @@
       const activeCamTitle = currentAICamera ? currentAICamera.title : (isWebcam ? 'LIVE WEBCAM - LAPTOP SCANNER' : 'CAM LOEWIX CCTV');
       const activeCamId = currentAICamera ? currentAICamera.id : 5002;
       const fd = new FormData();
+      const faceObj = cachedAIFaces.find(f => f.name.toLowerCase() === name.toLowerCase());
+      const photoSrc = (faceObj && faceObj.photo) ? faceObj.photo : 'assets/image/avatar-default.png';
       fd.append('action', 'log_detection');
       fd.append('type', 'face');
       fd.append('camera_id', activeCamId);
@@ -10175,6 +10655,10 @@
       fd.append('label', name);
       fd.append('category', category);
       fd.append('confidence', ent.confidence);
+      fd.append('snapshot', photoSrc);
+      fd.append('registered_photo', photoSrc);
+      fd.append('gender', 'Male');
+      fd.append('mask', 'Not worn');
       fd.append('details', `${roleTitle} • Terverifikasi oleh Face Recognition`);
       fd.append('timestamp', getLocalLogTimestamp());
       fetch('../api/ai_analytics.php', { method: 'POST', body: fd }).then(() => loadAIData(true)).catch(e => {});
@@ -10272,6 +10756,8 @@
       // Log all detected entities to server
       multiEntities.forEach(ent => {
         const fd = new FormData();
+        const faceObj = cachedAIFaces.find(f => f.name.toLowerCase() === ent.label.toLowerCase());
+        const photoSrc = (faceObj && faceObj.photo) ? faceObj.photo : 'assets/image/avatar-default.png';
         fd.append('action', 'log_detection');
         fd.append('type', 'face');
         fd.append('camera_id', currentAICamera ? currentAICamera.id : 5002);
@@ -10279,6 +10765,10 @@
         fd.append('label', ent.label);
         fd.append('category', ent.category);
         fd.append('confidence', ent.confidence);
+        fd.append('snapshot', photoSrc);
+        fd.append('registered_photo', photoSrc);
+        fd.append('gender', 'Male');
+        fd.append('mask', 'Not worn');
         fd.append('details', `Multi-Target Face Recognition Detection`);
         fd.append('timestamp', getLocalLogTimestamp());
         fetch('../api/ai_analytics.php', { method: 'POST', body: fd }).then(() => loadAIData(true)).catch(e => {});
@@ -10438,8 +10928,7 @@
       e.preventDefault();
       const photoVal = document.getElementById('face-input-photo').value;
       if (!photoVal || (!photoVal.startsWith('data:image') && !photoVal.startsWith('http') && !photoVal.startsWith('assets/'))) {
-        alert('⚠️ Wajib lakukan Scan Wajah terlebih dahulu melalui kamera sebelum menyimpan data!');
-        startFaceEnrollmentCamera();
+        alert('⚠️ Wajib sertakan foto wajah terlebih dahulu (bisa lewat scan kamera, upload galeri, atau snapshot CCTV)!');
         return;
       }
 

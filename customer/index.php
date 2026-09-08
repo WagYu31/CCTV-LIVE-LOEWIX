@@ -19,11 +19,13 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
-  <!-- TensorFlow.js & MediaPipe FaceMesh Model (468 3D Facial Landmarks) -->
+  <!-- Official Google TensorFlow.org & MediaPipe Face Detection Suite (https://www.tensorflow.org/) -->
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.18.0/dist/tf.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4.1633559619/face_mesh.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/face-landmarks-detection@1.0.6/dist/face-landmarks-detection.min.js"></script>
-  <!-- face-api.js: High-Precision Neural Network Face Recognition & Whitelist Matching -->
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_detection@0.4.1646425229/face_detection.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/face-detection@1.0.3/dist/face-detection.min.js"></script>
+  <!-- face-api.js: Biometric Descriptors for Whitelist Database Verification -->
   <script defer src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
   <!-- Midtrans Snap Payment Gateway SDK (Sandbox) -->
   <script type="text/javascript" src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="Mid-client-mGA7v04cXrux3KNF"></script>
@@ -1975,10 +1977,12 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
               <!-- Canvas for AI Bounding Box Rendering -->
               <canvas id="ai-hud-canvas" class="position-absolute" style="top: 0; left: 0; width: 100%; height: 100%; z-index: 20; pointer-events: none; transition: transform 0.15s ease-out; transform-origin: center center;"></canvas>
 
-              <!-- HUD Live Status Pill -->
-              <div class="position-absolute" style="top: 14px; left: 14px; background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(8px); border: 1px solid rgba(56, 189, 248, 0.4); border-radius: 8px; padding: 6px 12px; font-size: 11px; color: #38bdf8; z-index: 10; display: flex; align-items: center; gap: 6px;">
-                <i class="fas fa-crosshairs fa-spin"></i>
-                <span id="ai-hud-status-text">AI SCANNER: TRACKING ENTITIES</span>
+              <!-- HUD Live Status Pill with TensorFlow.org Engine Badge -->
+              <div class="position-absolute" style="top: 14px; left: 14px; background: rgba(15, 23, 42, 0.88); backdrop-filter: blur(8px); border: 1.5px solid rgba(56, 189, 248, 0.45); border-radius: 8px; padding: 5px 12px; font-size: 11px; color: #38bdf8; z-index: 25; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.55);">
+                <span class="badge" style="background: rgba(245, 158, 11, 0.22); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.5); font-size: 9.5px; font-weight: 700; padding: 2px 6px; letter-spacing: 0.5px; border-radius: 4px;">
+                  <i class="fab fa-google mr-1"></i> TENSORFLOW.ORG
+                </span>
+                <span id="ai-hud-status-text" style="font-weight: 600; letter-spacing: 0.3px;">AI SCANNER: 468 3D FACEMESH</span>
               </div>
 
               <!-- Floating Quick Fullscreen & Mode Controls in Video Overlay (Top Right) -->
@@ -7318,9 +7322,11 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
     }
 
     // =========================================================================
-    // TENSORFLOW.JS & MEDIAPIPE FACEMESH ENGINE (468 3D FACIAL LANDMARKS)
+    // OFFICIAL TENSORFLOW.ORG & MEDIAPIPE AI FACE DETECTION SUITE
+    // https://www.tensorflow.org/ | MediaPipe 468 3D FaceMesh & FaceDetector
     // =========================================================================
     let tfjsFaceDetector = null;
+    let tfjsMediaPipeDetector = null;
     let isTFJSFaceMeshReady = false;
     let isTFJSFaceMeshLoading = false;
     let directMediaPipeFaceMesh = null;
@@ -7330,39 +7336,20 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
       if (isTFJSFaceMeshReady || isTFJSFaceMeshLoading) return;
       isTFJSFaceMeshLoading = true;
       try {
-        console.log('[TensorFlow.js] Initializing MediaPipe FaceMesh Engine...');
+        console.log('⚡ [TensorFlow.org] Initializing TensorFlow.js Core & MediaPipe Face Engine...');
 
-        // 1. TensorFlow.js faceLandmarksDetection Detector
-        if (typeof faceLandmarksDetection !== 'undefined') {
-          const model = faceLandmarksDetection.SupportedModels ? faceLandmarksDetection.SupportedModels.MediaPipeFaceMesh : (faceLandmarksDetection.SupportedPackages ? faceLandmarksDetection.SupportedPackages.mediapipeFacemesh : 'MediaPipeFaceMesh');
-          if (faceLandmarksDetection.createDetector) {
-            try {
-              tfjsFaceDetector = await faceLandmarksDetection.createDetector(model, {
-                runtime: 'mediapipe',
-                solutionPath: 'https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4.1633559619',
-                refineLandmarks: true,
-                maxFaces: 4
-              });
-              isTFJSFaceMeshReady = true;
-              console.log('✅ [TensorFlow.js] MediaPipe FaceMesh (mediapipe runtime) active with 468 3D landmarks!');
-            } catch (errMP) {
-              console.warn('[TensorFlow.js] MediaPipe runtime fallback to tfjs WebGL:', errMP.message);
-              try {
-                tfjsFaceDetector = await faceLandmarksDetection.createDetector(model, {
-                  runtime: 'tfjs',
-                  refineLandmarks: true,
-                  maxFaces: 4
-                });
-                isTFJSFaceMeshReady = true;
-                console.log('✅ [TensorFlow.js] MediaPipe FaceMesh (tfjs runtime) active!');
-              } catch (errTF) {
-                console.warn('[TensorFlow.js] createDetector tfjs notice:', errTF.message);
-              }
-            }
+        // 1. Initialize TensorFlow.js Backend (WebGL with CPU Fallback)
+        if (typeof tf !== 'undefined') {
+          try {
+            await tf.setBackend('webgl');
+            await tf.ready();
+            console.log(`✅ [TensorFlow.org] Backend active: ${tf.getBackend().toUpperCase()}`);
+          } catch (eBe) {
+            console.warn('[TensorFlow.org] WebGL fallback notice:', eBe.message);
           }
         }
 
-        // 2. Direct MediaPipe FaceMesh Pipeline for Maximum Reliability
+        // 2. Direct MediaPipe FaceMesh Engine (468 3D Facial Landmarks)
         if (typeof FaceMesh !== 'undefined' && !directMediaPipeFaceMesh) {
           try {
             directMediaPipeFaceMesh = new FaceMesh({
@@ -7371,25 +7358,78 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
             directMediaPipeFaceMesh.setOptions({
               maxNumFaces: 4,
               refineLandmarks: true,
-              minDetectionConfidence: 0.5,
-              minTrackingConfidence: 0.5
+              minDetectionConfidence: 0.45,
+              minTrackingConfidence: 0.45
             });
             directMediaPipeFaceMesh.onResults((results) => {
               if (results && results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0) {
                 directMediaPipeResults = results;
+              } else {
+                directMediaPipeResults = null;
               }
             });
-            console.log('✅ [MediaPipe] Direct FaceMesh pipeline initialized!');
+            isTFJSFaceMeshReady = true;
+            console.log('✅ [TensorFlow.org] Direct MediaPipe 468 3D FaceMesh Engine ready!');
           } catch (errDirect) {
-            console.warn('[MediaPipe] Direct FaceMesh init note:', errDirect.message);
+            console.warn('[TensorFlow.org] Direct FaceMesh notice:', errDirect.message);
           }
         }
 
-        if (!isTFJSFaceMeshReady && !directMediaPipeFaceMesh) {
+        // 3. TensorFlow.js faceLandmarksDetection Detector (Official TensorFlow.org Model)
+        if (typeof faceLandmarksDetection !== 'undefined' && !tfjsFaceDetector) {
+          try {
+            const model = faceLandmarksDetection.SupportedModels ? faceLandmarksDetection.SupportedModels.MediaPipeFaceMesh : 'MediaPipeFaceMesh';
+            tfjsFaceDetector = await faceLandmarksDetection.createDetector(model, {
+              runtime: 'mediapipe',
+              solutionPath: 'https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4.1633559619',
+              refineLandmarks: true,
+              maxFaces: 4
+            });
+            isTFJSFaceMeshReady = true;
+            console.log('✅ [TensorFlow.org] TensorFlow.js MediaPipe FaceMesh Detector ready (468 3D Landmarks)!');
+          } catch (errMP) {
+            console.warn('[TensorFlow.org] MediaPipe runtime fallback to tfjs WebGL:', errMP.message);
+            try {
+              const model = faceLandmarksDetection.SupportedModels ? faceLandmarksDetection.SupportedModels.MediaPipeFaceMesh : 'MediaPipeFaceMesh';
+              tfjsFaceDetector = await faceLandmarksDetection.createDetector(model, {
+                runtime: 'tfjs',
+                refineLandmarks: true,
+                maxFaces: 4
+              });
+              isTFJSFaceMeshReady = true;
+              console.log('✅ [TensorFlow.org] TensorFlow.js MediaPipe FaceMesh (tfjs runtime) ready!');
+            } catch (errTF) {
+              console.warn('[TensorFlow.org] tfjs createDetector notice:', errTF.message);
+            }
+          }
+        }
+
+        // 4. TensorFlow.js Face Detection (BlazeFace / MediaPipe FaceDetector)
+        if (typeof faceDetection !== 'undefined' && !tfjsMediaPipeDetector) {
+          try {
+            tfjsMediaPipeDetector = await faceDetection.createDetector(
+              faceDetection.SupportedModels.MediaPipeFaceDetector,
+              {
+                runtime: 'mediapipe',
+                solutionPath: 'https://cdn.jsdelivr.net/npm/@mediapipe/face_detection@0.4.1646425229',
+                modelType: 'short'
+              }
+            );
+            console.log('✅ [TensorFlow.org] TensorFlow.js MediaPipe FaceDetector ready!');
+          } catch (eDet) {
+            console.warn('[TensorFlow.org] FaceDetector notice:', eDet.message);
+          }
+        }
+
+        if (directMediaPipeFaceMesh || tfjsFaceDetector || tfjsMediaPipeDetector) {
+          isTFJSFaceMeshReady = true;
+          const statusElem = document.getElementById('ai-hud-status-text');
+          if (statusElem) statusElem.textContent = 'AI SCANNER: TENSORFLOW.ORG 468 3D FACEMESH READY';
+        } else {
           setTimeout(initTFJSFaceMesh, 1500);
         }
       } catch (err) {
-        console.error('[TensorFlow.js] MediaPipe FaceMesh initialization error:', err);
+        console.error('[TensorFlow.org] Initialization error:', err);
       } finally {
         isTFJSFaceMeshLoading = false;
       }
@@ -7759,7 +7799,7 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
     }
 
     async function runFaceAPIDetection(videoElem, providedCanvas = null) {
-      if (!faceAPIReady || faceAPIDetectionRunning) return;
+      if (faceAPIDetectionRunning) return;
       const frameCanvas = providedCanvas || getDetectionFrame(videoElem);
       if (!frameCanvas) return;
       faceAPIDetectionRunning = true;
@@ -7771,18 +7811,24 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
       try {
         let detections = [];
 
-        // 0. TensorFlow.js & MediaPipe FaceMesh 468 3D Landmark Estimation
+        // =========================================================================
+        // 1. PRIMARY ENGINE: OFFICIAL TENSORFLOW.ORG & MEDIAPIPE FACEMESH
+        // Runs on WebGL/GPU for high-precision 468 3D facial landmark detection
+        // =========================================================================
         let tfjsFaces = null;
         if (isTFJSFaceMeshReady && tfjsFaceDetector) {
           try {
             tfjsFaces = await tfjsFaceDetector.estimateFaces(frameCanvas, { flipHorizontal: false });
           } catch (eTF) {
-            console.warn('[TFJS FaceMesh] Frame estimate notice:', eTF.message);
+            console.warn('[TensorFlow.org] estimateFaces notice:', eTF.message);
           }
-        } else if (directMediaPipeFaceMesh) {
+        }
+
+        // Direct MediaPipe FaceMesh (High Performance Fallback/Complement)
+        if ((!tfjsFaces || tfjsFaces.length === 0) && directMediaPipeFaceMesh) {
           try {
             await directMediaPipeFaceMesh.send({ image: frameCanvas });
-            if (directMediaPipeResults && directMediaPipeResults.multiFaceLandmarks) {
+            if (directMediaPipeResults && directMediaPipeResults.multiFaceLandmarks && directMediaPipeResults.multiFaceLandmarks.length > 0) {
               tfjsFaces = directMediaPipeResults.multiFaceLandmarks.map(landmarks => ({
                 keypoints: landmarks,
                 box: null
@@ -7791,31 +7837,110 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
           } catch (eMP) {}
         }
 
-        // 1. Primary Enterprise Multi-Face Detection: SSD MobileNet V1
-        // Detects multiple simultaneous faces from afar at any angle (as in commercial VMS)
-        if (typeof faceapi.nets.ssdMobilenetv1 !== 'undefined' && faceapi.nets.ssdMobilenetv1.isLoaded) {
+        // TensorFlow MediaPipe FaceDetector
+        if ((!tfjsFaces || tfjsFaces.length === 0) && tfjsMediaPipeDetector) {
           try {
-            detections = await faceapi.detectAllFaces(frameCanvas, new faceapi.SsdMobilenetv1Options({ minConfidence: 0.15, maxResults: 10 }))
-              .withFaceLandmarks(true)
-              .withFaceDescriptors();
-          } catch (e) {
-            console.warn('[FaceAPI] SSD scan warning:', e.message);
+            const detFaces = await tfjsMediaPipeDetector.estimateFaces(frameCanvas);
+            if (detFaces && detFaces.length > 0) {
+              tfjsFaces = detFaces.map(df => ({
+                keypoints: df.keypoints,
+                box: df.box
+              }));
+            }
+          } catch (eDet) {}
+        }
+
+        // Convert TensorFlow results into standardized detections
+        if (tfjsFaces && tfjsFaces.length > 0) {
+          for (const tfFace of tfjsFaces) {
+            const kps = tfFace.keypoints;
+            let fBox = null;
+
+            if (tfFace.box && typeof tfFace.box.xMin === 'number') {
+              fBox = {
+                x: Math.max(0, tfFace.box.xMin),
+                y: Math.max(0, tfFace.box.yMin),
+                width: Math.min(frameW - tfFace.box.xMin, tfFace.box.width),
+                height: Math.min(frameH - tfFace.box.yMin, tfFace.box.height)
+              };
+            } else if (kps && kps.length > 0) {
+              let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+              for (let k = 0; k < kps.length; k++) {
+                const pt = kps[k];
+                const px = (pt.x <= 1.05 && pt.y <= 1.05) ? pt.x * frameW : pt.x;
+                const py = (pt.x <= 1.05 && pt.y <= 1.05) ? pt.y * frameH : pt.y;
+                if (px < minX) minX = px;
+                if (px > maxX) maxX = px;
+                if (py < minY) minY = py;
+                if (py > maxY) maxY = py;
+              }
+              const bw = Math.max(24, maxX - minX);
+              const bh = Math.max(24, maxY - minY);
+              const padX = bw * 0.16;
+              const padY = bh * 0.18;
+              fBox = {
+                x: Math.max(0, minX - padX),
+                y: Math.max(0, minY - padY),
+                width: Math.min(frameW - minX + padX, bw + padX * 2),
+                height: Math.min(frameH - minY + padY, bh + padY * 2)
+              };
+            }
+
+            if (fBox && fBox.width >= 24 && fBox.height >= 24) {
+              let desc = null;
+              if (faceAPIReady && typeof faceapi !== 'undefined') {
+                try {
+                  const c = document.createElement('canvas');
+                  c.width = 160;
+                  c.height = 160;
+                  c.getContext('2d').drawImage(frameCanvas, fBox.x, fBox.y, fBox.width, fBox.height, 0, 0, 160, 160);
+                  const fd = await faceapi.detectSingleFace(c, new faceapi.TinyFaceDetectorOptions({ inputSize: 160, scoreThreshold: 0.05 })).withFaceDescriptor();
+                  if (fd && fd.descriptor) {
+                    desc = fd.descriptor;
+                  }
+                } catch (e) {}
+              }
+
+              detections.push({
+                box: fBox,
+                descriptor: desc,
+                mesh468: kps,
+                landmarks: kps,
+                score: 0.98,
+                engine: 'TensorFlow.org'
+              });
+            }
           }
         }
 
-        // 2. High-Sensitivity TinyFaceDetector Fallback / Complement
-        if (!detections || detections.length === 0) {
-          try {
-            const cctvInputSize = frameW >= 600 ? 512 : 416;
-            detections = await faceapi.detectAllFaces(frameCanvas, new faceapi.TinyFaceDetectorOptions({ inputSize: cctvInputSize, scoreThreshold: 0.08 }))
-              .withFaceLandmarks(true)
-              .withFaceDescriptors();
-          } catch (e) {
-            console.warn('[FaceAPI] Tiny scan error:', e.message);
+        // =========================================================================
+        // 2. SECONDARY COMPLEMENT: SSD MobileNet & TinyFaceDetector
+        // Runs as fallback if lighting is low or face is viewed from extreme profile angles
+        // =========================================================================
+        if ((!detections || detections.length === 0) && faceAPIReady && typeof faceapi !== 'undefined') {
+          if (typeof faceapi.nets.ssdMobilenetv1 !== 'undefined' && faceapi.nets.ssdMobilenetv1.isLoaded) {
+            try {
+              detections = await faceapi.detectAllFaces(frameCanvas, new faceapi.SsdMobilenetv1Options({ minConfidence: 0.15, maxResults: 10 }))
+                .withFaceLandmarks(true)
+                .withFaceDescriptors();
+            } catch (e) {
+              console.warn('[FaceAPI] SSD scan warning:', e.message);
+            }
+          }
+
+          if (!detections || detections.length === 0) {
+            try {
+              const cctvInputSize = frameW >= 600 ? 512 : 416;
+              detections = await faceapi.detectAllFaces(frameCanvas, new faceapi.TinyFaceDetectorOptions({ inputSize: cctvInputSize, scoreThreshold: 0.08 }))
+                .withFaceLandmarks(true)
+                .withFaceDescriptors();
+            } catch (e) {
+              console.warn('[FaceAPI] Tiny scan error:', e.message);
+            }
           }
         }
 
-        // 3. Smart CCTV Hardware Green-Box Tracker (Catches people looking down at phones or in dark lighting)
+        // 3. Hardware Green-Box Tracker
         if (!detections || detections.length === 0) {
           try {
             const smartBoxes = findSmartCameraHumanBoxes(frameCanvas);
@@ -7830,84 +7955,29 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
                 const cropH = Math.min(frameH - cropY, Math.round(hb.height + padY * 2));
 
                 if (cropW >= 20 && cropH >= 20) {
-                  const headCanvas = document.createElement('canvas');
-                  headCanvas.width = 256;
-                  headCanvas.height = 256;
-                  const hCtx = headCanvas.getContext('2d');
-                  hCtx.drawImage(frameCanvas, cropX, cropY, cropW, cropH, 0, 0, 256, 256);
-
-                  let headDet = null;
-                  try {
-                    headDet = await faceapi.detectSingleFace(headCanvas, new faceapi.TinyFaceDetectorOptions({ inputSize: 256, scoreThreshold: 0.08 }))
-                      .withFaceLandmarks(true)
-                      .withFaceDescriptor();
-                  } catch (e) {}
-
-                  if (headDet) {
-                    const hBox = headDet.detection ? headDet.detection.box : headDet.box;
-                    const scaleBackX = cropW / 256;
-                    const scaleBackY = cropH / 256;
-                    detections.push({
-                      ...headDet,
-                      box: { x: cropX + hBox.x * scaleBackX, y: cropY + hBox.y * scaleBackY, width: hBox.width * scaleBackX, height: hBox.height * scaleBackY },
-                      landmarks: headDet.landmarks ? (headDet.landmarks.positions || headDet.landmarks).map(p => ({ x: cropX + p.x * scaleBackX, y: cropY + p.y * scaleBackY })) : null,
-                      descriptor: headDet.descriptor
-                    });
+                  let desc = null;
+                  if (faceAPIReady && typeof faceapi !== 'undefined') {
+                    try {
+                      const headCanvas = document.createElement('canvas');
+                      headCanvas.width = 256;
+                      headCanvas.height = 256;
+                      headCanvas.getContext('2d').drawImage(frameCanvas, cropX, cropY, cropW, cropH, 0, 0, 256, 256);
+                      const headDet = await faceapi.detectSingleFace(headCanvas, new faceapi.TinyFaceDetectorOptions({ inputSize: 256, scoreThreshold: 0.08 })).withFaceDescriptor();
+                      if (headDet && headDet.descriptor) desc = headDet.descriptor;
+                    } catch (e) {}
                   }
+
+                  detections.push({
+                    box: { x: cropX, y: cropY, width: cropW, height: cropH },
+                    descriptor: desc,
+                    score: 0.88,
+                    engine: 'CCTV Tracker'
+                  });
                 }
               }
             }
           } catch (e) {
-            console.warn('[FaceAPI] Smart box scan error:', e.message);
-          }
-        }
-
-        // 4. TensorFlow.js MediaPipe FaceMesh Fallback (Direct detection from 468 3D Mesh)
-        if ((!detections || detections.length === 0) && tfjsFaces && tfjsFaces.length > 0) {
-          detections = [];
-          for (const tfFace of tfjsFaces) {
-            const kps = tfFace.keypoints;
-            let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
-            for (let k = 0; k < kps.length; k++) {
-              const pt = kps[k];
-              const px = (pt.x <= 1.05 && pt.y <= 1.05) ? pt.x * frameW : pt.x;
-              const py = (pt.x <= 1.05 && pt.y <= 1.05) ? pt.y * frameH : pt.y;
-              if (px < minX) minX = px;
-              if (px > maxX) maxX = px;
-              if (py < minY) minY = py;
-              if (py > maxY) maxY = py;
-            }
-            const bw = Math.max(24, maxX - minX);
-            const bh = Math.max(24, maxY - minY);
-            const padX = bw * 0.15;
-            const padY = bh * 0.15;
-            const fBox = {
-              x: Math.max(0, minX - padX),
-              y: Math.max(0, minY - padY),
-              width: Math.min(frameW - minX + padX, bw + padX * 2),
-              height: Math.min(frameH - minY + padY, bh + padY * 2)
-            };
-
-            let desc = null;
-            if (faceAPIReady && fBox.width >= 30 && fBox.height >= 30) {
-              try {
-                const c = document.createElement('canvas');
-                c.width = 160;
-                c.height = 160;
-                c.getContext('2d').drawImage(frameCanvas, fBox.x, fBox.y, fBox.width, fBox.height, 0, 0, 160, 160);
-                const fd = await faceapi.detectSingleFace(c, new faceapi.TinyFaceDetectorOptions({ inputSize: 160, scoreThreshold: 0.05 })).withFaceDescriptor();
-                if (fd && fd.descriptor) {
-                  desc = fd.descriptor;
-                }
-              } catch (e) {}
-            }
-
-            detections.push({
-              box: fBox,
-              descriptor: desc,
-              mesh468: kps,
-              score: 0.95
-            });
+            console.warn('[CCTV Tracker] Error:', e.message);
           }
         }
 
@@ -8819,7 +8889,8 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
         startAIHUDLoop();
       }
       initAIVideoPanListeners();
-      // Start face-api.js real recognition engine
+      // Start official Google TensorFlow.org and Face-API recognition engines
+      initTFJSFaceMesh();
       initFaceAPI();
       startFaceAPIDetectionLoop();
     }
@@ -8910,12 +8981,21 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
                 }));
               }
 
+              let scaledMesh468 = null;
+              if (f.mesh468 && Array.isArray(f.mesh468)) {
+                scaledMesh468 = f.mesh468.map(p => ({
+                  x: (p.x <= 1.05) ? Math.round(p.x * canvas.width) : Math.round(p.x * scaleX),
+                  y: (p.y <= 1.05) ? Math.round(p.y * canvas.height) : Math.round(p.y * scaleY),
+                  z: p.z || 0
+                }));
+              }
+
               const targetX = Math.round(nb.x * canvas.width);
               const targetY = Math.round(nb.y * canvas.height);
               const targetW = Math.round(nb.width * canvas.width);
               const targetH = Math.round(nb.height * canvas.height);
 
-              const targetLandmarks17 = extract17BiometricLandmarks(scaledLandmarks, targetX, targetY, targetW, targetH);
+              const targetLandmarks17 = extract17BiometricLandmarks(scaledLandmarks, targetX, targetY, targetW, targetH, scaledMesh468);
 
               return {
                 targetX: targetX,
@@ -8926,6 +9006,7 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
                 label: f.name,
                 category: cat,
                 landmarks: scaledLandmarks,
+                mesh468: scaledMesh468,
                 targetLandmarks17: targetLandmarks17,
                 confidence: f.confidence,
                 createdAt: now
@@ -9010,8 +9091,8 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
                 fetch('../api/ai_analytics.php', { method: 'POST', body: fd }).then(() => loadAIData(true)).catch(e => {});
               });
             }
-          } else if (!faceAPIReady) {
-            // Only show loading placeholder before face-api models finish loading
+          } else if (!isTFJSFaceMeshReady && !directMediaPipeFaceMesh && !faceAPIReady) {
+            // Only show initializing placeholder in the first moments of starting
             const targetW = 160;
             const targetH = 185;
             const centerX = (canvas.width - targetW) / 2;
@@ -9029,7 +9110,7 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
               currentLandmarks17: lm17.map(p => ({ ...p })),
               targetLandmarks17: lm17,
               type: 'face',
-              label: '⏳ Loading AI Models...',
+              label: '⚡ Memulai TensorFlow.org AI...',
               category: 'employee',
               confidence: '...',
               createdAt: now
@@ -9259,9 +9340,45 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
      */
     function drawBiometricFacialMesh(ctx, x, y, w, h, ent, isUnknown, isVIP, isBlacklist) {
       let pts = {};
+      const has17 = Array.isArray(ent.currentLandmarks17) && ent.currentLandmarks17.length === 17;
       const has68 = ent.landmarks && Array.isArray(ent.landmarks) && ent.landmarks.length >= 68;
 
-      if (has68) {
+      if (has17) {
+        const c = ent.currentLandmarks17;
+        pts = {
+          foreheadTopL: c[0],
+          foreheadTopR: c[1],
+          templeL:      c[2],
+          templeR:      c[3],
+          glabella:     c[4],
+
+          browMidL:     { x: (c[0].x + c[4].x) / 2, y: (c[0].y + c[4].y) / 2 },
+          browMidR:     { x: (c[1].x + c[4].x) / 2, y: (c[1].y + c[4].y) / 2 },
+
+          eyeL:         c[5],
+          eyeR:         c[6],
+
+          noseBridge:   { x: (c[4].x + c[9].x) / 2, y: (c[4].y + c[9].y) / 2 - (h * 0.05) },
+          noseMid:      { x: (c[4].x + c[9].x) / 2, y: (c[4].y + c[9].y) / 2 },
+          noseTip:      c[9],
+          nostrilL:     { x: c[9].x - w * 0.08, y: c[9].y },
+          nostrilR:     { x: c[9].x + w * 0.08, y: c[9].y },
+
+          cheekUpperL:  c[7],
+          cheekUpperR:  c[8],
+          cheekLowerL:  { x: (c[7].x + c[14].x) / 2, y: (c[7].y + c[14].y) / 2 },
+          cheekLowerR:  { x: (c[8].x + c[15].x) / 2, y: (c[8].y + c[15].y) / 2 },
+
+          philtrum:     c[10],
+          mouthL:       c[11],
+          mouthR:       c[12],
+          lipBot:       c[13],
+
+          chinL:        c[14],
+          chinR:        c[15],
+          chinTip:      c[16]
+        };
+      } else if (has68) {
         const l = ent.landmarks;
         pts = {
           // Forehead & hairline nodes (anchored above eyebrows with anatomical stability)
