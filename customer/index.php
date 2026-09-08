@@ -19,7 +19,11 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
-  <!-- face-api.js: High-Precision Neural Network Face Recognition (TensorFlow.js based) -->
+  <!-- TensorFlow.js & MediaPipe FaceMesh Model (468 3D Facial Landmarks) -->
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.18.0/dist/tf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4.1633559619/face_mesh.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/face-landmarks-detection@1.0.6/dist/face-landmarks-detection.min.js"></script>
+  <!-- face-api.js: High-Precision Neural Network Face Recognition & Whitelist Matching -->
   <script defer src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
   <!-- Midtrans Snap Payment Gateway SDK (Sandbox) -->
   <script type="text/javascript" src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="Mid-client-mGA7v04cXrux3KNF"></script>
@@ -7313,6 +7317,84 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
       }
     }
 
+    // =========================================================================
+    // TENSORFLOW.JS & MEDIAPIPE FACEMESH ENGINE (468 3D FACIAL LANDMARKS)
+    // =========================================================================
+    let tfjsFaceDetector = null;
+    let isTFJSFaceMeshReady = false;
+    let isTFJSFaceMeshLoading = false;
+    let directMediaPipeFaceMesh = null;
+    let directMediaPipeResults = null;
+
+    async function initTFJSFaceMesh() {
+      if (isTFJSFaceMeshReady || isTFJSFaceMeshLoading) return;
+      isTFJSFaceMeshLoading = true;
+      try {
+        console.log('[TensorFlow.js] Initializing MediaPipe FaceMesh Engine...');
+
+        // 1. TensorFlow.js faceLandmarksDetection Detector
+        if (typeof faceLandmarksDetection !== 'undefined') {
+          const model = faceLandmarksDetection.SupportedModels ? faceLandmarksDetection.SupportedModels.MediaPipeFaceMesh : (faceLandmarksDetection.SupportedPackages ? faceLandmarksDetection.SupportedPackages.mediapipeFacemesh : 'MediaPipeFaceMesh');
+          if (faceLandmarksDetection.createDetector) {
+            try {
+              tfjsFaceDetector = await faceLandmarksDetection.createDetector(model, {
+                runtime: 'mediapipe',
+                solutionPath: 'https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4.1633559619',
+                refineLandmarks: true,
+                maxFaces: 4
+              });
+              isTFJSFaceMeshReady = true;
+              console.log('✅ [TensorFlow.js] MediaPipe FaceMesh (mediapipe runtime) active with 468 3D landmarks!');
+            } catch (errMP) {
+              console.warn('[TensorFlow.js] MediaPipe runtime fallback to tfjs WebGL:', errMP.message);
+              try {
+                tfjsFaceDetector = await faceLandmarksDetection.createDetector(model, {
+                  runtime: 'tfjs',
+                  refineLandmarks: true,
+                  maxFaces: 4
+                });
+                isTFJSFaceMeshReady = true;
+                console.log('✅ [TensorFlow.js] MediaPipe FaceMesh (tfjs runtime) active!');
+              } catch (errTF) {
+                console.warn('[TensorFlow.js] createDetector tfjs notice:', errTF.message);
+              }
+            }
+          }
+        }
+
+        // 2. Direct MediaPipe FaceMesh Pipeline for Maximum Reliability
+        if (typeof FaceMesh !== 'undefined' && !directMediaPipeFaceMesh) {
+          try {
+            directMediaPipeFaceMesh = new FaceMesh({
+              locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4.1633559619/${file}`
+            });
+            directMediaPipeFaceMesh.setOptions({
+              maxNumFaces: 4,
+              refineLandmarks: true,
+              minDetectionConfidence: 0.5,
+              minTrackingConfidence: 0.5
+            });
+            directMediaPipeFaceMesh.onResults((results) => {
+              if (results && results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0) {
+                directMediaPipeResults = results;
+              }
+            });
+            console.log('✅ [MediaPipe] Direct FaceMesh pipeline initialized!');
+          } catch (errDirect) {
+            console.warn('[MediaPipe] Direct FaceMesh init note:', errDirect.message);
+          }
+        }
+
+        if (!isTFJSFaceMeshReady && !directMediaPipeFaceMesh) {
+          setTimeout(initTFJSFaceMesh, 1500);
+        }
+      } catch (err) {
+        console.error('[TensorFlow.js] MediaPipe FaceMesh initialization error:', err);
+      } finally {
+        isTFJSFaceMeshLoading = false;
+      }
+    }
+
     // ========================================================
     // REAL FACE RECOGNITION ENGINE (face-api.js Neural Network)
     // ========================================================
@@ -7689,6 +7771,26 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
       try {
         let detections = [];
 
+        // 0. TensorFlow.js & MediaPipe FaceMesh 468 3D Landmark Estimation
+        let tfjsFaces = null;
+        if (isTFJSFaceMeshReady && tfjsFaceDetector) {
+          try {
+            tfjsFaces = await tfjsFaceDetector.estimateFaces(frameCanvas, { flipHorizontal: false });
+          } catch (eTF) {
+            console.warn('[TFJS FaceMesh] Frame estimate notice:', eTF.message);
+          }
+        } else if (directMediaPipeFaceMesh) {
+          try {
+            await directMediaPipeFaceMesh.send({ image: frameCanvas });
+            if (directMediaPipeResults && directMediaPipeResults.multiFaceLandmarks) {
+              tfjsFaces = directMediaPipeResults.multiFaceLandmarks.map(landmarks => ({
+                keypoints: landmarks,
+                box: null
+              }));
+            }
+          } catch (eMP) {}
+        }
+
         // 1. Primary Enterprise Multi-Face Detection: SSD MobileNet V1
         // Detects multiple simultaneous faces from afar at any angle (as in commercial VMS)
         if (typeof faceapi.nets.ssdMobilenetv1 !== 'undefined' && faceapi.nets.ssdMobilenetv1.isLoaded) {
@@ -7760,6 +7862,55 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
           }
         }
 
+        // 4. TensorFlow.js MediaPipe FaceMesh Fallback (Direct detection from 468 3D Mesh)
+        if ((!detections || detections.length === 0) && tfjsFaces && tfjsFaces.length > 0) {
+          detections = [];
+          for (const tfFace of tfjsFaces) {
+            const kps = tfFace.keypoints;
+            let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+            for (let k = 0; k < kps.length; k++) {
+              const pt = kps[k];
+              const px = (pt.x <= 1.05 && pt.y <= 1.05) ? pt.x * frameW : pt.x;
+              const py = (pt.x <= 1.05 && pt.y <= 1.05) ? pt.y * frameH : pt.y;
+              if (px < minX) minX = px;
+              if (px > maxX) maxX = px;
+              if (py < minY) minY = py;
+              if (py > maxY) maxY = py;
+            }
+            const bw = Math.max(24, maxX - minX);
+            const bh = Math.max(24, maxY - minY);
+            const padX = bw * 0.15;
+            const padY = bh * 0.15;
+            const fBox = {
+              x: Math.max(0, minX - padX),
+              y: Math.max(0, minY - padY),
+              width: Math.min(frameW - minX + padX, bw + padX * 2),
+              height: Math.min(frameH - minY + padY, bh + padY * 2)
+            };
+
+            let desc = null;
+            if (faceAPIReady && fBox.width >= 30 && fBox.height >= 30) {
+              try {
+                const c = document.createElement('canvas');
+                c.width = 160;
+                c.height = 160;
+                c.getContext('2d').drawImage(frameCanvas, fBox.x, fBox.y, fBox.width, fBox.height, 0, 0, 160, 160);
+                const fd = await faceapi.detectSingleFace(c, new faceapi.TinyFaceDetectorOptions({ inputSize: 160, scoreThreshold: 0.05 })).withFaceDescriptor();
+                if (fd && fd.descriptor) {
+                  desc = fd.descriptor;
+                }
+              } catch (e) {}
+            }
+
+            detections.push({
+              box: fBox,
+              descriptor: desc,
+              mesh468: kps,
+              score: 0.95
+            });
+          }
+        }
+
         if (detections && detections.length > 0) {
           const results = [];
 
@@ -7768,6 +7919,28 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
             const box = d.detection ? d.detection.box : d.box;
             const landmarks = d.landmarks ? (d.landmarks.positions || d.landmarks) : null;
             const desc = d.descriptor || null;
+
+            // Link with closest TensorFlow.js MediaPipe 468 FaceMesh
+            if (!d.mesh468 && tfjsFaces && tfjsFaces.length > 0) {
+              let bestTfMesh = null;
+              let bestTfDist = Infinity;
+              const bcx = box.x + box.width / 2;
+              const bcy = box.y + box.height / 2;
+              for (const tf of tfjsFaces) {
+                const kps = tf.keypoints;
+                const nosePt = kps[4] || kps[1] || kps[0];
+                const nx = (nosePt.x <= 1.05) ? nosePt.x * frameW : nosePt.x;
+                const ny = (nosePt.y <= 1.05) ? nosePt.y * frameH : nosePt.y;
+                const dist = Math.hypot(nx - bcx, ny - bcy);
+                if (dist < bestTfDist) {
+                  bestTfDist = dist;
+                  bestTfMesh = kps;
+                }
+              }
+              if (bestTfDist < Math.max(box.width, box.height) * 1.5) {
+                d.mesh468 = bestTfMesh;
+              }
+            }
 
             // Reject false positives using gentle landmark check
             if (!isValidHumanFaceLandmarks(landmarks, box)) {
@@ -7833,6 +8006,15 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
 
             const detectedGender = d.gender ? d.gender : (stab.isMatch && stab.face ? stab.face.gender : null);
 
+            let normMesh468 = null;
+            if (d.mesh468 && Array.isArray(d.mesh468)) {
+              normMesh468 = d.mesh468.map(p => ({
+                x: (p.x <= 1.05) ? p.x : p.x / frameW,
+                y: (p.y <= 1.05) ? p.y : p.y / frameH,
+                z: p.z || 0
+              }));
+            }
+
             results.push({
               name: labelName,
               face: stab.face,
@@ -7851,6 +8033,7 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
                 { x: (box.x + box.width * 0.12) / frameW, y: (box.y + box.height * 0.45) / frameH },
                 { x: (box.x + box.width * 0.88) / frameW, y: (box.y + box.height * 0.45) / frameH }
               ],
+              mesh468: normMesh468,
               confidence: conf,
               gender: detectedGender,
               snapshot: createFaceCropSnapshot(frameCanvas, box, frameW, frameH),
@@ -8491,6 +8674,135 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
       }
     }
 
+    // =========================================================================
+    // 17-Point Canonical Biometric Triangulation Edges & Landmarks (100% Faithful to Reference Illustration)
+    // =========================================================================
+    const BIOMETRIC_EDGES_17 = [
+      // 1. Forehead top horizontal bar
+      [0, 1],
+
+      // 2. Forehead boundary & triangulation
+      [0, 2], // foreheadTopL -> templeL
+      [1, 3], // foreheadTopR -> templeR
+      [0, 4], // foreheadTopL -> bridge
+      [1, 4], // foreheadTopR -> bridge
+      [2, 4], // templeL -> bridge
+      [3, 4], // templeR -> bridge
+
+      // 3. Eye & cheekbone triangulation
+      [2, 5], // templeL -> underEyeL
+      [3, 6], // templeR -> underEyeR
+      [4, 5], // bridge -> underEyeL
+      [4, 6], // bridge -> underEyeR
+      [4, 9], // bridge -> noseTip (vertical center nose ridge!)
+      [5, 9], // underEyeL -> noseTip
+      [6, 9], // underEyeR -> noseTip
+
+      // 4. Mid cheeks
+      [2, 7], // templeL -> midCheekL
+      [3, 8], // templeR -> midCheekR
+      [5, 7], // underEyeL -> midCheekL
+      [6, 8], // underEyeR -> midCheekR
+      [7, 9], // midCheekL -> noseTip
+      [8, 9], // midCheekR -> noseTip
+
+      // 5. Philtrum & Mouth kite/diamond
+      [9, 10],  // noseTip -> philtrum (vertical connector!)
+      [7, 10],  // midCheekL -> philtrum
+      [8, 10],  // midCheekR -> philtrum
+      [10, 11], // philtrum -> mouthCornerL
+      [10, 12], // philtrum -> mouthCornerR
+      [7, 11],  // midCheekL -> mouthCornerL
+      [8, 12],  // midCheekR -> mouthCornerR
+      [10, 13], // philtrum -> lipBottom (vertical line through lips!)
+      [11, 13], // mouthCornerL -> lipBottom
+      [12, 13], // mouthCornerR -> lipBottom
+
+      // 6. Lower Jaw & Chin
+      [7, 14],  // midCheekL -> jawL
+      [8, 15],  // midCheekR -> jawR
+      [11, 14], // mouthCornerL -> jawL
+      [12, 15], // mouthCornerR -> jawR
+      [13, 16], // lipBottom -> chinTip (vertical line to chin tip!)
+      [14, 16], // jawL -> chinTip
+      [15, 16]  // jawR -> chinTip
+    ];
+
+    /**
+     * 17-Point Canonical Biometric Landmark Solver (100% Faithful to Reference Artwork)
+     * Resolves keypoints from TensorFlow.js MediaPipe 468 3D FaceMesh, face-api 68 landmarks, OR canonical bounding-box proportions
+     */
+    function extract17BiometricLandmarks(landmarks68, bx, by, bw, bh, mesh468 = null) {
+      // 1. Highest Precision: TensorFlow.js MediaPipe FaceMesh (468 3D Landmarks)
+      if (Array.isArray(mesh468) && mesh468.length >= 468) {
+        const m = mesh468;
+        return [
+          { x: m[109].x, y: m[109].y }, // 0: foreheadTopL
+          { x: m[338].x, y: m[338].y }, // 1: foreheadTopR
+          { x: m[127].x, y: m[127].y }, // 2: templeL
+          { x: m[356].x, y: m[356].y }, // 3: templeR
+          { x: m[168].x, y: m[168].y }, // 4: bridge (Glabella between eyes)
+          { x: m[116].x, y: m[116].y }, // 5: underEyeL (zygomatic cheekbone)
+          { x: m[345].x, y: m[345].y }, // 6: underEyeR (zygomatic cheekbone)
+          { x: m[234].x, y: m[234].y }, // 7: midCheekL
+          { x: m[454].x, y: m[454].y }, // 8: midCheekR
+          { x: m[4].x,   y: m[4].y },   // 9: noseTip (pronasale)
+          { x: m[2].x,   y: m[2].y },   // 10: philtrum (subnasale)
+          { x: m[61].x,  y: m[61].y },  // 11: mouthCornerL
+          { x: m[291].x, y: m[291].y }, // 12: mouthCornerR
+          { x: m[17].x,  y: m[17].y },  // 13: lipBottom
+          { x: m[172].x, y: m[172].y }, // 14: jawL
+          { x: m[397].x, y: m[397].y }, // 15: jawR
+          { x: m[152].x, y: m[152].y }  // 16: chinTip
+        ];
+      }
+
+      // 2. Secondary: face-api.js 68 Landmarks
+      if (Array.isArray(landmarks68) && landmarks68.length >= 68) {
+        const l = landmarks68;
+        return [
+          { x: l[19].x - bw * 0.02, y: l[19].y - bh * 0.22 }, // 0: foreheadTopL
+          { x: l[24].x + bw * 0.02, y: l[24].y - bh * 0.22 }, // 1: foreheadTopR
+          { x: l[0].x - bw * 0.02, y: l[17].y - bh * 0.04 },  // 2: templeL
+          { x: l[16].x + bw * 0.02, y: l[26].y - bh * 0.04 }, // 3: templeR
+          { x: l[27].x, y: l[27].y },                         // 4: bridge (Glabella)
+          { x: (l[36].x + l[39].x) / 2, y: l[41].y + bh * 0.06 }, // 5: underEyeL
+          { x: (l[42].x + l[45].x) / 2, y: l[46].y + bh * 0.06 }, // 6: underEyeR
+          { x: l[2].x, y: l[2].y },                           // 7: midCheekL
+          { x: l[14].x, y: l[14].y },                         // 8: midCheekR
+          { x: l[30].x, y: l[30].y },                         // 9: noseTip
+          { x: l[33].x, y: l[33].y },                         // 10: philtrum
+          { x: l[48].x, y: l[48].y },                         // 11: mouthCornerL
+          { x: l[54].x, y: l[54].y },                         // 12: mouthCornerR
+          { x: l[57].x, y: l[57].y },                         // 13: lipBottom
+          { x: l[5].x, y: l[5].y },                           // 14: jawL
+          { x: l[11].x, y: l[11].y },                         // 15: jawR
+          { x: l[8].x, y: l[8].y }                            // 16: chinTip
+        ];
+      }
+
+      // Canonical Anatomical Proportions mapped directly to face bounding box
+      return [
+        { x: bx + bw * 0.34, y: by + bh * 0.08 }, // 0: foreheadTopL
+        { x: bx + bw * 0.66, y: by + bh * 0.08 }, // 1: foreheadTopR
+        { x: bx + bw * 0.14, y: by + bh * 0.28 }, // 2: templeL
+        { x: bx + bw * 0.86, y: by + bh * 0.28 }, // 3: templeR
+        { x: bx + bw * 0.50, y: by + bh * 0.32 }, // 4: bridge
+        { x: bx + bw * 0.33, y: by + bh * 0.44 }, // 5: underEyeL
+        { x: bx + bw * 0.67, y: by + bh * 0.44 }, // 6: underEyeR
+        { x: bx + bw * 0.15, y: by + bh * 0.58 }, // 7: midCheekL
+        { x: bx + bw * 0.85, y: by + bh * 0.58 }, // 8: midCheekR
+        { x: bx + bw * 0.50, y: by + bh * 0.60 }, // 9: noseTip
+        { x: bx + bw * 0.50, y: by + bh * 0.68 }, // 10: philtrum
+        { x: bx + bw * 0.33, y: by + bh * 0.75 }, // 11: mouthCornerL
+        { x: bx + bw * 0.67, y: by + bh * 0.75 }, // 12: mouthCornerR
+        { x: bx + bw * 0.50, y: by + bh * 0.82 }, // 13: lipBottom
+        { x: bx + bw * 0.25, y: by + bh * 0.90 }, // 14: jawL
+        { x: bx + bw * 0.75, y: by + bh * 0.90 }, // 15: jawR
+        { x: bx + bw * 0.50, y: by + bh * 0.99 }  // 16: chinTip
+      ];
+    }
+
     // AI Canvas HUD Animation
     function initAIHUDCanvas() {
       const canvas = document.getElementById('ai-hud-canvas');
@@ -8598,21 +8910,29 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
                 }));
               }
 
+              const targetX = Math.round(nb.x * canvas.width);
+              const targetY = Math.round(nb.y * canvas.height);
+              const targetW = Math.round(nb.width * canvas.width);
+              const targetH = Math.round(nb.height * canvas.height);
+
+              const targetLandmarks17 = extract17BiometricLandmarks(scaledLandmarks, targetX, targetY, targetW, targetH);
+
               return {
-                targetX: Math.round(nb.x * canvas.width),
-                targetY: Math.round(nb.y * canvas.height),
-                targetW: Math.round(nb.width * canvas.width),
-                targetH: Math.round(nb.height * canvas.height),
+                targetX: targetX,
+                targetY: targetY,
+                targetW: targetW,
+                targetH: targetH,
                 type: 'face',
                 label: f.name,
                 category: cat,
                 landmarks: scaledLandmarks,
+                targetLandmarks17: targetLandmarks17,
                 confidence: f.confidence,
                 createdAt: now
               };
             });
 
-            // Smooth spatial centroid tracking interpolation (Prevents boxes jumping across screen)
+            // Smooth spatial centroid tracking & continuous landmark state persistence
             activeAIEntities = targetEntities.map((t) => {
               let bestPrev = null;
               let bestDist = 140;
@@ -8632,26 +8952,20 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
                   x: t.targetX,
                   y: t.targetY,
                   w: t.targetW,
-                  h: t.targetH
+                  h: t.targetH,
+                  currentLandmarks17: t.targetLandmarks17.map(p => ({ ...p }))
                 };
-              }
-
-              // Lerp landmark positions if present for ultra-smooth 60fps mesh tracking
-              let lerpedLandmarks = t.landmarks;
-              if (Array.isArray(t.landmarks) && bestPrev && Array.isArray(bestPrev.landmarks) && bestPrev.landmarks.length === t.landmarks.length) {
-                lerpedLandmarks = t.landmarks.map((pt, idx) => ({
-                  x: Math.round(bestPrev.landmarks[idx].x + (pt.x - bestPrev.landmarks[idx].x) * 0.42),
-                  y: Math.round(bestPrev.landmarks[idx].y + (pt.y - bestPrev.landmarks[idx].y) * 0.42)
-                }));
               }
 
               return {
                 ...t,
-                x: Math.round(bestPrev.x + (t.targetX - bestPrev.x) * 0.40),
-                y: Math.round(bestPrev.y + (t.targetY - bestPrev.y) * 0.40),
-                w: Math.round(bestPrev.w + (t.targetW - bestPrev.w) * 0.40),
-                h: Math.round(bestPrev.h + (t.targetH - bestPrev.h) * 0.40),
-                landmarks: lerpedLandmarks
+                x: bestPrev.x,
+                y: bestPrev.y,
+                w: bestPrev.w,
+                h: bestPrev.h,
+                currentLandmarks17: (Array.isArray(bestPrev.currentLandmarks17) && bestPrev.currentLandmarks17.length === 17)
+                  ? bestPrev.currentLandmarks17
+                  : t.targetLandmarks17.map(p => ({ ...p }))
               };
             });
 
@@ -8702,24 +9016,53 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
             const targetH = 185;
             const centerX = (canvas.width - targetW) / 2;
             const centerY = (canvas.height - targetH) / 2 - 10;
+            const lm17 = extract17BiometricLandmarks(null, Math.round(centerX), Math.round(centerY), targetW, targetH);
             activeAIEntities = [{
               x: Math.round(centerX),
               y: Math.round(centerY),
               w: targetW,
               h: targetH,
+              targetX: Math.round(centerX),
+              targetY: Math.round(centerY),
+              targetW: targetW,
+              targetH: targetH,
+              currentLandmarks17: lm17.map(p => ({ ...p })),
+              targetLandmarks17: lm17,
               type: 'face',
               label: '⏳ Loading AI Models...',
               category: 'employee',
               confidence: '...',
               createdAt: now
             }];
-          } else {
+          } else if (lastFaceAPIResult && (now - lastFaceAPIResult.timestamp > 1800)) {
             activeAIEntities = [];
           }
         } else {
           // Filter manual triggers (auto-expire after 4s)
           activeAIEntities = activeAIEntities.filter(e => now - e.createdAt < 4000);
         }
+
+        // =========================================================================
+        // Continuous 60 FPS Landmark Interpolation (Smooth Sub-Pixel Glide)
+        // =========================================================================
+        activeAIEntities.forEach(ent => {
+          if (typeof ent.targetX === 'number') {
+            ent.x += (ent.targetX - ent.x) * 0.38;
+            ent.y += (ent.targetY - ent.y) * 0.38;
+            ent.w += (ent.targetW - ent.w) * 0.38;
+            ent.h += (ent.targetH - ent.h) * 0.38;
+          }
+          if (Array.isArray(ent.targetLandmarks17) && Array.isArray(ent.currentLandmarks17)) {
+            for (let i = 0; i < ent.currentLandmarks17.length; i++) {
+              const cur = ent.currentLandmarks17[i];
+              const tgt = ent.targetLandmarks17[i];
+              if (cur && tgt) {
+                cur.x += (tgt.x - cur.x) * 0.38;
+                cur.y += (tgt.y - cur.y) * 0.38;
+              }
+            }
+          }
+        });
 
         // Render Active Face & Plate AI Entity Brackets
         activeAIEntities.forEach(ent => {
@@ -9948,27 +10291,6 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
       }
     }
 
-    // Handle Image Upload from File Picker (HP / PC)
-    function handleFaceFileUpload(event) {
-      const file = event.target.files && event.target.files[0];
-      if (!file) return;
-
-      if (!file.type.startsWith('image/')) {
-        alert('Silakan pilih file gambar (JPG, PNG).');
-        return;
-      }
-
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        const base64 = e.target.result;
-        const img = document.getElementById('face-preview-img');
-        const hiddenInput = document.getElementById('face-input-photo');
-        if (img) img.src = base64;
-        if (hiddenInput) hiddenInput.value = base64;
-      };
-      reader.readAsDataURL(file);
-    }
-
     // ========================================================
     // LIVE BIOMETRIC FACE ENROLLMENT SCANNER CONTROLLER
     // ========================================================
@@ -10421,8 +10743,8 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
     }
 
     function handleFaceFileUpload(input) {
-      if (!input.files || !input.files[0]) return;
-      const file = input.files[0];
+      const file = (input && input.files && input.files[0]) || (input && input.target && input.target.files && input.target.files[0]);
+      if (!file) return;
       const reader = new FileReader();
       reader.onload = function(e) {
         const base64Data = e.target.result;

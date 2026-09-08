@@ -17,7 +17,11 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
-  <!-- face-api.js: High-Precision Neural Network Face Recognition (TensorFlow.js based) -->
+  <!-- TensorFlow.js & MediaPipe FaceMesh Model (468 3D Facial Landmarks) -->
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.18.0/dist/tf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4.1633559619/face_mesh.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/face-landmarks-detection@1.0.6/dist/face-landmarks-detection.min.js"></script>
+  <!-- face-api.js: High-Precision Neural Network Face Recognition & Whitelist Matching -->
   <script defer src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
   <!-- Midtrans Snap Payment Gateway SDK (Sandbox) -->
   <script type="text/javascript" src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="Mid-client-mGA7v04cXrux3KNF"></script>
@@ -9921,27 +9925,6 @@
       }
     }
 
-    // Handle Image Upload from File Picker (HP / PC)
-    function handleFaceFileUpload(event) {
-      const file = event.target.files && event.target.files[0];
-      if (!file) return;
-
-      if (!file.type.startsWith('image/')) {
-        alert('Silakan pilih file gambar (JPG, PNG).');
-        return;
-      }
-
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        const base64 = e.target.result;
-        const img = document.getElementById('face-preview-img');
-        const hiddenInput = document.getElementById('face-input-photo');
-        if (img) img.src = base64;
-        if (hiddenInput) hiddenInput.value = base64;
-      };
-      reader.readAsDataURL(file);
-    }
-
     // ========================================================
     // LIVE BIOMETRIC FACE ENROLLMENT SCANNER CONTROLLER
     // ========================================================
@@ -10382,8 +10365,8 @@
     }
 
     function handleFaceFileUpload(input) {
-      if (!input.files || !input.files[0]) return;
-      const file = input.files[0];
+      const file = (input && input.files && input.files[0]) || (input && input.target && input.target.files && input.target.files[0]);
+      if (!file) return;
       const reader = new FileReader();
       reader.onload = function(e) {
         const base64Data = e.target.result;
