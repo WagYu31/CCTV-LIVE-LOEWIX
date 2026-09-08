@@ -7697,7 +7697,9 @@
     function isValidHumanFaceLandmarks(landmarks, box) {
       if (!landmarks) return true;
       const positions = landmarks.positions || landmarks;
-      if (!positions || positions.length < 60) return true;
+      // Strictly apply 68-point dlib heuristic ONLY to 68-point landmarks.
+      // Google TensorFlow.org MediaPipe 468 FaceMesh points must never be rejected by this 68-point check!
+      if (!positions || positions.length !== 68) return true;
       try {
         const leftEye = positions[36];
         const rightEye = positions[45];
