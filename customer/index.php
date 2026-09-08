@@ -8889,6 +8889,304 @@
       ctx.restore();
     }
 
+    /**
+     * High-Tech 3D Biometric Facial Mesh & Cyber Target Node Renderer
+     * Faithful full-face polygonal triangulation inspired by biometric scan reference
+     */
+    function drawBiometricFacialMesh(ctx, x, y, w, h, ent, isUnknown, isVIP, isBlacklist, strokeColor, glowColor) {
+      // Color palette: Glowing Electric Cyber Gold for Stranger (matching reference photo), Cyan for Staff, Emerald for VIP, Red for DPO
+      const meshColor = isBlacklist ? '#ef4444' : (isVIP ? '#10b981' : (isUnknown ? '#ffd700' : '#00f0ff'));
+      const meshStroke = isBlacklist ? 'rgba(239, 68, 68, 0.88)' : (isVIP ? 'rgba(16, 185, 129, 0.88)' : (isUnknown ? 'rgba(255, 215, 0, 0.90)' : 'rgba(0, 240, 255, 0.90)'));
+      const meshGlow = isBlacklist ? 'rgba(239, 68, 68, 0.65)' : (isVIP ? 'rgba(16, 185, 129, 0.65)' : (isUnknown ? 'rgba(255, 215, 0, 0.70)' : 'rgba(0, 240, 255, 0.70)'));
+
+      let pts = {};
+      const has68 = ent.landmarks && Array.isArray(ent.landmarks) && ent.landmarks.length >= 68;
+      const has6 = ent.landmarks && Array.isArray(ent.landmarks) && ent.landmarks.length === 6;
+
+      if (has68) {
+        const l = ent.landmarks;
+        pts = {
+          foreheadTop: { x: (l[19].x + l[24].x) / 2, y: Math.min(l[19].y, l[24].y) - (h * 0.22) },
+          templeL: { x: l[0].x - (w * 0.04), y: l[17].y - (h * 0.08) },
+          templeR: { x: l[16].x + (w * 0.04), y: l[26].y - (h * 0.08) },
+          foreheadMidL: { x: (l[0].x + l[19].x) / 2, y: l[19].y - (h * 0.16) },
+          foreheadMidR: { x: (l[16].x + l[24].x) / 2, y: l[24].y - (h * 0.16) },
+          glabella: { x: (l[21].x + l[22].x) / 2, y: (l[21].y + l[22].y) / 2 },
+
+          browOutL: l[17], browMidL: l[19], browInL: l[21],
+          browInR: l[22], browMidR: l[24], browOutR: l[26],
+
+          eyeOutL: l[36], eyeTopL: { x: (l[37].x + l[38].x) / 2, y: (l[37].y + l[38].y) / 2 },
+          eyeInL: l[39], eyeBotL: { x: (l[40].x + l[41].x) / 2, y: (l[40].y + l[41].y) / 2 },
+          eyeCenterL: { x: (l[36].x + l[39].x) / 2, y: (l[37].y + l[41].y) / 2 },
+
+          eyeInR: l[42], eyeTopR: { x: (l[43].x + l[44].x) / 2, y: (l[43].y + l[44].y) / 2 },
+          eyeOutR: l[45], eyeBotR: { x: (l[46].x + l[47].x) / 2, y: (l[46].y + l[47].y) / 2 },
+          eyeCenterR: { x: (l[42].x + l[45].x) / 2, y: (l[43].y + l[47].y) / 2 },
+
+          noseBridge: l[27], noseMid: l[29], noseTip: l[30],
+          nostrilL: l[31], nostrilR: l[35], septumBase: l[33],
+
+          cheekUpperL: { x: l[1].x, y: l[36].y + (h * 0.08) },
+          cheekLowerL: { x: l[3].x, y: l[48].y - (h * 0.04) },
+          cheekUpperR: { x: l[15].x, y: l[45].y + (h * 0.08) },
+          cheekLowerR: { x: l[13].x, y: l[54].y - (h * 0.04) },
+
+          mouthL: l[48], philtrum: l[51], mouthR: l[54], lipBot: l[57],
+
+          jawEarL: l[0], jawMidL: l[4], chinCornerL: l[6],
+          chinCenter: l[8],
+          chinCornerR: l[10], jawMidR: l[12], jawEarR: l[16]
+        };
+      } else {
+        // High-Precision Canonical Biometric Mesh mapped dynamically to bounding box
+        const kp = has6 ? ent.landmarks : null;
+        const eL = (kp && kp[1]) ? kp[1] : { x: x + w * 0.33, y: y + h * 0.36 };
+        const eR = (kp && kp[0]) ? kp[0] : { x: x + w * 0.67, y: y + h * 0.36 };
+        const nT = (kp && kp[2]) ? kp[2] : { x: x + w * 0.50, y: y + h * 0.58 };
+        const mC = (kp && kp[3]) ? kp[3] : { x: x + w * 0.50, y: y + h * 0.76 };
+
+        pts = {
+          foreheadTop: { x: x + w * 0.50, y: y - h * 0.14 },
+          templeL: { x: x + w * 0.12, y: y + h * 0.08 },
+          templeR: { x: x + w * 0.88, y: y + h * 0.08 },
+          foreheadMidL: { x: x + w * 0.32, y: y + h * 0.04 },
+          foreheadMidR: { x: x + w * 0.68, y: y + h * 0.04 },
+          glabella: { x: x + w * 0.50, y: y + h * 0.26 },
+
+          browOutL: { x: x + w * 0.18, y: y + h * 0.24 },
+          browMidL: { x: x + w * 0.30, y: y + h * 0.21 },
+          browInL: { x: x + w * 0.42, y: y + h * 0.25 },
+
+          browInR: { x: x + w * 0.58, y: y + h * 0.25 },
+          browMidR: { x: x + w * 0.70, y: y + h * 0.21 },
+          browOutR: { x: x + w * 0.82, y: y + h * 0.24 },
+
+          eyeOutL: { x: eL.x - w * 0.11, y: eL.y },
+          eyeTopL: { x: eL.x, y: eL.y - h * 0.035 },
+          eyeInL: { x: eL.x + w * 0.09, y: eL.y + h * 0.01 },
+          eyeBotL: { x: eL.x, y: eL.y + h * 0.035 },
+          eyeCenterL: eL,
+
+          eyeInR: { x: eR.x - w * 0.09, y: eR.y + h * 0.01 },
+          eyeTopR: { x: eR.x, y: eR.y - h * 0.035 },
+          eyeOutR: { x: eR.x + w * 0.11, y: eR.y },
+          eyeBotR: { x: eR.x, y: eR.y + h * 0.035 },
+          eyeCenterR: eR,
+
+          noseBridge: { x: x + w * 0.50, y: y + h * 0.40 },
+          noseMid: { x: x + w * 0.50, y: (y + h * 0.40 + nT.y) / 2 },
+          noseTip: nT,
+          nostrilL: { x: nT.x - w * 0.12, y: nT.y + h * 0.02 },
+          nostrilR: { x: nT.x + w * 0.12, y: nT.y + h * 0.02 },
+          septumBase: { x: nT.x, y: nT.y + h * 0.05 },
+
+          cheekUpperL: { x: x + w * 0.18, y: y + h * 0.50 },
+          cheekLowerL: { x: x + w * 0.24, y: y + h * 0.67 },
+          cheekUpperR: { x: x + w * 0.82, y: y + h * 0.50 },
+          cheekLowerR: { x: x + w * 0.76, y: y + h * 0.67 },
+
+          mouthL: { x: mC.x - w * 0.17, y: mC.y },
+          philtrum: { x: mC.x, y: mC.y - h * 0.05 },
+          mouthR: { x: mC.x + w * 0.17, y: mC.y },
+          lipBot: { x: mC.x, y: mC.y + h * 0.06 },
+
+          jawEarL: { x: x + w * 0.08, y: y + h * 0.38 },
+          jawMidL: { x: x + w * 0.14, y: y + h * 0.76 },
+          chinCornerL: { x: x + w * 0.32, y: y + h * 0.93 },
+          chinCenter: { x: x + w * 0.50, y: y + h * 0.99 },
+          chinCornerR: { x: x + w * 0.68, y: y + h * 0.93 },
+          jawMidR: { x: x + w * 0.86, y: y + h * 0.76 },
+          jawEarR: { x: x + w * 0.92, y: y + h * 0.38 }
+        };
+      }
+
+      // Complete 3D Triangulation Edges (Faithful to Biometric Scan Reference)
+      const edges = [
+        // Forehead Dome & Fans
+        [pts.foreheadTop, pts.templeL],
+        [pts.foreheadTop, pts.foreheadMidL],
+        [pts.foreheadTop, pts.glabella],
+        [pts.foreheadTop, pts.foreheadMidR],
+        [pts.foreheadTop, pts.templeR],
+        [pts.templeL, pts.foreheadMidL],
+        [pts.foreheadMidL, pts.glabella],
+        [pts.glabella, pts.foreheadMidR],
+        [pts.foreheadMidR, pts.templeR],
+
+        // Forehead to Eyebrows & Temples
+        [pts.templeL, pts.browOutL],
+        [pts.templeL, pts.jawEarL],
+        [pts.templeR, pts.browOutR],
+        [pts.templeR, pts.jawEarR],
+        [pts.foreheadMidL, pts.browMidL],
+        [pts.foreheadMidR, pts.browMidR],
+        [pts.glabella, pts.browInL],
+        [pts.glabella, pts.browInR],
+
+        // Eyebrows
+        [pts.browOutL, pts.browMidL],
+        [pts.browMidL, pts.browInL],
+        [pts.browInR, pts.browMidR],
+        [pts.browMidR, pts.browOutR],
+        [pts.browInL, pts.browInR],
+
+        // Eyebrows to Eyes & Nose Bridge
+        [pts.browInL, pts.eyeInL],
+        [pts.browMidL, pts.eyeTopL],
+        [pts.browOutL, pts.eyeOutL],
+        [pts.browInR, pts.eyeInR],
+        [pts.browMidR, pts.eyeTopR],
+        [pts.browOutR, pts.eyeOutR],
+        [pts.glabella, pts.noseBridge],
+
+        // Eyes Polygons & Radiations
+        [pts.eyeOutL, pts.eyeTopL],
+        [pts.eyeTopL, pts.eyeInL],
+        [pts.eyeInL, pts.eyeBotL],
+        [pts.eyeBotL, pts.eyeOutL],
+        [pts.eyeInR, pts.eyeTopR],
+        [pts.eyeTopR, pts.eyeOutR],
+        [pts.eyeOutR, pts.eyeBotR],
+        [pts.eyeBotR, pts.eyeInR],
+        [pts.eyeOutL, pts.templeL],
+        [pts.eyeOutR, pts.templeR],
+        [pts.eyeOutL, pts.cheekUpperL],
+        [pts.eyeOutR, pts.cheekUpperR],
+        [pts.eyeInL, pts.noseBridge],
+        [pts.eyeInR, pts.noseBridge],
+
+        // Nose Spine & Wings
+        [pts.noseBridge, pts.noseMid],
+        [pts.noseMid, pts.noseTip],
+        [pts.noseTip, pts.nostrilL],
+        [pts.noseTip, pts.nostrilR],
+        [pts.nostrilL, pts.septumBase],
+        [pts.nostrilR, pts.septumBase],
+        [pts.eyeInL, pts.noseTip],
+        [pts.eyeInR, pts.noseTip],
+        [pts.eyeInL, pts.nostrilL],
+        [pts.eyeInR, pts.nostrilR],
+
+        // Cheeks Triangulation
+        [pts.cheekUpperL, pts.jawEarL],
+        [pts.cheekUpperL, pts.jawMidL],
+        [pts.cheekUpperL, pts.cheekLowerL],
+        [pts.cheekUpperL, pts.nostrilL],
+        [pts.cheekLowerL, pts.mouthL],
+        [pts.cheekLowerL, pts.jawMidL],
+
+        [pts.cheekUpperR, pts.jawEarR],
+        [pts.cheekUpperR, pts.jawMidR],
+        [pts.cheekUpperR, pts.cheekLowerR],
+        [pts.cheekUpperR, pts.nostrilR],
+        [pts.cheekLowerR, pts.mouthR],
+        [pts.cheekLowerR, pts.jawMidR],
+
+        // Mouth & Philtrum
+        [pts.septumBase, pts.philtrum],
+        [pts.nostrilL, pts.mouthL],
+        [pts.nostrilR, pts.mouthR],
+        [pts.philtrum, pts.mouthL],
+        [pts.philtrum, pts.mouthR],
+        [pts.mouthL, pts.lipBot],
+        [pts.mouthR, pts.lipBot],
+
+        // Mouth to Chin & Jaw
+        [pts.mouthL, pts.chinCornerL],
+        [pts.mouthR, pts.chinCornerR],
+        [pts.lipBot, pts.chinCornerL],
+        [pts.lipBot, pts.chinCenter],
+        [pts.lipBot, pts.chinCornerR],
+
+        // Jawline Contour & Chin Pad
+        [pts.jawEarL, pts.jawMidL],
+        [pts.jawMidL, pts.chinCornerL],
+        [pts.chinCornerL, pts.chinCenter],
+        [pts.chinCenter, pts.chinCornerR],
+        [pts.chinCornerR, pts.jawMidR],
+        [pts.jawMidR, pts.jawEarR],
+        [pts.chinCornerL, pts.chinCornerR]
+      ];
+
+      // 1. Draw Biometric Triangulation Wireframe Lines
+      ctx.save();
+      ctx.strokeStyle = meshStroke;
+      ctx.shadowColor = meshGlow;
+      ctx.shadowBlur = 5;
+      ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      edges.forEach(([p1, p2]) => {
+        if (p1 && p2 && typeof p1.x === 'number' && typeof p2.x === 'number') {
+          ctx.moveTo(p1.x, p1.y);
+          ctx.lineTo(p2.x, p2.y);
+        }
+      });
+      ctx.stroke();
+
+      // 2. Draw "Titik titik Face Recognition" (High-Tech Cyber Target Nodes with Inner Core)
+      const allNodes = Object.values(pts).filter(p => p && typeof p.x === 'number');
+      const nodeSize = Math.max(5, Math.min(8, Math.round(w * 0.065)));
+
+      allNodes.forEach(pt => {
+        // High-contrast dark backing
+        ctx.fillStyle = 'rgba(2, 6, 23, 0.85)';
+        ctx.fillRect(pt.x - nodeSize / 2, pt.y - nodeSize / 2, nodeSize, nodeSize);
+        // Vibrant neon square border
+        ctx.strokeStyle = meshColor;
+        ctx.lineWidth = 1.3;
+        ctx.strokeRect(pt.x - nodeSize / 2, pt.y - nodeSize / 2, nodeSize, nodeSize);
+        // Gleaming precision white center core
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(pt.x - 1, pt.y - 1, 2, 2);
+      });
+
+      // 3. Active Optical Iris Scanner Reticle (As shown on the eye in reference image)
+      const scanEye = pts.eyeCenterR || pts.eyeCenterL;
+      if (scanEye && typeof scanEye.x === 'number') {
+        const scanRadius = Math.max(6, Math.round(w * 0.085));
+        const animTime = Date.now() / 400;
+        const sweepAngle = animTime % (Math.PI * 2);
+
+        ctx.strokeStyle = meshColor;
+        ctx.shadowColor = meshGlow;
+        ctx.shadowBlur = 8;
+        ctx.lineWidth = 1.3;
+
+        // Outer concentric biometric circle
+        ctx.beginPath();
+        ctx.arc(scanEye.x, scanEye.y, scanRadius, 0, Math.PI * 2);
+        ctx.stroke();
+
+        // Rotating radar tracker arc
+        ctx.beginPath();
+        ctx.lineWidth = 2.2;
+        ctx.arc(scanEye.x, scanEye.y, scanRadius + 3, sweepAngle, sweepAngle + Math.PI * 0.70);
+        ctx.stroke();
+
+        // Crosshair ticks
+        ctx.beginPath();
+        ctx.lineWidth = 1.2;
+        ctx.moveTo(scanEye.x - scanRadius - 4, scanEye.y); ctx.lineTo(scanEye.x - scanRadius + 1, scanEye.y);
+        ctx.moveTo(scanEye.x + scanRadius - 1, scanEye.y); ctx.lineTo(scanEye.x + scanRadius + 4, scanEye.y);
+        ctx.moveTo(scanEye.x, scanEye.y - scanRadius - 4); ctx.lineTo(scanEye.x, scanEye.y - scanRadius + 1);
+        ctx.moveTo(scanEye.x, scanEye.y + scanRadius - 1); ctx.lineTo(scanEye.x, scanEye.y + scanRadius + 4);
+        ctx.stroke();
+      }
+
+      // 4. Glabella & Nose Tip Pulsing Biometric Radar Pulse
+      if (pts.glabella && typeof pts.glabella.x === 'number') {
+        const pulse = (nodeSize * 0.8) + ((Math.sin(Date.now() / 320) + 1) * 2.2);
+        ctx.strokeStyle = meshStroke;
+        ctx.lineWidth = 1.1;
+        ctx.beginPath();
+        ctx.arc(pts.glabella.x, pts.glabella.y, pulse, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+
+      ctx.restore();
+    }
+
     function drawEntityBracket(ctx, ent) {
       const { x, y, w, h, label, category, confidence } = ent;
       const isBlacklist = category === 'blacklist';
@@ -8963,144 +9261,8 @@
         ctx.fill();
       });
 
-      // 5. Authentic Neural AI Facial Landmark Visualization
-      const cx = x + w / 2;
-      const cy = y + h / 2;
-
-      if (ent.landmarks && Array.isArray(ent.landmarks) && ent.landmarks.length >= 68) {
-        // High-Tech 3D Cybernetic Facial Landmark Mesh & Triangulation Wireframe
-        const l = ent.landmarks;
-
-        const meshStroke = isBlacklist ? 'rgba(239, 68, 68, 0.75)' : (isVIP ? 'rgba(16, 185, 129, 0.85)' : (isUnknown ? 'rgba(245, 158, 11, 0.85)' : 'rgba(0, 240, 255, 0.85)'));
-        const meshGlow = isBlacklist ? 'rgba(239, 68, 68, 0.5)' : (isVIP ? 'rgba(16, 185, 129, 0.5)' : (isUnknown ? 'rgba(245, 158, 11, 0.5)' : 'rgba(0, 240, 255, 0.5)'));
-
-        ctx.strokeStyle = meshStroke;
-        ctx.shadowColor = meshGlow;
-        ctx.shadowBlur = 4;
-        ctx.lineWidth = 1.2;
-
-        // 1. Jawline (0-16)
-        ctx.beginPath();
-        for (let i = 0; i <= 16; i++) {
-          i === 0 ? ctx.moveTo(l[i].x, l[i].y) : ctx.lineTo(l[i].x, l[i].y);
-        }
-        ctx.stroke();
-
-        // 2. Eyebrows (17-21 left, 22-26 right)
-        ctx.beginPath();
-        for (let i = 17; i <= 21; i++) i === 17 ? ctx.moveTo(l[i].x, l[i].y) : ctx.lineTo(l[i].x, l[i].y);
-        ctx.stroke();
-        ctx.beginPath();
-        for (let i = 22; i <= 26; i++) i === 22 ? ctx.moveTo(l[i].x, l[i].y) : ctx.lineTo(l[i].x, l[i].y);
-        ctx.stroke();
-
-        // 3. Forehead & Temples 3D Triangulation (as shown in biometric reference)
-        const foreheadApex = { x: (l[19].x + l[24].x) / 2, y: Math.min(l[19].y, l[24].y) - (h * 0.22) };
-        const templeL = { x: l[0].x, y: l[17].y - (h * 0.10) };
-        const templeR = { x: l[16].x, y: l[26].y - (h * 0.10) };
-
-        ctx.setLineDash([3, 2]);
-        ctx.beginPath();
-        // Forehead fans
-        ctx.moveTo(templeL.x, templeL.y); ctx.lineTo(foreheadApex.x, foreheadApex.y);
-        ctx.lineTo(templeR.x, templeR.y);
-        ctx.moveTo(foreheadApex.x, foreheadApex.y); ctx.lineTo(l[19].x, l[19].y);
-        ctx.moveTo(foreheadApex.x, foreheadApex.y); ctx.lineTo(l[24].x, l[24].y);
-        ctx.moveTo(foreheadApex.x, foreheadApex.y); ctx.lineTo(l[27].x, l[27].y);
-        // Temples to eyebrows & jaw
-        ctx.moveTo(templeL.x, templeL.y); ctx.lineTo(l[17].x, l[17].y);
-        ctx.lineTo(l[0].x, l[0].y);
-        ctx.moveTo(templeR.x, templeR.y); ctx.lineTo(l[26].x, l[26].y);
-        ctx.lineTo(l[16].x, l[16].y);
-        // Cheeks cross-mesh
-        ctx.moveTo(l[36].x, l[36].y); ctx.lineTo(l[31].x, l[31].y); ctx.lineTo(l[3].x, l[3].y);
-        ctx.moveTo(l[45].x, l[45].y); ctx.lineTo(l[35].x, l[35].y); ctx.lineTo(l[13].x, l[13].y);
-        // Mouth to chin
-        ctx.moveTo(l[48].x, l[48].y); ctx.lineTo(l[5].x, l[5].y);
-        ctx.moveTo(l[54].x, l[54].y); ctx.lineTo(l[11].x, l[11].y);
-        ctx.moveTo(l[57].x, l[57].y); ctx.lineTo(l[8].x, l[8].y);
-        ctx.stroke();
-        ctx.setLineDash([]);
-
-        // 4. Nose Bridge (27-30) & Base (31-35)
-        ctx.beginPath();
-        for (let i = 27; i <= 30; i++) i === 27 ? ctx.moveTo(l[i].x, l[i].y) : ctx.lineTo(l[i].x, l[i].y);
-        for (let i = 31; i <= 35; i++) i === 31 ? ctx.moveTo(l[i].x, l[i].y) : ctx.lineTo(l[i].x, l[i].y);
-        ctx.lineTo(l[30].x, l[30].y);
-        ctx.stroke();
-
-        // 5. Left Eye (36-41) & Right Eye (42-47)
-        ctx.beginPath();
-        for (let i = 36; i <= 41; i++) i === 36 ? ctx.moveTo(l[i].x, l[i].y) : ctx.lineTo(l[i].x, l[i].y);
-        ctx.closePath();
-        ctx.stroke();
-        ctx.beginPath();
-        for (let i = 42; i <= 47; i++) i === 42 ? ctx.moveTo(l[i].x, l[i].y) : ctx.lineTo(l[i].x, l[i].y);
-        ctx.closePath();
-        ctx.stroke();
-
-        // 6. Lips Outer (48-59)
-        ctx.beginPath();
-        for (let i = 48; i <= 59; i++) i === 48 ? ctx.moveTo(l[i].x, l[i].y) : ctx.lineTo(l[i].x, l[i].y);
-        ctx.closePath();
-        ctx.stroke();
-
-        // 7. Authentic Cybernetic Node Boxes & Anchors (as in user reference image)
-        const allKeyPoints = [
-          foreheadApex, templeL, templeR,
-          l[0], l[4], l[8], l[12], l[16], // Jaw
-          l[17], l[19], l[21], l[22], l[24], l[26], // Brows
-          l[27], l[30], l[33], // Nose
-          l[36], l[39], l[42], l[45], // Eyes
-          l[48], l[54], l[57] // Mouth
-        ];
-
-        allKeyPoints.forEach(pt => {
-          if (pt) {
-            ctx.fillStyle = '#ffffff';
-            ctx.strokeStyle = meshStroke;
-            ctx.shadowColor = meshGlow;
-            ctx.shadowBlur = 6;
-            ctx.lineWidth = 1;
-            // Draw futuristic cyber landmark square node
-            ctx.fillRect(pt.x - 2, pt.y - 2, 4, 4);
-            ctx.strokeRect(pt.x - 2, pt.y - 2, 4, 4);
-          }
-        });
-      } else if (ent.landmarks && Array.isArray(ent.landmarks) && ent.landmarks.length === 6) {
-        // Google MediaPipe 6-Keypoint Facial Constellation (0:Right Eye, 1:Left Eye, 2:Nose Tip, 3:Mouth Center, 4:Right Ear, 5:Left Ear)
-        const kp = ent.landmarks;
-        ctx.strokeStyle = isBlacklist ? 'rgba(239, 68, 68, 0.45)' : (isVIP ? 'rgba(16, 185, 129, 0.45)' : (isUnknown ? 'rgba(245, 158, 11, 0.45)' : 'rgba(0, 240, 255, 0.45)'));
-        ctx.lineWidth = 1.2;
-        ctx.setLineDash([2, 2]);
-
-        // Eye Line
-        ctx.beginPath();
-        ctx.moveTo(kp[0].x, kp[0].y);
-        ctx.lineTo(kp[1].x, kp[1].y);
-        // Eye midpoint to nose
-        ctx.moveTo((kp[0].x + kp[1].x) / 2, (kp[0].y + kp[1].y) / 2);
-        ctx.lineTo(kp[2].x, kp[2].y);
-        // Nose to mouth
-        ctx.lineTo(kp[3].x, kp[3].y);
-        // Ears to eyes
-        ctx.moveTo(kp[4].x, kp[4].y);
-        ctx.lineTo(kp[0].x, kp[0].y);
-        ctx.moveTo(kp[5].x, kp[5].y);
-        ctx.lineTo(kp[1].x, kp[1].y);
-        ctx.stroke();
-        ctx.setLineDash([]);
-
-        // 6 Glowing Anchor Nodes
-        kp.forEach(pt => {
-          ctx.fillStyle = strokeColor;
-          ctx.shadowColor = glowColor;
-          ctx.shadowBlur = 8;
-          ctx.beginPath();
-          ctx.arc(pt.x, pt.y, 2.8, 0, Math.PI * 2);
-          ctx.fill();
-        });
-      }
+      // 5. Authentic Neural AI Facial Landmark Visualization (Directly modeled after Biometric Scan Reference)
+      drawBiometricFacialMesh(ctx, x, y, w, h, ent, isUnknown, isVIP, isBlacklist, strokeColor, glowColor);
 
       // 6. Commercial VMS Identification Tag (High-contrast, bold, crisp on mobile)
       const isStranger = isUnknown;
