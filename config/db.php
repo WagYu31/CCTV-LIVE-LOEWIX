@@ -585,6 +585,22 @@ function get_db_data() {
             'platform' => 'mediamtx',
             'status' => 'online',
             'created_at' => '2026-08-14 00:00:00'
+        ],
+        [
+            'id' => 5031,
+            'user_id' => 1,
+            'title' => 'LOEWIX DDNS OFFICE',
+            'city' => 'jakarta',
+            'connection_type' => 'rtsp',
+            'rtsp_url' => 'rtsp://admin:admin1234@Loewixtest.ddns.net:554/user=admin&password=admin1234&channel=1&stream=0.sdp',
+            'streamPath' => 'cam_live_5031',
+            'hls_url' => 'https://stream.loewixcctv.com/cam_live_5031/index.m3u8',
+            'thumbnail' => 'assets/image/snapshots/cam_5031.jpg',
+            'lat' => '-6.2088',
+            'lng' => '106.8456',
+            'platform' => 'mediamtx',
+            'status' => 'online',
+            'created_at' => '2026-09-08 13:53:00'
         ]
     ];
 

@@ -2762,10 +2762,55 @@
             <!-- RTSP Stream Path Fields -->
             <div id="field-rtsp-container">
               <div class="form-group form-group-dark">
-                <label class="text-white"><i class="fas fa-link text-info mr-1"></i> URL Stream RTSP / Link Kamera:</label>
-                <input type="text" id="cust-cam-rtsp" class="form-control form-control-dark" placeholder="rtsp://admin:password@ip:port/stream atau path cctv_loewix_1">
-                <small class="text-muted d-block mt-1" style="font-size: 11px;"><i class="fas fa-info-circle text-info"></i> Masukkan URL RTSP dari kamera/DVR. Server Loewix otomatis mengonversikannya menjadi live stream web.</small>
+                <label class="text-white"><i class="fas fa-link text-info mr-1"></i> Host / IP / URL RTSP Kamera:</label>
+                <div class="input-group">
+                  <input type="text" id="cust-cam-rtsp" class="form-control form-control-dark" placeholder="Contoh: Loewixtest.ddns.net atau rtsp://admin:pass@ip:port/stream" oninput="autoParseRtspInput()">
+                  <div class="input-group-append">
+                    <button type="button" class="btn btn-outline-info" id="btn-detect-rtsp" onclick="detectRtspSecurity()" style="font-size: 12px; font-weight: 600; border-color: rgba(56, 189, 248, 0.4);" title="Uji Koneksi & Deteksi Otomatis Sandi">
+                      <i class="fas fa-magic mr-1"></i> <span id="btn-detect-text">Cek Otomatis</span>
+                    </button>
+                  </div>
+                </div>
+                <div id="rtsp-detect-status" class="mt-2 p-2 rounded" style="display: none; font-size: 11.5px; border: 1px solid rgba(255,255,255,0.1);"></div>
+                <small class="text-muted d-block mt-1" style="font-size: 11px;"><i class="fas fa-info-circle text-info"></i> Bisa masukkan domain DDNS langsung (contoh: <code>Loewixtest.ddns.net</code>) atau URL lengkap RTSP.</small>
               </div>
+
+              <div class="form-row">
+                <div class="form-group col-md-6 form-group-dark">
+                  <label class="text-white" style="font-size: 12px;"><i class="fas fa-shield-alt text-info mr-1"></i> Status Keamanan RTSP:</label>
+                  <select id="cust-cam-rtsp-auth-type" class="form-control form-control-dark" onchange="toggleRtspAuthFields()" style="font-size: 12px;">
+                    <option value="auth">🔐 Bersandi (Memakai Password)</option>
+                    <option value="none">🔓 Tanpa Sandi (Public Stream)</option>
+                  </select>
+                </div>
+                <div class="form-group col-md-6 form-group-dark">
+                  <label class="text-white" style="font-size: 12px;"><i class="fas fa-layer-group text-info mr-1"></i> Port & Channel DVR:</label>
+                  <div class="d-flex">
+                    <input type="number" id="cust-cam-rtsp-port" class="form-control form-control-dark mr-2" placeholder="Port" value="554" style="max-width: 90px; font-size: 12px;" title="Port RTSP (Default 554)">
+                    <input type="number" id="cust-cam-rtsp-ch" class="form-control form-control-dark" placeholder="CH" value="1" min="1" max="128" style="font-size: 12px;" title="Channel Kamera DVR/NVR">
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-row" id="row-rtsp-credentials">
+                <div class="form-group col-md-6 form-group-dark">
+                  <label class="text-white" style="font-size: 12px;"><i class="fas fa-user text-info mr-1"></i> Username RTSP:</label>
+                  <input type="text" id="cust-cam-rtsp-user" class="form-control form-control-dark" placeholder="admin" value="admin" style="font-size: 12px;">
+                </div>
+                <div class="form-group col-md-6 form-group-dark">
+                  <label class="text-white" style="font-size: 12px;"><i class="fas fa-key text-info mr-1"></i> Password RTSP:</label>
+                  <div class="input-group">
+                    <input type="password" id="cust-cam-rtsp-pass" class="form-control form-control-dark" placeholder="Masukkan password RTSP" style="font-size: 12px;">
+                    <div class="input-group-append">
+                      <button type="button" class="btn btn-outline-secondary" onclick="togglePasswordVisibility('cust-cam-rtsp-pass', this)" style="border-color: rgba(255,255,255,0.15); font-size: 12px;">
+                        <i class="fas fa-eye"></i>
+                      </button>
+                    </div>
+                  </div>
+                  <small class="text-muted d-block mt-1" style="font-size: 10px;">Kosongkan jika RTSP tidak menggunakan password.</small>
+                </div>
+              </div>
+
               <div class="form-group form-group-dark mb-2">
                 <label style="font-size: 11.5px; color: #94a3b8;"><i class="fas fa-globe text-muted mr-1"></i> Custom Stream Path / URL HLS (Opsional):</label>
                 <input type="text" id="cust-cam-hls" class="form-control form-control-dark" placeholder="Otomatis diisi server, contoh: cctv_loewix_1" style="font-size: 12px;">
@@ -4247,6 +4292,20 @@
       
       const rtspInput = document.getElementById('cust-cam-rtsp');
       if (rtspInput) rtspInput.value = '';
+
+      const authType = document.getElementById('cust-cam-rtsp-auth-type');
+      if (authType) authType.value = 'auth';
+      const userInput = document.getElementById('cust-cam-rtsp-user');
+      if (userInput) userInput.value = 'admin';
+      const passInput = document.getElementById('cust-cam-rtsp-pass');
+      if (passInput) passInput.value = '';
+      const portInput = document.getElementById('cust-cam-rtsp-port');
+      if (portInput) portInput.value = '554';
+      const chRTSP = document.getElementById('cust-cam-rtsp-ch');
+      if (chRTSP) chRTSP.value = '1';
+      const statusEl = document.getElementById('rtsp-detect-status');
+      if (statusEl) statusEl.style.display = 'none';
+      toggleRtspAuthFields();
       
       const snInput = document.getElementById('cust-cam-sn');
       if (snInput) snInput.value = '';
@@ -4289,6 +4348,26 @@
       
       const rtspInput = document.getElementById('cust-cam-rtsp');
       if (rtspInput) rtspInput.value = cam.rtsp_url || '';
+
+      // Parse RTSP credentials into form fields
+      const rtsp = cam.rtsp_url || '';
+      const m = rtsp.match(/^rtsp:\/\/(?:([^:@]+)(?::([^@]+))?@)?([^:\/]+)(?::(\d+))?(?:\/(.*))?$/i);
+      if (m) {
+        if (m[1]) document.getElementById('cust-cam-rtsp-user').value = m[1];
+        if (m[2]) {
+          document.getElementById('cust-cam-rtsp-pass').value = m[2];
+          document.getElementById('cust-cam-rtsp-auth-type').value = 'auth';
+        } else {
+          document.getElementById('cust-cam-rtsp-pass').value = '';
+          document.getElementById('cust-cam-rtsp-auth-type').value = 'none';
+        }
+        if (m[4]) document.getElementById('cust-cam-rtsp-port').value = m[4];
+        const chM = rtsp.match(/channel=(\d+)/i) || rtsp.match(/ch(\d+)/i);
+        if (chM && chM[1]) document.getElementById('cust-cam-rtsp-ch').value = chM[1];
+      }
+      const statusEl = document.getElementById('rtsp-detect-status');
+      if (statusEl) statusEl.style.display = 'none';
+      toggleRtspAuthFields();
       
       const snInput = document.getElementById('cust-cam-sn');
       if (snInput) snInput.value = cam.serial_number || '';
@@ -4303,19 +4382,152 @@
       openModalHelper('modalCamForm');
     }
 
+    function toggleRtspAuthFields() {
+      const authType = document.getElementById('cust-cam-rtsp-auth-type') ? document.getElementById('cust-cam-rtsp-auth-type').value : 'auth';
+      const row = document.getElementById('row-rtsp-credentials');
+      if (row) {
+        row.style.display = (authType === 'none') ? 'none' : 'flex';
+      }
+    }
+
+    function togglePasswordVisibility(fieldId, btn) {
+      const field = document.getElementById(fieldId);
+      if (!field) return;
+      if (field.type === 'password') {
+        field.type = 'text';
+        if (btn) btn.innerHTML = '<i class="fas fa-eye-slash text-info"></i>';
+      } else {
+        field.type = 'password';
+        if (btn) btn.innerHTML = '<i class="fas fa-eye"></i>';
+      }
+    }
+
+    function autoParseRtspInput() {
+      const val = document.getElementById('cust-cam-rtsp').value.trim();
+      if (!val) return;
+
+      const m = val.match(/^rtsp:\/\/(?:([^:@]+)(?::([^@]+))?@)?([^:\/]+)(?::(\d+))?(?:\/(.*))?$/i);
+      if (m) {
+        if (m[1]) document.getElementById('cust-cam-rtsp-user').value = m[1];
+        if (m[2]) {
+          document.getElementById('cust-cam-rtsp-pass').value = m[2];
+          document.getElementById('cust-cam-rtsp-auth-type').value = 'auth';
+          toggleRtspAuthFields();
+        }
+        if (m[4]) document.getElementById('cust-cam-rtsp-port').value = m[4];
+        
+        const chM = val.match(/channel=(\d+)/i) || val.match(/ch(\d+)/i);
+        if (chM && chM[1]) {
+          document.getElementById('cust-cam-rtsp-ch').value = chM[1];
+        }
+      }
+    }
+
+    async function detectRtspSecurity() {
+      const rawInput = document.getElementById('cust-cam-rtsp').value.trim();
+      const user = document.getElementById('cust-cam-rtsp-user').value.trim();
+      const pass = document.getElementById('cust-cam-rtsp-pass').value.trim();
+      const port = document.getElementById('cust-cam-rtsp-port').value.trim() || '554';
+      const ch = document.getElementById('cust-cam-rtsp-ch').value.trim() || '1';
+      const statusEl = document.getElementById('rtsp-detect-status');
+      const btnText = document.getElementById('btn-detect-text');
+
+      if (!rawInput) {
+        alert('Silakan masukkan domain DDNS atau URL RTSP kamera terlebih dahulu.');
+        document.getElementById('cust-cam-rtsp').focus();
+        return;
+      }
+
+      if (statusEl) {
+        statusEl.style.display = 'block';
+        statusEl.style.background = 'rgba(56, 189, 248, 0.1)';
+        statusEl.style.border = '1px solid rgba(56, 189, 248, 0.3)';
+        statusEl.style.color = '#38bdf8';
+        statusEl.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> Menghubungi kamera & mendeteksi keamanan RTSP...';
+      }
+      if (btnText) btnText.textContent = 'Mengecek...';
+
+      try {
+        const formData = new FormData();
+        formData.append('action', 'test_rtsp_connection');
+        formData.append('rtsp_url', rawInput);
+        formData.append('user', user);
+        formData.append('pass', pass);
+        formData.append('port', port);
+        formData.append('channel', ch);
+
+        const res = await fetch('../api/customer_portal.php', {
+          method: 'POST',
+          body: formData
+        });
+        const data = await res.json();
+
+        if (statusEl) {
+          if (data.success && data.valid) {
+            statusEl.style.background = 'rgba(34, 197, 94, 0.15)';
+            statusEl.style.borderColor = 'rgba(34, 197, 94, 0.4)';
+            statusEl.style.color = '#4ade80';
+            statusEl.innerHTML = `<strong>${data.message}</strong>`;
+            if (data.recommended_url) {
+              document.getElementById('cust-cam-rtsp').value = data.recommended_url;
+            }
+          } else if (data.auth_required && !data.valid) {
+            statusEl.style.background = 'rgba(234, 179, 8, 0.15)';
+            statusEl.style.borderColor = 'rgba(234, 179, 8, 0.4)';
+            statusEl.style.color = '#fde047';
+            statusEl.innerHTML = `<strong>${data.message}</strong>`;
+            document.getElementById('cust-cam-rtsp-auth-type').value = 'auth';
+            toggleRtspAuthFields();
+            document.getElementById('cust-cam-rtsp-pass').focus();
+          } else {
+            statusEl.style.background = 'rgba(239, 68, 68, 0.15)';
+            statusEl.style.borderColor = 'rgba(239, 68, 68, 0.4)';
+            statusEl.style.color = '#f87171';
+            statusEl.innerHTML = `<strong>${data.message || 'Gagal terhubung ke RTSP'}</strong>`;
+          }
+        }
+      } catch (err) {
+        if (statusEl) {
+          statusEl.style.background = 'rgba(239, 68, 68, 0.15)';
+          statusEl.style.borderColor = 'rgba(239, 68, 68, 0.4)';
+          statusEl.style.color = '#f87171';
+          statusEl.innerHTML = '❌ Gagal memverifikasi RTSP. Pastikan server terhubung ke internet.';
+        }
+      } finally {
+        if (btnText) btnText.textContent = 'Cek Otomatis';
+      }
+    }
+
     async function submitCustomerCamera(e) {
       e.preventDefault();
       const form = document.getElementById('formCamCustomer');
       const formData = new FormData();
 
       const connType = document.getElementById('cust-cam-conn-type').value;
-      const rtspVal = document.getElementById('cust-cam-rtsp').value.trim();
+      let rtspVal = document.getElementById('cust-cam-rtsp').value.trim();
       const hlsVal = document.getElementById('cust-cam-hls').value.trim();
       const snVal = document.getElementById('cust-cam-sn').value.trim();
 
-      if (connType === 'rtsp' && !rtspVal && !hlsVal) {
-        alert('Silakan masukkan URL RTSP kamera Anda.');
-        return;
+      const authType = document.getElementById('cust-cam-rtsp-auth-type') ? document.getElementById('cust-cam-rtsp-auth-type').value : 'auth';
+      const rtspUser = document.getElementById('cust-cam-rtsp-user') ? document.getElementById('cust-cam-rtsp-user').value.trim() : 'admin';
+      const rtspPass = document.getElementById('cust-cam-rtsp-pass') ? document.getElementById('cust-cam-rtsp-pass').value.trim() : '';
+      const rtspPort = document.getElementById('cust-cam-rtsp-port') ? document.getElementById('cust-cam-rtsp-port').value.trim() : '554';
+      const rtspCh = document.getElementById('cust-cam-rtsp-ch') ? document.getElementById('cust-cam-rtsp-ch').value.trim() : '1';
+
+      if (connType === 'rtsp') {
+        if (!rtspVal && !hlsVal) {
+          alert('Silakan masukkan URL RTSP atau Host domain kamera Anda.');
+          return;
+        }
+
+        // If user entered only host (e.g. Loewixtest.ddns.net or 192.168.1.100)
+        if (rtspVal && !rtspVal.startsWith('rtsp://')) {
+          if (authType === 'auth' && rtspPass) {
+            rtspVal = `rtsp://${rtspUser}:${rtspPass}@${rtspVal}:${rtspPort}/user=${rtspUser}&password=${rtspPass}&channel=${rtspCh}&stream=0.sdp`;
+          } else {
+            rtspVal = `rtsp://${rtspVal}:${rtspPort}/stream0`;
+          }
+        }
       }
       if (connType === 'xmeye_p2p' && !snVal) {
         alert('Silakan masukkan Serial Number (Cloud ID) kamera XMeye Anda.');

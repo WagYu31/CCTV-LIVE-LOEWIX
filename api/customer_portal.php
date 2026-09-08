@@ -16,7 +16,7 @@ require_once __DIR__ . '/../config/db.php';
 
 $user = get_logged_in_user();
 $db = get_db_data();
-$action = $_GET['action'] ?? $_POST['action'] ?? 'get_profile';
+$action = $_REQUEST['action'] ?? 'get_profile';
 
 // Fallback for user_id parameter if session not populated in some environments
 if (!$user && !empty($_REQUEST['user_id'])) {
@@ -533,6 +533,144 @@ if ($action === 'delete_camera') {
     } else {
         echo json_encode(['success' => false, 'message' => 'Kamera tidak ditemukan atau bukan milik Anda.']);
     }
+    exit;
+}
+
+if ($action === 'test_rtsp_connection') {
+    $rawInput = trim($_REQUEST['rtsp_url'] ?? '');
+    $user = trim($_REQUEST['user'] ?? '');
+    $pass = trim($_REQUEST['pass'] ?? '');
+    $channel = (int)($_REQUEST['channel'] ?? 1);
+
+    if (empty($rawInput)) {
+        echo json_encode(['success' => false, 'message' => 'Silakan masukkan host domain atau URL RTSP kamera Anda.']);
+        exit;
+    }
+
+    // Clean up input: extract host, port, user, pass if entered as full url
+    $host = $rawInput;
+    $port = 554;
+    $path = '';
+
+    if (preg_match('#^rtsp://(?:([^:@]+)(?::([^@]+))?@)?([^:/]+)(?::(\d+))?(?:/(.*))?$#i', $rawInput, $m)) {
+        if (!empty($m[1]) && empty($user)) $user = $m[1];
+        if (!empty($m[2]) && empty($pass)) $pass = $m[2];
+        $host = $m[3];
+        $port = !empty($m[4]) ? (int)$m[4] : 554;
+        $path = $m[5] ?? '';
+    } elseif (preg_match('#^([^:/]+)(?::(\d+))?$#', $rawInput, $m)) {
+        $host = $m[1];
+        $port = !empty($m[2]) ? (int)$m[2] : 554;
+    }
+
+    // 1. Check TCP reachability to host:port (timeout 2.5s)
+    $fp = @fsockopen($host, $port, $errno, $errstr, 2.5);
+    if (!$fp) {
+        echo json_encode([
+            'success' => false,
+            'connected' => false,
+            'message' => "Tidak dapat terhubung ke {$host}:{$port}. Pastikan IP/DDNS aktif dan Port Forwarding 554 dibuka di router."
+        ]);
+        exit;
+    }
+
+    // 2. Test RTSP DESCRIBE without credentials to check if password protected
+    $testPath = !empty($path) ? $path : 'stream0';
+    $req = "DESCRIBE rtsp://{$host}:{$port}/{$testPath} RTSP/1.0\r\nCSeq: 1\r\nUser-Agent: LoewixVMS/1.0\r\nAccept: application/sdp\r\n\r\n";
+    @fwrite($fp, $req);
+    $resp = @fread($fp, 2048);
+    @fclose($fp);
+
+    $is401 = (strpos($resp, '401 Unauthorized') !== false);
+
+    // If 401: RTSP is PASSWORD-PROTECTED
+    if ($is401) {
+        if (empty($pass)) {
+            echo json_encode([
+                'success' => true,
+                'connected' => true,
+                'auth_required' => true,
+                'valid' => false,
+                'message' => '🔐 Kamera terdeteksi BERSANDI (Memerlukan Password). Silakan masukkan Password RTSP Anda.',
+                'host' => $host,
+                'port' => $port,
+                'user' => $user ?: 'admin'
+            ]);
+            exit;
+        }
+
+        // Validate credentials using candidate paths for Loewix / XMeye / Dahua
+        $candidates = [
+            "rtsp://{$user}:{$pass}@{$host}:{$port}/user={$user}&password={$pass}&channel={$channel}&stream=0.sdp",
+            "rtsp://{$user}:{$pass}@{$host}:{$port}/user={$user}&password={$pass}&channel={$channel}&stream=1.sdp",
+            "rtsp://{$user}:{$pass}@{$host}:{$port}/stream0",
+            "rtsp://{$user}:{$pass}@{$host}:{$port}/stream1",
+            "rtsp://{$user}:{$pass}@{$host}:{$port}/cam/realmonitor?channel={$channel}&subtype=0",
+            "rtsp://{$user}:{$pass}@{$host}:{$port}/h264/ch{$channel}/main/av_stream",
+        ];
+
+        $workingUrl = null;
+        foreach ($candidates as $cand) {
+            $probeCmd = "ffprobe -v error -rtsp_transport tcp -timeout 3000000 -show_entries stream=codec_type -of csv=p=0 " . escapeshellarg($cand) . " 2>&1";
+            $out = @shell_exec($probeCmd);
+            if (!empty($out) && strpos($out, 'video') !== false) {
+                $workingUrl = $cand;
+                break;
+            }
+        }
+
+        if ($workingUrl) {
+            echo json_encode([
+                'success' => true,
+                'connected' => true,
+                'auth_required' => true,
+                'valid' => true,
+                'message' => '✅ RTSP Bersandi VALID & KONEKSI SUKSES! Video terdeteksi lancar.',
+                'host' => $host,
+                'port' => $port,
+                'user' => $user,
+                'pass' => $pass,
+                'channel' => $channel,
+                'recommended_url' => $workingUrl
+            ]);
+        } else {
+            echo json_encode([
+                'success' => false,
+                'connected' => true,
+                'auth_required' => true,
+                'valid' => false,
+                'message' => '❌ Password RTSP salah atau channel tidak aktif. Silakan cek kembali username & password.'
+            ]);
+        }
+        exit;
+    }
+
+    // If 200 OK or not 401: RTSP is OPEN (NO PASSWORD)
+    $openCandidates = [
+        "rtsp://{$host}:{$port}/stream0",
+        "rtsp://{$host}:{$port}/stream1",
+        "rtsp://{$host}:{$port}/{$testPath}"
+    ];
+    $workingUrl = null;
+    foreach ($openCandidates as $cand) {
+        $probeCmd = "ffprobe -v error -rtsp_transport tcp -timeout 3000000 -show_entries stream=codec_type -of csv=p=0 " . escapeshellarg($cand) . " 2>&1";
+        $out = @shell_exec($probeCmd);
+        if (!empty($out) && strpos($out, 'video') !== false) {
+            $workingUrl = $cand;
+            break;
+        }
+    }
+
+    echo json_encode([
+        'success' => true,
+        'connected' => true,
+        'auth_required' => false,
+        'valid' => true,
+        'message' => '🔓 Kamera terdeteksi TANPA SANDI (Public Stream). Siap digunakan langsung!',
+        'host' => $host,
+        'port' => $port,
+        'recommended_url' => $workingUrl ?: "rtsp://{$host}:{$port}/{$testPath}"
+    ]);
     exit;
 }
 
