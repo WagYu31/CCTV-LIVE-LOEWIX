@@ -5020,6 +5020,11 @@
         populateAICameraSelector();
         loadAIData();
         setTimeout(initAIHUDCanvas, 150);
+        if (!currentAICamera) {
+          const select = document.getElementById('ai-camera-selector');
+          const camId = (select && select.value) ? select.value : '5021';
+          changeAICamera(camId);
+        }
       } else if (tabId !== 'tab-cameras') {
         if (currentBillingData) {
           renderBillingData(currentBillingData);
@@ -7765,8 +7770,9 @@
       select.innerHTML = html;
       select.value = currentVal;
 
-      // Auto-launch camera stream on first load if not running
-      if (!currentAICamera) {
+      // Auto-launch camera stream only if AI vision tab is active
+      const aiTab = document.getElementById('tab-ai-vision');
+      if (aiTab && aiTab.style.display === 'block' && !currentAICamera) {
         changeAICamera(currentVal);
       }
     }

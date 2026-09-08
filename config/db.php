@@ -588,13 +588,17 @@ function get_db_data() {
         ]
     ];
 
-    // Clean up any residual dummy test channels (TESTING SELASA / NVR 16 TEST)
+    $dbUpdated = false;
+
+    // Clean up any residual dummy test channels (TESTING SELASA / NVR 16 TEST / dummy PASSWORD)
     $cleanCameras = [];
     foreach ($data['cameras'] as $c) {
         $t = $c['title'] ?? '';
         $cid = (int)($c['id'] ?? 0);
+        $rtsp = $c['rtsp_url'] ?? '';
         if (strpos($t, 'TESTING SELASA') !== false) continue;
         if (strpos($t, 'NVR 16 TEST') !== false) continue;
+        if (strpos($rtsp, 'PASSWORD') !== false) continue;
         if (in_array($cid, [5004, 5005, 5006, 5007, 5008, 5009, 5010, 5011, 5012, 5013, 5014, 5015])) continue;
         $cleanCameras[] = $c;
     }
@@ -602,8 +606,6 @@ function get_db_data() {
         $data['cameras'] = $cleanCameras;
         $dbUpdated = true;
     }
-
-    $dbUpdated = false;
 
     foreach ($coreCameras as $coreCam) {
         $found = false;

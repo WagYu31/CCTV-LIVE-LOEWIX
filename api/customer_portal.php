@@ -89,6 +89,7 @@ function sync_rtsp_to_mediamtx($streamPath, $rtspUrl) {
     if ($content === false) return false;
 
     $cleanRtspUrl = str_replace('"', '', $rtspUrl);
+    if (strpos($cleanRtspUrl, 'PASSWORD') !== false) return false; // Ignore placeholder password
     // Auto-correct wrong password for 192.168.11.160 if user typed admin:admin
     if (strpos($cleanRtspUrl, '192.168.11.160') !== false && strpos($cleanRtspUrl, 'admin:admin@') !== false) {
         $cleanRtspUrl = str_replace('admin:admin@', 'admin:123456@', $cleanRtspUrl);
@@ -201,7 +202,6 @@ if ($action === 'my_cameras') {
                     $cam['rtsp_url'] = 'rtsp://admin:123456@192.168.11.162:554/stream2';
                 }
             }
-            sync_rtsp_to_mediamtx($cam['streamPath'], $cam['rtsp_url']);
         }
 
         // Check if a dedicated saved live snapshot exists for this camera
