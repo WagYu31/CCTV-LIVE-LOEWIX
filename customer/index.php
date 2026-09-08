@@ -7858,14 +7858,8 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
             const kps = tfFace.keypoints;
             let fBox = null;
 
-            if (tfFace.box && typeof tfFace.box.xMin === 'number') {
-              fBox = {
-                x: Math.max(0, tfFace.box.xMin),
-                y: Math.max(0, tfFace.box.yMin),
-                width: Math.min(frameW - tfFace.box.xMin, tfFace.box.width),
-                height: Math.min(frameH - tfFace.box.yMin, tfFace.box.height)
-              };
-            } else if (kps && kps.length > 0) {
+            // 1. Calculate pixel bounding box directly from 468 landmarks (most accurate & resilient)
+            if (kps && kps.length > 0) {
               let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
               for (let k = 0; k < kps.length; k++) {
                 const pt = kps[k];
@@ -7876,15 +7870,28 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
                 if (py < minY) minY = py;
                 if (py > maxY) maxY = py;
               }
-              const bw = Math.max(24, maxX - minX);
-              const bh = Math.max(24, maxY - minY);
+              const bw = Math.max(20, maxX - minX);
+              const bh = Math.max(20, maxY - minY);
               const padX = bw * 0.16;
               const padY = bh * 0.18;
               fBox = {
-                x: Math.max(0, minX - padX),
-                y: Math.max(0, minY - padY),
-                width: Math.min(frameW - minX + padX, bw + padX * 2),
-                height: Math.min(frameH - minY + padY, bh + padY * 2)
+                x: Math.max(0, Math.round(minX - padX)),
+                y: Math.max(0, Math.round(minY - padY)),
+                width: Math.min(frameW - Math.max(0, minX - padX), Math.round(bw + padX * 2)),
+                height: Math.min(frameH - Math.max(0, minY - padY), Math.round(bh + padY * 2))
+              };
+            } else if (tfFace.box && typeof tfFace.box.xMin === 'number') {
+              // 2. Handle box (supports both normalized 0..1 and absolute pixel coordinates)
+              const isNorm = (tfFace.box.xMin <= 1.05 && tfFace.box.width <= 1.05);
+              const bx = isNorm ? tfFace.box.xMin * frameW : tfFace.box.xMin;
+              const by = isNorm ? tfFace.box.yMin * frameH : tfFace.box.yMin;
+              const bw = isNorm ? tfFace.box.width * frameW : tfFace.box.width;
+              const bh = isNorm ? tfFace.box.height * frameH : tfFace.box.height;
+              fBox = {
+                x: Math.max(0, Math.round(bx)),
+                y: Math.max(0, Math.round(by)),
+                width: Math.min(frameW - bx, Math.round(bw)),
+                height: Math.min(frameH - by, Math.round(bh))
               };
             }
 
@@ -8097,7 +8104,7 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
                 width: box.width / frameW,
                 height: box.height / frameH
               },
-              normLandmarks: landmarks ? (landmarks.positions || landmarks).map(p => ({ x: p.x / frameW, y: p.y / frameH })) : [
+              normLandmarks: landmarks ? (landmarks.positions || landmarks).map(p => ({ x: (p.x <= 1.05) ? p.x : p.x / frameW, y: (p.y <= 1.05) ? p.y : p.y / frameH })) : [
                 { x: (box.x + box.width * 0.32) / frameW, y: (box.y + box.height * 0.38) / frameH },
                 { x: (box.x + box.width * 0.68) / frameW, y: (box.y + box.height * 0.38) / frameH },
                 { x: (box.x + box.width * 0.50) / frameW, y: (box.y + box.height * 0.55) / frameH },
@@ -9567,6 +9574,23 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
         }
       });
       ctx.stroke();
+
+      // 2B. TensorFlow MediaPipe 468 3D Constellation Cloud
+      if (Array.isArray(ent.mesh468) && ent.mesh468.length > 0) {
+        ctx.save();
+        ctx.fillStyle = 'rgba(0, 240, 255, 0.70)';
+        ctx.shadowColor = '#00f0ff';
+        ctx.shadowBlur = 4;
+        for (let i = 0; i < ent.mesh468.length; i += 2) {
+          const mp = ent.mesh468[i];
+          if (mp && typeof mp.x === 'number' && typeof mp.y === 'number') {
+            ctx.beginPath();
+            ctx.arc(mp.x, mp.y, 1.2, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        }
+        ctx.restore();
+      }
 
       // 3. Draw Glowing White Biometric Jewel Nodes ("Titik-titik Wajah" from Gambar 2)
       const allNodes = Object.values(pts).filter(p => p && typeof p.x === 'number');

@@ -9563,6 +9563,23 @@
       });
       ctx.stroke();
 
+      // 2B. TensorFlow MediaPipe 468 3D Constellation Cloud
+      if (Array.isArray(ent.mesh468) && ent.mesh468.length > 0) {
+        ctx.save();
+        ctx.fillStyle = 'rgba(0, 240, 255, 0.70)';
+        ctx.shadowColor = '#00f0ff';
+        ctx.shadowBlur = 4;
+        for (let i = 0; i < ent.mesh468.length; i += 2) {
+          const mp = ent.mesh468[i];
+          if (mp && typeof mp.x === 'number' && typeof mp.y === 'number') {
+            ctx.beginPath();
+            ctx.arc(mp.x, mp.y, 1.2, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        }
+        ctx.restore();
+      }
+
       // 3. Draw Glowing White Biometric Jewel Nodes ("Titik-titik Wajah" from Gambar 2)
       const allNodes = Object.values(pts).filter(p => p && typeof p.x === 'number');
       const pulseTime = Date.now() / 280;
