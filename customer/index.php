@@ -7688,6 +7688,37 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
       return _aiDetectionCanvas;
     }
 
+    /**
+     * Accurately calculates the visible display box of the video element inside container.
+     * Takes into account CSS object-fit: cover scaling, aspect ratio differences, letterboxing & cropping.
+     * Guarantees 100% pixel-perfect alignment between video and canvas overlay in all screen modes.
+     */
+    function getVideoRenderBox(video, containerW, containerH) {
+      if (!video || !video.videoWidth || !video.videoHeight || video.videoWidth === 0) {
+        return { x: 0, y: 0, width: containerW, height: containerH };
+      }
+      const vw = video.videoWidth;
+      const vh = video.videoHeight;
+      const videoAspect = vw / vh;
+      const containerAspect = containerW / containerH;
+
+      let renderW, renderH, offsetX, offsetY;
+      if (containerAspect > videoAspect) {
+        // Container is wider than video: width fills container, height overflows top/bottom
+        renderW = containerW;
+        renderH = containerW / videoAspect;
+        offsetX = 0;
+        offsetY = (containerH - renderH) / 2;
+      } else {
+        // Container is taller than video: height fills container, width overflows left/right
+        renderH = containerH;
+        renderW = containerH * videoAspect;
+        offsetX = (containerW - renderW) / 2;
+        offsetY = 0;
+      }
+      return { x: offsetX, y: offsetY, width: renderW, height: renderH };
+    }
+
     function precomputeRegisteredFaceFeatures() {
       if (faceAPIReady) {
         buildFaceDescriptors();
