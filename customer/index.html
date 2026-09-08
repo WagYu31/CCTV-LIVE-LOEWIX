@@ -8851,231 +8851,179 @@
     }
 
     /**
-     * High-Tech 3D Biometric Facial Mesh & Cyber Target Node Renderer
-     * Faithful full-face polygonal triangulation inspired by biometric scan reference
+     * High-Tech 3D Biometric Facial Mesh & Glowing White Node Renderer (Faithful to Gambar 1)
+     * Renders exact glowing circular white nodes, polygon triangulation mesh, and neon lime framing
      */
-    function drawBiometricFacialMesh(ctx, x, y, w, h, ent, isUnknown, isVIP, isBlacklist, strokeColor, glowColor) {
-      // Color palette: Glowing Electric Cyber Gold for Stranger (matching reference photo), Cyan for Staff, Emerald for VIP, Red for DPO
-      const meshColor = isBlacklist ? '#ef4444' : (isVIP ? '#10b981' : (isUnknown ? '#ffd700' : '#00f0ff'));
-      const meshStroke = isBlacklist ? 'rgba(239, 68, 68, 0.88)' : (isVIP ? 'rgba(16, 185, 129, 0.88)' : (isUnknown ? 'rgba(255, 215, 0, 0.90)' : 'rgba(0, 240, 255, 0.90)'));
-      const meshGlow = isBlacklist ? 'rgba(239, 68, 68, 0.65)' : (isVIP ? 'rgba(16, 185, 129, 0.65)' : (isUnknown ? 'rgba(255, 215, 0, 0.70)' : 'rgba(0, 240, 255, 0.70)'));
-
+    function drawBiometricFacialMesh(ctx, x, y, w, h, ent, isUnknown, isVIP, isBlacklist) {
       let pts = {};
       const has68 = ent.landmarks && Array.isArray(ent.landmarks) && ent.landmarks.length >= 68;
-      const has6 = ent.landmarks && Array.isArray(ent.landmarks) && ent.landmarks.length === 6;
 
       if (has68) {
         const l = ent.landmarks;
         pts = {
-          foreheadTop: { x: (l[19].x + l[24].x) / 2, y: Math.min(l[19].y, l[24].y) - (h * 0.22) },
-          templeL: { x: l[0].x - (w * 0.04), y: l[17].y - (h * 0.08) },
-          templeR: { x: l[16].x + (w * 0.04), y: l[26].y - (h * 0.08) },
-          foreheadMidL: { x: (l[0].x + l[19].x) / 2, y: l[19].y - (h * 0.16) },
-          foreheadMidR: { x: (l[16].x + l[24].x) / 2, y: l[24].y - (h * 0.16) },
-          glabella: { x: (l[21].x + l[22].x) / 2, y: (l[21].y + l[22].y) / 2 },
+          foreheadTopL: { x: l[19].x - (w * 0.04), y: Math.min(l[19].y, l[24].y) - (h * 0.22) },
+          foreheadTopR: { x: l[24].x + (w * 0.04), y: Math.min(l[19].y, l[24].y) - (h * 0.22) },
+          foreheadMid:  { x: (l[19].x + l[24].x) / 2, y: Math.min(l[19].y, l[24].y) - (h * 0.20) },
+          templeL:      { x: l[0].x - (w * 0.03), y: l[17].y - (h * 0.06) },
+          templeR:      { x: l[16].x + (w * 0.03), y: l[26].y - (h * 0.06) },
+          glabella:     { x: (l[21].x + l[22].x) / 2, y: (l[21].y + l[22].y) / 2 },
 
-          browOutL: l[17], browMidL: l[19], browInL: l[21],
-          browInR: l[22], browMidR: l[24], browOutR: l[26],
+          browOutL: l[17],
+          browMidL: l[19],
+          browMidR: l[24],
+          browOutR: l[26],
 
-          eyeOutL: l[36], eyeTopL: { x: (l[37].x + l[38].x) / 2, y: (l[37].y + l[38].y) / 2 },
-          eyeInL: l[39], eyeBotL: { x: (l[40].x + l[41].x) / 2, y: (l[40].y + l[41].y) / 2 },
-          eyeCenterL: { x: (l[36].x + l[39].x) / 2, y: (l[37].y + l[41].y) / 2 },
+          eyeL: { x: (l[36].x + l[39].x) / 2, y: (l[37].y + l[41].y) / 2 },
+          eyeR: { x: (l[42].x + l[45].x) / 2, y: (l[43].y + l[47].y) / 2 },
 
-          eyeInR: l[42], eyeTopR: { x: (l[43].x + l[44].x) / 2, y: (l[43].y + l[44].y) / 2 },
-          eyeOutR: l[45], eyeBotR: { x: (l[46].x + l[47].x) / 2, y: (l[46].y + l[47].y) / 2 },
-          eyeCenterR: { x: (l[42].x + l[45].x) / 2, y: (l[43].y + l[47].y) / 2 },
+          noseBridge: l[27],
+          noseTip:    l[30],
+          nostrilL:   l[31],
+          nostrilR:   l[35],
 
-          noseBridge: l[27], noseMid: l[29], noseTip: l[30],
-          nostrilL: l[31], nostrilR: l[35], septumBase: l[33],
+          cheekUpperL: { x: l[1].x + (w * 0.02), y: l[36].y + (h * 0.09) },
+          cheekUpperR: { x: l[15].x - (w * 0.02), y: l[45].y + (h * 0.09) },
+          cheekLowerL: l[3],
+          cheekLowerR: l[13],
 
-          cheekUpperL: { x: l[1].x, y: l[36].y + (h * 0.08) },
-          cheekLowerL: { x: l[3].x, y: l[48].y - (h * 0.04) },
-          cheekUpperR: { x: l[15].x, y: l[45].y + (h * 0.08) },
-          cheekLowerR: { x: l[13].x, y: l[54].y - (h * 0.04) },
+          philtrum: l[51],
+          mouthL:   l[48],
+          mouthR:   l[54],
+          lipBot:   l[57],
 
-          mouthL: l[48], philtrum: l[51], mouthR: l[54], lipBot: l[57],
-
-          jawEarL: l[0], jawMidL: l[4], chinCornerL: l[6],
-          chinCenter: l[8],
-          chinCornerR: l[10], jawMidR: l[12], jawEarR: l[16]
+          chinCornerL: l[6],
+          chinCornerR: l[10],
+          chinTip:     l[8]
         };
       } else {
-        // High-Precision Canonical Biometric Mesh mapped dynamically to bounding box
-        const kp = has6 ? ent.landmarks : null;
-        const eL = (kp && kp[1]) ? kp[1] : { x: x + w * 0.33, y: y + h * 0.36 };
-        const eR = (kp && kp[0]) ? kp[0] : { x: x + w * 0.67, y: y + h * 0.36 };
-        const nT = (kp && kp[2]) ? kp[2] : { x: x + w * 0.50, y: y + h * 0.58 };
-        const mC = (kp && kp[3]) ? kp[3] : { x: x + w * 0.50, y: y + h * 0.76 };
-
+        // High-Precision Canonical Facial Geometry mapped directly to face bounding box
         pts = {
-          foreheadTop: { x: x + w * 0.50, y: y - h * 0.14 },
-          templeL: { x: x + w * 0.12, y: y + h * 0.08 },
-          templeR: { x: x + w * 0.88, y: y + h * 0.08 },
-          foreheadMidL: { x: x + w * 0.32, y: y + h * 0.04 },
-          foreheadMidR: { x: x + w * 0.68, y: y + h * 0.04 },
-          glabella: { x: x + w * 0.50, y: y + h * 0.26 },
+          foreheadTopL: { x: x + w * 0.28, y: y + h * 0.10 },
+          foreheadTopR: { x: x + w * 0.72, y: y + h * 0.10 },
+          foreheadMid:  { x: x + w * 0.50, y: y + h * 0.08 },
+          templeL:      { x: x + w * 0.12, y: y + h * 0.23 },
+          templeR:      { x: x + w * 0.88, y: y + h * 0.23 },
+          glabella:     { x: x + w * 0.50, y: y + h * 0.33 },
 
-          browOutL: { x: x + w * 0.18, y: y + h * 0.24 },
-          browMidL: { x: x + w * 0.30, y: y + h * 0.21 },
-          browInL: { x: x + w * 0.42, y: y + h * 0.25 },
+          browOutL: { x: x + w * 0.22, y: y + h * 0.28 },
+          browMidL: { x: x + w * 0.35, y: y + h * 0.26 },
+          browMidR: { x: x + w * 0.65, y: y + h * 0.26 },
+          browOutR: { x: x + w * 0.78, y: y + h * 0.28 },
 
-          browInR: { x: x + w * 0.58, y: y + h * 0.25 },
-          browMidR: { x: x + w * 0.70, y: y + h * 0.21 },
-          browOutR: { x: x + w * 0.82, y: y + h * 0.24 },
+          eyeL: { x: x + w * 0.33, y: y + h * 0.38 },
+          eyeR: { x: x + w * 0.67, y: y + h * 0.38 },
 
-          eyeOutL: { x: eL.x - w * 0.11, y: eL.y },
-          eyeTopL: { x: eL.x, y: eL.y - h * 0.035 },
-          eyeInL: { x: eL.x + w * 0.09, y: eL.y + h * 0.01 },
-          eyeBotL: { x: eL.x, y: eL.y + h * 0.035 },
-          eyeCenterL: eL,
+          noseBridge: { x: x + w * 0.50, y: y + h * 0.44 },
+          noseTip:    { x: x + w * 0.50, y: y + h * 0.62 },
+          nostrilL:   { x: x + w * 0.39, y: y + h * 0.61 },
+          nostrilR:   { x: x + w * 0.61, y: y + h * 0.61 },
 
-          eyeInR: { x: eR.x - w * 0.09, y: eR.y + h * 0.01 },
-          eyeTopR: { x: eR.x, y: eR.y - h * 0.035 },
-          eyeOutR: { x: eR.x + w * 0.11, y: eR.y },
-          eyeBotR: { x: eR.x, y: eR.y + h * 0.035 },
-          eyeCenterR: eR,
+          cheekUpperL: { x: x + w * 0.17, y: y + h * 0.47 },
+          cheekUpperR: { x: x + w * 0.83, y: y + h * 0.47 },
+          cheekLowerL: { x: x + w * 0.16, y: y + h * 0.68 },
+          cheekLowerR: { x: x + w * 0.84, y: y + h * 0.68 },
 
-          noseBridge: { x: x + w * 0.50, y: y + h * 0.40 },
-          noseMid: { x: x + w * 0.50, y: (y + h * 0.40 + nT.y) / 2 },
-          noseTip: nT,
-          nostrilL: { x: nT.x - w * 0.12, y: nT.y + h * 0.02 },
-          nostrilR: { x: nT.x + w * 0.12, y: nT.y + h * 0.02 },
-          septumBase: { x: nT.x, y: nT.y + h * 0.05 },
+          philtrum: { x: x + w * 0.50, y: y + h * 0.71 },
+          mouthL:   { x: x + w * 0.33, y: y + h * 0.78 },
+          mouthR:   { x: x + w * 0.67, y: y + h * 0.78 },
+          lipBot:   { x: x + w * 0.50, y: y + h * 0.82 },
 
-          cheekUpperL: { x: x + w * 0.18, y: y + h * 0.50 },
-          cheekLowerL: { x: x + w * 0.24, y: y + h * 0.67 },
-          cheekUpperR: { x: x + w * 0.82, y: y + h * 0.50 },
-          cheekLowerR: { x: x + w * 0.76, y: y + h * 0.67 },
-
-          mouthL: { x: mC.x - w * 0.17, y: mC.y },
-          philtrum: { x: mC.x, y: mC.y - h * 0.05 },
-          mouthR: { x: mC.x + w * 0.17, y: mC.y },
-          lipBot: { x: mC.x, y: mC.y + h * 0.06 },
-
-          jawEarL: { x: x + w * 0.08, y: y + h * 0.38 },
-          jawMidL: { x: x + w * 0.14, y: y + h * 0.76 },
-          chinCornerL: { x: x + w * 0.32, y: y + h * 0.93 },
-          chinCenter: { x: x + w * 0.50, y: y + h * 0.99 },
-          chinCornerR: { x: x + w * 0.68, y: y + h * 0.93 },
-          jawMidR: { x: x + w * 0.86, y: y + h * 0.76 },
-          jawEarR: { x: x + w * 0.92, y: y + h * 0.38 }
+          chinCornerL: { x: x + w * 0.31, y: y + h * 0.90 },
+          chinCornerR: { x: x + w * 0.69, y: y + h * 0.90 },
+          chinTip:     { x: x + w * 0.50, y: y + h * 0.99 }
         };
       }
 
-      // Complete 3D Triangulation Edges (Faithful to Biometric Scan Reference)
+      // Triangulation Network (Matching Gambar 1)
       const edges = [
-        // Forehead Dome & Fans
-        [pts.foreheadTop, pts.templeL],
-        [pts.foreheadTop, pts.foreheadMidL],
-        [pts.foreheadTop, pts.glabella],
-        [pts.foreheadTop, pts.foreheadMidR],
-        [pts.foreheadTop, pts.templeR],
-        [pts.templeL, pts.foreheadMidL],
-        [pts.foreheadMidL, pts.glabella],
-        [pts.glabella, pts.foreheadMidR],
-        [pts.foreheadMidR, pts.templeR],
+        // Forehead top bar
+        [pts.foreheadTopL, pts.foreheadTopR],
 
-        // Forehead to Eyebrows & Temples
+        // Forehead star / triangulation fan
+        [pts.foreheadTopL, pts.templeL],
+        [pts.foreheadTopR, pts.templeR],
+        [pts.foreheadTopL, pts.foreheadMid],
+        [pts.foreheadTopR, pts.foreheadMid],
+        [pts.foreheadMid,  pts.glabella],
+        [pts.foreheadTopL, pts.glabella],
+        [pts.foreheadTopR, pts.glabella],
+        [pts.templeL,      pts.glabella],
+        [pts.templeR,      pts.glabella],
+
+        // Temples to eyebrows & outer cheeks
         [pts.templeL, pts.browOutL],
-        [pts.templeL, pts.jawEarL],
         [pts.templeR, pts.browOutR],
-        [pts.templeR, pts.jawEarR],
-        [pts.foreheadMidL, pts.browMidL],
-        [pts.foreheadMidR, pts.browMidR],
-        [pts.glabella, pts.browInL],
-        [pts.glabella, pts.browInR],
+        [pts.templeL, pts.cheekUpperL],
+        [pts.templeR, pts.cheekUpperR],
 
         // Eyebrows
         [pts.browOutL, pts.browMidL],
-        [pts.browMidL, pts.browInL],
-        [pts.browInR, pts.browMidR],
+        [pts.browMidL, pts.glabella],
+        [pts.glabella, pts.browMidR],
         [pts.browMidR, pts.browOutR],
-        [pts.browInL, pts.browInR],
 
-        // Eyebrows to Eyes & Nose Bridge
-        [pts.browInL, pts.eyeInL],
-        [pts.browMidL, pts.eyeTopL],
-        [pts.browOutL, pts.eyeOutL],
-        [pts.browInR, pts.eyeInR],
-        [pts.browMidR, pts.eyeTopR],
-        [pts.browOutR, pts.eyeOutR],
+        // Eyebrows to eyes
+        [pts.browOutL, pts.eyeL],
+        [pts.browMidL, pts.eyeL],
+        [pts.glabella, pts.eyeL],
+        [pts.glabella, pts.eyeR],
+        [pts.browMidR, pts.eyeR],
+        [pts.browOutR, pts.eyeR],
+
+        // Eyes to nose bridge & cheekbones
+        [pts.eyeL, pts.noseBridge],
+        [pts.eyeR, pts.noseBridge],
         [pts.glabella, pts.noseBridge],
+        [pts.eyeL, pts.cheekUpperL],
+        [pts.eyeR, pts.cheekUpperR],
 
-        // Eyes Polygons & Radiations
-        [pts.eyeOutL, pts.eyeTopL],
-        [pts.eyeTopL, pts.eyeInL],
-        [pts.eyeInL, pts.eyeBotL],
-        [pts.eyeBotL, pts.eyeOutL],
-        [pts.eyeInR, pts.eyeTopR],
-        [pts.eyeTopR, pts.eyeOutR],
-        [pts.eyeOutR, pts.eyeBotR],
-        [pts.eyeBotR, pts.eyeInR],
-        [pts.eyeOutL, pts.templeL],
-        [pts.eyeOutR, pts.templeR],
-        [pts.eyeOutL, pts.cheekUpperL],
-        [pts.eyeOutR, pts.cheekUpperR],
-        [pts.eyeInL, pts.noseBridge],
-        [pts.eyeInR, pts.noseBridge],
+        // Nose bridge, tip & nostrils
+        [pts.noseBridge, pts.noseTip],
+        [pts.noseBridge, pts.nostrilL],
+        [pts.noseBridge, pts.nostrilR],
+        [pts.nostrilL,   pts.noseTip],
+        [pts.nostrilR,   pts.noseTip],
+        [pts.nostrilL,   pts.nostrilR],
 
-        // Nose Spine & Wings
-        [pts.noseBridge, pts.noseMid],
-        [pts.noseMid, pts.noseTip],
-        [pts.noseTip, pts.nostrilL],
-        [pts.noseTip, pts.nostrilR],
-        [pts.nostrilL, pts.septumBase],
-        [pts.nostrilR, pts.septumBase],
-        [pts.eyeInL, pts.noseTip],
-        [pts.eyeInR, pts.noseTip],
-        [pts.eyeInL, pts.nostrilL],
-        [pts.eyeInR, pts.nostrilR],
-
-        // Cheeks Triangulation
-        [pts.cheekUpperL, pts.jawEarL],
-        [pts.cheekUpperL, pts.jawMidL],
-        [pts.cheekUpperL, pts.cheekLowerL],
+        // Cheeks network
         [pts.cheekUpperL, pts.nostrilL],
-        [pts.cheekLowerL, pts.mouthL],
-        [pts.cheekLowerL, pts.jawMidL],
-
-        [pts.cheekUpperR, pts.jawEarR],
-        [pts.cheekUpperR, pts.jawMidR],
-        [pts.cheekUpperR, pts.cheekLowerR],
         [pts.cheekUpperR, pts.nostrilR],
-        [pts.cheekLowerR, pts.mouthR],
-        [pts.cheekLowerR, pts.jawMidR],
+        [pts.cheekUpperL, pts.cheekLowerL],
+        [pts.cheekUpperR, pts.cheekLowerR],
+        [pts.cheekUpperL, pts.mouthL],
+        [pts.cheekUpperR, pts.mouthR],
+        [pts.nostrilL,    pts.mouthL],
+        [pts.nostrilR,    pts.mouthR],
 
-        // Mouth & Philtrum
-        [pts.septumBase, pts.philtrum],
-        [pts.nostrilL, pts.mouthL],
-        [pts.nostrilR, pts.mouthR],
+        // Philtrum & mouth
+        [pts.noseTip,  pts.philtrum],
         [pts.philtrum, pts.mouthL],
         [pts.philtrum, pts.mouthR],
-        [pts.mouthL, pts.lipBot],
-        [pts.mouthR, pts.lipBot],
+        [pts.philtrum, pts.lipBot],
+        [pts.mouthL,   pts.lipBot],
+        [pts.mouthR,   pts.lipBot],
 
-        // Mouth to Chin & Jaw
-        [pts.mouthL, pts.chinCornerL],
-        [pts.mouthR, pts.chinCornerR],
-        [pts.lipBot, pts.chinCornerL],
-        [pts.lipBot, pts.chinCenter],
-        [pts.lipBot, pts.chinCornerR],
-
-        // Jawline Contour & Chin Pad
-        [pts.jawEarL, pts.jawMidL],
-        [pts.jawMidL, pts.chinCornerL],
-        [pts.chinCornerL, pts.chinCenter],
-        [pts.chinCenter, pts.chinCornerR],
-        [pts.chinCornerR, pts.jawMidR],
-        [pts.jawMidR, pts.jawEarR],
-        [pts.chinCornerL, pts.chinCornerR]
+        // Lower jaw & chin
+        [pts.cheekLowerL, pts.mouthL],
+        [pts.cheekLowerR, pts.mouthR],
+        [pts.cheekLowerL, pts.chinCornerL],
+        [pts.cheekLowerR, pts.chinCornerR],
+        [pts.mouthL,      pts.chinCornerL],
+        [pts.mouthR,      pts.chinCornerR],
+        [pts.lipBot,      pts.chinCornerL],
+        [pts.lipBot,      pts.chinCornerR],
+        [pts.lipBot,      pts.chinTip],
+        [pts.chinCornerL, pts.chinTip],
+        [pts.chinCornerR, pts.chinTip]
       ];
 
-      // 1. Draw Biometric Triangulation Wireframe Lines
       ctx.save();
-      ctx.strokeStyle = meshStroke;
-      ctx.shadowColor = meshGlow;
+
+      // 1. Draw Biometric Triangulation Lines (from Gambar 1)
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.78)';
+      ctx.shadowColor = 'rgba(255, 255, 255, 0.55)';
       ctx.shadowBlur = 5;
-      ctx.lineWidth = 1.2;
+      ctx.lineWidth = 1.3;
       ctx.beginPath();
       edges.forEach(([p1, p2]) => {
         if (p1 && p2 && typeof p1.x === 'number' && typeof p2.x === 'number') {
@@ -9085,65 +9033,27 @@
       });
       ctx.stroke();
 
-      // 2. Draw "Titik titik Face Recognition" (High-Tech Cyber Target Nodes with Inner Core)
+      // 2. Draw Glowing White Biometric Dots (Exactly as in Gambar 1)
       const allNodes = Object.values(pts).filter(p => p && typeof p.x === 'number');
-      const nodeSize = Math.max(5, Math.min(8, Math.round(w * 0.065)));
 
+      // Layer A: Radiant outer glow aura
+      ctx.shadowColor = '#ffffff';
+      ctx.shadowBlur = 12;
       allNodes.forEach(pt => {
-        // High-contrast dark backing
-        ctx.fillStyle = 'rgba(2, 6, 23, 0.85)';
-        ctx.fillRect(pt.x - nodeSize / 2, pt.y - nodeSize / 2, nodeSize, nodeSize);
-        // Vibrant neon square border
-        ctx.strokeStyle = meshColor;
-        ctx.lineWidth = 1.3;
-        ctx.strokeRect(pt.x - nodeSize / 2, pt.y - nodeSize / 2, nodeSize, nodeSize);
-        // Gleaming precision white center core
-        ctx.fillStyle = '#ffffff';
-        ctx.fillRect(pt.x - 1, pt.y - 1, 2, 2);
+        ctx.beginPath();
+        ctx.arc(pt.x, pt.y, 6.0, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.35)';
+        ctx.fill();
       });
 
-      // 3. Active Optical Iris Scanner Reticle (As shown on the eye in reference image)
-      const scanEye = pts.eyeCenterR || pts.eyeCenterL;
-      if (scanEye && typeof scanEye.x === 'number') {
-        const scanRadius = Math.max(6, Math.round(w * 0.085));
-        const animTime = Date.now() / 400;
-        const sweepAngle = animTime % (Math.PI * 2);
-
-        ctx.strokeStyle = meshColor;
-        ctx.shadowColor = meshGlow;
-        ctx.shadowBlur = 8;
-        ctx.lineWidth = 1.3;
-
-        // Outer concentric biometric circle
+      // Layer B: Solid gleaming white center core
+      ctx.shadowBlur = 8;
+      allNodes.forEach(pt => {
         ctx.beginPath();
-        ctx.arc(scanEye.x, scanEye.y, scanRadius, 0, Math.PI * 2);
-        ctx.stroke();
-
-        // Rotating radar tracker arc
-        ctx.beginPath();
-        ctx.lineWidth = 2.2;
-        ctx.arc(scanEye.x, scanEye.y, scanRadius + 3, sweepAngle, sweepAngle + Math.PI * 0.70);
-        ctx.stroke();
-
-        // Crosshair ticks
-        ctx.beginPath();
-        ctx.lineWidth = 1.2;
-        ctx.moveTo(scanEye.x - scanRadius - 4, scanEye.y); ctx.lineTo(scanEye.x - scanRadius + 1, scanEye.y);
-        ctx.moveTo(scanEye.x + scanRadius - 1, scanEye.y); ctx.lineTo(scanEye.x + scanRadius + 4, scanEye.y);
-        ctx.moveTo(scanEye.x, scanEye.y - scanRadius - 4); ctx.lineTo(scanEye.x, scanEye.y - scanRadius + 1);
-        ctx.moveTo(scanEye.x, scanEye.y + scanRadius - 1); ctx.lineTo(scanEye.x, scanEye.y + scanRadius + 4);
-        ctx.stroke();
-      }
-
-      // 4. Glabella & Nose Tip Pulsing Biometric Radar Pulse
-      if (pts.glabella && typeof pts.glabella.x === 'number') {
-        const pulse = (nodeSize * 0.8) + ((Math.sin(Date.now() / 320) + 1) * 2.2);
-        ctx.strokeStyle = meshStroke;
-        ctx.lineWidth = 1.1;
-        ctx.beginPath();
-        ctx.arc(pts.glabella.x, pts.glabella.y, pulse, 0, Math.PI * 2);
-        ctx.stroke();
-      }
+        ctx.arc(pt.x, pt.y, 3.8, 0, Math.PI * 2);
+        ctx.fillStyle = '#ffffff';
+        ctx.fill();
+      });
 
       ctx.restore();
     }
@@ -9154,78 +9064,58 @@
       const isVIP = category === 'vip';
       const isUnknown = category === 'unknown' || category === 'guest' || String(label).toLowerCase().includes('stranger') || String(label).toLowerCase().includes('belum terdaftar') || String(label).toLowerCase().includes('tidak dikenal') || String(label).toLowerCase().includes('pengunjung');
 
-      // In enterprise VMS (matching user reference), stranger faces use clean vibrant neon green (#00ff88), VIP uses emerald (#10b981), Staff uses cyan (#00f0ff)
-      const strokeColor = isBlacklist ? '#ef4444' : (isVIP ? '#10b981' : (isUnknown ? '#00ff88' : '#00f0ff'));
-      const glowColor = isBlacklist ? 'rgba(239, 68, 68, 0.6)' : (isVIP ? 'rgba(16, 185, 129, 0.6)' : (isUnknown ? 'rgba(0, 255, 136, 0.55)' : 'rgba(0, 240, 255, 0.6)'));
-      const boxBg = isBlacklist ? 'rgba(239, 68, 68, 0.08)' : (isVIP ? 'rgba(16, 185, 129, 0.08)' : (isUnknown ? 'rgba(0, 255, 136, 0.06)' : 'rgba(0, 240, 255, 0.06)'));
-
       ctx.save();
 
-      // 1. Subtle Biometric Bounding Box Fill
-      ctx.fillStyle = boxBg;
-      ctx.fillRect(x, y, w, h);
+      // 1. Draw Biometric Mesh & Glowing White Dots (Gambar 1 style)
+      drawBiometricFacialMesh(ctx, x, y, w, h, ent, isUnknown, isVIP, isBlacklist);
 
-      // 2. Faint Grid Box Outline
-      ctx.strokeStyle = isBlacklist ? 'rgba(239, 68, 68, 0.25)' : (isVIP ? 'rgba(16, 185, 129, 0.25)' : (isUnknown ? 'rgba(245, 158, 11, 0.25)' : 'rgba(0, 240, 255, 0.20)'));
-      ctx.lineWidth = 1;
-      ctx.setLineDash([4, 4]);
-      ctx.strokeRect(x, y, w, h);
-      ctx.setLineDash([]);
+      // 2. Thick Neon Lime-Green Corner Brackets (Faithful to Gambar 1)
+      const bracketColor = isBlacklist ? '#ef4444' : '#bbf451'; // Electric Neon Lime / Chartreuse
+      const bracketGlow = isBlacklist ? 'rgba(239, 68, 68, 0.85)' : 'rgba(187, 244, 81, 0.85)';
+      
+      const pad = Math.max(10, Math.round(w * 0.08));
+      const bx = x - pad;
+      const by = y - pad;
+      const bw = w + pad * 2;
+      const bh = h + pad * 2;
+      const armLen = Math.min(48, Math.max(26, Math.round(bw * 0.23)));
 
-      // 3. Precision Cyber Corner Brackets
-      ctx.strokeStyle = strokeColor;
-      ctx.lineWidth = 2.5;
-      ctx.shadowColor = glowColor;
-      ctx.shadowBlur = 10;
+      ctx.strokeStyle = bracketColor;
+      ctx.shadowColor = bracketGlow;
+      ctx.shadowBlur = 14;
+      ctx.lineWidth = 5.0;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
 
-      const cornerLen = Math.min(24, Math.max(14, Math.round(w * 0.18)));
-
-      // Top-Left Corner
+      // Top-Left Corner ┌
       ctx.beginPath();
-      ctx.moveTo(x, y + cornerLen);
-      ctx.lineTo(x, y);
-      ctx.lineTo(x + cornerLen, y);
+      ctx.moveTo(bx, by + armLen);
+      ctx.lineTo(bx, by);
+      ctx.lineTo(bx + armLen, by);
       ctx.stroke();
 
-      // Top-Right Corner
+      // Top-Right Corner ┐
       ctx.beginPath();
-      ctx.moveTo(x + w - cornerLen, y);
-      ctx.lineTo(x + w, y);
-      ctx.lineTo(x + w, y + cornerLen);
+      ctx.moveTo(bx + bw - armLen, by);
+      ctx.lineTo(bx + bw, by);
+      ctx.lineTo(bx + bw, by + armLen);
       ctx.stroke();
 
-      // Bottom-Left Corner
+      // Bottom-Left Corner └
       ctx.beginPath();
-      ctx.moveTo(x, y + h - cornerLen);
-      ctx.lineTo(x, y + h);
-      ctx.lineTo(x + cornerLen, y + h);
+      ctx.moveTo(bx, by + bh - armLen);
+      ctx.lineTo(bx, by + bh);
+      ctx.lineTo(bx + armLen, by + bh);
       ctx.stroke();
 
-      // Bottom-Right Corner
+      // Bottom-Right Corner ┘
       ctx.beginPath();
-      ctx.moveTo(x + w - cornerLen, y + h);
-      ctx.lineTo(x + w, y + h);
-      ctx.lineTo(x + w, y + h - cornerLen);
+      ctx.moveTo(bx + bw - armLen, by + bh);
+      ctx.lineTo(bx + bw, by + bh);
+      ctx.lineTo(bx + bw, by + bh - armLen);
       ctx.stroke();
 
-      // 4. Glowing Corner Accent Dots
-      ctx.fillStyle = '#ffffff';
-      ctx.shadowBlur = 6;
-      [
-        [x, y],
-        [x + w, y],
-        [x, y + h],
-        [x + w, y + h]
-      ].forEach(([px, py]) => {
-        ctx.beginPath();
-        ctx.arc(px, py, 2.5, 0, Math.PI * 2);
-        ctx.fill();
-      });
-
-      // 5. Authentic Neural AI Facial Landmark Visualization (Directly modeled after Biometric Scan Reference)
-      drawBiometricFacialMesh(ctx, x, y, w, h, ent, isUnknown, isVIP, isBlacklist, strokeColor, glowColor);
-
-      // 6. Commercial VMS Identification Tag (High-contrast, bold, crisp on mobile)
+      // 3. Commercial VMS Identification Tag (High-contrast, bold, crisp above top bracket)
       const isStranger = isUnknown;
       let displayLabel = isStranger ? 'STRANGER' : String(label).toUpperCase();
       let roleTag = isVIP ? ' [VIP]' : (isBlacklist ? ' [DPO]' : (isStranger ? ' (Pengunjung)' : ''));
@@ -9238,17 +9128,17 @@
       const confW = ctx.measureText(confStr).width;
 
       const tagH = 26;
-      const tagW = Math.max(w, textW + confW + 36);
+      const tagW = Math.max(bw, textW + confW + 36);
       const canvasW = ctx.canvas ? ctx.canvas.width : 640;
-      const tagX = Math.max(4, Math.min(canvasW - tagW - 4, x + (w - tagW) / 2));
-      let tagY = y - tagH - 5;
-      if (tagY < 4) tagY = y + 5; // clamp inside box if near top edge
+      const tagX = Math.max(4, Math.min(canvasW - tagW - 4, bx + (bw - tagW) / 2));
+      let tagY = by - tagH - 6;
+      if (tagY < 4) tagY = by + 6; // clamp inside if touching top canvas ceiling
 
       // Solid High-Contrast Cyber Tag
       ctx.fillStyle = 'rgba(2, 6, 23, 0.96)';
-      ctx.strokeStyle = strokeColor;
+      ctx.strokeStyle = bracketColor;
       ctx.lineWidth = 1.8;
-      ctx.shadowColor = glowColor;
+      ctx.shadowColor = bracketGlow;
       ctx.shadowBlur = 10;
       ctx.beginPath();
       ctx.roundRect ? ctx.roundRect(tagX, tagY, tagW, tagH, 6) : ctx.rect(tagX, tagY, tagW, tagH);
@@ -9257,7 +9147,7 @@
 
       // Dot beacon / icon
       ctx.shadowBlur = 0;
-      ctx.fillStyle = strokeColor;
+      ctx.fillStyle = bracketColor;
       ctx.beginPath();
       ctx.arc(tagX + 11, tagY + tagH / 2, 3.5, 0, Math.PI * 2);
       ctx.fill();
@@ -9268,7 +9158,7 @@
       ctx.fillText(fullTagText, tagX + 22, tagY + 17.5);
 
       // Confidence Pill
-      ctx.fillStyle = isStranger ? '#00ff88' : (isBlacklist ? '#ef4444' : '#38bdf8');
+      ctx.fillStyle = isStranger ? '#ffd700' : (isBlacklist ? '#ef4444' : '#a3e635');
       ctx.font = '800 11.5px monospace';
       ctx.textAlign = 'right';
       ctx.fillText(confStr, tagX + tagW - 8, tagY + 17.5);
