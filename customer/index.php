@@ -7,9 +7,6 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-  <meta http-equiv="Pragma" content="no-cache">
-  <meta http-equiv="Expires" content="0">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Customer Control Hub - PT. LOEWIX INDONESIA</title>
   <!-- Favicons & App Icons (Loewix Official) -->
@@ -8639,12 +8636,22 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
                 };
               }
 
+              // Lerp landmark positions if present for ultra-smooth 60fps mesh tracking
+              let lerpedLandmarks = t.landmarks;
+              if (Array.isArray(t.landmarks) && bestPrev && Array.isArray(bestPrev.landmarks) && bestPrev.landmarks.length === t.landmarks.length) {
+                lerpedLandmarks = t.landmarks.map((pt, idx) => ({
+                  x: Math.round(bestPrev.landmarks[idx].x + (pt.x - bestPrev.landmarks[idx].x) * 0.42),
+                  y: Math.round(bestPrev.landmarks[idx].y + (pt.y - bestPrev.landmarks[idx].y) * 0.42)
+                }));
+              }
+
               return {
                 ...t,
                 x: Math.round(bestPrev.x + (t.targetX - bestPrev.x) * 0.40),
                 y: Math.round(bestPrev.y + (t.targetY - bestPrev.y) * 0.40),
                 w: Math.round(bestPrev.w + (t.targetW - bestPrev.w) * 0.40),
-                h: Math.round(bestPrev.h + (t.targetH - bestPrev.h) * 0.40)
+                h: Math.round(bestPrev.h + (t.targetH - bestPrev.h) * 0.40),
+                landmarks: lerpedLandmarks
               };
             });
 
@@ -8749,7 +8756,7 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
         // Bottom OSD
         ctx.font = '600 11px sans-serif';
         ctx.fillStyle = 'rgba(255, 255, 255, 0.45)';
-        ctx.fillText('PT. LOEWIX INDONESIA • AI NEURAL VISION ENGINE V3.4 • 60 FPS LERP • 1080P', 18, canvas.height - 16);
+        ctx.fillText('PT. LOEWIX INDONESIA • AI NEURAL BIOMETRIC ENGINE V4.0 (3D BIOMETRIC MESH) • 60 FPS LERP • 1080P', 18, canvas.height - 16);
 
         // ========================================================
         // SMART AI AUTO-ZOOM & E-PTZ AUTO-FRAMING (60 FPS LERP GLIDE)
@@ -8898,8 +8905,14 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
     }
 
     /**
-     * High-Tech 3D Biometric Facial Mesh & Glowing White Node Renderer (Faithful to Gambar 2)
-     * Renders glowing circular white nodes, polygon triangulation mesh, holographic face tint, and neon lime framing
+     * Ultra High-Definition Biometric Facial Mesh & Glowing White Node Renderer
+     * 100% Faithful to Reference Design (Gambar 2):
+     * 1. Electric Neon Lime (#ccff00) bold corner brackets with spacious framing & rounded caps
+     * 2. Outer cyberpunk circuit trace lines with glowing junction dots extending from corners
+     * 3. 3D Faceted triangulation wireframe connecting anatomical biometric keypoints
+     * 4. Multi-layer glowing white jewel nodes (radiant aura + bright halo + solid star core)
+     * 5. Holographic biometric face mask tint (violet/indigo gradient from Gambar 2)
+     * 6. High-contrast commercial VMS identification badge with neon lime accents
      */
     function drawBiometricFacialMesh(ctx, x, y, w, h, ent, isUnknown, isVIP, isBlacklist) {
       let pts = {};
@@ -8908,10 +8921,11 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
       if (has68) {
         const l = ent.landmarks;
         pts = {
-          foreheadTopL: { x: l[19].x - (w * 0.03), y: l[19].y - (h * 0.24) },
-          foreheadTopR: { x: l[24].x + (w * 0.03), y: l[24].y - (h * 0.24) },
-          templeL:      { x: l[0].x - (w * 0.02), y: l[17].y - (h * 0.06) },
-          templeR:      { x: l[16].x + (w * 0.02), y: l[26].y - (h * 0.06) },
+          // Forehead & hairline nodes (anchored above eyebrows with anatomical stability)
+          foreheadTopL: { x: l[19].x - (w * 0.02), y: l[19].y - (h * 0.22) },
+          foreheadTopR: { x: l[24].x + (w * 0.02), y: l[24].y - (h * 0.22) },
+          templeL:      { x: l[0].x - (w * 0.02), y: l[17].y - (h * 0.05) },
+          templeR:      { x: l[16].x + (w * 0.02), y: l[26].y - (h * 0.05) },
           glabella:     { x: (l[21].x + l[22].x) / 2, y: (l[21].y + l[22].y) / 2 },
 
           browMidL:     l[19],
@@ -8921,12 +8935,13 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
           eyeR:         { x: (l[42].x + l[45].x) / 2, y: (l[43].y + l[47].y) / 2 },
 
           noseBridge:   l[27],
+          noseMid:      l[29],
           noseTip:      l[30],
           nostrilL:     l[31],
           nostrilR:     l[35],
 
-          cheekUpperL:  { x: l[1].x + (w * 0.02), y: l[36].y + (h * 0.09) },
-          cheekUpperR:  { x: l[15].x - (w * 0.02), y: l[45].y + (h * 0.09) },
+          cheekUpperL:  { x: l[1].x + (w * 0.03), y: l[36].y + (h * 0.08) },
+          cheekUpperR:  { x: l[15].x - (w * 0.03), y: l[45].y + (h * 0.08) },
           cheekLowerL:  l[3],
           cheekLowerR:  l[13],
 
@@ -8940,12 +8955,12 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
           chinTip:      l[8]
         };
       } else {
-        // High-Precision Anatomical Geometry anchored to face bounding box (Faithful to Gambar 2)
+        // High-Precision Anatomical Proportions (Faithful to Gambar 2 Geometry)
         pts = {
-          foreheadTopL: { x: x + w * 0.26, y: y + h * 0.08 },
-          foreheadTopR: { x: x + w * 0.74, y: y + h * 0.08 },
-          templeL:      { x: x + w * 0.10, y: y + h * 0.22 },
-          templeR:      { x: x + w * 0.90, y: y + h * 0.22 },
+          foreheadTopL: { x: x + w * 0.28, y: y + h * 0.08 },
+          foreheadTopR: { x: x + w * 0.72, y: y + h * 0.08 },
+          templeL:      { x: x + w * 0.12, y: y + h * 0.22 },
+          templeR:      { x: x + w * 0.88, y: y + h * 0.22 },
           glabella:     { x: x + w * 0.50, y: y + h * 0.28 },
 
           browMidL:     { x: x + w * 0.32, y: y + h * 0.24 },
@@ -8954,30 +8969,31 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
           eyeL:         { x: x + w * 0.34, y: y + h * 0.36 },
           eyeR:         { x: x + w * 0.66, y: y + h * 0.36 },
 
-          noseBridge:   { x: x + w * 0.50, y: y + h * 0.42 },
+          noseBridge:   { x: x + w * 0.50, y: y + h * 0.40 },
+          noseMid:      { x: x + w * 0.50, y: y + h * 0.50 },
           noseTip:      { x: x + w * 0.50, y: y + h * 0.60 },
           nostrilL:     { x: x + w * 0.40, y: y + h * 0.60 },
           nostrilR:     { x: x + w * 0.60, y: y + h * 0.60 },
 
           cheekUpperL:  { x: x + w * 0.16, y: y + h * 0.46 },
           cheekUpperR:  { x: x + w * 0.84, y: y + h * 0.46 },
-          cheekLowerL:  { x: x + w * 0.15, y: y + h * 0.66 },
-          cheekLowerR:  { x: x + w * 0.85, y: y + h * 0.66 },
+          cheekLowerL:  { x: x + w * 0.16, y: y + h * 0.68 },
+          cheekLowerR:  { x: x + w * 0.84, y: y + h * 0.68 },
 
-          philtrum:     { x: x + w * 0.50, y: y + h * 0.68 },
-          mouthL:       { x: x + w * 0.32, y: y + h * 0.76 },
-          mouthR:       { x: x + w * 0.68, y: y + h * 0.76 },
-          lipBot:       { x: x + w * 0.50, y: y + h * 0.82 },
+          philtrum:     { x: x + w * 0.50, y: y + h * 0.69 },
+          mouthL:       { x: x + w * 0.32, y: y + h * 0.77 },
+          mouthR:       { x: x + w * 0.68, y: y + h * 0.77 },
+          lipBot:       { x: x + w * 0.50, y: y + h * 0.83 },
 
-          chinL:        { x: x + w * 0.30, y: y + h * 0.90 },
-          chinR:        { x: x + w * 0.70, y: y + h * 0.90 },
+          chinL:        { x: x + w * 0.30, y: y + h * 0.91 },
+          chinR:        { x: x + w * 0.70, y: y + h * 0.91 },
           chinTip:      { x: x + w * 0.50, y: y + h * 0.99 }
         };
       }
 
-      // Triangulation Network (Faithful to Gambar 2)
+      // 3D Triangulation Network Graph (Exact Polygon Mesh from Gambar 2)
       const edges = [
-        // Forehead top bar
+        // Forehead horizontal bar
         [pts.foreheadTopL, pts.foreheadTopR],
 
         // Forehead to temples & glabella
@@ -8986,7 +9002,7 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
         [pts.foreheadTopL, pts.glabella],
         [pts.foreheadTopR, pts.glabella],
 
-        // Temples to eyebrows & cheeks
+        // Temples to eyebrows & cheekbones
         [pts.templeL, pts.browMidL],
         [pts.templeR, pts.browMidR],
         [pts.templeL, pts.cheekUpperL],
@@ -9007,8 +9023,11 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
         [pts.eyeL,        pts.cheekUpperL],
         [pts.eyeR,        pts.cheekUpperR],
 
-        // Nose bridge to nose tip & nostrils
-        [pts.noseBridge, pts.noseTip],
+        // Nose bridge, mid ridge, nostrils & tip
+        [pts.noseBridge, pts.noseMid],
+        [pts.noseMid,    pts.noseTip],
+        [pts.noseMid,    pts.nostrilL],
+        [pts.noseMid,    pts.nostrilR],
         [pts.noseBridge, pts.nostrilL],
         [pts.noseBridge, pts.nostrilR],
         [pts.nostrilL,   pts.noseTip],
@@ -9027,7 +9046,7 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
         [pts.cheekLowerL, pts.chinL],
         [pts.cheekLowerR, pts.chinR],
 
-        // Philtrum & mouth
+        // Philtrum & mouth diamond
         [pts.noseTip,  pts.philtrum],
         [pts.nostrilL, pts.philtrum],
         [pts.nostrilR, pts.philtrum],
@@ -9049,7 +9068,7 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
 
       ctx.save();
 
-      // 1. Subtle Holographic Face Shading (Exact purple/blue biometric tint from Gambar 2)
+      // 1. Subtle Holographic Face Mask Tint (Biometric purple/indigo hue from Gambar 2)
       try {
         ctx.beginPath();
         ctx.moveTo(pts.foreheadTopL.x, pts.foreheadTopL.y);
@@ -9066,18 +9085,18 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
         ctx.closePath();
 
         const grad = ctx.createLinearGradient(x, y, x, y + h);
-        grad.addColorStop(0, 'rgba(147, 51, 234, 0.12)');
-        grad.addColorStop(0.5, 'rgba(99, 102, 241, 0.08)');
-        grad.addColorStop(1, 'rgba(59, 130, 246, 0.06)');
+        grad.addColorStop(0, 'rgba(139, 92, 246, 0.16)');
+        grad.addColorStop(0.5, 'rgba(99, 102, 241, 0.10)');
+        grad.addColorStop(1, 'rgba(59, 130, 246, 0.08)');
         ctx.fillStyle = grad;
         ctx.fill();
       } catch (e) {}
 
-      // 2. Draw Biometric Triangulation Wireframe Lines (Crisp white lines from Gambar 2)
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.82)';
-      ctx.shadowColor = 'rgba(255, 255, 255, 0.65)';
-      ctx.shadowBlur = 5;
-      ctx.lineWidth = 1.4;
+      // 2. Draw Biometric Triangulation Wireframe Lines (Crisp gleaming white lines from Gambar 2)
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.88)';
+      ctx.shadowColor = 'rgba(255, 255, 255, 0.70)';
+      ctx.shadowBlur = 6;
+      ctx.lineWidth = 1.5;
       ctx.beginPath();
       edges.forEach(([p1, p2]) => {
         if (p1 && p2 && typeof p1.x === 'number' && typeof p2.x === 'number') {
@@ -9087,25 +9106,27 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
       });
       ctx.stroke();
 
-      // 3. Draw Glowing White Biometric Dots ("Titik-titik Wajah" from Gambar 2)
+      // 3. Draw Glowing White Biometric Jewel Nodes ("Titik-titik Wajah" from Gambar 2)
       const allNodes = Object.values(pts).filter(p => p && typeof p.x === 'number');
+      const pulseTime = Date.now() / 280;
 
-      // Layer A: Radiant outer glow aura
+      // Layer A: Radiant outer glow aura (with subtle quantum breathing pulse)
       ctx.shadowColor = '#ffffff';
-      ctx.shadowBlur = 14;
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.45)';
-      allNodes.forEach(pt => {
+      ctx.shadowBlur = 16;
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.40)';
+      allNodes.forEach((pt, idx) => {
+        const pulse = Math.sin(pulseTime + idx * 0.4) * 0.8;
         ctx.beginPath();
-        ctx.arc(pt.x, pt.y, 6.5, 0, Math.PI * 2);
+        ctx.arc(pt.x, pt.y, Math.max(5.0, 7.0 + pulse), 0, Math.PI * 2);
         ctx.fill();
       });
 
-      // Layer B: Medium bright halo
+      // Layer B: Medium bright luminous halo
       ctx.shadowBlur = 8;
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.88)';
       allNodes.forEach(pt => {
         ctx.beginPath();
-        ctx.arc(pt.x, pt.y, 4.5, 0, Math.PI * 2);
+        ctx.arc(pt.x, pt.y, 4.6, 0, Math.PI * 2);
         ctx.fill();
       });
 
@@ -9129,39 +9150,49 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
 
       ctx.save();
 
-      // 1. Draw Biometric Mesh & Glowing White Dots (Gambar 2 style)
+      // 1. Draw Biometric Facial Wireframe Mesh & Glowing White Nodes (Faithful to Gambar 2)
       drawBiometricFacialMesh(ctx, x, y, w, h, ent, isUnknown, isVIP, isBlacklist);
 
-      // 2. Thick Neon Lime-Green Corner Brackets ("Kotak-kotak" Faithful to Gambar 2)
-      const bracketColor = isBlacklist ? '#ef4444' : (isUnknown ? '#ffd700' : '#ccff00'); // Electric Neon Lime from Gambar 2 (#ccff00)
-      const bracketGlow = isBlacklist ? 'rgba(239, 68, 68, 0.85)' : (isUnknown ? 'rgba(255, 215, 0, 0.85)' : 'rgba(204, 255, 0, 0.85)');
+      // 2. Thick Neon Lime Corner Brackets ("Kotak-kotak" Faithful to Gambar 2)
+      // Reference Gambar 2 uses vibrant Electric Neon Lime (#ccff00 / #bbf451)
+      const bracketColor = isBlacklist ? '#ef4444' : (isUnknown ? '#ffd700' : '#ccff00');
+      const bracketGlow = isBlacklist ? 'rgba(239, 68, 68, 0.90)' : (isUnknown ? 'rgba(255, 215, 0, 0.90)' : 'rgba(204, 255, 0, 0.95)');
       
-      const pad = Math.max(16, Math.round(w * 0.16));
+      const pad = Math.max(18, Math.round(w * 0.18));
       const bx = x - pad;
       const by = y - pad;
       const bw = w + pad * 2;
       const bh = h + pad * 2;
-      const armLen = Math.min(54, Math.max(28, Math.round(bw * 0.28)));
+      const armLen = Math.min(60, Math.max(30, Math.round(bw * 0.30)));
 
-      // Subtle futuristic cyber accent tick lines outside corners (from Gambar 2 background)
-      ctx.strokeStyle = isBlacklist ? 'rgba(239, 68, 68, 0.35)' : 'rgba(204, 255, 0, 0.35)';
+      // Outer futuristic sci-fi circuit trace accents (As seen in background of Gambar 2)
+      const traceColor = isBlacklist ? 'rgba(239, 68, 68, 0.35)' : 'rgba(204, 255, 0, 0.40)';
+      ctx.strokeStyle = traceColor;
       ctx.lineWidth = 1.6;
       ctx.beginPath();
-      // Top-Left accent
-      ctx.moveTo(bx - 6, by - 6); ctx.lineTo(bx - 18, by - 18);
-      // Top-Right accent
-      ctx.moveTo(bx + bw + 6, by - 6); ctx.lineTo(bx + bw + 18, by - 18);
-      // Bottom-Left accent
-      ctx.moveTo(bx - 6, by + bh + 6); ctx.lineTo(bx - 18, by + bh + 18);
-      // Bottom-Right accent
-      ctx.moveTo(bx + bw + 6, by + bh + 6); ctx.lineTo(bx + bw + 18, by + bh + 18);
+      // Top-Left corner trace
+      ctx.moveTo(bx - 8, by - 8); ctx.lineTo(bx - 22, by - 22); ctx.lineTo(bx - 38, by - 22);
+      // Top-Right corner trace
+      ctx.moveTo(bx + bw + 8, by - 8); ctx.lineTo(bx + bw + 22, by - 22); ctx.lineTo(bx + bw + 38, by - 22);
+      // Bottom-Left corner trace
+      ctx.moveTo(bx - 8, by + bh + 8); ctx.lineTo(bx - 22, by + bh + 22); ctx.lineTo(bx - 38, by + bh + 22);
+      // Bottom-Right corner trace
+      ctx.moveTo(bx + bw + 8, by + bh + 8); ctx.lineTo(bx + bw + 22, by + bh + 22); ctx.lineTo(bx + bw + 38, by + bh + 22);
       ctx.stroke();
 
-      // Main Bold L-Corner Brackets
+      // Tiny terminal dot on each trace
+      ctx.fillStyle = traceColor;
+      [[bx - 38, by - 22], [bx + bw + 38, by - 22], [bx - 38, by + bh + 22], [bx + bw + 38, by + bh + 22]].forEach(([tx, ty]) => {
+        ctx.beginPath();
+        ctx.arc(tx, ty, 2.5, 0, Math.PI * 2);
+        ctx.fill();
+      });
+
+      // Main Bold L-Corner Brackets (Gambar 2 aesthetic)
       ctx.strokeStyle = bracketColor;
       ctx.shadowColor = bracketGlow;
-      ctx.shadowBlur = 16;
-      ctx.lineWidth = 5.5;
+      ctx.shadowBlur = 18;
+      ctx.lineWidth = 6.0;
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
 
@@ -9206,7 +9237,7 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
       const confW = ctx.measureText(confStr).width;
 
       const tagH = 28;
-      const tagW = Math.max(bw, textW + confW + 40);
+      const tagW = Math.max(bw, textW + confW + 42);
       const canvasW = ctx.canvas ? ctx.canvas.width : 640;
       const tagX = Math.max(4, Math.min(canvasW - tagW - 4, bx + (bw - tagW) / 2));
       let tagY = by - tagH - 8;
@@ -9217,7 +9248,7 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
       ctx.strokeStyle = bracketColor;
       ctx.lineWidth = 1.8;
       ctx.shadowColor = bracketGlow;
-      ctx.shadowBlur = 12;
+      ctx.shadowBlur = 14;
       ctx.beginPath();
       ctx.roundRect ? ctx.roundRect(tagX, tagY, tagW, tagH, 6) : ctx.rect(tagX, tagY, tagW, tagH);
       ctx.fill();
@@ -9227,7 +9258,7 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
       ctx.shadowBlur = 0;
       ctx.fillStyle = bracketColor;
       ctx.beginPath();
-      ctx.arc(tagX + 12, tagY + tagH / 2, 4.0, 0, Math.PI * 2);
+      ctx.arc(tagX + 12, tagY + tagH / 2, 4.2, 0, Math.PI * 2);
       ctx.fill();
 
       // Label Name + Role
