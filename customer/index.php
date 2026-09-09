@@ -26,7 +26,7 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_detection@0.4.1646425229/face_detection.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/face-detection@1.0.3/dist/face-detection.min.js"></script>
   <!-- face-api.js: Biometric Descriptors for Whitelist Database Verification -->
-  <script defer src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
   <!-- Midtrans Snap Payment Gateway SDK (Sandbox) -->
   <script type="text/javascript" src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="Mid-client-mGA7v04cXrux3KNF"></script>
   <style>
@@ -7459,19 +7459,19 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
     async function initFaceAPI() {
       if (faceAPIReady || faceAPILoading) return;
       if (typeof faceapi === 'undefined') {
-        console.warn('[FaceAPI] Library not loaded yet, retrying in 2s...');
-        setTimeout(initFaceAPI, 2000);
+        console.warn('[FaceAPI] Library not loaded yet, retrying in 1s...');
+        setTimeout(initFaceAPI, 1000);
         return;
       }
       faceAPILoading = true;
       try {
         console.log('[FaceAPI] Loading neural network models...');
         await Promise.all([
-          faceapi.nets.ssdMobilenetv1.loadFromUri(FACE_API_MODEL_URL).catch(e => console.warn('[FaceAPI] SSD model warning:', e)),
-          faceapi.nets.tinyFaceDetector.loadFromUri(FACE_API_MODEL_URL),
-          faceapi.nets.faceLandmark68TinyNet.loadFromUri(FACE_API_MODEL_URL),
-          faceapi.nets.faceRecognitionNet.loadFromUri(FACE_API_MODEL_URL),
-          faceapi.nets.ageGenderNet.loadFromUri(FACE_API_MODEL_URL).catch(e => console.warn('[FaceAPI] AgeGenderNet warning:', e))
+          faceapi.nets.tinyFaceDetector.loadFromUri(FACE_API_MODEL_URL).catch(e => console.warn('[FaceAPI] TinyDetector warning:', e)),
+          faceapi.nets.faceLandmark68TinyNet.loadFromUri(FACE_API_MODEL_URL).catch(e => console.warn('[FaceAPI] LandmarkTiny warning:', e)),
+          faceapi.nets.faceLandmark68Net.loadFromUri(FACE_API_MODEL_URL).catch(e => console.warn('[FaceAPI] Landmark68 warning:', e)),
+          faceapi.nets.faceRecognitionNet.loadFromUri(FACE_API_MODEL_URL).catch(e => console.warn('[FaceAPI] RecognitionNet warning:', e)),
+          faceapi.nets.ssdMobilenetv1.loadFromUri(FACE_API_MODEL_URL).catch(e => console.warn('[FaceAPI] SSD model warning:', e))
         ]);
         faceAPIReady = true;
         faceAPILoading = false;
@@ -7481,6 +7481,7 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
         }
       } catch (err) {
         faceAPILoading = false;
+        faceAPIReady = true;
         console.error('[FaceAPI] ❌ Model loading failed:', err);
       }
     }
@@ -7505,7 +7506,7 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
           let det = null;
           try {
             // Pick largest/foreground face if photo contains background people
-            const allDets = await faceapi.detectAllFaces(img, new faceapi.TinyFaceDetectorOptions({ inputSize: 416, scoreThreshold: 0.08 }))
+            const allDets = await faceapi.detectAllFaces(img, new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.08 }))
               .withFaceLandmarks(true)
               .withFaceDescriptors();
             if (allDets && allDets.length > 0) {
@@ -7519,7 +7520,7 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
           } catch (e) {}
 
           if (!det) {
-            det = await faceapi.detectSingleFace(img, new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.06 }))
+            det = await faceapi.detectSingleFace(img, new faceapi.TinyFaceDetectorOptions({ inputSize: 256, scoreThreshold: 0.06 }))
               .withFaceLandmarks(true)
               .withFaceDescriptor();
           }
@@ -7568,29 +7569,29 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
 
       // Match existing track within spatial proximity radius (0.22 normalized Euclidean radius)
       let matchedTrack = null;
-      let minDistance = 0.22;
+      let minTrackDist = 0.22;
 
       for (const [id, data] of _spatialTrackBuffers.entries()) {
-        const dist = Math.hypot(cx - data.lastX, cy - data.lastY);
-        if (dist < minDistance) {
-          minDistance = dist;
+        const dist = Math.hypot(cx - data.lastCx, cy - data.lastCy);
+        if (dist < minTrackDist) {
+          minTrackDist = dist;
           matchedTrack = data;
         }
       }
 
       if (matchedTrack) {
-        matchedTrack.lastX = cx;
-        matchedTrack.lastY = cy;
+        matchedTrack.lastCx = cx;
+        matchedTrack.lastCy = cy;
         matchedTrack.lastSeen = now;
         return matchedTrack;
       }
 
       // Create new track anchored to this physical chair/position
-      const newId = `track_${Math.round(cx * 100)}_${Math.round(cy * 100)}`;
+      const newId = 'track_' + Math.random().toString(36).substring(2, 9);
       const newTrack = {
         id: newId,
-        lastX: cx,
-        lastY: cy,
+        lastCx: cx,
+        lastCy: cy,
         lastSeen: now,
         lockedPerson: null,
         lockedDistance: 1.0,
@@ -7839,26 +7840,31 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
 
       const frameW = frameCanvas.width;
       const frameH = frameCanvas.height;
-      const isCam162 = currentAICamera && ((currentAICamera.title || '').includes('162') || (currentAICamera.city || '').toLowerCase().includes('jakarta') || String(currentAICamera.id || '').includes('162'));
 
       try {
         let detections = [];
 
-        // =========================================================================
-        // 1. PRIMARY ENGINE: OFFICIAL TENSORFLOW.ORG & MEDIAPIPE FACEMESH
-        // Runs on WebGL/GPU for high-precision 468 3D facial landmark detection
-        // =========================================================================
+        // 1. FAST REAL-TIME PRIMARY ENGINE: face-api.js TinyFaceDetector
+        if (faceAPIReady && typeof faceapi !== 'undefined') {
+          try {
+            detections = await faceapi.detectAllFaces(frameCanvas, new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.10 }))
+              .withFaceLandmarks(true)
+              .withFaceDescriptors();
+          } catch (eTiny) {
+            try {
+              detections = await faceapi.detectAllFaces(frameCanvas, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.08 }))
+                .withFaceLandmarks(true);
+            } catch (eTiny2) {}
+          }
+        }
+
+        // 2. TENSORFLOW.ORG & MEDIAPIPE (Enhance with 468 3D landmarks or detect if FaceAPI had no results)
         let tfjsFaces = null;
         if (isTFJSFaceMeshReady && tfjsFaceDetector) {
           try {
             tfjsFaces = await tfjsFaceDetector.estimateFaces(frameCanvas, { flipHorizontal: false });
-          } catch (eTF) {
-            console.warn('[TensorFlow.org] estimateFaces notice:', eTF.message);
-          }
-        }
-
-        // Direct MediaPipe FaceMesh (High Performance Fallback/Complement)
-        if ((!tfjsFaces || tfjsFaces.length === 0) && directMediaPipeFaceMesh) {
+          } catch (eTF) {}
+        } else if (directMediaPipeFaceMesh) {
           try {
             await directMediaPipeFaceMesh.send({ image: frameCanvas });
             if (directMediaPipeResults && directMediaPipeResults.multiFaceLandmarks && directMediaPipeResults.multiFaceLandmarks.length > 0) {
@@ -7870,26 +7876,11 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
           } catch (eMP) {}
         }
 
-        // TensorFlow MediaPipe FaceDetector
-        if ((!tfjsFaces || tfjsFaces.length === 0) && tfjsMediaPipeDetector) {
-          try {
-            const detFaces = await tfjsMediaPipeDetector.estimateFaces(frameCanvas);
-            if (detFaces && detFaces.length > 0) {
-              tfjsFaces = detFaces.map(df => ({
-                keypoints: df.keypoints,
-                box: df.box
-              }));
-            }
-          } catch (eDet) {}
-        }
-
-        // Convert TensorFlow results into standardized detections
-        if (tfjsFaces && tfjsFaces.length > 0) {
+        // If FaceAPI had no detections but TensorFlow found faces:
+        if ((!detections || detections.length === 0) && tfjsFaces && tfjsFaces.length > 0) {
           for (const tfFace of tfjsFaces) {
             const kps = tfFace.keypoints;
             let fBox = null;
-
-            // 1. Calculate pixel bounding box directly from 468 landmarks (most accurate & resilient)
             if (kps && kps.length > 0) {
               let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
               for (let k = 0; k < kps.length; k++) {
@@ -7911,39 +7902,11 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
                 width: Math.min(frameW - Math.max(0, minX - padX), Math.round(bw + padX * 2)),
                 height: Math.min(frameH - Math.max(0, minY - padY), Math.round(bh + padY * 2))
               };
-            } else if (tfFace.box && typeof tfFace.box.xMin === 'number') {
-              // 2. Handle box (supports both normalized 0..1 and absolute pixel coordinates)
-              const isNorm = (tfFace.box.xMin <= 1.05 && tfFace.box.width <= 1.05);
-              const bx = isNorm ? tfFace.box.xMin * frameW : tfFace.box.xMin;
-              const by = isNorm ? tfFace.box.yMin * frameH : tfFace.box.yMin;
-              const bw = isNorm ? tfFace.box.width * frameW : tfFace.box.width;
-              const bh = isNorm ? tfFace.box.height * frameH : tfFace.box.height;
-              fBox = {
-                x: Math.max(0, Math.round(bx)),
-                y: Math.max(0, Math.round(by)),
-                width: Math.min(frameW - bx, Math.round(bw)),
-                height: Math.min(frameH - by, Math.round(bh))
-              };
             }
-
             if (fBox && fBox.width >= 24 && fBox.height >= 24) {
-              let desc = null;
-              if (faceAPIReady && typeof faceapi !== 'undefined') {
-                try {
-                  const c = document.createElement('canvas');
-                  c.width = 160;
-                  c.height = 160;
-                  c.getContext('2d').drawImage(frameCanvas, fBox.x, fBox.y, fBox.width, fBox.height, 0, 0, 160, 160);
-                  const fd = await faceapi.detectSingleFace(c, new faceapi.TinyFaceDetectorOptions({ inputSize: 160, scoreThreshold: 0.05 })).withFaceDescriptor();
-                  if (fd && fd.descriptor) {
-                    desc = fd.descriptor;
-                  }
-                } catch (e) {}
-              }
-
               detections.push({
                 box: fBox,
-                descriptor: desc,
+                descriptor: null,
                 mesh468: kps,
                 landmarks: kps,
                 score: 0.98,
@@ -7953,72 +7916,31 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
           }
         }
 
-        // =========================================================================
-        // 2. SECONDARY COMPLEMENT: SSD MobileNet & TinyFaceDetector
-        // Runs as fallback if lighting is low or face is viewed from extreme profile angles
-        // =========================================================================
-        if ((!detections || detections.length === 0) && faceAPIReady && typeof faceapi !== 'undefined') {
-          if (typeof faceapi.nets.ssdMobilenetv1 !== 'undefined' && faceapi.nets.ssdMobilenetv1.isLoaded) {
-            try {
-              detections = await faceapi.detectAllFaces(frameCanvas, new faceapi.SsdMobilenetv1Options({ minConfidence: 0.15, maxResults: 10 }))
-                .withFaceLandmarks(true)
-                .withFaceDescriptors();
-            } catch (e) {
-              console.warn('[FaceAPI] SSD scan warning:', e.message);
-            }
-          }
-
-          if (!detections || detections.length === 0) {
-            try {
-              const cctvInputSize = frameW >= 600 ? 512 : 416;
-              detections = await faceapi.detectAllFaces(frameCanvas, new faceapi.TinyFaceDetectorOptions({ inputSize: cctvInputSize, scoreThreshold: 0.08 }))
-                .withFaceLandmarks(true)
-                .withFaceDescriptors();
-            } catch (e) {
-              console.warn('[FaceAPI] Tiny scan error:', e.message);
-            }
-          }
+        // 3. Fallback to SSD MobileNet if still empty
+        if ((!detections || detections.length === 0) && faceAPIReady && typeof faceapi !== 'undefined' && faceapi.nets.ssdMobilenetv1 && faceapi.nets.ssdMobilenetv1.isLoaded) {
+          try {
+            detections = await faceapi.detectAllFaces(frameCanvas, new faceapi.SsdMobilenetv1Options({ minConfidence: 0.15, maxResults: 6 }))
+              .withFaceLandmarks(true)
+              .withFaceDescriptors();
+          } catch (eSSD) {}
         }
 
-        // 3. Hardware Green-Box Tracker
+        // 4. Fallback to Hardware Green Box Tracker
         if (!detections || detections.length === 0) {
           try {
             const smartBoxes = findSmartCameraHumanBoxes(frameCanvas);
             if (smartBoxes.length > 0) {
               for (const sb of smartBoxes) {
                 const hb = sb.headBox;
-                const padX = Math.round(hb.width * 0.20);
-                const padY = Math.round(hb.height * 0.20);
-                const cropX = Math.max(0, Math.round(hb.x - padX));
-                const cropY = Math.max(0, Math.round(hb.y - padY));
-                const cropW = Math.min(frameW - cropX, Math.round(hb.width + padX * 2));
-                const cropH = Math.min(frameH - cropY, Math.round(hb.height + padY * 2));
-
-                if (cropW >= 20 && cropH >= 20) {
-                  let desc = null;
-                  if (faceAPIReady && typeof faceapi !== 'undefined') {
-                    try {
-                      const headCanvas = document.createElement('canvas');
-                      headCanvas.width = 256;
-                      headCanvas.height = 256;
-                      headCanvas.getContext('2d').drawImage(frameCanvas, cropX, cropY, cropW, cropH, 0, 0, 256, 256);
-                      const headDet = await faceapi.detectSingleFace(headCanvas, new faceapi.TinyFaceDetectorOptions({ inputSize: 256, scoreThreshold: 0.08 })).withFaceDescriptor();
-                      if (headDet && headDet.descriptor) desc = headDet.descriptor;
-                    } catch (e) {}
-                  }
-
-                  detections.push({
-                    box: { x: cropX, y: cropY, width: cropW, height: cropH },
-                    descriptor: desc,
-                    score: 0.88,
-                    engine: 'CCTV Tracker'
-                  });
-                }
+                detections.push({
+                  box: { x: hb.x, y: hb.y, width: hb.width, height: hb.height },
+                  descriptor: null,
+                  score: 0.88,
+                  engine: 'CCTV Tracker'
+                });
               }
             }
-          } catch (e) {
-            console.warn('[CCTV Tracker] Error:', e.message);
-          }
+          } catch (e) {}
         }
 
         if (detections && detections.length > 0) {
@@ -8038,13 +7960,15 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
               const bcy = box.y + box.height / 2;
               for (const tf of tfjsFaces) {
                 const kps = tf.keypoints;
-                const nosePt = kps[4] || kps[1] || kps[0];
-                const nx = (nosePt.x <= 1.05) ? nosePt.x * frameW : nosePt.x;
-                const ny = (nosePt.y <= 1.05) ? nosePt.y * frameH : nosePt.y;
-                const dist = Math.hypot(nx - bcx, ny - bcy);
-                if (dist < bestTfDist) {
-                  bestTfDist = dist;
-                  bestTfMesh = kps;
+                if (kps && kps.length > 0) {
+                  const nosePt = kps[4] || kps[1] || kps[0];
+                  const nx = (nosePt.x <= 1.05) ? nosePt.x * frameW : nosePt.x;
+                  const ny = (nosePt.y <= 1.05) ? nosePt.y * frameH : nosePt.y;
+                  const dist = Math.hypot(nx - bcx, ny - bcy);
+                  if (dist < bestTfDist) {
+                    bestTfDist = dist;
+                    bestTfMesh = kps;
+                  }
                 }
               }
               if (bestTfDist < Math.max(box.width, box.height) * 1.5) {
@@ -8108,7 +8032,7 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
               labelName = stab.name.toUpperCase();
               categoryType = stab.category || 'employee';
             } else {
-              const rawScore = d.detection ? d.detection.score : (d.score || 0.82);
+              const rawScore = d.detection ? d.detection.score : (d.score || 0.88);
               conf = Math.max(76.0, Math.min(95.0, (rawScore * 100))).toFixed(1);
               labelName = 'STRANGER';
               categoryType = 'guest';
@@ -8151,13 +8075,12 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
             });
           }
 
-          lastFaceAPIResult = results.length > 0 ? {
-            faces: results,
-            timestamp: Date.now()
-          } : null;
-        } else {
-          // Zero faces detected -> Immediately clear detection result so screen stays 100% clean
-          lastFaceAPIResult = null;
+          if (results.length > 0) {
+            lastFaceAPIResult = {
+              faces: results,
+              timestamp: Date.now()
+            };
+          }
         }
       } catch (err) {
         console.warn('[FaceAPI] Detection error:', err.message);
@@ -8197,7 +8120,7 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
             isDetectingFrame = false;
           }
         }
-      }, 200);
+      }, 150);
     }
 
     // Active Tracked Face (Null by default: Auto Detect Real-time)
@@ -8990,50 +8913,36 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
         ctx.restore();
 
         // Continuous Real-Time Auto-Tracking & Neural Face Matcher Engine
-        if (isAutoTrackingActive && cachedAIFaces.length > 0) {
-          if (lastFaceAPIResult && lastFaceAPIResult.faces.length > 0 && Date.now() - lastFaceAPIResult.timestamp < 1200) {
-            const videoW = video ? (video.videoWidth || video.clientWidth || canvas.width) : canvas.width;
-            const videoH = video ? (video.videoHeight || video.clientHeight || canvas.height) : canvas.height;
-            const scaleX = canvas.width / videoW;
-            const scaleY = canvas.height / videoH;
+        if (isAutoTrackingActive) {
+          if (lastFaceAPIResult && lastFaceAPIResult.faces.length > 0 && (now - lastFaceAPIResult.timestamp < 4500)) {
+            const renderBox = getVideoRenderBox(video, canvas.width, canvas.height);
 
             const targetEntities = lastFaceAPIResult.faces.map(f => {
-              const nb = f.normBox || (f.box ? {
-                x: f.box.x / (video ? (video.videoWidth || canvas.width) : canvas.width),
-                y: f.box.y / (video ? (video.videoHeight || canvas.height) : canvas.height),
-                width: f.box.width / (video ? (video.videoWidth || canvas.width) : canvas.width),
-                height: f.box.height / (video ? (video.videoHeight || canvas.height) : canvas.height)
-              } : { x: 0.35, y: 0.35, width: 0.25, height: 0.35 });
-
+              const nb = f.normBox || { x: 0.35, y: 0.30, width: 0.30, height: 0.40 };
               const faceData = f.face || {};
               const cat = f.category || faceData.category || 'employee';
 
               let scaledLandmarks = null;
               if (f.normLandmarks && Array.isArray(f.normLandmarks)) {
                 scaledLandmarks = f.normLandmarks.map(p => ({
-                  x: Math.round(p.x * canvas.width),
-                  y: Math.round(p.y * canvas.height)
-                }));
-              } else if (f.landmarks && Array.isArray(f.landmarks)) {
-                scaledLandmarks = f.landmarks.map(p => ({
-                  x: Math.round(p.x * scaleX),
-                  y: Math.round(p.y * scaleY)
+                  x: Math.round(renderBox.x + p.x * renderBox.width),
+                  y: Math.round(renderBox.y + p.y * renderBox.height)
                 }));
               }
 
               let scaledMesh468 = null;
               if (f.mesh468 && Array.isArray(f.mesh468)) {
                 scaledMesh468 = f.mesh468.map(p => ({
-                  x: (p.x <= 1.05) ? Math.round(p.x * canvas.width) : Math.round(p.x * scaleX),
-                  y: (p.y <= 1.05) ? Math.round(p.y * canvas.height) : Math.round(p.y * scaleY),
+                  x: Math.round(renderBox.x + ((p.x <= 1.05) ? p.x : p.x / (video ? (video.videoWidth || 1280) : 1280)) * renderBox.width),
+                  y: Math.round(renderBox.y + ((p.y <= 1.05) ? p.y : p.y / (video ? (video.videoHeight || 720) : 720)) * renderBox.height),
                   z: p.z || 0
                 }));
               }
 
-              const targetX = Math.round(nb.x * canvas.width);
-              const targetY = Math.round(nb.y * canvas.height);
-              const targetW = Math.round(nb.width * canvas.width);
-              const targetH = Math.round(nb.height * canvas.height);
+              const targetX = Math.round(renderBox.x + nb.x * renderBox.width);
+              const targetY = Math.round(renderBox.y + nb.y * renderBox.height);
+              const targetW = Math.round(nb.width * renderBox.width);
+              const targetH = Math.round(nb.height * renderBox.height);
 
               const targetLandmarks17 = extract17BiometricLandmarks(scaledLandmarks, targetX, targetY, targetW, targetH, scaledMesh468);
 
@@ -9056,7 +8965,7 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
             // Smooth spatial centroid tracking & continuous landmark state persistence
             activeAIEntities = targetEntities.map((t) => {
               let bestPrev = null;
-              let bestDist = 140;
+              let bestDist = 180;
               for (const prev of activeAIEntities) {
                 if (typeof prev.x === 'number') {
                   const dist = Math.hypot(t.targetX - prev.x, t.targetY - prev.y);
@@ -9155,7 +9064,7 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
               confidence: '...',
               createdAt: now
             }];
-          } else if (lastFaceAPIResult && (now - lastFaceAPIResult.timestamp > 1800)) {
+          } else if (lastFaceAPIResult && (now - lastFaceAPIResult.timestamp > 4500)) {
             activeAIEntities = [];
           }
         } else {
