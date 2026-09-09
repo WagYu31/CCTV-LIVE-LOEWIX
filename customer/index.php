@@ -8279,7 +8279,7 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
             isDetectingFrame = false;
           }
         }
-      }, 150);
+      }, 60);
     }
 
     // Active Tracked Face (Null by default: Auto Detect Real-time)
@@ -8953,45 +8953,45 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
       if (Array.isArray(landmarks68) && landmarks68.length >= 68) {
         const l = landmarks68;
         return [
-          { x: l[19].x - bw * 0.02, y: l[19].y - bh * 0.22 }, // 0: foreheadTopL
-          { x: l[24].x + bw * 0.02, y: l[24].y - bh * 0.22 }, // 1: foreheadTopR
-          { x: l[0].x - bw * 0.02, y: l[17].y - bh * 0.04 },  // 2: templeL
-          { x: l[16].x + bw * 0.02, y: l[26].y - bh * 0.04 }, // 3: templeR
-          { x: l[27].x, y: l[27].y },                         // 4: bridge (Glabella)
-          { x: (l[36].x + l[39].x) / 2, y: l[41].y + bh * 0.06 }, // 5: underEyeL
-          { x: (l[42].x + l[45].x) / 2, y: l[46].y + bh * 0.06 }, // 6: underEyeR
-          { x: l[2].x, y: l[2].y },                           // 7: midCheekL
-          { x: l[14].x, y: l[14].y },                         // 8: midCheekR
-          { x: l[30].x, y: l[30].y },                         // 9: noseTip
-          { x: l[33].x, y: l[33].y },                         // 10: philtrum
-          { x: l[48].x, y: l[48].y },                         // 11: mouthCornerL
-          { x: l[54].x, y: l[54].y },                         // 12: mouthCornerR
-          { x: l[57].x, y: l[57].y },                         // 13: lipBottom
-          { x: l[5].x, y: l[5].y },                           // 14: jawL
-          { x: l[11].x, y: l[11].y },                         // 15: jawR
-          { x: l[8].x, y: l[8].y }                            // 16: chinTip
+          { x: l[19].x - bw * 0.01, y: l[19].y - bh * 0.08 }, // 0: foreheadTopL
+          { x: l[24].x + bw * 0.01, y: l[24].y - bh * 0.08 }, // 1: foreheadTopR
+          { x: l[0].x,              y: l[17].y },             // 2: templeL
+          { x: l[16].x,             y: l[26].y },             // 3: templeR
+          { x: (l[21].x + l[22].x) / 2, y: (l[21].y + l[22].y) / 2 }, // 4: bridge (Glabella)
+          { x: (l[36].x + l[39].x) / 2, y: l[41].y + bh * 0.04 },     // 5: underEyeL
+          { x: (l[42].x + l[45].x) / 2, y: l[46].y + bh * 0.04 },     // 6: underEyeR
+          { x: l[1].x + bw * 0.02,  y: l[2].y },              // 7: midCheekL
+          { x: l[15].x - bw * 0.02, y: l[14].y },             // 8: midCheekR
+          { x: l[30].x,             y: l[30].y },             // 9: noseTip
+          { x: l[33].x,             y: l[33].y },             // 10: philtrum
+          { x: l[48].x,             y: l[48].y },             // 11: mouthCornerL
+          { x: l[54].x,             y: l[54].y },             // 12: mouthCornerR
+          { x: l[57].x,             y: l[57].y },             // 13: lipBottom
+          { x: l[5].x,              y: l[5].y },              // 14: jawL
+          { x: l[11].x,             y: l[11].y },             // 15: jawR
+          { x: l[8].x,              y: l[8].y }               // 16: chinTip
         ];
       }
 
       // Canonical Anatomical Proportions mapped directly to face bounding box
       return [
-        { x: bx + bw * 0.34, y: by + bh * 0.08 }, // 0: foreheadTopL
-        { x: bx + bw * 0.66, y: by + bh * 0.08 }, // 1: foreheadTopR
-        { x: bx + bw * 0.14, y: by + bh * 0.28 }, // 2: templeL
-        { x: bx + bw * 0.86, y: by + bh * 0.28 }, // 3: templeR
-        { x: bx + bw * 0.50, y: by + bh * 0.32 }, // 4: bridge
-        { x: bx + bw * 0.33, y: by + bh * 0.44 }, // 5: underEyeL
-        { x: bx + bw * 0.67, y: by + bh * 0.44 }, // 6: underEyeR
-        { x: bx + bw * 0.15, y: by + bh * 0.58 }, // 7: midCheekL
-        { x: bx + bw * 0.85, y: by + bh * 0.58 }, // 8: midCheekR
-        { x: bx + bw * 0.50, y: by + bh * 0.60 }, // 9: noseTip
+        { x: bx + bw * 0.30, y: by + bh * 0.08 }, // 0: foreheadTopL
+        { x: bx + bw * 0.70, y: by + bh * 0.08 }, // 1: foreheadTopR
+        { x: bx + bw * 0.12, y: by + bh * 0.22 }, // 2: templeL
+        { x: bx + bw * 0.88, y: by + bh * 0.22 }, // 3: templeR
+        { x: bx + bw * 0.50, y: by + bh * 0.25 }, // 4: bridge
+        { x: bx + bw * 0.30, y: by + bh * 0.38 }, // 5: underEyeL
+        { x: bx + bw * 0.70, y: by + bh * 0.38 }, // 6: underEyeR
+        { x: bx + bw * 0.16, y: by + bh * 0.50 }, // 7: midCheekL
+        { x: bx + bw * 0.84, y: by + bh * 0.50 }, // 8: midCheekR
+        { x: bx + bw * 0.50, y: by + bh * 0.56 }, // 9: noseTip
         { x: bx + bw * 0.50, y: by + bh * 0.68 }, // 10: philtrum
-        { x: bx + bw * 0.33, y: by + bh * 0.75 }, // 11: mouthCornerL
-        { x: bx + bw * 0.67, y: by + bh * 0.75 }, // 12: mouthCornerR
-        { x: bx + bw * 0.50, y: by + bh * 0.82 }, // 13: lipBottom
-        { x: bx + bw * 0.25, y: by + bh * 0.90 }, // 14: jawL
-        { x: bx + bw * 0.75, y: by + bh * 0.90 }, // 15: jawR
-        { x: bx + bw * 0.50, y: by + bh * 0.99 }  // 16: chinTip
+        { x: bx + bw * 0.32, y: by + bh * 0.76 }, // 11: mouthCornerL
+        { x: bx + bw * 0.68, y: by + bh * 0.76 }, // 12: mouthCornerR
+        { x: bx + bw * 0.50, y: by + bh * 0.84 }, // 13: lipBottom
+        { x: bx + bw * 0.24, y: by + bh * 0.90 }, // 14: jawL
+        { x: bx + bw * 0.76, y: by + bh * 0.90 }, // 15: jawR
+        { x: bx + bw * 0.50, y: by + bh * 0.98 }  // 16: chinTip
       ];
     }
 
@@ -9213,8 +9213,8 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
               if (lMinX < lMaxX && lMinY < lMaxY) {
                 const fw = lMaxX - lMinX;
                 const fh = lMaxY - lMinY;
-                const padX = Math.max(14, Math.round(fw * 0.16));
-                const padY = Math.max(14, Math.round(fh * 0.16));
+                const padX = Math.round(fw * 0.08);
+                const padY = Math.round(fh * 0.08);
                 targetX = Math.round(lMinX - padX);
                 targetY = Math.round(lMinY - padY);
                 targetW = Math.round(fw + padX * 2);
@@ -9353,18 +9353,18 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
         // =========================================================================
         activeAIEntities.forEach(ent => {
           if (typeof ent.targetX === 'number') {
-            ent.x += (ent.targetX - ent.x) * 0.38;
-            ent.y += (ent.targetY - ent.y) * 0.38;
-            ent.w += (ent.targetW - ent.w) * 0.38;
-            ent.h += (ent.targetH - ent.h) * 0.38;
+            ent.x += (ent.targetX - ent.x) * 0.65;
+            ent.y += (ent.targetY - ent.y) * 0.65;
+            ent.w += (ent.targetW - ent.w) * 0.65;
+            ent.h += (ent.targetH - ent.h) * 0.65;
           }
           if (Array.isArray(ent.targetLandmarks17) && Array.isArray(ent.currentLandmarks17)) {
             for (let i = 0; i < ent.currentLandmarks17.length; i++) {
               const cur = ent.currentLandmarks17[i];
               const tgt = ent.targetLandmarks17[i];
               if (cur && tgt) {
-                cur.x += (tgt.x - cur.x) * 0.38;
-                cur.y += (tgt.y - cur.y) * 0.38;
+                cur.x += (tgt.x - cur.x) * 0.65;
+                cur.y += (tgt.y - cur.y) * 0.65;
               }
             }
           }
@@ -9606,11 +9606,11 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
       } else if (has68) {
         const l = ent.landmarks;
         pts = {
-          // Forehead & hairline nodes (anchored above eyebrows with anatomical stability)
-          foreheadTopL: { x: l[19].x - (w * 0.02), y: l[19].y - (h * 0.22) },
-          foreheadTopR: { x: l[24].x + (w * 0.02), y: l[24].y - (h * 0.22) },
-          templeL:      { x: l[0].x - (w * 0.02), y: l[17].y - (h * 0.05) },
-          templeR:      { x: l[16].x + (w * 0.02), y: l[26].y - (h * 0.05) },
+          // Forehead & hairline nodes (anchored naturally above eyebrows)
+          foreheadTopL: { x: l[19].x - (w * 0.01), y: l[19].y - (h * 0.09) },
+          foreheadTopR: { x: l[24].x + (w * 0.01), y: l[24].y - (h * 0.09) },
+          templeL:      { x: l[0].x,              y: l[17].y },
+          templeR:      { x: l[16].x,             y: l[26].y },
           glabella:     { x: (l[21].x + l[22].x) / 2, y: (l[21].y + l[22].y) / 2 },
 
           browMidL:     l[19],
@@ -9625,8 +9625,8 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
           nostrilL:     l[31],
           nostrilR:     l[35],
 
-          cheekUpperL:  { x: l[1].x + (w * 0.03), y: l[36].y + (h * 0.08) },
-          cheekUpperR:  { x: l[15].x - (w * 0.03), y: l[45].y + (h * 0.08) },
+          cheekUpperL:  { x: l[1].x + (w * 0.02), y: l[36].y + (h * 0.04) },
+          cheekUpperR:  { x: l[15].x - (w * 0.02), y: l[45].y + (h * 0.04) },
           cheekLowerL:  l[3],
           cheekLowerR:  l[13],
 
@@ -9642,37 +9642,37 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
       } else {
         // High-Precision Anatomical Proportions (Faithful to Gambar 2 Geometry)
         pts = {
-          foreheadTopL: { x: x + w * 0.28, y: y + h * 0.08 },
-          foreheadTopR: { x: x + w * 0.72, y: y + h * 0.08 },
+          foreheadTopL: { x: x + w * 0.30, y: y + h * 0.08 },
+          foreheadTopR: { x: x + w * 0.70, y: y + h * 0.08 },
           templeL:      { x: x + w * 0.12, y: y + h * 0.22 },
           templeR:      { x: x + w * 0.88, y: y + h * 0.22 },
-          glabella:     { x: x + w * 0.50, y: y + h * 0.28 },
+          glabella:     { x: x + w * 0.50, y: y + h * 0.25 },
 
-          browMidL:     { x: x + w * 0.32, y: y + h * 0.24 },
-          browMidR:     { x: x + w * 0.68, y: y + h * 0.24 },
+          browMidL:     { x: x + w * 0.30, y: y + h * 0.22 },
+          browMidR:     { x: x + w * 0.70, y: y + h * 0.22 },
 
-          eyeL:         { x: x + w * 0.34, y: y + h * 0.36 },
-          eyeR:         { x: x + w * 0.66, y: y + h * 0.36 },
+          eyeL:         { x: x + w * 0.30, y: y + h * 0.38 },
+          eyeR:         { x: x + w * 0.70, y: y + h * 0.38 },
 
-          noseBridge:   { x: x + w * 0.50, y: y + h * 0.40 },
-          noseMid:      { x: x + w * 0.50, y: y + h * 0.50 },
-          noseTip:      { x: x + w * 0.50, y: y + h * 0.60 },
-          nostrilL:     { x: x + w * 0.40, y: y + h * 0.60 },
-          nostrilR:     { x: x + w * 0.60, y: y + h * 0.60 },
+          noseBridge:   { x: x + w * 0.50, y: y + h * 0.35 },
+          noseMid:      { x: x + w * 0.50, y: y + h * 0.46 },
+          noseTip:      { x: x + w * 0.50, y: y + h * 0.56 },
+          nostrilL:     { x: x + w * 0.40, y: y + h * 0.56 },
+          nostrilR:     { x: x + w * 0.60, y: y + h * 0.56 },
 
-          cheekUpperL:  { x: x + w * 0.16, y: y + h * 0.46 },
-          cheekUpperR:  { x: x + w * 0.84, y: y + h * 0.46 },
-          cheekLowerL:  { x: x + w * 0.16, y: y + h * 0.68 },
-          cheekLowerR:  { x: x + w * 0.84, y: y + h * 0.68 },
+          cheekUpperL:  { x: x + w * 0.16, y: y + h * 0.44 },
+          cheekUpperR:  { x: x + w * 0.84, y: y + h * 0.44 },
+          cheekLowerL:  { x: x + w * 0.16, y: y + h * 0.64 },
+          cheekLowerR:  { x: x + w * 0.84, y: y + h * 0.64 },
 
-          philtrum:     { x: x + w * 0.50, y: y + h * 0.69 },
-          mouthL:       { x: x + w * 0.32, y: y + h * 0.77 },
-          mouthR:       { x: x + w * 0.68, y: y + h * 0.77 },
-          lipBot:       { x: x + w * 0.50, y: y + h * 0.83 },
+          philtrum:     { x: x + w * 0.50, y: y + h * 0.68 },
+          mouthL:       { x: x + w * 0.32, y: y + h * 0.76 },
+          mouthR:       { x: x + w * 0.68, y: y + h * 0.76 },
+          lipBot:       { x: x + w * 0.50, y: y + h * 0.84 },
 
-          chinL:        { x: x + w * 0.30, y: y + h * 0.91 },
-          chinR:        { x: x + w * 0.70, y: y + h * 0.91 },
-          chinTip:      { x: x + w * 0.50, y: y + h * 0.99 }
+          chinL:        { x: x + w * 0.24, y: y + h * 0.90 },
+          chinR:        { x: x + w * 0.76, y: y + h * 0.90 },
+          chinTip:      { x: x + w * 0.50, y: y + h * 0.98 }
         };
       }
 
@@ -9850,7 +9850,11 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
       const isVIP = category === 'vip';
       const isUnknown = category === 'unknown' || category === 'guest' || String(label).toLowerCase().includes('stranger') || String(label).toLowerCase().includes('belum terdaftar') || String(label).toLowerCase().includes('tidak dikenal') || String(label).toLowerCase().includes('pengunjung');
 
+      // 1. Draw Biometric Facial Wireframe Mesh & Glowing White Nodes
+      drawBiometricFacialMesh(ctx, x, y, w, h, ent, isUnknown, isVIP, isBlacklist);
+
       // Re-derive dynamic bounding box directly from active landmarks if available to guarantee 100% synchronization
+      let bx = x, by = y, bw = w, bh = h;
       if (Array.isArray(ent.currentLandmarks17) && ent.currentLandmarks17.length === 17) {
         let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
         for (const pt of ent.currentLandmarks17) {
@@ -9864,13 +9868,19 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
         if (minX < maxX && minY < maxY) {
           const fw = maxX - minX;
           const fh = maxY - minY;
-          const padX = Math.max(14, Math.round(fw * 0.16));
-          const padY = Math.max(14, Math.round(fh * 0.16));
-          x = Math.round(minX - padX);
-          y = Math.round(minY - padY);
-          w = Math.round(fw + padX * 2);
-          h = Math.round(fh + padY * 2);
+          const padX = Math.round(fw * 0.08);
+          const padY = Math.round(fh * 0.08);
+          bx = Math.round(minX - padX);
+          by = Math.round(minY - padY);
+          bw = Math.round(fw + padX * 2);
+          bh = Math.round(fh + padY * 2);
         }
+      } else {
+        const pad = Math.round(w * 0.06);
+        bx = Math.round(x - pad);
+        by = Math.round(y - pad);
+        bw = Math.round(w + pad * 2);
+        bh = Math.round(h + pad * 2);
       }
 
       const scanProgress = typeof ent.scanProgress === 'number' ? Math.min(100, Math.max(0, Math.round(ent.scanProgress))) : 100;
@@ -9878,19 +9888,10 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
 
       ctx.save();
 
-      // 1. Draw Biometric Facial Wireframe Mesh & Glowing White Nodes (Faithful to Gambar 2)
-      drawBiometricFacialMesh(ctx, x, y, w, h, ent, isUnknown, isVIP, isBlacklist);
-
       // 2. Thick Corner Brackets ("Kotak-kotak" Faithful to Gambar 2)
       let bracketColor = isScanning ? '#00f0ff' : (isBlacklist ? '#ef4444' : (isUnknown ? '#ffd700' : '#ccff00'));
       let bracketGlow = isScanning ? 'rgba(0, 240, 255, 0.95)' : (isBlacklist ? 'rgba(239, 68, 68, 0.90)' : (isUnknown ? 'rgba(255, 215, 0, 0.90)' : 'rgba(204, 255, 0, 0.95)'));
-
-      const pad = Math.max(14, Math.round(w * 0.12));
-      const bx = x - pad;
-      const by = y - pad;
-      const bw = w + pad * 2;
-      const bh = h + pad * 2;
-      const armLen = Math.min(60, Math.max(26, Math.round(bw * 0.28)));
+      const armLen = Math.min(48, Math.max(20, Math.round(bw * 0.24)));
 
       // Outer futuristic sci-fi circuit trace accents
       const traceColor = isScanning ? 'rgba(0, 240, 255, 0.40)' : (isBlacklist ? 'rgba(239, 68, 68, 0.35)' : (isUnknown ? 'rgba(255, 215, 0, 0.40)' : 'rgba(204, 255, 0, 0.40)'));
@@ -9898,18 +9899,18 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
       ctx.lineWidth = 1.6;
       ctx.beginPath();
       // Top-Left corner trace
-      ctx.moveTo(bx - 8, by - 8); ctx.lineTo(bx - 22, by - 22); ctx.lineTo(bx - 38, by - 22);
+      ctx.moveTo(bx - 6, by - 6); ctx.lineTo(bx - 16, by - 16); ctx.lineTo(bx - 26, by - 16);
       // Top-Right corner trace
-      ctx.moveTo(bx + bw + 8, by - 8); ctx.lineTo(bx + bw + 22, by - 22); ctx.lineTo(bx + bw + 38, by - 22);
+      ctx.moveTo(bx + bw + 6, by - 6); ctx.lineTo(bx + bw + 16, by - 16); ctx.lineTo(bx + bw + 26, by - 16);
       // Bottom-Left corner trace
-      ctx.moveTo(bx - 8, by + bh + 8); ctx.lineTo(bx - 22, by + bh + 22); ctx.lineTo(bx - 38, by + bh + 22);
+      ctx.moveTo(bx - 6, by + bh + 6); ctx.lineTo(bx - 16, by + bh + 16); ctx.lineTo(bx - 26, by + bh + 16);
       // Bottom-Right corner trace
-      ctx.moveTo(bx + bw + 8, by + bh + 8); ctx.lineTo(bx + bw + 22, by + bh + 22); ctx.lineTo(bx + bw + 38, by + bh + 22);
+      ctx.moveTo(bx + bw + 6, by + bh + 6); ctx.lineTo(bx + bw + 16, by + bh + 16); ctx.lineTo(bx + bw + 26, by + bh + 16);
       ctx.stroke();
 
       // Tiny terminal dot on each trace
       ctx.fillStyle = traceColor;
-      [[bx - 38, by - 22], [bx + bw + 38, by - 22], [bx - 38, by + bh + 22], [bx + bw + 38, by + bh + 22]].forEach(([tx, ty]) => {
+      [[bx - 26, by - 16], [bx + bw + 26, by - 16], [bx - 26, by + bh + 16], [bx + bw + 26, by + bh + 16]].forEach(([tx, ty]) => {
         ctx.beginPath();
         ctx.arc(tx, ty, 2.5, 0, Math.PI * 2);
         ctx.fill();
@@ -9919,7 +9920,7 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
       ctx.strokeStyle = bracketColor;
       ctx.shadowColor = bracketGlow;
       ctx.shadowBlur = 18;
-      ctx.lineWidth = 6.0;
+      ctx.lineWidth = 5.0;
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
 

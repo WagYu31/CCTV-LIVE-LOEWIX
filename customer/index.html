@@ -8264,7 +8264,7 @@
             isDetectingFrame = false;
           }
         }
-      }, 150);
+      }, 60);
     }
 
     // Active Tracked Face (Null by default: Auto Detect Real-time)
@@ -8938,45 +8938,45 @@
       if (Array.isArray(landmarks68) && landmarks68.length >= 68) {
         const l = landmarks68;
         return [
-          { x: l[19].x - bw * 0.02, y: l[19].y - bh * 0.22 }, // 0: foreheadTopL
-          { x: l[24].x + bw * 0.02, y: l[24].y - bh * 0.22 }, // 1: foreheadTopR
-          { x: l[0].x - bw * 0.02, y: l[17].y - bh * 0.04 },  // 2: templeL
-          { x: l[16].x + bw * 0.02, y: l[26].y - bh * 0.04 }, // 3: templeR
-          { x: l[27].x, y: l[27].y },                         // 4: bridge (Glabella)
-          { x: (l[36].x + l[39].x) / 2, y: l[41].y + bh * 0.06 }, // 5: underEyeL
-          { x: (l[42].x + l[45].x) / 2, y: l[46].y + bh * 0.06 }, // 6: underEyeR
-          { x: l[2].x, y: l[2].y },                           // 7: midCheekL
-          { x: l[14].x, y: l[14].y },                         // 8: midCheekR
-          { x: l[30].x, y: l[30].y },                         // 9: noseTip
-          { x: l[33].x, y: l[33].y },                         // 10: philtrum
-          { x: l[48].x, y: l[48].y },                         // 11: mouthCornerL
-          { x: l[54].x, y: l[54].y },                         // 12: mouthCornerR
-          { x: l[57].x, y: l[57].y },                         // 13: lipBottom
-          { x: l[5].x, y: l[5].y },                           // 14: jawL
-          { x: l[11].x, y: l[11].y },                         // 15: jawR
-          { x: l[8].x, y: l[8].y }                            // 16: chinTip
+          { x: l[19].x - bw * 0.01, y: l[19].y - bh * 0.08 }, // 0: foreheadTopL
+          { x: l[24].x + bw * 0.01, y: l[24].y - bh * 0.08 }, // 1: foreheadTopR
+          { x: l[0].x,              y: l[17].y },             // 2: templeL
+          { x: l[16].x,             y: l[26].y },             // 3: templeR
+          { x: (l[21].x + l[22].x) / 2, y: (l[21].y + l[22].y) / 2 }, // 4: bridge (Glabella)
+          { x: (l[36].x + l[39].x) / 2, y: l[41].y + bh * 0.04 },     // 5: underEyeL
+          { x: (l[42].x + l[45].x) / 2, y: l[46].y + bh * 0.04 },     // 6: underEyeR
+          { x: l[1].x + bw * 0.02,  y: l[2].y },              // 7: midCheekL
+          { x: l[15].x - bw * 0.02, y: l[14].y },             // 8: midCheekR
+          { x: l[30].x,             y: l[30].y },             // 9: noseTip
+          { x: l[33].x,             y: l[33].y },             // 10: philtrum
+          { x: l[48].x,             y: l[48].y },             // 11: mouthCornerL
+          { x: l[54].x,             y: l[54].y },             // 12: mouthCornerR
+          { x: l[57].x,             y: l[57].y },             // 13: lipBottom
+          { x: l[5].x,              y: l[5].y },              // 14: jawL
+          { x: l[11].x,             y: l[11].y },             // 15: jawR
+          { x: l[8].x,              y: l[8].y }               // 16: chinTip
         ];
       }
 
       // Canonical Anatomical Proportions mapped directly to face bounding box
       return [
-        { x: bx + bw * 0.34, y: by + bh * 0.08 }, // 0: foreheadTopL
-        { x: bx + bw * 0.66, y: by + bh * 0.08 }, // 1: foreheadTopR
-        { x: bx + bw * 0.14, y: by + bh * 0.28 }, // 2: templeL
-        { x: bx + bw * 0.86, y: by + bh * 0.28 }, // 3: templeR
-        { x: bx + bw * 0.50, y: by + bh * 0.32 }, // 4: bridge
-        { x: bx + bw * 0.33, y: by + bh * 0.44 }, // 5: underEyeL
-        { x: bx + bw * 0.67, y: by + bh * 0.44 }, // 6: underEyeR
-        { x: bx + bw * 0.15, y: by + bh * 0.58 }, // 7: midCheekL
-        { x: bx + bw * 0.85, y: by + bh * 0.58 }, // 8: midCheekR
-        { x: bx + bw * 0.50, y: by + bh * 0.60 }, // 9: noseTip
+        { x: bx + bw * 0.30, y: by + bh * 0.08 }, // 0: foreheadTopL
+        { x: bx + bw * 0.70, y: by + bh * 0.08 }, // 1: foreheadTopR
+        { x: bx + bw * 0.12, y: by + bh * 0.22 }, // 2: templeL
+        { x: bx + bw * 0.88, y: by + bh * 0.22 }, // 3: templeR
+        { x: bx + bw * 0.50, y: by + bh * 0.25 }, // 4: bridge
+        { x: bx + bw * 0.30, y: by + bh * 0.38 }, // 5: underEyeL
+        { x: bx + bw * 0.70, y: by + bh * 0.38 }, // 6: underEyeR
+        { x: bx + bw * 0.16, y: by + bh * 0.50 }, // 7: midCheekL
+        { x: bx + bw * 0.84, y: by + bh * 0.50 }, // 8: midCheekR
+        { x: bx + bw * 0.50, y: by + bh * 0.56 }, // 9: noseTip
         { x: bx + bw * 0.50, y: by + bh * 0.68 }, // 10: philtrum
-        { x: bx + bw * 0.33, y: by + bh * 0.75 }, // 11: mouthCornerL
-        { x: bx + bw * 0.67, y: by + bh * 0.75 }, // 12: mouthCornerR
-        { x: bx + bw * 0.50, y: by + bh * 0.82 }, // 13: lipBottom
-        { x: bx + bw * 0.25, y: by + bh * 0.90 }, // 14: jawL
-        { x: bx + bw * 0.75, y: by + bh * 0.90 }, // 15: jawR
-        { x: bx + bw * 0.50, y: by + bh * 0.99 }  // 16: chinTip
+        { x: bx + bw * 0.32, y: by + bh * 0.76 }, // 11: mouthCornerL
+        { x: bx + bw * 0.68, y: by + bh * 0.76 }, // 12: mouthCornerR
+        { x: bx + bw * 0.50, y: by + bh * 0.84 }, // 13: lipBottom
+        { x: bx + bw * 0.24, y: by + bh * 0.90 }, // 14: jawL
+        { x: bx + bw * 0.76, y: by + bh * 0.90 }, // 15: jawR
+        { x: bx + bw * 0.50, y: by + bh * 0.98 }  // 16: chinTip
       ];
     }
 
@@ -9198,8 +9198,8 @@
               if (lMinX < lMaxX && lMinY < lMaxY) {
                 const fw = lMaxX - lMinX;
                 const fh = lMaxY - lMinY;
-                const padX = Math.max(14, Math.round(fw * 0.16));
-                const padY = Math.max(14, Math.round(fh * 0.16));
+                const padX = Math.round(fw * 0.08);
+                const padY = Math.round(fh * 0.08);
                 targetX = Math.round(lMinX - padX);
                 targetY = Math.round(lMinY - padY);
                 targetW = Math.round(fw + padX * 2);
@@ -9338,18 +9338,18 @@
         // =========================================================================
         activeAIEntities.forEach(ent => {
           if (typeof ent.targetX === 'number') {
-            ent.x += (ent.targetX - ent.x) * 0.38;
-            ent.y += (ent.targetY - ent.y) * 0.38;
-            ent.w += (ent.targetW - ent.w) * 0.38;
-            ent.h += (ent.targetH - ent.h) * 0.38;
+            ent.x += (ent.targetX - ent.x) * 0.65;
+            ent.y += (ent.targetY - ent.y) * 0.65;
+            ent.w += (ent.targetW - ent.w) * 0.65;
+            ent.h += (ent.targetH - ent.h) * 0.65;
           }
           if (Array.isArray(ent.targetLandmarks17) && Array.isArray(ent.currentLandmarks17)) {
             for (let i = 0; i < ent.currentLandmarks17.length; i++) {
               const cur = ent.currentLandmarks17[i];
               const tgt = ent.targetLandmarks17[i];
               if (cur && tgt) {
-                cur.x += (tgt.x - cur.x) * 0.38;
-                cur.y += (tgt.y - cur.y) * 0.38;
+                cur.x += (tgt.x - cur.x) * 0.65;
+                cur.y += (tgt.y - cur.y) * 0.65;
               }
             }
           }
@@ -9591,11 +9591,11 @@
       } else if (has68) {
         const l = ent.landmarks;
         pts = {
-          // Forehead & hairline nodes (anchored above eyebrows with anatomical stability)
-          foreheadTopL: { x: l[19].x - (w * 0.02), y: l[19].y - (h * 0.22) },
-          foreheadTopR: { x: l[24].x + (w * 0.02), y: l[24].y - (h * 0.22) },
-          templeL:      { x: l[0].x - (w * 0.02), y: l[17].y - (h * 0.05) },
-          templeR:      { x: l[16].x + (w * 0.02), y: l[26].y - (h * 0.05) },
+          // Forehead & hairline nodes (anchored naturally above eyebrows)
+          foreheadTopL: { x: l[19].x - (w * 0.01), y: l[19].y - (h * 0.09) },
+          foreheadTopR: { x: l[24].x + (w * 0.01), y: l[24].y - (h * 0.09) },
+          templeL:      { x: l[0].x,              y: l[17].y },
+          templeR:      { x: l[16].x,             y: l[26].y },
           glabella:     { x: (l[21].x + l[22].x) / 2, y: (l[21].y + l[22].y) / 2 },
 
           browMidL:     l[19],
@@ -9610,8 +9610,8 @@
           nostrilL:     l[31],
           nostrilR:     l[35],
 
-          cheekUpperL:  { x: l[1].x + (w * 0.03), y: l[36].y + (h * 0.08) },
-          cheekUpperR:  { x: l[15].x - (w * 0.03), y: l[45].y + (h * 0.08) },
+          cheekUpperL:  { x: l[1].x + (w * 0.02), y: l[36].y + (h * 0.04) },
+          cheekUpperR:  { x: l[15].x - (w * 0.02), y: l[45].y + (h * 0.04) },
           cheekLowerL:  l[3],
           cheekLowerR:  l[13],
 
@@ -9625,75 +9625,64 @@
           chinTip:      l[8]
         };
       } else {
-        // High-Precision Anatomical Proportions (Faithful to Gambar 2 Geometry)
+        // High-Precision Anatomical Proportions
         pts = {
-          foreheadTopL: { x: x + w * 0.28, y: y + h * 0.08 },
-          foreheadTopR: { x: x + w * 0.72, y: y + h * 0.08 },
+          foreheadTopL: { x: x + w * 0.30, y: y + h * 0.08 },
+          foreheadTopR: { x: x + w * 0.70, y: y + h * 0.08 },
           templeL:      { x: x + w * 0.12, y: y + h * 0.22 },
           templeR:      { x: x + w * 0.88, y: y + h * 0.22 },
-          glabella:     { x: x + w * 0.50, y: y + h * 0.28 },
+          glabella:     { x: x + w * 0.50, y: y + h * 0.25 },
 
-          browMidL:     { x: x + w * 0.32, y: y + h * 0.24 },
-          browMidR:     { x: x + w * 0.68, y: y + h * 0.24 },
+          browMidL:     { x: x + w * 0.30, y: y + h * 0.22 },
+          browMidR:     { x: x + w * 0.70, y: y + h * 0.22 },
 
-          eyeL:         { x: x + w * 0.34, y: y + h * 0.36 },
-          eyeR:         { x: x + w * 0.66, y: y + h * 0.36 },
+          eyeL:         { x: x + w * 0.30, y: y + h * 0.38 },
+          eyeR:         { x: x + w * 0.70, y: y + h * 0.38 },
 
-          noseBridge:   { x: x + w * 0.50, y: y + h * 0.40 },
-          noseMid:      { x: x + w * 0.50, y: y + h * 0.50 },
-          noseTip:      { x: x + w * 0.50, y: y + h * 0.60 },
-          nostrilL:     { x: x + w * 0.40, y: y + h * 0.60 },
-          nostrilR:     { x: x + w * 0.60, y: y + h * 0.60 },
+          noseBridge:   { x: x + w * 0.50, y: y + h * 0.35 },
+          noseMid:      { x: x + w * 0.50, y: y + h * 0.46 },
+          noseTip:      { x: x + w * 0.50, y: y + h * 0.56 },
+          nostrilL:     { x: x + w * 0.40, y: y + h * 0.56 },
+          nostrilR:     { x: x + w * 0.60, y: y + h * 0.56 },
 
-          cheekUpperL:  { x: x + w * 0.16, y: y + h * 0.46 },
-          cheekUpperR:  { x: x + w * 0.84, y: y + h * 0.46 },
-          cheekLowerL:  { x: x + w * 0.16, y: y + h * 0.68 },
-          cheekLowerR:  { x: x + w * 0.84, y: y + h * 0.68 },
+          cheekUpperL:  { x: x + w * 0.16, y: y + h * 0.44 },
+          cheekUpperR:  { x: x + w * 0.84, y: y + h * 0.44 },
+          cheekLowerL:  { x: x + w * 0.16, y: y + h * 0.64 },
+          cheekLowerR:  { x: x + w * 0.84, y: y + h * 0.64 },
 
-          philtrum:     { x: x + w * 0.50, y: y + h * 0.69 },
-          mouthL:       { x: x + w * 0.32, y: y + h * 0.77 },
-          mouthR:       { x: x + w * 0.68, y: y + h * 0.77 },
-          lipBot:       { x: x + w * 0.50, y: y + h * 0.83 },
+          philtrum:     { x: x + w * 0.50, y: y + h * 0.68 },
+          mouthL:       { x: x + w * 0.32, y: y + h * 0.76 },
+          mouthR:       { x: x + w * 0.68, y: y + h * 0.76 },
+          lipBot:       { x: x + w * 0.50, y: y + h * 0.84 },
 
-          chinL:        { x: x + w * 0.30, y: y + h * 0.91 },
-          chinR:        { x: x + w * 0.70, y: y + h * 0.91 },
-          chinTip:      { x: x + w * 0.50, y: y + h * 0.99 }
+          chinL:        { x: x + w * 0.24, y: y + h * 0.90 },
+          chinR:        { x: x + w * 0.76, y: y + h * 0.90 },
+          chinTip:      { x: x + w * 0.50, y: y + h * 0.98 }
         };
       }
 
-      // 3D Triangulation Network Graph (Exact Polygon Mesh from Gambar 2)
+      // 3D Triangulation Network Graph
       const edges = [
-        // Forehead horizontal bar
         [pts.foreheadTopL, pts.foreheadTopR],
-
-        // Forehead to temples & glabella
         [pts.foreheadTopL, pts.templeL],
         [pts.foreheadTopR, pts.templeR],
         [pts.foreheadTopL, pts.glabella],
         [pts.foreheadTopR, pts.glabella],
-
-        // Temples to eyebrows & cheekbones
         [pts.templeL, pts.browMidL],
         [pts.templeR, pts.browMidR],
         [pts.templeL, pts.cheekUpperL],
         [pts.templeR, pts.cheekUpperR],
-
-        // Eyebrows to glabella & eyes
         [pts.browMidL, pts.glabella],
         [pts.browMidR, pts.glabella],
         [pts.browMidL, pts.eyeL],
         [pts.browMidR, pts.eyeR],
         [pts.glabella, pts.eyeL],
         [pts.glabella, pts.eyeR],
-
-        // Glabella & eyes to nose bridge & cheekbones
         [pts.glabella,    pts.noseBridge],
         [pts.eyeL,        pts.noseBridge],
         [pts.eyeR,        pts.noseBridge],
         [pts.eyeL,        pts.cheekUpperL],
         [pts.eyeR,        pts.cheekUpperR],
-
-        // Nose bridge, mid ridge, nostrils & tip
         [pts.noseBridge, pts.noseMid],
         [pts.noseMid,    pts.noseTip],
         [pts.noseMid,    pts.nostrilL],
@@ -9703,8 +9692,6 @@
         [pts.nostrilL,   pts.noseTip],
         [pts.nostrilR,   pts.noseTip],
         [pts.nostrilL,   pts.nostrilR],
-
-        // Cheeks network
         [pts.cheekUpperL, pts.nostrilL],
         [pts.cheekUpperR, pts.nostrilR],
         [pts.cheekUpperL, pts.cheekLowerL],
@@ -9715,8 +9702,6 @@
         [pts.cheekLowerR, pts.mouthR],
         [pts.cheekLowerL, pts.chinL],
         [pts.cheekLowerR, pts.chinR],
-
-        // Philtrum & mouth diamond
         [pts.noseTip,  pts.philtrum],
         [pts.nostrilL, pts.philtrum],
         [pts.nostrilR, pts.philtrum],
@@ -9725,8 +9710,6 @@
         [pts.philtrum, pts.lipBot],
         [pts.mouthL,   pts.lipBot],
         [pts.mouthR,   pts.lipBot],
-
-        // Mouth to chin & jawline
         [pts.mouthL,  pts.chinL],
         [pts.mouthR,  pts.chinR],
         [pts.lipBot,  pts.chinL],
@@ -9736,37 +9719,52 @@
         [pts.chinR,   pts.chinTip]
       ];
 
+      // Triangulation Fill Polygons for 3D Holographic Faceted Shading
+      const facets = [
+        [pts.foreheadTopL, pts.glabella, pts.templeL],
+        [pts.foreheadTopR, pts.glabella, pts.templeR],
+        [pts.templeL, pts.glabella, pts.browMidL],
+        [pts.templeR, pts.glabella, pts.browMidR],
+        [pts.browMidL, pts.glabella, pts.eyeL],
+        [pts.browMidR, pts.glabella, pts.eyeR],
+        [pts.glabella, pts.noseBridge, pts.eyeL],
+        [pts.glabella, pts.noseBridge, pts.eyeR],
+        [pts.eyeL, pts.noseBridge, pts.cheekUpperL],
+        [pts.eyeR, pts.noseBridge, pts.cheekUpperR],
+        [pts.noseBridge, pts.noseMid, pts.nostrilL],
+        [pts.noseBridge, pts.noseMid, pts.nostrilR],
+        [pts.noseMid, pts.noseTip, pts.nostrilL],
+        [pts.noseMid, pts.noseTip, pts.nostrilR],
+        [pts.nostrilL, pts.noseTip, pts.philtrum],
+        [pts.nostrilR, pts.noseTip, pts.philtrum],
+        [pts.philtrum, pts.mouthL, pts.lipBot],
+        [pts.philtrum, pts.mouthR, pts.lipBot],
+        [pts.lipBot, pts.mouthL, pts.chinL],
+        [pts.lipBot, pts.mouthR, pts.chinR],
+        [pts.lipBot, pts.chinL, pts.chinTip],
+        [pts.lipBot, pts.chinR, pts.chinTip]
+      ];
+
       ctx.save();
 
-      // 1. Subtle Holographic Face Mask Tint (Biometric purple/indigo hue from Gambar 2)
-      try {
-        ctx.beginPath();
-        ctx.moveTo(pts.foreheadTopL.x, pts.foreheadTopL.y);
-        ctx.lineTo(pts.foreheadTopR.x, pts.foreheadTopR.y);
-        ctx.lineTo(pts.templeR.x, pts.templeR.y);
-        ctx.lineTo(pts.cheekUpperR.x, pts.cheekUpperR.y);
-        ctx.lineTo(pts.cheekLowerR.x, pts.cheekLowerR.y);
-        ctx.lineTo(pts.chinR.x, pts.chinR.y);
-        ctx.lineTo(pts.chinTip.x, pts.chinTip.y);
-        ctx.lineTo(pts.chinL.x, pts.chinL.y);
-        ctx.lineTo(pts.cheekLowerL.x, pts.cheekLowerL.y);
-        ctx.lineTo(pts.cheekUpperL.x, pts.cheekUpperL.y);
-        ctx.lineTo(pts.templeL.x, pts.templeL.y);
-        ctx.closePath();
+      // Render 3D Translucent Facet Shading
+      facets.forEach((tri, idx) => {
+        if (tri.every(p => p && typeof p.x === 'number' && typeof p.y === 'number')) {
+          ctx.beginPath();
+          ctx.moveTo(tri[0].x, tri[0].y);
+          ctx.lineTo(tri[1].x, tri[1].y);
+          ctx.lineTo(tri[2].x, tri[2].y);
+          ctx.closePath();
+          ctx.fillStyle = idx % 2 === 0 ? 'rgba(147, 51, 234, 0.08)' : 'rgba(59, 130, 246, 0.06)';
+          ctx.fill();
+        }
+      });
 
-        const grad = ctx.createLinearGradient(x, y, x, y + h);
-        grad.addColorStop(0, 'rgba(139, 92, 246, 0.16)');
-        grad.addColorStop(0.5, 'rgba(99, 102, 241, 0.10)');
-        grad.addColorStop(1, 'rgba(59, 130, 246, 0.08)');
-        ctx.fillStyle = grad;
-        ctx.fill();
-      } catch (e) {}
-
-      // 2. Draw Biometric Triangulation Wireframe Lines (Crisp gleaming white lines from Gambar 2)
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.88)';
-      ctx.shadowColor = 'rgba(255, 255, 255, 0.70)';
-      ctx.shadowBlur = 6;
-      ctx.lineWidth = 1.5;
+      // Render 3D Connecting Wireframe Edges
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.78)';
+      ctx.lineWidth = 1.35;
+      ctx.shadowColor = 'rgba(255, 255, 255, 0.55)';
+      ctx.shadowBlur = 4;
       ctx.beginPath();
       edges.forEach(([p1, p2]) => {
         if (p1 && p2 && typeof p1.x === 'number' && typeof p2.x === 'number') {
@@ -9776,44 +9774,26 @@
       });
       ctx.stroke();
 
-      // 2B. TensorFlow MediaPipe 468 3D Constellation Cloud
-      if (Array.isArray(ent.mesh468) && ent.mesh468.length > 0) {
-        ctx.save();
-        ctx.fillStyle = 'rgba(0, 240, 255, 0.70)';
-        ctx.shadowColor = '#00f0ff';
-        ctx.shadowBlur = 4;
-        for (let i = 0; i < ent.mesh468.length; i += 2) {
-          const mp = ent.mesh468[i];
-          if (mp && typeof mp.x === 'number' && typeof mp.y === 'number') {
-            ctx.beginPath();
-            ctx.arc(mp.x, mp.y, 1.2, 0, Math.PI * 2);
-            ctx.fill();
-          }
-        }
-        ctx.restore();
-      }
+      // Collect all active landmark nodes
+      const allNodes = Object.values(pts).filter(p => p && typeof p.x === 'number' && typeof p.y === 'number');
 
-      // 3. Draw Glowing White Biometric Jewel Nodes ("Titik-titik Wajah" from Gambar 2)
-      const allNodes = Object.values(pts).filter(p => p && typeof p.x === 'number');
-      const pulseTime = Date.now() / 280;
-
-      // Layer A: Radiant outer glow aura (with subtle quantum breathing pulse)
-      ctx.shadowColor = '#ffffff';
-      ctx.shadowBlur = 16;
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.40)';
-      allNodes.forEach((pt, idx) => {
-        const pulse = Math.sin(pulseTime + idx * 0.4) * 0.8;
+      // Layer A: Outer Radiant Cyan Aura
+      ctx.shadowColor = '#00f0ff';
+      ctx.shadowBlur = 12;
+      ctx.fillStyle = 'rgba(0, 240, 255, 0.50)';
+      allNodes.forEach(pt => {
         ctx.beginPath();
-        ctx.arc(pt.x, pt.y, Math.max(5.0, 7.0 + pulse), 0, Math.PI * 2);
+        ctx.arc(pt.x, pt.y, 6.5, 0, Math.PI * 2);
         ctx.fill();
       });
 
-      // Layer B: Medium bright luminous halo
+      // Layer B: Bright White Middle Halo
+      ctx.shadowColor = '#ffffff';
       ctx.shadowBlur = 8;
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.88)';
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.90)';
       allNodes.forEach(pt => {
         ctx.beginPath();
-        ctx.arc(pt.x, pt.y, 4.6, 0, Math.PI * 2);
+        ctx.arc(pt.x, pt.y, 4.5, 0, Math.PI * 2);
         ctx.fill();
       });
 
@@ -9835,7 +9815,11 @@
       const isVIP = category === 'vip';
       const isUnknown = category === 'unknown' || category === 'guest' || String(label).toLowerCase().includes('stranger') || String(label).toLowerCase().includes('belum terdaftar') || String(label).toLowerCase().includes('tidak dikenal') || String(label).toLowerCase().includes('pengunjung');
 
+      // 1. Draw Biometric Facial Wireframe Mesh & Glowing White Nodes
+      drawBiometricFacialMesh(ctx, x, y, w, h, ent, isUnknown, isVIP, isBlacklist);
+
       // Re-derive dynamic bounding box directly from active landmarks if available to guarantee 100% synchronization
+      let bx = x, by = y, bw = w, bh = h;
       if (Array.isArray(ent.currentLandmarks17) && ent.currentLandmarks17.length === 17) {
         let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
         for (const pt of ent.currentLandmarks17) {
@@ -9849,13 +9833,19 @@
         if (minX < maxX && minY < maxY) {
           const fw = maxX - minX;
           const fh = maxY - minY;
-          const padX = Math.max(14, Math.round(fw * 0.16));
-          const padY = Math.max(14, Math.round(fh * 0.16));
-          x = Math.round(minX - padX);
-          y = Math.round(minY - padY);
-          w = Math.round(fw + padX * 2);
-          h = Math.round(fh + padY * 2);
+          const padX = Math.round(fw * 0.08);
+          const padY = Math.round(fh * 0.08);
+          bx = Math.round(minX - padX);
+          by = Math.round(minY - padY);
+          bw = Math.round(fw + padX * 2);
+          bh = Math.round(fh + padY * 2);
         }
+      } else {
+        const pad = Math.round(w * 0.06);
+        bx = Math.round(x - pad);
+        by = Math.round(y - pad);
+        bw = Math.round(w + pad * 2);
+        bh = Math.round(h + pad * 2);
       }
 
       const scanProgress = typeof ent.scanProgress === 'number' ? Math.min(100, Math.max(0, Math.round(ent.scanProgress))) : 100;
@@ -9863,19 +9853,10 @@
 
       ctx.save();
 
-      // 1. Draw Biometric Facial Wireframe Mesh & Glowing White Nodes (Faithful to Gambar 2)
-      drawBiometricFacialMesh(ctx, x, y, w, h, ent, isUnknown, isVIP, isBlacklist);
-
-      // 2. Thick Corner Brackets ("Kotak-kotak" Faithful to Gambar 2)
+      // 2. Thick Corner Brackets
       let bracketColor = isScanning ? '#00f0ff' : (isBlacklist ? '#ef4444' : (isUnknown ? '#ffd700' : '#ccff00'));
       let bracketGlow = isScanning ? 'rgba(0, 240, 255, 0.95)' : (isBlacklist ? 'rgba(239, 68, 68, 0.90)' : (isUnknown ? 'rgba(255, 215, 0, 0.90)' : 'rgba(204, 255, 0, 0.95)'));
-
-      const pad = Math.max(14, Math.round(w * 0.12));
-      const bx = x - pad;
-      const by = y - pad;
-      const bw = w + pad * 2;
-      const bh = h + pad * 2;
-      const armLen = Math.min(60, Math.max(26, Math.round(bw * 0.28)));
+      const armLen = Math.min(48, Math.max(20, Math.round(bw * 0.24)));
 
       // Outer futuristic sci-fi circuit trace accents
       const traceColor = isScanning ? 'rgba(0, 240, 255, 0.40)' : (isBlacklist ? 'rgba(239, 68, 68, 0.35)' : (isUnknown ? 'rgba(255, 215, 0, 0.40)' : 'rgba(204, 255, 0, 0.40)'));
@@ -9883,18 +9864,18 @@
       ctx.lineWidth = 1.6;
       ctx.beginPath();
       // Top-Left corner trace
-      ctx.moveTo(bx - 8, by - 8); ctx.lineTo(bx - 22, by - 22); ctx.lineTo(bx - 38, by - 22);
+      ctx.moveTo(bx - 6, by - 6); ctx.lineTo(bx - 16, by - 16); ctx.lineTo(bx - 26, by - 16);
       // Top-Right corner trace
-      ctx.moveTo(bx + bw + 8, by - 8); ctx.lineTo(bx + bw + 22, by - 22); ctx.lineTo(bx + bw + 38, by - 22);
+      ctx.moveTo(bx + bw + 6, by - 6); ctx.lineTo(bx + bw + 16, by - 16); ctx.lineTo(bx + bw + 26, by - 16);
       // Bottom-Left corner trace
-      ctx.moveTo(bx - 8, by + bh + 8); ctx.lineTo(bx - 22, by + bh + 22); ctx.lineTo(bx - 38, by + bh + 22);
+      ctx.moveTo(bx - 6, by + bh + 6); ctx.lineTo(bx - 16, by + bh + 16); ctx.lineTo(bx - 26, by + bh + 16);
       // Bottom-Right corner trace
-      ctx.moveTo(bx + bw + 8, by + bh + 8); ctx.lineTo(bx + bw + 22, by + bh + 22); ctx.lineTo(bx + bw + 38, by + bh + 22);
+      ctx.moveTo(bx + bw + 6, by + bh + 6); ctx.lineTo(bx + bw + 16, by + bh + 16); ctx.lineTo(bx + bw + 26, by + bh + 16);
       ctx.stroke();
 
       // Tiny terminal dot on each trace
       ctx.fillStyle = traceColor;
-      [[bx - 38, by - 22], [bx + bw + 38, by - 22], [bx - 38, by + bh + 22], [bx + bw + 38, by + bh + 22]].forEach(([tx, ty]) => {
+      [[bx - 26, by - 16], [bx + bw + 26, by - 16], [bx - 26, by + bh + 16], [bx + bw + 26, by + bh + 16]].forEach(([tx, ty]) => {
         ctx.beginPath();
         ctx.arc(tx, ty, 2.5, 0, Math.PI * 2);
         ctx.fill();
@@ -9904,32 +9885,32 @@
       ctx.strokeStyle = bracketColor;
       ctx.shadowColor = bracketGlow;
       ctx.shadowBlur = 18;
-      ctx.lineWidth = 6.0;
+      ctx.lineWidth = 5.0;
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
 
-      // Top-Left Corner ┌
+      // Top-Left Corner
       ctx.beginPath();
       ctx.moveTo(bx, by + armLen);
       ctx.lineTo(bx, by);
       ctx.lineTo(bx + armLen, by);
       ctx.stroke();
 
-      // Top-Right Corner ┐
+      // Top-Right Corner
       ctx.beginPath();
       ctx.moveTo(bx + bw - armLen, by);
       ctx.lineTo(bx + bw, by);
       ctx.lineTo(bx + bw, by + armLen);
       ctx.stroke();
 
-      // Bottom-Left Corner └
+      // Bottom-Left Corner
       ctx.beginPath();
       ctx.moveTo(bx, by + bh - armLen);
       ctx.lineTo(bx, by + bh);
       ctx.lineTo(bx + armLen, by + bh);
       ctx.stroke();
 
-      // Bottom-Right Corner ┘
+      // Bottom-Right Corner
       ctx.beginPath();
       ctx.moveTo(bx + bw - armLen, by + bh);
       ctx.lineTo(bx + bw, by + bh);
