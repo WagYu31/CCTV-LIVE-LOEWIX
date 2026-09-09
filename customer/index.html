@@ -8880,6 +8880,103 @@
       ];
     }
 
+    // High-Resolution Live Face Snapshot Extractor from Video/Canvas
+    function captureLiveFaceSnapshot(box) {
+      try {
+        const video = document.getElementById('ai-video-player');
+        if (video && (video.readyState >= 2 || video.srcObject)) {
+          const vw = video.videoWidth || 1280;
+          const vh = video.videoHeight || 720;
+          const snapCanvas = document.createElement('canvas');
+          snapCanvas.width = vw;
+          snapCanvas.height = vh;
+          const sCtx = snapCanvas.getContext('2d');
+          sCtx.drawImage(video, 0, 0, vw, vh);
+
+          let bx = 0, by = 0, bw = vw, bh = vh;
+          if (box) {
+            bx = (box.x <= 1.05) ? box.x * vw : box.x;
+            by = (box.y <= 1.05) ? box.y * vh : box.y;
+            bw = (box.width <= 1.05) ? box.width * vw : box.width;
+            bh = (box.height <= 1.05) ? box.height * vh : box.height;
+          }
+
+          const padX = Math.round(bw * 0.28);
+          const padY = Math.round(bh * 0.28);
+          const cropX = Math.max(0, Math.round(bx - padX));
+          const cropY = Math.max(0, Math.round(by - padY));
+          const cropW = Math.min(vw - cropX, Math.round(bw + padX * 2));
+          const cropH = Math.min(vh - cropY, Math.round(bh + padY * 2));
+
+          const cropCanvas = document.createElement('canvas');
+          cropCanvas.width = 140;
+          cropCanvas.height = 168;
+          const cCtx = cropCanvas.getContext('2d');
+          cCtx.drawImage(snapCanvas, cropX, cropY, cropW, cropH, 0, 0, 140, 168);
+          return cropCanvas.toDataURL('image/jpeg', 0.88);
+        }
+      } catch (e) {}
+      return '';
+    }
+
+    // Auto-Log Face to Live Stream Deteksi AI sidebar upon 100% Biometric Lock
+    function triggerAutoLogFace(ent, rawBox) {
+      const now = Date.now();
+      const personKey = ent.label || 'STRANGER';
+      const isNewPerson = !window._lastAutoLogPerson || window._lastAutoLogPerson !== personKey;
+      const isIntervalPassed = !window._lastAutoLogTime || (now - window._lastAutoLogTime > 30000);
+
+      if (!isNewPerson && !isIntervalPassed) return;
+      window._lastAutoLogTime = now;
+      window._lastAutoLogPerson = personKey;
+
+      const isKnown = ent.face && ent.label !== 'STRANGER';
+      const video = document.getElementById('ai-video-player');
+      const isWebcamRunning = video && video.srcObject !== null;
+      const activeCamTitle = (currentAICamera && currentAICamera.title) ? currentAICamera.title : (isWebcamRunning ? 'LIVE WEBCAM LAPTOP' : 'CAM LOEWIX CCTV');
+      const activeCamId = currentAICamera ? currentAICamera.id : 5002;
+
+      let snapUrl = ent.snapshot || '';
+      if (!snapUrl && rawBox) {
+        snapUrl = captureLiveFaceSnapshot(rawBox);
+      }
+      if (!snapUrl) {
+        snapUrl = '../assets/image/avatar-default.png';
+      }
+
+      const registeredPhoto = (isKnown && ent.face && ent.face.photo) ? ent.face.photo : '';
+
+      const fd = new FormData();
+      fd.append('action', 'log_detection');
+      fd.append('type', 'face');
+      fd.append('camera_id', activeCamId);
+      fd.append('camera_title', activeCamTitle);
+      fd.append('label', ent.label);
+      fd.append('category', isKnown ? (ent.category || 'employee') : 'guest');
+      fd.append('confidence', ent.confidence || '98.5');
+      fd.append('snapshot', snapUrl);
+      if (registeredPhoto) {
+        fd.append('registered_photo', registeredPhoto);
+      }
+      const detectedGender = ent.gender ? (ent.gender === 'female' ? 'Perempuan' : 'Laki-laki') : (isKnown ? (ent.face.gender || 'Staff') : 'Pengunjung');
+      fd.append('gender', detectedGender);
+      fd.append('mask', ent.mask || 'Not worn');
+      fd.append('details', isKnown ? `${(ent.face && ent.face.role_title) ? ent.face.role_title : 'Staff'} • Whitelist Verified` : 'Stranger • Pengunjung Tidak Terdaftar');
+      fd.append('timestamp', getLocalLogTimestamp());
+
+      fetch('../api/ai_analytics.php', { method: 'POST', body: fd })
+        .then(r => r.json())
+        .then(data => {
+          loadAIData(true);
+          if (isKnown) {
+            showAIBanner(`${ent.label} (${(ent.face && ent.face.role_title) ? ent.face.role_title : 'VIP'})`, `Scan 100% Lock • Similarity: ${ent.confidence}%`, ent.category === 'vip' ? 'badge-success' : 'badge-primary', 'WHITELIST VERIFIED', 'fas fa-user-check', '#059669');
+          } else {
+            showAIBanner(`STRANGER DETECTED`, `Pengunjung Terdeteksi (Scan 100% Lock • ${ent.confidence}%)`, 'badge-warning', 'STRANGER', 'fas fa-user-clock', '#d97706');
+          }
+        })
+        .catch(e => {});
+    }
+
     // AI Canvas HUD Animation
     function initAIHUDCanvas() {
       const canvas = document.getElementById('ai-hud-canvas');
@@ -8958,7 +9055,7 @@
 
         // Continuous Real-Time Auto-Tracking & Neural Face Matcher Engine
         if (isAutoTrackingActive) {
-          if (lastFaceAPIResult && lastFaceAPIResult.faces.length > 0 && (now - lastFaceAPIResult.timestamp < 4500)) {
+          if (lastFaceAPIResult && lastFaceAPIResult.faces.length > 0 && (now - lastFaceAPIResult.timestamp < 3500)) {
             const renderBox = getVideoRenderBox(video, canvas.width, canvas.height);
 
             const targetEntities = lastFaceAPIResult.faces.map(f => {
@@ -8983,10 +9080,36 @@
                 }));
               }
 
-              const targetX = Math.round(renderBox.x + nb.x * renderBox.width);
-              const targetY = Math.round(renderBox.y + nb.y * renderBox.height);
-              const targetW = Math.round(nb.width * renderBox.width);
-              const targetH = Math.round(nb.height * renderBox.height);
+              // Compute dynamic bounding box directly from actual landmark points
+              let lMinX = Infinity, lMaxX = -Infinity, lMinY = Infinity, lMaxY = -Infinity;
+              const ptsToCheck = (scaledMesh468 && scaledMesh468.length > 0) ? scaledMesh468 : scaledLandmarks;
+              if (ptsToCheck && ptsToCheck.length > 0) {
+                for (const p of ptsToCheck) {
+                  if (p && typeof p.x === 'number' && typeof p.y === 'number') {
+                    if (p.x < lMinX) lMinX = p.x;
+                    if (p.x > lMaxX) lMaxX = p.x;
+                    if (p.y < lMinY) lMinY = p.y;
+                    if (p.y > lMaxY) lMaxY = p.y;
+                  }
+                }
+              }
+
+              let targetX, targetY, targetW, targetH;
+              if (lMinX < lMaxX && lMinY < lMaxY) {
+                const fw = lMaxX - lMinX;
+                const fh = lMaxY - lMinY;
+                const padX = Math.max(14, Math.round(fw * 0.16));
+                const padY = Math.max(14, Math.round(fh * 0.16));
+                targetX = Math.round(lMinX - padX);
+                targetY = Math.round(lMinY - padY);
+                targetW = Math.round(fw + padX * 2);
+                targetH = Math.round(fh + padY * 2);
+              } else {
+                targetX = Math.round(renderBox.x + nb.x * renderBox.width);
+                targetY = Math.round(renderBox.y + nb.y * renderBox.height);
+                targetW = Math.round(nb.width * renderBox.width);
+                targetH = Math.round(nb.height * renderBox.height);
+              }
 
               const targetLandmarks17 = extract17BiometricLandmarks(scaledLandmarks, targetX, targetY, targetW, targetH, scaledMesh468);
 
@@ -9002,6 +9125,11 @@
                 mesh468: scaledMesh468,
                 targetLandmarks17: targetLandmarks17,
                 confidence: f.confidence,
+                face: f.face,
+                snapshot: f.snapshot,
+                gender: f.gender,
+                mask: f.mask,
+                normBox: f.normBox,
                 createdAt: now
               };
             });
@@ -9009,7 +9137,7 @@
             // Smooth spatial centroid tracking & continuous landmark state persistence
             activeAIEntities = targetEntities.map((t) => {
               let bestPrev = null;
-              let bestDist = 180;
+              let bestDist = 200;
               for (const prev of activeAIEntities) {
                 if (typeof prev.x === 'number') {
                   const dist = Math.hypot(t.targetX - prev.x, t.targetY - prev.y);
@@ -9020,110 +9148,34 @@
                 }
               }
 
-              if (!bestPrev) {
-                return {
-                  ...t,
-                  x: t.targetX,
-                  y: t.targetY,
-                  w: t.targetW,
-                  h: t.targetH,
-                  currentLandmarks17: t.targetLandmarks17.map(p => ({ ...p }))
-                };
-              }
+              const firstSeen = bestPrev ? (bestPrev.firstSeen || (now - 800)) : now;
+              const elapsed = now - firstSeen;
+              const scanProgress = Math.min(100, Math.floor(20 + (elapsed / 1000) * 80));
+              const hasLogged = bestPrev ? (bestPrev.hasLogged || false) : false;
 
-              return {
+              const entObj = {
                 ...t,
-                x: bestPrev.x,
-                y: bestPrev.y,
-                w: bestPrev.w,
-                h: bestPrev.h,
-                currentLandmarks17: (Array.isArray(bestPrev.currentLandmarks17) && bestPrev.currentLandmarks17.length === 17)
+                firstSeen: firstSeen,
+                scanProgress: scanProgress,
+                hasLogged: hasLogged,
+                x: bestPrev ? bestPrev.x : t.targetX,
+                y: bestPrev ? bestPrev.y : t.targetY,
+                w: bestPrev ? bestPrev.w : t.targetW,
+                h: bestPrev ? bestPrev.h : t.targetH,
+                currentLandmarks17: (bestPrev && Array.isArray(bestPrev.currentLandmarks17) && bestPrev.currentLandmarks17.length === 17)
                   ? bestPrev.currentLandmarks17
                   : t.targetLandmarks17.map(p => ({ ...p }))
               };
-            });
 
-            // Auto-log and banner for detected faces (Instant on new face, 45s throttle for persistent presence)
-            const primary = lastFaceAPIResult.faces[0];
-            const pFace = primary.face || {};
-            const personKey = primary.name;
-            const isNewPerson = !window._lastAutoLogPerson || window._lastAutoLogPerson !== personKey;
-            const isIntervalPassed = !window._lastAutoLogTime || (now - window._lastAutoLogTime > 45000);
-
-            if (isNewPerson || isIntervalPassed) {
-              window._lastAutoLogTime = now;
-              window._lastAutoLogPerson = personKey;
-              const isPrimaryKnown = primary.face && primary.name !== 'STRANGER';
-              if (isPrimaryKnown) {
-                showAIBanner(`${primary.name} (${pFace.role_title || 'Karyawan'})`, `Similarity: ${primary.confidence}% • Whitelist Matched`, pFace.category === 'vip' ? 'badge-success' : 'badge-primary', 'WHITELIST', 'fas fa-user-check', '#059669');
-              } else {
-                showAIBanner(`STRANGER DETECTED`, `Pengunjung tidak dikenal terdeteksi (${primary.confidence}%)`, 'badge-warning', 'STRANGER', 'fas fa-user-clock', '#d97706');
+              // Auto-log to "Live Stream Deteksi AI" sidebar upon reaching 100% Biometric Lock
+              if (scanProgress >= 100 && !entObj.hasLogged) {
+                entObj.hasLogged = true;
+                triggerAutoLogFace(entObj, t.normBox);
               }
-              // Log all detected faces (Both Whitelist and Stranger!) to database & sidebar
-              lastFaceAPIResult.faces.forEach(f => {
-                const isKnown = f.face && f.name !== 'STRANGER';
-                const activeCamTitle = (currentAICamera && currentAICamera.title) ? currentAICamera.title : (isWebcamRunning ? 'LIVE WEBCAM LAPTOP' : 'CAM LOEWIX CCTV');
-                const activeCamId = currentAICamera ? currentAICamera.id : 5002;
-                const fd = new FormData();
-                fd.append('action', 'log_detection');
-                fd.append('type', 'face');
-                fd.append('camera_id', activeCamId);
-                fd.append('camera_title', activeCamTitle);
-                fd.append('label', f.name);
-                fd.append('category', isKnown ? (f.face.category || 'employee') : 'guest');
-                fd.append('confidence', f.confidence);
-                fd.append('snapshot', f.snapshot || '../assets/image/avatar-default.png');
-                if (isKnown && f.face && f.face.photo) {
-                  fd.append('registered_photo', f.face.photo);
-                }
-                const detectedGender = f.gender ? (f.gender === 'female' ? 'Perempuan' : 'Laki-laki') : (isKnown ? (f.face.gender || 'Staff') : 'Pengunjung');
-                fd.append('gender', detectedGender);
-                fd.append('mask', f.mask || 'Not worn');
-                fd.append('details', isKnown ? `${f.face.role_title || 'Staff'} • Whitelist Verified` : 'Stranger • Pengunjung Tidak Terdaftar');
-                fd.append('timestamp', getLocalLogTimestamp());
-                fetch('../api/ai_analytics.php', { method: 'POST', body: fd }).then(() => loadAIData(true)).catch(e => {});
-              });
-            }
-          } else if (isWebcamRunning) {
-            // Live webcam active HUD persistent tracking
-            const renderBox = getVideoRenderBox(video, canvas.width, canvas.height);
-            const targetW = Math.round(renderBox.width * 0.28);
-            const targetH = Math.round(renderBox.height * 0.42);
-            const targetX = Math.round(renderBox.x + (renderBox.width - targetW) / 2);
-            const targetY = Math.round(renderBox.y + renderBox.height * 0.20);
-            const lm17 = extract17BiometricLandmarks(null, targetX, targetY, targetW, targetH);
 
-            const wagyuFace = cachedAIFaces.find(f => f.name.toLowerCase().includes('wahyu') || f.name.toLowerCase().includes('wagyu')) || cachedAIFaces[0];
-            const isTargetSelected = activeTrackedFace !== null;
-            const liveLabel = isTargetSelected ? activeTrackedFace.name : (wagyuFace ? wagyuFace.name : 'SCANNING TARGET');
-            const liveCat = isTargetSelected ? (activeTrackedFace.category || 'vip') : (wagyuFace ? (wagyuFace.category || 'vip') : 'employee');
-
-            if (activeAIEntities.length === 0) {
-              activeAIEntities = [{
-                x: targetX,
-                y: targetY,
-                w: targetW,
-                h: targetH,
-                targetX: targetX,
-                targetY: targetY,
-                targetW: targetW,
-                targetH: targetH,
-                currentLandmarks17: lm17.map(p => ({ ...p })),
-                targetLandmarks17: lm17,
-                type: 'face',
-                label: liveLabel,
-                category: liveCat,
-                confidence: '98.5',
-                createdAt: now
-              }];
-            } else {
-              activeAIEntities[0].targetX = targetX;
-              activeAIEntities[0].targetY = targetY;
-              activeAIEntities[0].targetW = targetW;
-              activeAIEntities[0].targetH = targetH;
-              activeAIEntities[0].targetLandmarks17 = lm17;
-            }
-          } else if (lastFaceAPIResult && (now - lastFaceAPIResult.timestamp > 5000)) {
+              return entObj;
+            });
+          } else if (lastFaceAPIResult && (now - lastFaceAPIResult.timestamp > 3500)) {
             activeAIEntities = [];
           }
         } else {
@@ -9628,30 +9680,55 @@
     }
 
     function drawEntityBracket(ctx, ent) {
-      const { x, y, w, h, label, category, confidence } = ent;
+      let { x, y, w, h, label, category, confidence } = ent;
       const isBlacklist = category === 'blacklist';
       const isVIP = category === 'vip';
       const isUnknown = category === 'unknown' || category === 'guest' || String(label).toLowerCase().includes('stranger') || String(label).toLowerCase().includes('belum terdaftar') || String(label).toLowerCase().includes('tidak dikenal') || String(label).toLowerCase().includes('pengunjung');
+
+      // Re-derive dynamic bounding box directly from active landmarks if available to guarantee 100% synchronization
+      if (Array.isArray(ent.currentLandmarks17) && ent.currentLandmarks17.length === 17) {
+        let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+        for (const pt of ent.currentLandmarks17) {
+          if (pt && typeof pt.x === 'number' && typeof pt.y === 'number') {
+            if (pt.x < minX) minX = pt.x;
+            if (pt.x > maxX) maxX = pt.x;
+            if (pt.y < minY) minY = pt.y;
+            if (pt.y > maxY) maxY = pt.y;
+          }
+        }
+        if (minX < maxX && minY < maxY) {
+          const fw = maxX - minX;
+          const fh = maxY - minY;
+          const padX = Math.max(14, Math.round(fw * 0.16));
+          const padY = Math.max(14, Math.round(fh * 0.16));
+          x = Math.round(minX - padX);
+          y = Math.round(minY - padY);
+          w = Math.round(fw + padX * 2);
+          h = Math.round(fh + padY * 2);
+        }
+      }
+
+      const scanProgress = typeof ent.scanProgress === 'number' ? Math.min(100, Math.max(0, Math.round(ent.scanProgress))) : 100;
+      const isScanning = scanProgress < 100;
 
       ctx.save();
 
       // 1. Draw Biometric Facial Wireframe Mesh & Glowing White Nodes (Faithful to Gambar 2)
       drawBiometricFacialMesh(ctx, x, y, w, h, ent, isUnknown, isVIP, isBlacklist);
 
-      // 2. Thick Neon Lime Corner Brackets ("Kotak-kotak" Faithful to Gambar 2)
-      // Reference Gambar 2 uses vibrant Electric Neon Lime (#ccff00 / #bbf451)
-      const bracketColor = isBlacklist ? '#ef4444' : (isUnknown ? '#ffd700' : '#ccff00');
-      const bracketGlow = isBlacklist ? 'rgba(239, 68, 68, 0.90)' : (isUnknown ? 'rgba(255, 215, 0, 0.90)' : 'rgba(204, 255, 0, 0.95)');
-      
-      const pad = Math.max(18, Math.round(w * 0.18));
+      // 2. Thick Corner Brackets ("Kotak-kotak" Faithful to Gambar 2)
+      let bracketColor = isScanning ? '#00f0ff' : (isBlacklist ? '#ef4444' : (isUnknown ? '#ffd700' : '#ccff00'));
+      let bracketGlow = isScanning ? 'rgba(0, 240, 255, 0.95)' : (isBlacklist ? 'rgba(239, 68, 68, 0.90)' : (isUnknown ? 'rgba(255, 215, 0, 0.90)' : 'rgba(204, 255, 0, 0.95)'));
+
+      const pad = Math.max(14, Math.round(w * 0.12));
       const bx = x - pad;
       const by = y - pad;
       const bw = w + pad * 2;
       const bh = h + pad * 2;
-      const armLen = Math.min(60, Math.max(30, Math.round(bw * 0.30)));
+      const armLen = Math.min(60, Math.max(26, Math.round(bw * 0.28)));
 
-      // Outer futuristic sci-fi circuit trace accents (As seen in background of Gambar 2)
-      const traceColor = isBlacklist ? 'rgba(239, 68, 68, 0.35)' : 'rgba(204, 255, 0, 0.40)';
+      // Outer futuristic sci-fi circuit trace accents
+      const traceColor = isScanning ? 'rgba(0, 240, 255, 0.40)' : (isBlacklist ? 'rgba(239, 68, 68, 0.35)' : (isUnknown ? 'rgba(255, 215, 0, 0.40)' : 'rgba(204, 255, 0, 0.40)'));
       ctx.strokeStyle = traceColor;
       ctx.lineWidth = 1.6;
       ctx.beginPath();
@@ -9673,7 +9750,7 @@
         ctx.fill();
       });
 
-      // Main Bold L-Corner Brackets (Gambar 2 aesthetic)
+      // Main Bold L-Corner Brackets
       ctx.strokeStyle = bracketColor;
       ctx.shadowColor = bracketGlow;
       ctx.shadowBlur = 18;
@@ -9709,15 +9786,38 @@
       ctx.lineTo(bx + bw, by + bh - armLen);
       ctx.stroke();
 
-      // 3. Commercial VMS Identification Tag (High-contrast, bold, crisp above top bracket)
-      const isStranger = isUnknown;
-      let displayLabel = isStranger ? 'STRANGER' : String(label).toUpperCase();
-      let roleTag = isVIP ? ' [VIP]' : (isBlacklist ? ' [DPO]' : (isStranger ? ' (Pengunjung)' : ''));
-      let fullTagText = `${displayLabel}${roleTag}`;
+      // Scanning HUD Line inside bracket while scanning
+      if (isScanning) {
+        const scanY = by + (bh * ((Date.now() % 1000) / 1000));
+        ctx.save();
+        ctx.strokeStyle = '#00f0ff';
+        ctx.lineWidth = 2;
+        ctx.shadowColor = '#00f0ff';
+        ctx.shadowBlur = 10;
+        ctx.beginPath();
+        ctx.moveTo(bx + 8, scanY);
+        ctx.lineTo(bx + bw - 8, scanY);
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      // 3. Commercial VMS Identification / Scanning Tag
+      let fullTagText, confStr, pillColor;
+      if (isScanning) {
+        fullTagText = `⚡ SCANNING BIOMETRIC [${scanProgress}%]`;
+        confStr = `${scanProgress}%`;
+        pillColor = '#00f0ff';
+      } else {
+        const isStranger = isUnknown;
+        const displayLabel = isStranger ? 'STRANGER' : String(label).toUpperCase();
+        const roleTag = isVIP ? ' [VIP]' : (isBlacklist ? ' [DPO]' : (isStranger ? ' (Pengunjung)' : ' [WHITELIST]'));
+        fullTagText = `${displayLabel}${roleTag}`;
+        confStr = (confidence && String(confidence).includes('%')) ? confidence : `${confidence || 98.4}%`;
+        pillColor = isStranger ? '#ffd700' : (isBlacklist ? '#ef4444' : '#ccff00');
+      }
 
       ctx.font = '800 13px "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, sans-serif';
       const textW = ctx.measureText(fullTagText).width;
-      const confStr = (confidence && String(confidence).includes('%')) ? confidence : `${confidence || 98.4}%`;
       ctx.font = '800 11.5px monospace';
       const confW = ctx.measureText(confStr).width;
 
@@ -9728,7 +9828,7 @@
       let tagY = by - tagH - 8;
       if (tagY < 4) tagY = by + 8; // clamp inside if touching top canvas ceiling
 
-      // Solid High-Contrast Cyber Tag
+      // Solid High-Contrast Cyber Tag Box
       ctx.fillStyle = 'rgba(2, 6, 23, 0.96)';
       ctx.strokeStyle = bracketColor;
       ctx.lineWidth = 1.8;
@@ -9741,18 +9841,18 @@
 
       // Dot beacon / icon
       ctx.shadowBlur = 0;
-      ctx.fillStyle = bracketColor;
+      ctx.fillStyle = pillColor;
       ctx.beginPath();
       ctx.arc(tagX + 12, tagY + tagH / 2, 4.2, 0, Math.PI * 2);
       ctx.fill();
 
-      // Label Name + Role
+      // Label Name + Role / Scanning
       ctx.fillStyle = '#ffffff';
       ctx.font = '800 12.5px "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, sans-serif';
       ctx.fillText(fullTagText, tagX + 24, tagY + 18.5);
 
       // Confidence Pill
-      ctx.fillStyle = isStranger ? '#ffd700' : (isBlacklist ? '#ef4444' : '#ccff00');
+      ctx.fillStyle = pillColor;
       ctx.font = '800 11.5px monospace';
       ctx.textAlign = 'right';
       ctx.fillText(confStr, tagX + tagW - 10, tagY + 18.5);
