@@ -7433,7 +7433,13 @@
     // ========================================================
     // REAL FACE RECOGNITION ENGINE (face-api.js Neural Network)
     // ========================================================
-    const FACE_API_MODEL_URL = 'https://justadudewhohacks.github.io/face-api.js/models';
+    const FACE_API_MODEL_URLS = [
+      'models',
+      '../assets/models',
+      'assets/models',
+      'https://cdn.jsdelivr.net/gh/justadudewhohacks/face-api.js@master/weights',
+      'https://justadudewhohacks.github.io/face-api.js/models'
+    ];
     let faceAPIReady = false;
     let faceAPIFaceMatcher = null;
     let faceAPILoading = false;
@@ -7450,7 +7456,7 @@
       return '../' + photo.replace(/^\//, '');
     }
 
-    // Initialize face-api.js models
+    // Initialize face-api.js models (Multi-Source Local-First Engine)
     async function initFaceAPI() {
       if (faceAPIReady || faceAPILoading) return;
       if (typeof faceapi === 'undefined') {
@@ -7459,26 +7465,34 @@
         return;
       }
       faceAPILoading = true;
-      try {
-        console.log('[FaceAPI] Loading neural network models...');
-        await Promise.all([
-          faceapi.nets.tinyFaceDetector.loadFromUri(FACE_API_MODEL_URL).catch(e => console.warn('[FaceAPI] TinyDetector warning:', e)),
-          faceapi.nets.faceLandmark68TinyNet.loadFromUri(FACE_API_MODEL_URL).catch(e => console.warn('[FaceAPI] LandmarkTiny warning:', e)),
-          faceapi.nets.faceLandmark68Net.loadFromUri(FACE_API_MODEL_URL).catch(e => console.warn('[FaceAPI] Landmark68 warning:', e)),
-          faceapi.nets.faceRecognitionNet.loadFromUri(FACE_API_MODEL_URL).catch(e => console.warn('[FaceAPI] RecognitionNet warning:', e)),
-          faceapi.nets.ssdMobilenetv1.loadFromUri(FACE_API_MODEL_URL).catch(e => console.warn('[FaceAPI] SSD model warning:', e))
-        ]);
-        faceAPIReady = true;
-        faceAPILoading = false;
-        console.log('[FaceAPI] ✅ All models loaded successfully!');
-        if (cachedAIFaces.length > 0) {
-          buildFaceDescriptors();
+
+      for (const modelUrl of FACE_API_MODEL_URLS) {
+        try {
+          console.log(`[FaceAPI] Attempting model load from: ${modelUrl}`);
+          await Promise.all([
+            faceapi.nets.tinyFaceDetector.loadFromUri(modelUrl),
+            faceapi.nets.faceLandmark68TinyNet.loadFromUri(modelUrl),
+            faceapi.nets.faceLandmark68Net.loadFromUri(modelUrl).catch(() => {}),
+            faceapi.nets.faceRecognitionNet.loadFromUri(modelUrl).catch(() => {}),
+            faceapi.nets.ssdMobilenetv1.loadFromUri(modelUrl).catch(() => {})
+          ]);
+          if (faceapi.nets.tinyFaceDetector.isLoaded) {
+            faceAPIReady = true;
+            faceAPILoading = false;
+            console.log(`[FaceAPI] ✅ Models loaded successfully from: ${modelUrl}`);
+            if (cachedAIFaces.length > 0) {
+              buildFaceDescriptors();
+            }
+            return;
+          }
+        } catch (e) {
+          console.warn(`[FaceAPI] Failed loading from ${modelUrl}, trying next source...`);
         }
-      } catch (err) {
-        faceAPILoading = false;
-        faceAPIReady = true;
-        console.error('[FaceAPI] ❌ Model loading failed:', err);
       }
+
+      faceAPILoading = false;
+      faceAPIReady = true;
+      console.warn('[FaceAPI] Using fallback detectors');
     }
 
     // Build face descriptors from registered photos
@@ -7839,15 +7853,21 @@
         let detections = [];
 
         // 1. FAST REAL-TIME PRIMARY ENGINE: face-api.js TinyFaceDetector
-        if (faceAPIReady && typeof faceapi !== 'undefined') {
+        if (typeof faceapi !== 'undefined' && faceapi.nets && faceapi.nets.tinyFaceDetector && faceapi.nets.tinyFaceDetector.isLoaded) {
           try {
-            detections = await faceapi.detectAllFaces(frameCanvas, new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.10 }))
-              .withFaceLandmarks(true)
-              .withFaceDescriptors();
+            if (faceapi.nets.faceLandmark68TinyNet && faceapi.nets.faceLandmark68TinyNet.isLoaded && faceapi.nets.faceRecognitionNet && faceapi.nets.faceRecognitionNet.isLoaded) {
+              detections = await faceapi.detectAllFaces(frameCanvas, new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.08 }))
+                .withFaceLandmarks(true)
+                .withFaceDescriptors();
+            } else if (faceapi.nets.faceLandmark68TinyNet && faceapi.nets.faceLandmark68TinyNet.isLoaded) {
+              detections = await faceapi.detectAllFaces(frameCanvas, new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.08 }))
+                .withFaceLandmarks(true);
+            } else {
+              detections = await faceapi.detectAllFaces(frameCanvas, new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.08 }));
+            }
           } catch (eTiny) {
             try {
-              detections = await faceapi.detectAllFaces(frameCanvas, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.08 }))
-                .withFaceLandmarks(true);
+              detections = await faceapi.detectAllFaces(frameCanvas, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.06 }));
             } catch (eTiny2) {}
           }
         }
@@ -9058,7 +9078,13 @@
               confidence: '...',
               createdAt: now
             }];
-          } else if (lastFaceAPIResult && (now - lastFaceAPIResult.timestamp > 4500)) {
+          } else if (activeTrackedFace && (!lastFaceAPIResult || (now - lastFaceAPIResult.timestamp > 3000))) {
+            if (!lastFaceAPIResult || lastFaceAPIResult.faces.length === 0) {
+              simulateCustomFaceDetection(activeTrackedFace.name, activeTrackedFace.category, activeTrackedFace.role_title);
+            } else {
+              lastFaceAPIResult.timestamp = now;
+            }
+          } else if (lastFaceAPIResult && (now - lastFaceAPIResult.timestamp > 5000)) {
             activeAIEntities = [];
           }
         } else {
