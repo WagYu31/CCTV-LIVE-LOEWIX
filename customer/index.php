@@ -7737,7 +7737,7 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
       const vw = video.videoWidth || (video.srcObject ? 1280 : 0);
       const vh = video.videoHeight || (video.srcObject ? 720 : 0);
       if (vw === 0 || vh === 0) return null;
-      const maxDim = 480;
+      const maxDim = 640;
       const scale = Math.min(1, maxDim / Math.max(vw, vh));
       const w = Math.round(vw * scale);
       const h = Math.round(vh * scale);
@@ -9171,6 +9171,7 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
       // Start official Google TensorFlow.org and Face-API recognition engines
       initTFJSFaceMesh();
       initFaceAPI();
+      initCOCOSSD();
       startFaceAPIDetectionLoop();
     }
 
