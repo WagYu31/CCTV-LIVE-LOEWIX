@@ -25,6 +25,8 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/face-landmarks-detection@1.0.6/dist/face-landmarks-detection.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_detection@0.4.1646425229/face_detection.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/face-detection@1.0.3/dist/face-detection.min.js"></script>
+  <!-- TensorFlow.org COCO-SSD Human & Pedestrian Surveillance Detection -->
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.2.3/dist/coco-ssd.min.js"></script>
   <!-- face-api.js: Biometric Descriptors for Whitelist Database Verification -->
   <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
   <!-- Midtrans Snap Payment Gateway SDK (Sandbox) -->
@@ -1922,8 +1924,8 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
                 <select class="form-control form-control-sm form-control-dark" id="ai-camera-selector" onchange="changeAICamera(this.value)" style="width: auto; min-width: 200px; max-width: 320px; font-size: 12.5px; border-radius: 8px; font-weight: 600; border-color: rgba(56, 189, 248, 0.4);">
                   <option value="webcam">📸 Live Webcam Laptop (Uji Scan Wajah Anda)</option>
                 </select>
-                <select class="form-control form-control-sm form-control-dark" id="ai-target-face-selector" onchange="selectAITargetFace(this.value)" style="width: auto; max-width: 210px; font-size: 11.5px; border-radius: 8px; border-color: rgba(56, 189, 248, 0.3); background: rgba(15, 23, 42, 0.9);" title="Pilih target orang / wajah yang ingin di-track & diverifikasi AI">
-                  <option value="auto">👤 Target: WAGYU</option>
+                <select class="form-control form-control-sm form-control-dark" id="ai-target-face-selector" onchange="selectAITargetFace(this.value)" style="width: auto; max-width: 260px; font-size: 11.5px; border-radius: 8px; border-color: rgba(56, 189, 248, 0.3); background: rgba(15, 23, 42, 0.9);" title="Pilih target orang / wajah yang ingin di-track & diverifikasi AI">
+                  <option value="auto">✨ Mode AI: Auto Detect & Match (Real-time)</option>
                 </select>
                 <button class="btn btn-sm btn-outline-info font-weight-bold px-2.5 py-1" onclick="startAIWebcamLive()" style="border-radius: 8px; font-size: 11px;" title="Nyalakan kamera laptop untuk scan wajah langsung">
                   <i class="fas fa-camera mr-1"></i> Webcam
@@ -7435,6 +7437,29 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
       }
     }
 
+    // =========================================================================
+    // TENSORFLOW.ORG COCO-SSD SURVEILLANCE OBJECT & HUMAN DETECTOR
+    // =========================================================================
+    let cocoSSDModel = null;
+    let isCOCOSSDLoading = false;
+    async function initCOCOSSD() {
+      if (cocoSSDModel || isCOCOSSDLoading) return;
+      if (typeof cocoSsd === 'undefined') {
+        setTimeout(initCOCOSSD, 1000);
+        return;
+      }
+      isCOCOSSDLoading = true;
+      try {
+        console.log('⚡ [AI Surveillance] Loading TensorFlow.org COCO-SSD Human/Pedestrian Model...');
+        cocoSSDModel = await cocoSsd.load({ base: 'mobilenet_v2' });
+        console.log('✅ [AI Surveillance] COCO-SSD Human/Pedestrian Model Loaded Successfully!');
+      } catch (errCoco) {
+        console.warn('[AI Surveillance] COCO-SSD notice:', errCoco.message);
+      } finally {
+        isCOCOSSDLoading = false;
+      }
+    }
+
     // ========================================================
     // REAL FACE RECOGNITION ENGINE (face-api.js Neural Network)
     // ========================================================
@@ -7674,10 +7699,10 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
         }
       }
 
-      // 3. Track not yet locked: Lock when verified match occurs
-      // Direct match if distance <= 0.54; or if distance <= 0.60 and margin against 2nd candidate >= 0.07
-      const hasMargin = (secondDistance - currentDistance >= 0.07) || (secondDistance >= 0.70);
-      const isQualified = candidateMatch && candidateFace && (currentDistance <= 0.54 || (currentDistance <= 0.60 && hasMargin));
+      // 3. Track not yet locked: Lock when verified biometric match occurs
+      // Strict matching: distance <= 0.48; or if distance <= 0.52 and margin against 2nd candidate >= 0.08
+      const hasMargin = (secondDistance - currentDistance >= 0.08) || (secondDistance >= 0.65);
+      const isQualified = candidateMatch && candidateFace && (currentDistance <= 0.48 || (currentDistance <= 0.52 && hasMargin));
       if (isQualified) {
         track.candidateVotes[candidateMatch] = (track.candidateVotes[candidateMatch] || 0) + 1;
         if (track.candidateVotes[candidateMatch] >= 1) {
@@ -7692,21 +7717,8 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
         }
       }
 
-      // 4. Default for unverified / visitor:
-      // If user is operating webcam scanner and registered profile exists (e.g. Wahyu Utomo), auto-associate for smooth VIP demonstration:
-      const defaultProfile = (cachedAIFaces && cachedAIFaces.length > 0)
-        ? (cachedAIFaces.find(f => f.name.toLowerCase().includes('wahyu') || f.name.toLowerCase().includes('wagyu')) || cachedAIFaces[0])
-        : null;
-
-      if (defaultProfile && (track.frameCount >= 2 || !candidateMatch)) {
-        return {
-          name: defaultProfile.name,
-          face: defaultProfile,
-          category: defaultProfile.category || 'vip',
-          isMatch: true
-        };
-      }
-
+      // 4. Strict Unregistered Visitor / Stranger:
+      // Unknown faces are labeled as STRANGER (Pengunjung), never falsely identified as Wahyu Utomo or anyone else
       return {
         name: 'STRANGER',
         face: null,
@@ -7800,61 +7812,89 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
       return true;
     }
 
-    // High-Speed Smart Camera Green Box Tracker
-    function findSmartCameraHumanBoxes(canvas) {
+    // High-Speed CCTV Surveillance Human / Pedestrian Silhouette Tracker
+    // Detects humans standing, walking, or sitting across surveillance zones (e.g. Yamaha showroom, office floor)
+    function findCCTVHumanSilhouettes(canvas) {
       if (!canvas) return [];
       try {
         const ctx = canvas.getContext('2d', { willReadFrequently: true });
         const w = canvas.width;
         const h = canvas.height;
+        if (w < 60 || h < 60) return [];
         const img = ctx.getImageData(0, 0, w, h);
         const d = img.data;
 
-        let greenPoints = [];
-        const startY = Math.round(h * 0.15);
-        const endY = Math.round(h * 0.95);
-        const startX = Math.round(w * 0.05);
-        const endX = Math.round(w * 0.95);
+        const startY = Math.round(h * 0.12);
+        const endY = Math.round(h * 0.90);
+        const startX = Math.round(w * 0.04);
+        const endX = Math.round(w * 0.96);
+        const step = 6;
 
-        for (let y = startY; y < endY; y += 6) {
-          for (let x = startX; x < endX; x += 6) {
+        let humanPoints = [];
+        for (let y = startY; y < endY; y += step) {
+          for (let x = startX; x < endX; x += step) {
             const i = (y * w + x) * 4;
             const r = d[i];
             const g = d[i + 1];
             const b = d[i + 2];
-            if (g > 175 && r < 100 && b < 100 && (g - r) > 85 && (g - b) > 85) {
-              greenPoints.push({ x, y });
+            const lum = (r * 0.299 + g * 0.587 + b * 0.114);
+            // Detect person silhouettes (clothing contrast, luminance variance, skin tones)
+            if (lum < 75 || lum > 215 || (Math.abs(r - g) > 22 && Math.abs(r - b) > 18)) {
+              humanPoints.push({ x, y });
             }
           }
         }
 
-        if (greenPoints.length >= 8) {
-          let minX = w, maxX = 0, minY = h, maxY = 0;
-          greenPoints.forEach(p => {
-            if (p.x < minX) minX = p.x;
-            if (p.x > maxX) maxX = p.x;
-            if (p.y < minY) minY = p.y;
-            if (p.y > maxY) maxY = p.y;
+        const activeClusters = [];
+        if (humanPoints.length >= 15) {
+          const numSlices = 14;
+          const sliceW = Math.round((endX - startX) / numSlices);
+          const sliceBins = Array.from({ length: numSlices }, () => []);
+
+          humanPoints.forEach(p => {
+            const sIdx = Math.min(numSlices - 1, Math.max(0, Math.floor((p.x - startX) / sliceW)));
+            sliceBins[sIdx].push(p);
           });
-          const bw = maxX - minX;
-          const bh = maxY - minY;
-          if (bw >= 25 && bh >= 55 && bh > bw * 1.2) {
-            return [{
-              box: { x: minX, y: minY, width: bw, height: bh },
-              headBox: {
-                x: Math.max(0, minX + bw * 0.10),
-                y: Math.max(0, minY),
-                width: Math.min(w, bw * 0.80),
-                height: Math.min(h, bh * 0.30)
+
+          for (let s = 0; s < numSlices; s++) {
+            const pts = sliceBins[s];
+            if (pts.length >= 10) {
+              let minX = w, maxX = 0, minY = h, maxY = 0;
+              pts.forEach(p => {
+                if (p.x < minX) minX = p.x;
+                if (p.x > maxX) maxX = p.x;
+                if (p.y < minY) minY = p.y;
+                if (p.y > maxY) maxY = p.y;
+              });
+              const bw = maxX - minX;
+              const bh = maxY - minY;
+              const aspect = bh / Math.max(1, bw);
+              if (bh >= 28 && bh <= h * 0.70 && aspect >= 1.2 && aspect <= 4.2) {
+                const pad = Math.round(bw * 0.15);
+                activeClusters.push({
+                  box: {
+                    x: Math.max(0, minX - pad),
+                    y: Math.max(0, minY - 4),
+                    width: Math.min(w - minX, bw + pad * 2),
+                    height: Math.min(h - minY, bh + 8)
+                  },
+                  descriptor: null,
+                  score: 0.88,
+                  type: 'person',
+                  engine: 'CCTV Silhouette Tracker'
+                });
+                if (activeClusters.length >= 8) break;
               }
-            }];
+            }
           }
         }
-      } catch (e) {}
-      return [];
+        return activeClusters;
+      } catch (e) {
+        return [];
+      }
     }
 
-    // High-Speed Optical Human Face & Skin Centroid Locator (Instant Zero-Latency Tracker)
+    // High-Speed Optical Human Face & Skin Centroid Locator (Snug Real-Time Face Fit)
     function findLiveWebcamHumanFace(canvas) {
       if (!canvas) return null;
       try {
@@ -7884,31 +7924,33 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
           }
         }
 
-        if (skinPoints.length >= 20) {
+        if (skinPoints.length >= 18) {
           skinPoints.sort((a, b) => a.x - b.x);
-          const p5Idx = Math.floor(skinPoints.length * 0.05);
-          const p95Idx = Math.floor(skinPoints.length * 0.95);
-          const minX = skinPoints[p5Idx].x;
-          const maxX = skinPoints[p95Idx].x;
+          const p8Idx = Math.floor(skinPoints.length * 0.08);
+          const p92Idx = Math.floor(skinPoints.length * 0.92);
+          const minX = skinPoints[p8Idx].x;
+          const maxX = skinPoints[p92Idx].x;
 
           skinPoints.sort((a, b) => a.y - b.y);
-          const minY = skinPoints[p5Idx].y;
-          const maxY = skinPoints[p95Idx].y;
+          const minY = skinPoints[p8Idx].y;
+          const maxY = skinPoints[p92Idx].y;
 
           const rawW = maxX - minX;
           const rawH = maxY - minY;
 
-          if (rawW >= 25 && rawH >= 25) {
+          if (rawW >= 20 && rawH >= 20) {
             const cx = minX + rawW / 2;
-            const cy = minY + rawH * 0.45;
-            const fw = Math.min(w * 0.75, Math.max(45, rawW * 0.90));
-            const fh = Math.min(h * 0.80, Math.max(55, fw * 1.25));
-            const bx = Math.max(0, Math.min(w - fw, cx - fw / 2));
-            const by = Math.max(0, Math.min(h - fh, cy - fh * 0.42));
+            const cy = minY + rawH * 0.44;
+            // Snug, proportional face box that tightly hugs the face:
+            const fw = Math.max(35, Math.min(w * 0.48, Math.round(rawW * 0.76)));
+            const fh = Math.max(45, Math.min(h * 0.58, Math.round(fw * 1.20)));
+            const bx = Math.max(0, Math.min(w - fw, Math.round(cx - fw / 2)));
+            const by = Math.max(0, Math.min(h - fh, Math.round(cy - fh * 0.40)));
 
             return {
-              box: { x: Math.round(bx), y: Math.round(by), width: Math.round(fw), height: Math.round(fh) },
-              score: 0.92,
+              box: { x: bx, y: by, width: fw, height: fh },
+              score: 0.91,
+              type: 'face',
               engine: 'Optical Tracker'
             };
           }
@@ -8048,26 +8090,49 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
           } catch (eSSD) {}
         }
 
-        // 4. Fallback to Hardware Green Box Tracker
-        if ((!detections || detections.length === 0) && frameCanvas) {
-          try {
-            const smartBoxes = findSmartCameraHumanBoxes(frameCanvas);
-            if (smartBoxes.length > 0) {
-              for (const sb of smartBoxes) {
-                const hb = sb.headBox;
-                detections.push({
-                  box: { x: hb.x, y: hb.y, width: hb.width, height: hb.height },
-                  descriptor: null,
-                  score: 0.88,
-                  engine: 'CCTV Tracker'
-                });
+        const isCCTVMode = (video && !video.srcObject) && (currentAICamera && currentAICamera.id !== 'webcam');
+
+        // 4. CCTV SURVEILLANCE HUMAN & PEDESTRIAN DETECTION (COCO-SSD & SILHOUETTE TRACKER)
+        if (isCCTVMode && (!detections || detections.length === 0)) {
+          // A. TensorFlow.org COCO-SSD Neural Model
+          if (cocoSSDModel) {
+            try {
+              const predictions = await cocoSSDModel.detect(inputSource);
+              if (predictions && predictions.length > 0) {
+                for (const p of predictions) {
+                  if (p.class === 'person' && p.score >= 0.20) {
+                    const bx = Math.max(0, Math.round(p.bbox[0]));
+                    const by = Math.max(0, Math.round(p.bbox[1]));
+                    const bw = Math.min(frameW - bx, Math.round(p.bbox[2]));
+                    const bh = Math.min(frameH - by, Math.round(p.bbox[3]));
+                    if (bw >= 15 && bh >= 25) {
+                      detections.push({
+                        box: { x: bx, y: by, width: bw, height: bh },
+                        descriptor: null,
+                        score: p.score,
+                        type: 'person',
+                        engine: 'COCO-SSD Pedestrian'
+                      });
+                    }
+                  }
+                }
               }
-            }
-          } catch (e) {}
+            } catch (eCoco) {}
+          }
+
+          // B. High-Speed CCTV Human Silhouette Fallback
+          if ((!detections || detections.length === 0) && frameCanvas) {
+            try {
+              const cctvHumans = findCCTVHumanSilhouettes(frameCanvas);
+              if (cctvHumans && cctvHumans.length > 0) {
+                detections.push(...cctvHumans);
+              }
+            } catch (eCctv) {}
+          }
         }
 
-        // 5. Fallback to Optical Skin-Tone Tracker (Immediate zero-latency live webcam tracker)
-        if ((!detections || detections.length === 0) && frameCanvas) {
+        // 5. Fallback to Optical Skin-Tone Tracker (For live webcam)
+        if (!isCCTVMode && (!detections || detections.length === 0) && frameCanvas) {
           try {
             const opticalFace = findLiveWebcamHumanFace(frameCanvas);
             if (opticalFace && opticalFace.box) {
@@ -8075,6 +8140,7 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
                 box: opticalFace.box,
                 descriptor: null,
                 score: opticalFace.score,
+                type: 'face',
                 engine: 'Optical Tracker'
               });
             }
@@ -8089,9 +8155,10 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
             const box = d.detection ? d.detection.box : d.box;
             const landmarks = d.landmarks ? (d.landmarks.positions || d.landmarks) : null;
             const desc = d.descriptor || null;
+            const isPerson = d.type === 'person';
 
             // Link with closest TensorFlow.js MediaPipe 468 FaceMesh
-            if (!d.mesh468 && tfjsFaces && tfjsFaces.length > 0) {
+            if (!isPerson && !d.mesh468 && tfjsFaces && tfjsFaces.length > 0) {
               let bestTfMesh = null;
               let bestTfDist = Infinity;
               const bcx = box.x + box.width / 2;
@@ -8114,8 +8181,8 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
               }
             }
 
-            // Reject false positives using gentle landmark check
-            if (!isValidHumanFaceLandmarks(landmarks, box)) {
+            // Reject false positives using gentle landmark check (only for faces)
+            if (!isPerson && !isValidHumanFaceLandmarks(landmarks, box)) {
               continue;
             }
 
@@ -8123,18 +8190,6 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
             let bestDist = 1.0;
             let secondCandidate = null;
             let secondDist = 1.0;
-
-            // Auto-enroll live biometric reference for Wahyu Utomo if database photos were placeholder avatars
-            if (desc && allRegisteredDescriptors.length === 0) {
-              const wagyuFace = cachedAIFaces.find(f => f.name.toLowerCase().includes('wahyu') || f.name.toLowerCase().includes('wagyu')) || cachedAIFaces[0];
-              if (wagyuFace) {
-                allRegisteredDescriptors.push(
-                  new faceapi.LabeledFaceDescriptors(wagyuFace.name, [desc])
-                );
-                faceFeatureCache.set(wagyuFace.id, { face: wagyuFace, descriptor: desc });
-                console.log(`[FaceAPI] 🌟 Live Biometric Auto-Calibration Enrolled for: ${wagyuFace.name}`);
-              }
-            }
 
             if (desc && allRegisteredDescriptors.length > 0) {
               for (const ld of allRegisteredDescriptors) {
@@ -8154,9 +8209,9 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
             }
 
             // High-Precision Surveillance Matching with Dynamic Margin Check
-            const hasMargin = (secondDist - bestDist >= 0.07) || (secondDist >= 0.70);
+            const hasMargin = (secondDist - bestDist >= 0.08) || (secondDist >= 0.65);
             const isMatch = activeTrackedFace ? true : (
-              bestCandidate !== null && desc !== null && (bestDist <= 0.54 || (bestDist <= 0.60 && hasMargin))
+              bestCandidate !== null && desc !== null && (bestDist <= 0.48 || (bestDist <= 0.52 && hasMargin))
             );
             const matchedFaceObj = activeTrackedFace || (isMatch ? cachedAIFaces.find(f => f.name.toLowerCase() === bestCandidate.toLowerCase()) : null);
 
@@ -8171,20 +8226,20 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
               secondDist
             );
 
-            let conf = '78.0';
+            let conf = '88.0';
             let labelName = 'STRANGER';
             let categoryType = 'guest';
 
             if (stab.isMatch && stab.name && stab.name !== 'STRANGER') {
               const effectiveDist = Math.min(bestDist, track.lockedDistance || bestDist);
-              const ratio = Math.max(0, 1 - (effectiveDist / 0.65));
+              const ratio = Math.max(0, 1 - (effectiveDist / 0.52));
               conf = Math.min(99.6, Math.max(88.0, (88.0 + (ratio * 11.6)))).toFixed(1);
               labelName = stab.name.toUpperCase();
               categoryType = stab.category || 'employee';
             } else {
               const rawScore = d.detection ? d.detection.score : (d.score || 0.88);
-              conf = Math.max(76.0, Math.min(95.0, (rawScore * 100))).toFixed(1);
-              labelName = 'STRANGER';
+              conf = Math.max(76.0, Math.min(94.5, (rawScore * 100))).toFixed(1);
+              labelName = isPerson ? 'PENGUNJUNG' : 'STRANGER';
               categoryType = 'guest';
             }
 
@@ -8211,6 +8266,7 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
               name: labelName,
               face: stab.face,
               category: categoryType,
+              type: isPerson ? 'person' : 'face',
               normBox: {
                 x: box.x / frameW,
                 y: box.y / frameH,
@@ -8238,7 +8294,11 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
               faces: results,
               timestamp: Date.now()
             };
+          } else {
+            lastFaceAPIResult = null;
           }
+        } else {
+          lastFaceAPIResult = null;
         }
       } catch (err) {
         console.warn('[FaceAPI] Detection error:', err.message);
@@ -9210,11 +9270,17 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
               }
 
               let targetX, targetY, targetW, targetH;
-              if (lMinX < lMaxX && lMinY < lMaxY) {
+              if (f.type === 'person') {
+                targetX = Math.round(renderBox.x + nb.x * renderBox.width);
+                targetY = Math.round(renderBox.y + nb.y * renderBox.height);
+                targetW = Math.round(nb.width * renderBox.width);
+                targetH = Math.round(nb.height * renderBox.height);
+              } else if (lMinX < lMaxX && lMinY < lMaxY) {
                 const fw = lMaxX - lMinX;
                 const fh = lMaxY - lMinY;
-                const padX = Math.round(fw * 0.08);
-                const padY = Math.round(fh * 0.08);
+                // Snug 4% margin: fits the face contour tightly and responsively
+                const padX = Math.round(fw * 0.04);
+                const padY = Math.round(fh * 0.04);
                 targetX = Math.round(lMinX - padX);
                 targetY = Math.round(lMinY - padY);
                 targetW = Math.round(fw + padX * 2);
@@ -9233,7 +9299,7 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
                 targetY: targetY,
                 targetW: targetW,
                 targetH: targetH,
-                type: 'face',
+                type: f.type || 'face',
                 label: f.name,
                 category: cat,
                 landmarks: scaledLandmarks,
@@ -9290,58 +9356,11 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
 
               return entObj;
             });
-          } else if (isWebcamRunning) {
-            // Immediate real-time webcam fallback (Never leaves webcam empty)
-            const renderBox = getVideoRenderBox(video, canvas.width, canvas.height);
-            const fallbackW = Math.round(renderBox.width * 0.32);
-            const fallbackH = Math.round(fallbackW * 1.25);
-            const fallbackX = Math.round(renderBox.x + (renderBox.width - fallbackW) / 2);
-            const fallbackY = Math.round(renderBox.y + (renderBox.height - fallbackH) * 0.38);
-
-            const wagyuFace = cachedAIFaces.find(f => f.name.toLowerCase().includes('wahyu') || f.name.toLowerCase().includes('wagyu')) || (cachedAIFaces[0] || { name: 'Wahyu Utomo', category: 'vip', role_title: 'Super Admin & Owner' });
-            const fallbackLandmarks17 = extract17BiometricLandmarks(null, fallbackX, fallbackY, fallbackW, fallbackH, null);
-
-            if (activeAIEntities.length === 0) {
-              activeAIEntities = [{
-                x: fallbackX,
-                y: fallbackY,
-                w: fallbackW,
-                h: fallbackH,
-                targetX: fallbackX,
-                targetY: fallbackY,
-                targetW: fallbackW,
-                targetH: fallbackH,
-                type: 'face',
-                label: wagyuFace.name,
-                category: wagyuFace.category || 'vip',
-                confidence: '98.5',
-                face: wagyuFace,
-                firstSeen: now,
-                scanProgress: 35,
-                hasLogged: false,
-                currentLandmarks17: fallbackLandmarks17,
-                targetLandmarks17: fallbackLandmarks17,
-                createdAt: now
-              }];
-            } else {
-              activeAIEntities.forEach(ent => {
-                ent.targetX = fallbackX;
-                ent.targetY = fallbackY;
-                ent.targetW = fallbackW;
-                ent.targetH = fallbackH;
-                ent.targetLandmarks17 = fallbackLandmarks17;
-                if (typeof ent.scanProgress === 'number' && ent.scanProgress < 100) {
-                  const elapsed = now - (ent.firstSeen || (now - 500));
-                  ent.scanProgress = Math.min(100, Math.floor(35 + (elapsed / 1000) * 75));
-                  if (ent.scanProgress >= 100 && !ent.hasLogged) {
-                    ent.hasLogged = true;
-                    triggerAutoLogFace(ent, { x: 0.34, y: 0.25, width: 0.32, height: 0.40 });
-                  }
-                }
-              });
+          } else {
+            // Clean view: No fake boxes in empty space when no face or human is detected
+            if (activeAIEntities.length > 0) {
+              activeAIEntities = [];
             }
-          } else if (lastFaceAPIResult && (now - lastFaceAPIResult.timestamp > 3500)) {
-            activeAIEntities = [];
           }
         } else {
           // Filter manual triggers (auto-expire after 4s)
@@ -9353,18 +9372,20 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
         // =========================================================================
         activeAIEntities.forEach(ent => {
           if (typeof ent.targetX === 'number') {
-            ent.x += (ent.targetX - ent.x) * 0.65;
-            ent.y += (ent.targetY - ent.y) * 0.65;
-            ent.w += (ent.targetW - ent.w) * 0.65;
-            ent.h += (ent.targetH - ent.h) * 0.65;
+            const dist = Math.hypot(ent.targetX - ent.x, ent.targetY - ent.y);
+            const factor = dist > 35 ? 0.85 : 0.65;
+            ent.x += (ent.targetX - ent.x) * factor;
+            ent.y += (ent.targetY - ent.y) * factor;
+            ent.w += (ent.targetW - ent.w) * factor;
+            ent.h += (ent.targetH - ent.h) * factor;
           }
           if (Array.isArray(ent.targetLandmarks17) && Array.isArray(ent.currentLandmarks17)) {
             for (let i = 0; i < ent.currentLandmarks17.length; i++) {
               const cur = ent.currentLandmarks17[i];
               const tgt = ent.targetLandmarks17[i];
               if (cur && tgt) {
-                cur.x += (tgt.x - cur.x) * 0.65;
-                cur.y += (tgt.y - cur.y) * 0.65;
+                cur.x += (tgt.x - cur.x) * 0.70;
+                cur.y += (tgt.y - cur.y) * 0.70;
               }
             }
           }
@@ -9844,7 +9865,129 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
       ctx.restore();
     }
 
+    function drawSurveillancePedestrianReticle(ctx, bx, by, bw, bh, ent) {
+      ctx.save();
+      bx = Math.round(bx);
+      by = Math.round(by);
+      bw = Math.round(bw);
+      bh = Math.round(bh);
+
+      const isVIP = ent.category === 'vip';
+      const isBlacklist = ent.category === 'blacklist';
+      const isKnown = !ent.category || ent.category === 'unknown' || ent.category === 'guest' ? false : true;
+      const reticleColor = isVIP ? '#10b981' : (isBlacklist ? '#ef4444' : '#00f0ff');
+      const reticleGlow = isVIP ? 'rgba(16, 185, 129, 0.7)' : (isBlacklist ? 'rgba(239, 68, 68, 0.7)' : 'rgba(0, 240, 255, 0.7)');
+
+      // Corner bracket arms tailored to human body proportions
+      const armW = Math.min(32, Math.max(14, Math.round(bw * 0.18)));
+      const armH = Math.min(32, Math.max(14, Math.round(bh * 0.12)));
+
+      ctx.strokeStyle = reticleColor;
+      ctx.shadowColor = reticleGlow;
+      ctx.shadowBlur = 14;
+      ctx.lineWidth = 3.5;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+
+      // 4 corners of the surveillance bounding box
+      // Top-Left
+      ctx.beginPath();
+      ctx.moveTo(bx, by + armH);
+      ctx.lineTo(bx, by);
+      ctx.lineTo(bx + armW, by);
+      ctx.stroke();
+
+      // Top-Right
+      ctx.beginPath();
+      ctx.moveTo(bx + bw - armW, by);
+      ctx.lineTo(bx + bw, by);
+      ctx.lineTo(bx + bw, by + armH);
+      ctx.stroke();
+
+      // Bottom-Left
+      ctx.beginPath();
+      ctx.moveTo(bx, by + bh - armH);
+      ctx.lineTo(bx, by + bh);
+      ctx.lineTo(bx + armW, by + bh);
+      ctx.stroke();
+
+      // Bottom-Right
+      ctx.beginPath();
+      ctx.moveTo(bx + bw - armW, by + bh);
+      ctx.lineTo(bx + bw, by + bh);
+      ctx.lineTo(bx + bw, by + bh - armH);
+      ctx.stroke();
+
+      // Subtle Center Targeting Crosshair (Upper Torso / Head)
+      const cx = bx + bw / 2;
+      const cy = by + bh * 0.32;
+      ctx.strokeStyle = 'rgba(0, 240, 255, 0.4)';
+      ctx.lineWidth = 1.2;
+      ctx.setLineDash([3, 3]);
+      ctx.beginPath();
+      ctx.moveTo(cx - 14, cy); ctx.lineTo(cx + 14, cy);
+      ctx.moveTo(cx, cy - 14); ctx.lineTo(cx, cy + 14);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // CCTV Pedestrian Surveillance Tag
+      const isStranger = !isKnown;
+      const displayLabel = isStranger ? 'ORANG' : String(ent.label).toUpperCase();
+      const roleTag = isVIP ? ' [VIP]' : (isBlacklist ? ' [DPO]' : ' (Pengunjung)');
+      const fullTagText = `🚶 ${displayLabel}${roleTag}`;
+      const confStr = ent.confidence ? (String(ent.confidence).includes('%') ? ent.confidence : `${ent.confidence}%`) : '91.8%';
+      const pillColor = isStranger ? '#00f0ff' : (isVIP ? '#10b981' : '#ef4444');
+
+      ctx.font = '800 12px "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, sans-serif';
+      const textW = ctx.measureText(fullTagText).width;
+      ctx.font = '800 11px monospace';
+      const confW = ctx.measureText(confStr).width;
+
+      const tagH = 26;
+      const tagW = Math.max(bw, textW + confW + 36);
+      const canvasW = ctx.canvas ? ctx.canvas.width : 640;
+      const tagX = Math.max(4, Math.min(canvasW - tagW - 4, bx + (bw - tagW) / 2));
+      let tagY = by - tagH - 6;
+      if (tagY < 4) tagY = by + bh + 6;
+
+      // Dark translucent cyber tag pill
+      ctx.fillStyle = 'rgba(2, 6, 23, 0.94)';
+      ctx.strokeStyle = reticleColor;
+      ctx.lineWidth = 1.6;
+      ctx.shadowBlur = 10;
+      ctx.beginPath();
+      ctx.roundRect ? ctx.roundRect(tagX, tagY, tagW, tagH, 5) : ctx.rect(tagX, tagY, tagW, tagH);
+      ctx.fill();
+      ctx.stroke();
+
+      // Beacon Dot
+      ctx.shadowBlur = 0;
+      ctx.fillStyle = pillColor;
+      ctx.beginPath();
+      ctx.arc(tagX + 11, tagY + tagH / 2, 3.8, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Label Text
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '800 11.5px "Plus Jakarta Sans", sans-serif';
+      ctx.fillText(fullTagText, tagX + 22, tagY + 17);
+
+      // Confidence Pill
+      ctx.fillStyle = pillColor;
+      ctx.font = '800 11px monospace';
+      ctx.textAlign = 'right';
+      ctx.fillText(confStr, tagX + tagW - 8, tagY + 17);
+      ctx.textAlign = 'left';
+
+      ctx.restore();
+    }
+
     function drawEntityBracket(ctx, ent) {
+      if (ent.type === 'person') {
+        drawSurveillancePedestrianReticle(ctx, ent.x, ent.y, ent.w, ent.h, ent);
+        return;
+      }
+
       let { x, y, w, h, label, category, confidence } = ent;
       const isBlacklist = category === 'blacklist';
       const isVIP = category === 'vip';
@@ -9853,74 +9996,27 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
       // 1. Draw Biometric Facial Wireframe Mesh & Glowing White Nodes
       drawBiometricFacialMesh(ctx, x, y, w, h, ent, isUnknown, isVIP, isBlacklist);
 
-      // Re-derive dynamic bounding box directly from active landmarks if available to guarantee 100% synchronization
-      let bx = x, by = y, bw = w, bh = h;
-      if (Array.isArray(ent.currentLandmarks17) && ent.currentLandmarks17.length === 17) {
-        let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
-        for (const pt of ent.currentLandmarks17) {
-          if (pt && typeof pt.x === 'number' && typeof pt.y === 'number') {
-            if (pt.x < minX) minX = pt.x;
-            if (pt.x > maxX) maxX = pt.x;
-            if (pt.y < minY) minY = pt.y;
-            if (pt.y > maxY) maxY = pt.y;
-          }
-        }
-        if (minX < maxX && minY < maxY) {
-          const fw = maxX - minX;
-          const fh = maxY - minY;
-          const padX = Math.round(fw * 0.08);
-          const padY = Math.round(fh * 0.08);
-          bx = Math.round(minX - padX);
-          by = Math.round(minY - padY);
-          bw = Math.round(fw + padX * 2);
-          bh = Math.round(fh + padY * 2);
-        }
-      } else {
-        const pad = Math.round(w * 0.06);
-        bx = Math.round(x - pad);
-        by = Math.round(y - pad);
-        bw = Math.round(w + pad * 2);
-        bh = Math.round(h + pad * 2);
-      }
+      // Snug face box directly wrapping face contours
+      let bx = Math.round(x);
+      let by = Math.round(y);
+      let bw = Math.round(w);
+      let bh = Math.round(h);
 
       const scanProgress = typeof ent.scanProgress === 'number' ? Math.min(100, Math.max(0, Math.round(ent.scanProgress))) : 100;
       const isScanning = scanProgress < 100;
 
       ctx.save();
 
-      // 2. Thick Corner Brackets ("Kotak-kotak" Faithful to Gambar 2)
+      // 2. Corner Brackets: Snug, fits face closely without oversized outer clutter
       let bracketColor = isScanning ? '#00f0ff' : (isBlacklist ? '#ef4444' : (isUnknown ? '#ffd700' : '#ccff00'));
       let bracketGlow = isScanning ? 'rgba(0, 240, 255, 0.95)' : (isBlacklist ? 'rgba(239, 68, 68, 0.90)' : (isUnknown ? 'rgba(255, 215, 0, 0.90)' : 'rgba(204, 255, 0, 0.95)'));
-      const armLen = Math.min(48, Math.max(20, Math.round(bw * 0.24)));
-
-      // Outer futuristic sci-fi circuit trace accents
-      const traceColor = isScanning ? 'rgba(0, 240, 255, 0.40)' : (isBlacklist ? 'rgba(239, 68, 68, 0.35)' : (isUnknown ? 'rgba(255, 215, 0, 0.40)' : 'rgba(204, 255, 0, 0.40)'));
-      ctx.strokeStyle = traceColor;
-      ctx.lineWidth = 1.6;
-      ctx.beginPath();
-      // Top-Left corner trace
-      ctx.moveTo(bx - 6, by - 6); ctx.lineTo(bx - 16, by - 16); ctx.lineTo(bx - 26, by - 16);
-      // Top-Right corner trace
-      ctx.moveTo(bx + bw + 6, by - 6); ctx.lineTo(bx + bw + 16, by - 16); ctx.lineTo(bx + bw + 26, by - 16);
-      // Bottom-Left corner trace
-      ctx.moveTo(bx - 6, by + bh + 6); ctx.lineTo(bx - 16, by + bh + 16); ctx.lineTo(bx - 26, by + bh + 16);
-      // Bottom-Right corner trace
-      ctx.moveTo(bx + bw + 6, by + bh + 6); ctx.lineTo(bx + bw + 16, by + bh + 16); ctx.lineTo(bx + bw + 26, by + bh + 16);
-      ctx.stroke();
-
-      // Tiny terminal dot on each trace
-      ctx.fillStyle = traceColor;
-      [[bx - 26, by - 16], [bx + bw + 26, by - 16], [bx - 26, by + bh + 16], [bx + bw + 26, by + bh + 16]].forEach(([tx, ty]) => {
-        ctx.beginPath();
-        ctx.arc(tx, ty, 2.5, 0, Math.PI * 2);
-        ctx.fill();
-      });
+      const armLen = Math.min(24, Math.max(12, Math.round(bw * 0.16)));
 
       // Main Bold L-Corner Brackets
       ctx.strokeStyle = bracketColor;
       ctx.shadowColor = bracketGlow;
-      ctx.shadowBlur = 18;
-      ctx.lineWidth = 5.0;
+      ctx.shadowBlur = 14;
+      ctx.lineWidth = 3.8;
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
 
@@ -9961,8 +10057,8 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
         ctx.shadowColor = '#00f0ff';
         ctx.shadowBlur = 10;
         ctx.beginPath();
-        ctx.moveTo(bx + 8, scanY);
-        ctx.lineTo(bx + bw - 8, scanY);
+        ctx.moveTo(bx + 4, scanY);
+        ctx.lineTo(bx + bw - 4, scanY);
         ctx.stroke();
         ctx.restore();
       }
@@ -9976,7 +10072,7 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
       } else {
         const isStranger = isUnknown;
         const displayLabel = isStranger ? 'STRANGER' : String(label).toUpperCase();
-        const roleTag = isVIP ? ' [VIP]' : (isBlacklist ? ' [DPO]' : (isStranger ? ' (Pengunjung)' : ' [WHITELIST]'));
+        const roleTag = isVIP ? ' [VIP]' : (isBlacklist ? ' [DPO]' : (isStranger ? ' (Pengunjung)' : ' [TERDAFTAR]'));
         fullTagText = `${displayLabel}${roleTag}`;
         confStr = (confidence && String(confidence).includes('%')) ? confidence : `${confidence || 98.4}%`;
         pillColor = isStranger ? '#ffd700' : (isBlacklist ? '#ef4444' : '#ccff00');
@@ -9988,7 +10084,7 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
       const confW = ctx.measureText(confStr).width;
 
       const tagH = 28;
-      const tagW = Math.max(bw, textW + confW + 42);
+      const tagW = Math.max(bw, textW + confW + 36);
       const canvasW = ctx.canvas ? ctx.canvas.width : 640;
       const tagX = Math.max(4, Math.min(canvasW - tagW - 4, bx + (bw - tagW) / 2));
       let tagY = by - tagH - 8;
@@ -10200,17 +10296,20 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
 
     async function detectSalientSubjectInFrame(frameCanvas) {
       if (!frameCanvas) return;
-      const w = frameCanvas.width;
-      const h = frameCanvas.height;
-      const boxW = Math.round(w * 0.28);
-      const boxH = Math.round(h * 0.42);
-      const boxX = Math.round((w - boxW) / 2);
-      const boxY = Math.round(h * 0.22);
+      const targetSelector = document.getElementById('ai-target-face-selector');
+      const selectedVal = targetSelector ? targetSelector.value : 'auto';
+      let name = 'STRANGER';
+      let cat = 'guest';
+      let role = 'Pengunjung';
 
-      const wagyu = cachedAIFaces.find(f => f.name.toLowerCase().includes('wagyu')) || cachedAIFaces[0];
-      const name = wagyu ? wagyu.name : 'WAGYU';
-      const cat = wagyu ? (wagyu.category || 'employee') : 'employee';
-      const role = wagyu ? (wagyu.role_title || 'Staff') : 'Staff';
+      if (selectedVal && selectedVal !== 'auto') {
+        const found = cachedAIFaces.find(f => String(f.id) === String(selectedVal) || f.name.toLowerCase() === selectedVal.toLowerCase());
+        if (found) {
+          name = found.name;
+          cat = found.category || 'employee';
+          role = found.role_title || 'Staff';
+        }
+      }
 
       simulateCustomFaceDetection(name, cat, role);
     }
@@ -11158,13 +11257,14 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
 
         const nameInput = document.getElementById('face-input-name');
         if (nameInput) {
-          nameInput.value = 'Wahyu Utomo';
+          nameInput.value = '';
+          nameInput.placeholder = 'Ketik Nama Lengkap';
           setTimeout(() => nameInput.focus(), 350);
         }
         const catInput = document.getElementById('face-input-category');
-        if (catInput) catInput.value = 'vip';
+        if (catInput) catInput.value = 'guest';
         const roleInput = document.getElementById('face-input-role');
-        if (roleInput) roleInput.value = 'Super Admin & Owner';
+        if (roleInput) roleInput.value = 'Pengunjung';
       }
     }
 
