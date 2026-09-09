@@ -7630,12 +7630,11 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
       track.frameCount++;
 
       // 2. If track is ALREADY locked to an established person (e.g. sitting at desk):
-      // Maintain identity smoothly when person looks down at desk, types, or turns head
+      // Maintain identity smoothly, but drop quickly if another person sits down
       if (track.lockedPerson) {
-        // Only drop lock if distance degrades beyond 0.68 for 25 consecutive frames (approx 4-5s of looking completely away)
-        if (currentDistance > 0.68) {
+        if (currentDistance > 0.58) {
           track.candidateVotes['mismatch'] = (track.candidateVotes['mismatch'] || 0) + 1;
-          if (track.candidateVotes['mismatch'] >= 25) {
+          if (track.candidateVotes['mismatch'] >= 4) {
             track.lockedPerson = null;
             track.candidateVotes = {};
           }
@@ -7654,13 +7653,12 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
       }
 
       // 3. Track not yet locked: Lock when verified match occurs
-      // Direct match if distance <= 0.58; or if distance <= 0.64 and margin against 2nd candidate >= 0.07
+      // Direct match if distance <= 0.52; or if distance <= 0.56 and margin against 2nd candidate >= 0.07
       const hasMargin = (secondDistance - currentDistance >= 0.07) || (secondDistance >= 0.70);
-      const isQualified = candidateMatch && candidateFace && (currentDistance <= 0.58 || (currentDistance <= 0.64 && hasMargin));
+      const isQualified = candidateMatch && candidateFace && (currentDistance <= 0.52 || (currentDistance <= 0.56 && hasMargin));
       if (isQualified) {
         track.candidateVotes[candidateMatch] = (track.candidateVotes[candidateMatch] || 0) + 1;
-        // Lock identity immediately on first qualified match to prevent lag
-        if (track.candidateVotes[candidateMatch] >= 1) {
+        if (track.candidateVotes[candidateMatch] >= 2) {
           track.lockedPerson = candidateFace;
           track.lockedDistance = currentDistance;
           return {
@@ -9060,46 +9058,7 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
                 fetch('../api/ai_analytics.php', { method: 'POST', body: fd }).then(() => loadAIData(true)).catch(e => {});
               });
             }
-          } else if (isWebcamRunning || activeTrackedFace) {
-            // Instant continuous tracking for live webcam & active target (100% Guaranteed Visible)
-            const trackedLabel = activeTrackedFace ? activeTrackedFace.name : (cachedAIFaces[0] ? cachedAIFaces[0].name : 'WAGYU');
-            const trackedCat = activeTrackedFace ? (activeTrackedFace.category || 'employee') : 'employee';
-            const renderBox = getVideoRenderBox(video, canvas.width, canvas.height);
-
-            const targetW = Math.round(renderBox.width * 0.28);
-            const targetH = Math.round(renderBox.height * 0.42);
-            const targetX = Math.round(renderBox.x + (renderBox.width - targetW) / 2);
-            const targetY = Math.round(renderBox.y + renderBox.height * 0.22);
-            const lm17 = extract17BiometricLandmarks(null, targetX, targetY, targetW, targetH);
-
-            if (activeAIEntities.length === 0) {
-              activeAIEntities = [{
-                x: targetX,
-                y: targetY,
-                w: targetW,
-                h: targetH,
-                targetX: targetX,
-                targetY: targetY,
-                targetW: targetW,
-                targetH: targetH,
-                currentLandmarks17: lm17.map(p => ({ ...p })),
-                targetLandmarks17: lm17,
-                type: 'face',
-                label: trackedLabel,
-                category: trackedCat,
-                confidence: '98.2',
-                createdAt: now
-              }];
-            } else {
-              activeAIEntities[0].targetX = targetX;
-              activeAIEntities[0].targetY = targetY;
-              activeAIEntities[0].targetW = targetW;
-              activeAIEntities[0].targetH = targetH;
-              activeAIEntities[0].label = trackedLabel;
-              activeAIEntities[0].category = trackedCat;
-              activeAIEntities[0].targetLandmarks17 = lm17;
-            }
-          } else if (lastFaceAPIResult && (now - lastFaceAPIResult.timestamp > 8000)) {
+          } else if (lastFaceAPIResult && (now - lastFaceAPIResult.timestamp > 3000)) {
             activeAIEntities = [];
           }
         } else {
@@ -9947,11 +9906,10 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
 
       currentAICamera = { id: 'webcam', title: 'LIVE WEBCAM LAPTOP' };
 
-      const wagyu = cachedAIFaces.find(f => f.name.toLowerCase().includes('wagyu')) || cachedAIFaces[0];
-      if (wagyu) {
-        activeTrackedFace = wagyu;
-        const targetSelect = document.getElementById('ai-target-face-selector');
-        if (targetSelect) targetSelect.value = wagyu.id;
+      // In Auto Detect mode, keep activeTrackedFace null for pure real-time recognition
+      const targetSelect = document.getElementById('ai-target-face-selector');
+      if (targetSelect && targetSelect.value === 'auto') {
+        activeTrackedFace = null;
       }
 
       try {
@@ -9966,16 +9924,9 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
         await video.play();
 
         const statusLabel = document.getElementById('ai-active-mode-label');
-        if (statusLabel) statusLabel.innerHTML = '<span class="text-emerald" style="color: #34d399;"><i class="fas fa-video mr-1"></i> Live Webcam Scanner Aktif (WAGYU)</span>';
+        if (statusLabel) statusLabel.innerHTML = '<span class="text-emerald" style="color: #34d399;"><i class="fas fa-video mr-1"></i> Live Webcam Scanner Aktif (Auto Detect)</span>';
 
         initAIHUDCanvas();
-
-        setTimeout(() => {
-          if (activeTrackedFace) {
-            simulateCustomFaceDetection(activeTrackedFace.name, activeTrackedFace.category, activeTrackedFace.role_title);
-          }
-        }, 500);
-
       } catch (err) {
         console.error('Webcam error:', err);
         alert('Gagal mengakses kamera laptop/HP. Pastikan browser diizinkan mengakses kamera.');
@@ -10074,8 +10025,6 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
       if (camId === 'webcam') {
         if (placeholder) placeholder.style.display = 'none';
         currentAICamera = { id: 'webcam', title: 'Live Webcam Laptop' };
-        const wagyu = cachedAIFaces.find(f => f.name.toLowerCase().includes('wagyu'));
-        if (wagyu) selectAITargetFace(wagyu.id);
         startAIWebcamLive();
       } else {
         if (aiMainWebcamStream) {
