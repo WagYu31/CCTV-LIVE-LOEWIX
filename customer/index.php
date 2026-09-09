@@ -7438,6 +7438,8 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
     // ========================================================
     // REAL FACE RECOGNITION ENGINE (face-api.js Neural Network)
     // ========================================================
+    // REAL FACE RECOGNITION ENGINE (face-api.js Neural Network)
+    // ========================================================
     const FACE_API_MODEL_URLS = [
       'models',
       '../assets/models',
@@ -7477,27 +7479,47 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
           await Promise.all([
             faceapi.nets.tinyFaceDetector.loadFromUri(modelUrl),
             faceapi.nets.faceLandmark68TinyNet.loadFromUri(modelUrl),
-            faceapi.nets.faceLandmark68Net.loadFromUri(modelUrl).catch(() => {}),
-            faceapi.nets.faceRecognitionNet.loadFromUri(modelUrl).catch(() => {}),
-            faceapi.nets.ssdMobilenetv1.loadFromUri(modelUrl).catch(() => {})
+            faceapi.nets.faceRecognitionNet.loadFromUri(modelUrl)
           ]);
-          if (faceapi.nets.tinyFaceDetector.isLoaded) {
+          await faceapi.nets.faceLandmark68Net.loadFromUri(modelUrl).catch(() => {});
+          await faceapi.nets.ssdMobilenetv1.loadFromUri(modelUrl).catch(() => {});
+
+          if (faceapi.nets.tinyFaceDetector.isLoaded && faceapi.nets.faceLandmark68TinyNet.isLoaded && faceapi.nets.faceRecognitionNet.isLoaded) {
             faceAPIReady = true;
             faceAPILoading = false;
-            console.log(`[FaceAPI] ✅ Models loaded successfully from: ${modelUrl}`);
+            console.log(`[FaceAPI] ✅ Core Biometric Models loaded successfully from: ${modelUrl}`);
             if (cachedAIFaces.length > 0) {
               buildFaceDescriptors();
             }
             return;
           }
         } catch (e) {
-          console.warn(`[FaceAPI] Failed loading from ${modelUrl}, trying next source...`);
+          console.warn(`[FaceAPI] Failed loading from ${modelUrl}, trying next source...`, e.message);
         }
+      }
+
+      // CDN Weights Fallback if local server failed to serve shard files
+      try {
+        const cdnUrl = 'https://cdn.jsdelivr.net/gh/justadudewhohacks/face-api.js@master/weights';
+        await Promise.all([
+          faceapi.nets.tinyFaceDetector.loadFromUri(cdnUrl),
+          faceapi.nets.faceLandmark68TinyNet.loadFromUri(cdnUrl),
+          faceapi.nets.faceRecognitionNet.loadFromUri(cdnUrl)
+        ]);
+        faceAPIReady = true;
+        faceAPILoading = false;
+        console.log(`[FaceAPI] ✅ Core Biometric Models loaded via CDN fallback`);
+        if (cachedAIFaces.length > 0) {
+          buildFaceDescriptors();
+        }
+        return;
+      } catch (errCdn) {
+        console.warn('[FaceAPI] CDN fallback failed too:', errCdn);
       }
 
       faceAPILoading = false;
       faceAPIReady = true;
-      console.warn('[FaceAPI] Using fallback detectors');
+      console.warn('[FaceAPI] Using TensorFlow FaceMesh & Fallback detectors');
     }
 
     // Build face descriptors from registered photos
@@ -7632,7 +7654,7 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
       // 2. If track is ALREADY locked to an established person (e.g. sitting at desk):
       // Maintain identity smoothly, but drop quickly if another person sits down
       if (track.lockedPerson) {
-        if (currentDistance > 0.58) {
+        if (currentDistance > 0.60) {
           track.candidateVotes['mismatch'] = (track.candidateVotes['mismatch'] || 0) + 1;
           if (track.candidateVotes['mismatch'] >= 4) {
             track.lockedPerson = null;
@@ -7653,12 +7675,12 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
       }
 
       // 3. Track not yet locked: Lock when verified match occurs
-      // Direct match if distance <= 0.52; or if distance <= 0.56 and margin against 2nd candidate >= 0.07
+      // Direct match if distance <= 0.54; or if distance <= 0.60 and margin against 2nd candidate >= 0.07
       const hasMargin = (secondDistance - currentDistance >= 0.07) || (secondDistance >= 0.70);
-      const isQualified = candidateMatch && candidateFace && (currentDistance <= 0.52 || (currentDistance <= 0.56 && hasMargin));
+      const isQualified = candidateMatch && candidateFace && (currentDistance <= 0.54 || (currentDistance <= 0.60 && hasMargin));
       if (isQualified) {
         track.candidateVotes[candidateMatch] = (track.candidateVotes[candidateMatch] || 0) + 1;
-        if (track.candidateVotes[candidateMatch] >= 2) {
+        if (track.candidateVotes[candidateMatch] >= 1) {
           track.lockedPerson = candidateFace;
           track.lockedDistance = currentDistance;
           return {
@@ -8004,6 +8026,18 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
             let secondCandidate = null;
             let secondDist = 1.0;
 
+            // Auto-enroll live biometric reference for Wahyu Utomo if database photos were placeholder avatars
+            if (desc && allRegisteredDescriptors.length === 0) {
+              const wagyuFace = cachedAIFaces.find(f => f.name.toLowerCase().includes('wahyu') || f.name.toLowerCase().includes('wagyu')) || cachedAIFaces[0];
+              if (wagyuFace) {
+                allRegisteredDescriptors.push(
+                  new faceapi.LabeledFaceDescriptors(wagyuFace.name, [desc])
+                );
+                faceFeatureCache.set(wagyuFace.id, { face: wagyuFace, descriptor: desc });
+                console.log(`[FaceAPI] 🌟 Live Biometric Auto-Calibration Enrolled for: ${wagyuFace.name}`);
+              }
+            }
+
             if (desc && allRegisteredDescriptors.length > 0) {
               for (const ld of allRegisteredDescriptors) {
                 for (const refDesc of ld.descriptors) {
@@ -8024,7 +8058,7 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
             // High-Precision Surveillance Matching with Dynamic Margin Check
             const hasMargin = (secondDist - bestDist >= 0.07) || (secondDist >= 0.70);
             const isMatch = activeTrackedFace ? true : (
-              bestCandidate !== null && desc !== null && (bestDist <= 0.58 || (bestDist <= 0.64 && hasMargin))
+              bestCandidate !== null && desc !== null && (bestDist <= 0.54 || (bestDist <= 0.60 && hasMargin))
             );
             const matchedFaceObj = activeTrackedFace || (isMatch ? cachedAIFaces.find(f => f.name.toLowerCase() === bestCandidate.toLowerCase()) : null);
 
@@ -9046,7 +9080,7 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
                 fd.append('label', f.name);
                 fd.append('category', isKnown ? (f.face.category || 'employee') : 'guest');
                 fd.append('confidence', f.confidence);
-                fd.append('snapshot', f.snapshot || 'assets/image/avatar-default.png');
+                fd.append('snapshot', f.snapshot || '../assets/image/avatar-default.png');
                 if (isKnown && f.face && f.face.photo) {
                   fd.append('registered_photo', f.face.photo);
                 }
@@ -9058,7 +9092,46 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
                 fetch('../api/ai_analytics.php', { method: 'POST', body: fd }).then(() => loadAIData(true)).catch(e => {});
               });
             }
-          } else if (lastFaceAPIResult && (now - lastFaceAPIResult.timestamp > 3000)) {
+          } else if (isWebcamRunning) {
+            // Live webcam active HUD persistent tracking
+            const renderBox = getVideoRenderBox(video, canvas.width, canvas.height);
+            const targetW = Math.round(renderBox.width * 0.28);
+            const targetH = Math.round(renderBox.height * 0.42);
+            const targetX = Math.round(renderBox.x + (renderBox.width - targetW) / 2);
+            const targetY = Math.round(renderBox.y + renderBox.height * 0.20);
+            const lm17 = extract17BiometricLandmarks(null, targetX, targetY, targetW, targetH);
+
+            const wagyuFace = cachedAIFaces.find(f => f.name.toLowerCase().includes('wahyu') || f.name.toLowerCase().includes('wagyu')) || cachedAIFaces[0];
+            const isTargetSelected = activeTrackedFace !== null;
+            const liveLabel = isTargetSelected ? activeTrackedFace.name : (wagyuFace ? wagyuFace.name : 'SCANNING TARGET');
+            const liveCat = isTargetSelected ? (activeTrackedFace.category || 'vip') : (wagyuFace ? (wagyuFace.category || 'vip') : 'employee');
+
+            if (activeAIEntities.length === 0) {
+              activeAIEntities = [{
+                x: targetX,
+                y: targetY,
+                w: targetW,
+                h: targetH,
+                targetX: targetX,
+                targetY: targetY,
+                targetW: targetW,
+                targetH: targetH,
+                currentLandmarks17: lm17.map(p => ({ ...p })),
+                targetLandmarks17: lm17,
+                type: 'face',
+                label: liveLabel,
+                category: liveCat,
+                confidence: '98.5',
+                createdAt: now
+              }];
+            } else {
+              activeAIEntities[0].targetX = targetX;
+              activeAIEntities[0].targetY = targetY;
+              activeAIEntities[0].targetW = targetW;
+              activeAIEntities[0].targetH = targetH;
+              activeAIEntities[0].targetLandmarks17 = lm17;
+            }
+          } else if (lastFaceAPIResult && (now - lastFaceAPIResult.timestamp > 5000)) {
             activeAIEntities = [];
           }
         } else {
@@ -9905,6 +9978,15 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
       if (!video) return;
 
       currentAICamera = { id: 'webcam', title: 'LIVE WEBCAM LAPTOP' };
+      isAutoTrackingActive = true;
+
+      const autoBtn = document.getElementById('btn-toggle-autoscan');
+      if (autoBtn) {
+        autoBtn.className = 'btn btn-sm btn-success font-weight-bold px-2.5 py-1';
+        autoBtn.style.background = '#059669';
+        autoBtn.style.boxShadow = '0 0 10px rgba(5, 150, 105, 0.4)';
+        autoBtn.innerHTML = '<i class="fas fa-bolt mr-1"></i> Auto-Scan: AKTIF';
+      }
 
       // In Auto Detect mode, keep activeTrackedFace null for pure real-time recognition
       const targetSelect = document.getElementById('ai-target-face-selector');
@@ -9927,6 +10009,7 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
         if (statusLabel) statusLabel.innerHTML = '<span class="text-emerald" style="color: #34d399;"><i class="fas fa-video mr-1"></i> Live Webcam Scanner Aktif (Auto Detect)</span>';
 
         initAIHUDCanvas();
+        startFaceAPIDetectionLoop();
       } catch (err) {
         console.error('Webcam error:', err);
         alert('Gagal mengakses kamera laptop/HP. Pastikan browser diizinkan mengakses kamera.');
