@@ -22,7 +22,19 @@ from ai_engine.pipeline_small_face import pipeline
 from ai_engine.database import init_db, register_identity
 from ai_engine.vector_db_faiss import vector_db
 
-TEST_IMAGE_PATH = "/Users/wagyua5/.gemini/antigravity-ide/brain/67216c14-cc99-470d-b507-a24b4d5cc5b8/.user_uploaded/media_1789113911917.jpg"
+TEST_CANDIDATES = [
+    PROJECT_ROOT / "assets" / "uploads" / "cam02_showroom_sample.jpg",
+    PROJECT_ROOT / "assets" / "uploads" / "cam02_ai_detected.jpg",
+    PROJECT_ROOT / "assets" / "image" / "snapshots" / "cam_5001.jpg",
+    Path("/Users/wagyua5/.gemini/antigravity-ide/brain/67216c14-cc99-470d-b507-a24b4d5cc5b8/.user_uploaded/media_1789113911917.jpg")
+]
+
+TEST_IMAGE_PATH = None
+for p in TEST_CANDIDATES:
+    if os.path.exists(str(p)):
+        TEST_IMAGE_PATH = str(p)
+        break
+
 OUTPUT_IMAGE_PATH = PROJECT_ROOT / "assets" / "uploads" / "cam02_ai_detected.jpg"
 
 
@@ -31,8 +43,8 @@ def run_field_test():
     print("🔬 LOEWIX CCTV AI VISION — FIELD TEST: CAM02 SHOWROOM FEED")
     print("=" * 65)
 
-    if not os.path.exists(TEST_IMAGE_PATH):
-        print(f"❌ Test image not found at: {TEST_IMAGE_PATH}")
+    if not TEST_IMAGE_PATH or not os.path.exists(TEST_IMAGE_PATH):
+        print("❌ Test image not found in assets/uploads/ or assets/image/")
         return
 
     # 1. Initialize Database & Register a Sample Staff Member for testing
