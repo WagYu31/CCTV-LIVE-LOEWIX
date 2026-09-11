@@ -1979,9 +1979,9 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
               <!-- Canvas for AI Bounding Box Rendering -->
               <canvas id="ai-hud-canvas" class="position-absolute" style="top: 0; left: 0; width: 100%; height: 100%; z-index: 20; pointer-events: none; transition: transform 0.15s ease-out; transform-origin: center center;"></canvas>
 
-              <!-- HUD Live Status Pill with TensorFlow.org Engine Badge -->
+              <!-- HUD Live Status Pill with TensorFlow.org / DeepFace Engine Badge -->
               <div class="position-absolute" style="top: 14px; left: 14px; background: rgba(15, 23, 42, 0.88); backdrop-filter: blur(8px); border: 1.5px solid rgba(56, 189, 248, 0.45); border-radius: 8px; padding: 5px 12px; font-size: 11px; color: #38bdf8; z-index: 25; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.55);">
-                <span class="badge" style="background: rgba(245, 158, 11, 0.22); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.5); font-size: 9.5px; font-weight: 700; padding: 2px 6px; letter-spacing: 0.5px; border-radius: 4px;">
+                <span class="badge" id="ai-engine-badge" style="background: rgba(245, 158, 11, 0.22); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.5); font-size: 9.5px; font-weight: 700; padding: 2px 6px; letter-spacing: 0.5px; border-radius: 4px;">
                   <i class="fab fa-google mr-1"></i> TENSORFLOW.ORG
                 </span>
                 <span id="ai-hud-status-text" style="font-weight: 600; letter-spacing: 0.3px;">AI SCANNER: 468 3D FACEMESH</span>
@@ -7461,6 +7461,182 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
     }
 
     // ========================================================
+    // DEEPFACE RECOGNITION ENGINE (Python Backend — serengil/deepface)
+    // High-accuracy face recognition using ArcFace model via local API server
+    // ========================================================
+    function getDeepFaceUrl(endpoint) {
+      if (window.location.protocol === 'https:' || (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1')) {
+        return `../api/deepface_proxy.php?endpoint=${encodeURIComponent(endpoint)}`;
+      }
+      return `http://localhost:5050${endpoint}`;
+    }
+
+    let deepfaceAvailable = false;
+    let deepfaceChecking = false;
+    let deepfaceLastCheck = 0;
+    const DEEPFACE_CHECK_INTERVAL = 10000; // Re-check every 10s if offline
+    const DEEPFACE_THROTTLE_MS = 500;      // Min interval between DeepFace calls per face
+    let deepfaceLastCallTime = 0;
+    let deepfaceCallInFlight = false;
+
+    // DeepFace result cache: key = spatial track ID, value = { identity, confidence, age, gender, emotion, timestamp }
+    const deepfaceResultCache = new Map();
+    const DEEPFACE_CACHE_TTL = 3000; // Cache results for 3 seconds
+
+    // Check if DeepFace server is online
+    async function checkDeepFaceServer() {
+      if (deepfaceChecking) return deepfaceAvailable;
+      const now = Date.now();
+      if (now - deepfaceLastCheck < DEEPFACE_CHECK_INTERVAL && deepfaceLastCheck > 0) {
+        return deepfaceAvailable;
+      }
+      deepfaceChecking = true;
+      deepfaceLastCheck = now;
+
+      try {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 3500);
+        const url = getDeepFaceUrl('/api/deepface/health');
+        const res = await fetch(url, {
+          signal: controller.signal,
+          cache: 'no-store'
+        });
+        clearTimeout(timeout);
+
+        if (res.ok) {
+          const data = await res.json();
+          if (data.status === 'online') {
+            if (!deepfaceAvailable) {
+              console.log(`[DeepFace] ✅ Server connected — Model: ${data.model}, Detector: ${data.detector}, DB: ${data.registered_identities} identities`);
+            }
+            deepfaceAvailable = true;
+
+            // Update HUD status pill dynamically
+            const badge = document.getElementById('ai-engine-badge') || document.querySelector('.badge i.fa-google')?.parentElement;
+            if (badge) {
+              badge.innerHTML = '<i class="fas fa-microchip mr-1"></i> DEEPFACE ARCFACE';
+              badge.style.background = 'linear-gradient(135deg, #06b6d4, #0284c7)';
+              badge.style.color = '#ffffff';
+              badge.style.border = '1px solid #38bdf8';
+            }
+            const statusText = document.getElementById('ai-hud-status-text');
+            if (statusText) {
+              statusText.textContent = `AI SCANNER: DEEPFACE ARCFACE + FAISS ACTIVE (${data.registered_identities || 0} ID)`;
+            }
+          } else {
+            deepfaceAvailable = false;
+          }
+        } else {
+          deepfaceAvailable = false;
+        }
+      } catch (e) {
+        if (deepfaceAvailable) {
+          console.warn('[DeepFace] ⚠️ Server disconnected, falling back to face-api.js');
+        }
+        deepfaceAvailable = false;
+      } finally {
+        deepfaceChecking = false;
+      }
+      return deepfaceAvailable;
+    }
+
+    // Create a base64 JPEG crop of a detected face from the frame canvas
+    function createDeepFaceCrop(frameCanvas, box, frameW, frameH) {
+      try {
+        const padX = Math.round(box.width * 0.25);
+        const padY = Math.round(box.height * 0.25);
+        const cx = Math.max(0, Math.round(box.x - padX));
+        const cy = Math.max(0, Math.round(box.y - padY));
+        const cw = Math.min(frameW - cx, Math.round(box.width + padX * 2));
+        const ch = Math.min(frameH - cy, Math.round(box.height + padY * 2));
+
+        if (cw < 8 || ch < 8) return null;
+
+        const cropCanvas = document.createElement('canvas');
+        const targetSize = 224;
+        cropCanvas.width = targetSize;
+        cropCanvas.height = targetSize;
+        const ctx = cropCanvas.getContext('2d');
+        ctx.drawImage(frameCanvas, cx, cy, cw, ch, 0, 0, targetSize, targetSize);
+
+        return cropCanvas.toDataURL('image/jpeg', 0.85);
+      } catch (e) {
+        return null;
+      }
+    }
+
+    // Call DeepFace /find endpoint with a cropped face image
+    async function callDeepFaceFind(base64Crop, trackId) {
+      if (!deepfaceAvailable || deepfaceCallInFlight) return null;
+
+      const now = Date.now();
+      if (now - deepfaceLastCallTime < DEEPFACE_THROTTLE_MS) return null;
+
+      const cached = deepfaceResultCache.get(trackId);
+      if (cached && (now - cached.timestamp < DEEPFACE_CACHE_TTL)) {
+        return cached;
+      }
+
+      deepfaceCallInFlight = true;
+      deepfaceLastCallTime = now;
+
+      try {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 4500);
+
+        const url = getDeepFaceUrl('/api/deepface/find');
+        const res = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            img: base64Crop,
+            analyze: true,
+            threshold: 0
+          }),
+          signal: controller.signal
+        });
+        clearTimeout(timeout);
+
+        if (res.ok) {
+          const data = await res.json();
+          if (data.success) {
+            const result = {
+              identity: data.identity || 'STRANGER',
+              distance: data.distance || 1.0,
+              confidence: data.confidence || 0,
+              age: data.age || null,
+              gender: data.gender || null,
+              emotion: data.dominant_emotion || null,
+              emotionScores: data.emotion || {},
+              model: data.model || 'ArcFace',
+              metric: data.metric || 'cosine',
+              threshold: data.threshold || 0.68,
+              timestamp: Date.now(),
+              source: 'deepface'
+            };
+            deepfaceResultCache.set(trackId, result);
+            return result;
+          }
+        }
+      } catch (e) {
+        if (e.name !== 'AbortError') {
+          deepfaceAvailable = false;
+          deepfaceLastCheck = 0;
+          console.warn('[DeepFace] API call failed, falling back to face-api.js:', e.message);
+        }
+      } finally {
+        deepfaceCallInFlight = false;
+      }
+      return null;
+    }
+
+    // Periodically check DeepFace server availability
+    checkDeepFaceServer();
+    setInterval(() => {
+      if (!deepfaceAvailable) checkDeepFaceServer();
+    }, DEEPFACE_CHECK_INTERVAL);
+
+    // ========================================================
     // REAL FACE RECOGNITION ENGINE (face-api.js Neural Network)
     // ========================================================
     // REAL FACE RECOGNITION ENGINE (face-api.js Neural Network)
@@ -8173,8 +8349,42 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
             let bestDist = 1.0;
             let secondCandidate = null;
             let secondDist = 1.0;
+            let deepfaceResult = null;
+            let deepfaceAge = null;
+            let deepfaceGender = null;
+            let deepfaceEmotion = null;
 
-            if (desc && allRegisteredDescriptors.length > 0) {
+            // ===== DEEPFACE PRIMARY RECOGNITION (Server-side ArcFace) =====
+            // Priority: DeepFace (higher accuracy) > face-api.js (fallback)
+            const spatialTrack = getStableSpatialTrack(box, frameW, frameH);
+            const trackId = spatialTrack ? spatialTrack.id : `face_${i}`;
+
+            if (deepfaceAvailable && !isPerson && box.width >= 8 && box.height >= 8) {
+              // Check DeepFace cache first
+              const cachedDF = deepfaceResultCache.get(trackId);
+              if (cachedDF && (Date.now() - cachedDF.timestamp < DEEPFACE_CACHE_TTL)) {
+                deepfaceResult = cachedDF;
+              } else {
+                // Create face crop and send to DeepFace server (async, throttled)
+                const dfCrop = createDeepFaceCrop(frameCanvas, box, frameW, frameH);
+                if (dfCrop) {
+                  deepfaceResult = await callDeepFaceFind(dfCrop, trackId);
+                }
+              }
+
+              if (deepfaceResult && deepfaceResult.identity && deepfaceResult.identity !== 'STRANGER' && deepfaceResult.confidence > 0) {
+                bestCandidate = deepfaceResult.identity;
+                // Map DeepFace cosine distance to face-api.js-compatible distance scale
+                bestDist = Math.max(0, Math.min(1.0, deepfaceResult.distance));
+                secondDist = 1.0;
+                deepfaceAge = deepfaceResult.age;
+                deepfaceGender = deepfaceResult.gender;
+                deepfaceEmotion = deepfaceResult.emotion;
+              }
+            }
+
+            // ===== FACE-API.JS FALLBACK RECOGNITION (Browser-side) =====
+            if (!deepfaceResult && desc && allRegisteredDescriptors.length > 0) {
               for (const ld of allRegisteredDescriptors) {
                 for (const refDesc of ld.descriptors) {
                   const dist = faceapi.euclideanDistance(desc, refDesc);
@@ -8192,14 +8402,19 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
             }
 
             // High-Precision Surveillance Matching with Dynamic Margin Check (Threshold <= 0.45)
-            const hasMargin = (secondDist - bestDist >= 0.08) || (secondDist >= 0.65);
-            const isMatch = activeTrackedFace ? true : (
-              bestCandidate !== null && desc !== null && (bestDist <= 0.45 || (bestDist <= 0.50 && hasMargin))
-            );
+            let isMatch = false;
+            if (deepfaceResult && deepfaceResult.identity && deepfaceResult.identity !== 'STRANGER') {
+              isMatch = true;
+            } else if (activeTrackedFace) {
+              isMatch = true;
+            } else {
+              const hasMargin = (secondDist - bestDist >= 0.08) || (secondDist >= 0.65);
+              isMatch = bestCandidate !== null && desc !== null && (bestDist <= 0.45 || (bestDist <= 0.50 && hasMargin));
+            }
             const matchedFaceObj = activeTrackedFace || (isMatch ? cachedAIFaces.find(f => f.name.toLowerCase() === bestCandidate.toLowerCase()) : null);
 
             // Stable physical centroid track with hysteresis
-            const track = getStableSpatialTrack(box, frameW, frameH);
+            const track = spatialTrack;
             const stab = getStabilizedIdentityFromTrack(
               track,
               isMatch ? (activeTrackedFace ? activeTrackedFace.name : (matchedFaceObj ? matchedFaceObj.name : bestCandidate)) : null,
@@ -8212,11 +8427,18 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
             let conf = '88.0';
             let labelName = 'STRANGER';
             let categoryType = 'guest';
+            let recognitionEngine = 'face-api.js';
 
             if (stab.isMatch && stab.name && stab.name !== 'STRANGER') {
-              const effectiveDist = Math.min(bestDist, track.lockedDistance || bestDist);
-              const ratio = Math.max(0, 1 - (effectiveDist / 0.50));
-              conf = Math.min(99.6, Math.max(88.0, (88.0 + (ratio * 11.6)))).toFixed(1);
+              if (deepfaceResult && deepfaceResult.confidence > 0) {
+                // Use DeepFace confidence directly (already calibrated 75-99.6%)
+                conf = Math.min(99.6, Math.max(88.0, deepfaceResult.confidence)).toFixed(1);
+                recognitionEngine = `DeepFace ${deepfaceResult.model || 'ArcFace'}`;
+              } else {
+                const effectiveDist = Math.min(bestDist, track.lockedDistance || bestDist);
+                const ratio = Math.max(0, 1 - (effectiveDist / 0.50));
+                conf = Math.min(99.6, Math.max(88.0, (88.0 + (ratio * 11.6)))).toFixed(1);
+              }
               labelName = stab.name.toUpperCase();
               categoryType = stab.category || 'employee';
             } else {
