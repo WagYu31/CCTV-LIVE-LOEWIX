@@ -11,3 +11,10 @@ data/keys/
 *.DS_Store
 current_chunk.ts
 loewix_pusher/go2rtc
+venv_ai/
+*.index
+*.npy
+*.pt
+__pycache__/
+data/loewix_ai.db
+assets/uploads/snapshots/

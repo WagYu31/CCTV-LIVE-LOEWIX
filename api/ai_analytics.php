@@ -223,6 +223,103 @@ if ($action === 'get_ai_data') {
     exit;
 }
 
+// DEEPFACE INTEGRATION: Sync face photos to DeepFace DB directory
+function syncFaceToDeepFaceDB($name, $photoPath) {
+    $projectRoot = realpath(__DIR__ . '/..');
+    $deepfaceDBDir = $projectRoot . '/assets/uploads/faces';
+
+    // Sanitize name for directory
+    $safeName = preg_replace('/[^a-zA-Z0-9 _\-]/', '', trim($name));
+    if (empty($safeName)) return false;
+
+    $personDir = $deepfaceDBDir . '/' . $safeName;
+    if (!is_dir($personDir)) {
+        @mkdir($personDir, 0777, true);
+    }
+
+    // Resolve absolute photo path
+    $absPhotoPath = $photoPath;
+    if (!file_exists($absPhotoPath)) {
+        $absPhotoPath = $projectRoot . '/' . ltrim($photoPath, '/');
+    }
+
+    if (!file_exists($absPhotoPath)) {
+        return false;
+    }
+
+    // Copy photo to DeepFace DB with unique name
+    $ext = pathinfo($absPhotoPath, PATHINFO_EXTENSION) ?: 'jpg';
+    $destFilename = 'face_' . date('Ymd_His') . '_' . rand(1000, 9999) . '.' . $ext;
+    $destPath = $personDir . '/' . $destFilename;
+
+    if (@copy($absPhotoPath, $destPath)) {
+        // Notify DeepFace server to clear cache (best-effort)
+        $ch = curl_init('http://localhost:5050/api/deepface/clear_cache');
+        curl_setopt_array($ch, [
+            CURLOPT_POST => true,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_TIMEOUT => 2,
+            CURLOPT_CONNECTTIMEOUT => 1,
+            CURLOPT_HTTPHEADER => ['Content-Type: application/json']
+        ]);
+        @curl_exec($ch);
+        @curl_close($ch);
+        return true;
+    }
+    return false;
+}
+
+// DEEPFACE: Health check proxy
+if ($action === 'deepface_status') {
+    $ch = curl_init('http://localhost:5050/api/deepface/health');
+    curl_setopt_array($ch, [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_TIMEOUT => 3,
+        CURLOPT_CONNECTTIMEOUT => 2,
+        CURLOPT_HTTPHEADER => ['Accept: application/json']
+    ]);
+    $response = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $curlError = curl_error($ch);
+    curl_close($ch);
+
+    if ($httpCode === 200 && $response) {
+        $data = json_decode($response, true);
+        echo json_encode(['success' => true, 'deepface' => $data]);
+    } else {
+        echo json_encode([
+            'success' => false,
+            'message' => 'DeepFace server tidak tersedia.',
+            'error' => $curlError ?: "HTTP $httpCode",
+            'hint' => 'Jalankan: python3 deepface_server.py'
+        ]);
+    }
+    exit;
+}
+
+// DEEPFACE: Sync all registered face photos to DeepFace DB directory
+if ($action === 'sync_face_db') {
+    $synced = 0;
+    $errors = 0;
+    foreach ($db['ai_faces'] as $face) {
+        if (!empty($face['photo']) && $face['photo'] !== 'assets/image/avatar-default.png') {
+            if (syncFaceToDeepFaceDB($face['name'], $face['photo'])) {
+                $synced++;
+            } else {
+                $errors++;
+            }
+        }
+    }
+
+    echo json_encode([
+        'success' => true,
+        'message' => "Sinkronisasi selesai: $synced wajah berhasil, $errors gagal.",
+        'synced' => $synced,
+        'errors' => $errors
+    ]);
+    exit;
+}
+
 // 2. REGISTER / UPDATE FACE
 if ($action === 'register_face' || $action === 'update_face') {
     $editId = (int)($_POST['id'] ?? 0);
@@ -246,6 +343,8 @@ if ($action === 'register_face' || $action === 'update_face') {
                 $f['role_title'] = $roleTitle;
                 if (!empty($photo)) {
                     $f['photo'] = $photo;
+                    // Auto-sync updated photo to DeepFace DB
+                    syncFaceToDeepFaceDB($name, $photo);
                 }
                 $f['notes'] = $notes;
                 $f['updated_at'] = date('Y-m-d H:i:s');
@@ -277,6 +376,11 @@ if ($action === 'register_face' || $action === 'update_face') {
 
     $db['ai_faces'][] = $newFace;
     save_db_data($db);
+
+    // Auto-sync new face photo to DeepFace DB
+    if (!empty($newFace['photo']) && $newFace['photo'] !== 'assets/image/avatar-default.png') {
+        syncFaceToDeepFaceDB($name, $newFace['photo']);
+    }
 
     echo json_encode(['success' => true, 'message' => 'Data wajah berhasil didaftarkan!', 'face' => $newFace]);
     exit;
@@ -331,6 +435,10 @@ if ($action === 'log_detection') {
     $gender = trim($_POST['gender'] ?? 'Male');
     $mask = trim($_POST['mask'] ?? 'Not worn');
     $details = trim($_POST['details'] ?? 'Terdeteksi oleh AI Scanner');
+    // DeepFace attributes
+    $age = !empty($_POST['age']) ? (int)$_POST['age'] : null;
+    $emotion = trim($_POST['emotion'] ?? '');
+    $engine = trim($_POST['engine'] ?? '');
 
     // If base64 snapshot provided, save to disk to optimize database performance
     if (!empty($snapshot) && strpos($snapshot, 'data:image') === 0) {
@@ -366,6 +474,9 @@ if ($action === 'log_detection') {
         'registered_photo' => $registeredPhoto,
         'gender' => $gender,
         'mask' => $mask,
+        'age' => $age,
+        'emotion' => $emotion,
+        'engine' => $engine,
         'details' => $details,
         'timestamp' => !empty($_POST['timestamp']) ? trim($_POST['timestamp']) : date('Y-m-d H:i:s')
     ];

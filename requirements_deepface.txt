@@ -1,0 +1,17 @@
+# Loewix CCTV AI Vision — Server Requirements (Ubuntu / Debian Linux)
+fastapi>=0.109.0
+uvicorn[standard]>=0.27.0
+websockets>=12.0
+python-multipart>=0.0.9
+opencv-python-headless>=4.8.0
+numpy>=1.23.0
+pillow>=10.0.0
+pydantic>=2.5.0
+requests>=2.31.0
+deepface>=0.0.93
+retina-face>=0.0.17
+ultralytics>=8.1.0
+faiss-cpu>=1.7.4
+tensorflow-cpu>=2.15.0
+tf-keras>=2.15.0
+torch>=2.0.0
