@@ -7661,8 +7661,9 @@
       if (vw === 0 || vh === 0) return;
 
       // Create snapshot canvas
+      const isWebcamActive = Boolean(video.srcObject || (currentAICamera && currentAICamera.id === 'webcam'));
       const snapCanvas = document.createElement('canvas');
-      const maxDim = 1024;
+      const maxDim = isWebcamActive ? 512 : 1024;
       const scale = Math.min(1, maxDim / Math.max(vw, vh));
       const fw = Math.round(vw * scale);
       const fh = Math.round(vh * scale);
@@ -7728,6 +7729,42 @@
               }
 
               const matchedObj = isStranger ? null : cachedAIFaces.find(f => f.name.toLowerCase() === d.identity.toLowerCase());
+
+              if (!isStranger) {
+                // ESTABLISH PERSISTENT VIP IDENTITY LOCK (ArcFace Neural Biometric Lock)
+                window._verifiedFaceLock = {
+                  name: d.identity.toUpperCase(),
+                  face: matchedObj || { name: d.identity, category: cat, role_title: 'VIP' },
+                  category: cat,
+                  confidence: conf,
+                  gender: (d.attributes && d.attributes.gender) ? d.attributes.gender : (matchedObj ? matchedObj.gender : 'Unknown'),
+                  timestamp: Date.now(),
+                  ttl: 60000
+                };
+
+                // Seed spatial tracks & DeepFace result caches
+                const sTrack = getStableSpatialTrack(bbox, fw, fh);
+                if (sTrack) {
+                  sTrack.lockedPerson = window._verifiedFaceLock.face;
+                  sTrack.lockedDistance = 0.12;
+                  sTrack.candidateVotes = { [d.identity]: 50 };
+                  deepfaceResultCache.set(sTrack.id, {
+                    identity: d.identity,
+                    confidence: parseFloat(conf),
+                    distance: 0.08,
+                    age: d.attributes?.age,
+                    gender: d.attributes?.gender,
+                    emotion: d.attributes?.emotion,
+                    timestamp: Date.now()
+                  });
+                }
+                deepfaceResultCache.set('webcam_primary', {
+                  identity: d.identity,
+                  confidence: parseFloat(conf),
+                  distance: 0.08,
+                  timestamp: Date.now()
+                });
+              }
 
               mappedFaces.push({
                 name: isStranger ? 'STRANGER' : d.identity.toUpperCase(),
@@ -8043,14 +8080,34 @@
         };
       }
 
+      const isWebcam = Boolean(currentAICamera && currentAICamera.id === 'webcam');
+
+      // 1B. Persistent Verified Identity Lock (from DeepFace ArcFace Server)
+      if (window._verifiedFaceLock && (Date.now() - window._verifiedFaceLock.timestamp < (window._verifiedFaceLock.ttl || 60000))) {
+        const lock = window._verifiedFaceLock;
+        if (isWebcam || (track && track.lockedPerson && track.lockedPerson.name === lock.name)) {
+          track.lockedPerson = lock.face;
+          track.lockedDistance = 0.12;
+          track.candidateVotes = { [lock.name]: 50 };
+          return {
+            name: lock.name,
+            face: lock.face,
+            category: lock.category || 'vip',
+            isMatch: true
+          };
+        }
+      }
+
       track.frameCount++;
 
       // 2. If track is ALREADY locked to an established person (e.g. sitting at desk):
       // Maintain identity smoothly, but drop quickly if another person sits down
       if (track.lockedPerson) {
-        if (currentDistance > 0.60) {
+        const mismatchThreshold = isWebcam ? 0.78 : 0.60;
+        const mismatchLimit = isWebcam ? 12 : 4;
+        if (currentDistance > mismatchThreshold) {
           track.candidateVotes['mismatch'] = (track.candidateVotes['mismatch'] || 0) + 1;
-          if (track.candidateVotes['mismatch'] >= 4) {
+          if (track.candidateVotes['mismatch'] >= mismatchLimit) {
             track.lockedPerson = null;
             track.candidateVotes = {};
           }
@@ -8623,9 +8680,9 @@
             const trackId = spatialTrack ? spatialTrack.id : `face_${i}`;
 
             if (deepfaceAvailable && !isPerson && box.width >= 12 && box.height >= 12) {
-              const cachedDF = deepfaceResultCache.get(trackId);
+              const cachedDF = deepfaceResultCache.get(trackId) || (isWebcam ? deepfaceResultCache.get('webcam_primary') : null);
               const isPositiveMatch = Boolean(cachedDF && cachedDF.identity && cachedDF.identity !== 'STRANGER');
-              const ttl = isPositiveMatch ? 8000 : 700;
+              const ttl = isPositiveMatch ? 15000 : 700;
 
               if (cachedDF && (Date.now() - cachedDF.timestamp < ttl)) {
                 deepfaceResult = cachedDF;
@@ -8650,6 +8707,18 @@
                 deepfaceAge = deepfaceResult.age;
                 deepfaceGender = deepfaceResult.gender;
                 deepfaceEmotion = deepfaceResult.emotion;
+              }
+            }
+
+            // If persistent verified face lock is active, use it directly for seamless continuity
+            if (window._verifiedFaceLock && (Date.now() - window._verifiedFaceLock.timestamp < (window._verifiedFaceLock.ttl || 60000))) {
+              if (isWebcam || (spatialTrack && spatialTrack.lockedPerson && spatialTrack.lockedPerson.name === window._verifiedFaceLock.name)) {
+                bestCandidate = window._verifiedFaceLock.name;
+                bestDist = 0.12;
+                secondDist = 1.0;
+                if (!deepfaceGender && window._verifiedFaceLock.gender) {
+                  deepfaceGender = window._verifiedFaceLock.gender;
+                }
               }
             }
 
@@ -8779,6 +8848,10 @@
               faces: results,
               timestamp: Date.now()
             };
+            // Continuously renew identity lock timestamp as long as face is actively tracked on webcam
+            if (window._verifiedFaceLock && isWebcam) {
+              window._verifiedFaceLock.timestamp = Date.now();
+            }
           }
         }
       } catch (err) {
@@ -9730,7 +9803,9 @@
 
         // Continuous Real-Time Auto-Tracking & Neural Face Matcher Engine
         if (isAutoTrackingActive) {
-          if (lastFaceAPIResult && lastFaceAPIResult.faces.length > 0 && (now - lastFaceAPIResult.timestamp < 3500)) {
+          const isWebcamRunning = Boolean(video && (video.srcObject !== null || (currentAICamera && currentAICamera.id === 'webcam')));
+          const maxStaleMs = isWebcamRunning ? 15000 : 5000;
+          if (lastFaceAPIResult && lastFaceAPIResult.faces.length > 0 && (now - lastFaceAPIResult.timestamp < maxStaleMs)) {
             const renderBox = getVideoRenderBox(video, canvas.width, canvas.height);
 
             const targetEntities = lastFaceAPIResult.faces.map(f => {
@@ -9847,6 +9922,7 @@
                 firstSeen: firstSeen,
                 scanProgress: scanProgress,
                 hasLogged: hasLogged,
+                createdAt: now,
                 x: bestPrev ? bestPrev.x : t.targetX,
                 y: bestPrev ? bestPrev.y : t.targetY,
                 w: bestPrev ? bestPrev.w : t.targetW,
@@ -9865,8 +9941,9 @@
               return entObj;
             });
           } else {
-            // Smooth zero-flicker persistence: keep active tracked entities alive for up to 2500ms
-            activeAIEntities = activeAIEntities.filter(e => now - (e.createdAt || now) < 2500);
+            // Smooth zero-flicker persistence: keep active tracked entities alive
+            const persistLimit = isWebcamRunning ? 15000 : 3500;
+            activeAIEntities = activeAIEntities.filter(e => now - (e.createdAt || now) < persistLimit);
           }
         } else {
           // Filter manual triggers (auto-expire after 4s)
@@ -10965,6 +11042,7 @@
       const video = document.getElementById('ai-video-player');
 
       if (camId === 'webcam') {
+        window._lastAutoLogTime = 0;
         if (placeholder) placeholder.style.display = 'none';
         currentAICamera = { id: 'webcam', title: 'Live Webcam Laptop' };
         if (statusLabel) {

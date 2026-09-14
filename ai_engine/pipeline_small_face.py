@@ -458,7 +458,7 @@ class SmallFaceRecognitionPipeline:
                     best = matches[0]
                     sim = best["similarity"]
                     dist = best["distance"]
-                    eff_threshold = max(threshold, 0.48) if (fw < 28 or fh < 28) else threshold
+                    eff_threshold = max(threshold, 0.48) if (gw < 28 or gh < 28) else threshold
                     if sim >= eff_threshold:
                         target_id = int(best["identity_id"])
                         identity = get_identity_by_id(target_id) or get_identity_by_vector_id(target_id)
@@ -471,8 +471,15 @@ class SmallFaceRecognitionPipeline:
                             ratio = min(1.0, (sim - threshold) / max(0.01, 1.0 - threshold))
                             confidence = round(75.0 + (ratio * 24.5), 1)
 
-            # Analyze attributes
-            attributes = self.analyze_attributes(face_zoomed)
+            # Analyze attributes with caching to ensure fast sub-second frame analysis
+            if matched_name != "STRANGER" and hasattr(self, "_attr_cache") and matched_name in self._attr_cache:
+                attributes = self._attr_cache[matched_name]
+            else:
+                attributes = self.analyze_attributes(face_zoomed)
+                if matched_name != "STRANGER":
+                    if not hasattr(self, "_attr_cache"):
+                        self._attr_cache = {}
+                    self._attr_cache[matched_name] = attributes
 
             # Save snapshot
             snapshot_rel_path = None
