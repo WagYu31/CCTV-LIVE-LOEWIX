@@ -337,8 +337,8 @@ def recognize_crop(req: CropRecognizeRequest):
     distance = 1.0
 
     threshold = req.threshold if (req.threshold and req.threshold > 0) else DEFAULT_MATCH_THRESHOLD
-    if threshold > 0.55:
-        threshold = 0.48
+    if threshold > 0.48:
+        threshold = 0.42
 
     if embedding is not None and vector_db.size() > 0:
         matches = vector_db.search(embedding, top_k=1)

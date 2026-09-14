@@ -38,7 +38,7 @@ logger = logging.getLogger("loewix_pipeline")
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
 # ArcFace Cosine Similarity Threshold (DeepFace distance <= 0.52 <=> Cosine Similarity >= 0.48)
-DEFAULT_MATCH_THRESHOLD = float(os.environ.get("LOEWIX_MATCH_THRESHOLD", 0.48))
+DEFAULT_MATCH_THRESHOLD = float(os.environ.get("LOEWIX_MATCH_THRESHOLD", 0.42))
 
 
 class SmallFaceRecognitionPipeline:

@@ -7802,13 +7802,14 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
 
     function resolveFacePhotoUrl(photo) {
       if (!photo) return '';
-      if (photo.startsWith('data:') || photo.startsWith('blob:') || photo.startsWith('http://') || photo.startsWith('https://')) {
+      if (photo.startsWith('data:') || photo.startsWith('blob:')) {
         return photo;
       }
-      if (photo.startsWith('../')) {
-        return photo;
+      let url = photo;
+      if (!url.startsWith('http://') && !url.startsWith('https://') && !url.startsWith('../')) {
+        url = '../' + url.replace(/^\//, '');
       }
-      return '../' + photo.replace(/^\//, '');
+      return encodeURI(decodeURI(url));
     }
 
     // Initialize face-api.js models (Multi-Source Local-First Engine)
@@ -8006,7 +8007,16 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
       return newTrack;
     }
 
-    function getStabilizedIdentityFromTrack(track, candidateMatch, candidateFace, currentDistance, secondCandidate, secondDistance) {
+    function getStabilizedIdentityFromTrack(track, candidateMatch, candidateFace, currentDistance, secondCandidate, secondDistance, isDeepFaceVerified = false) {
+      if (!track) {
+        return {
+          name: candidateMatch || 'STRANGER',
+          face: candidateFace,
+          category: (candidateFace && candidateFace.category) || 'guest',
+          isMatch: Boolean(candidateMatch && candidateMatch !== 'STRANGER')
+        };
+      }
+
       // 1. If user selected a specific target in dropdown, honor user choice 100%
       if (activeTrackedFace) {
         return {
@@ -8043,9 +8053,8 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
       }
 
       // 3. Track not yet locked: Lock when verified biometric match occurs
-      const isDeepFaceVerified = Boolean(candidateMatch && candidateMatch !== 'STRANGER' && deepfaceResult && deepfaceResult.identity === candidateMatch);
       const hasMargin = (secondDistance - currentDistance >= 0.05) || (secondDistance >= 0.60);
-      const isQualified = candidateMatch && candidateFace && (
+      const isQualified = candidateMatch && candidateMatch !== 'STRANGER' && (
         isDeepFaceVerified ||
         currentDistance <= 0.58 ||
         (currentDistance <= 0.62 && hasMargin)
@@ -8053,12 +8062,17 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
       if (isQualified) {
         track.candidateVotes[candidateMatch] = (track.candidateVotes[candidateMatch] || 0) + 1;
         if (track.candidateVotes[candidateMatch] >= 1) {
-          track.lockedPerson = candidateFace;
+          const resolvedFace = candidateFace || {
+            name: candidateMatch,
+            category: 'vip',
+            role_title: 'Terdaftar'
+          };
+          track.lockedPerson = resolvedFace;
           track.lockedDistance = currentDistance;
           return {
-            name: candidateFace.name,
-            face: candidateFace,
-            category: candidateFace.category || 'employee',
+            name: resolvedFace.name,
+            face: resolvedFace,
+            category: resolvedFace.category || 'vip',
             isMatch: true
           };
         }
@@ -8347,18 +8361,18 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
 
         let detections = [];
 
-        // 1. FAST REAL-TIME PRIMARY ENGINE: face-api.js TinyFaceDetector (Always using lightweight normalized frameCanvas)
+        // 1. FAST REAL-TIME PRIMARY ENGINE: face-api.js TinyFaceDetector (Accurate scoreThreshold 0.38)
         if (typeof faceapi !== 'undefined' && faceapi.nets && faceapi.nets.tinyFaceDetector && faceapi.nets.tinyFaceDetector.isLoaded) {
           try {
             if (faceapi.nets.faceLandmark68TinyNet && faceapi.nets.faceLandmark68TinyNet.isLoaded && faceapi.nets.faceRecognitionNet && faceapi.nets.faceRecognitionNet.isLoaded) {
-              detections = await faceapi.detectAllFaces(frameCanvas, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.08 }))
+              detections = await faceapi.detectAllFaces(frameCanvas, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.38 }))
                 .withFaceLandmarks(true)
                 .withFaceDescriptors();
             } else if (faceapi.nets.faceLandmark68TinyNet && faceapi.nets.faceLandmark68TinyNet.isLoaded) {
-              detections = await faceapi.detectAllFaces(frameCanvas, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.08 }))
+              detections = await faceapi.detectAllFaces(frameCanvas, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.38 }))
                 .withFaceLandmarks(true);
             } else {
-              detections = await faceapi.detectAllFaces(frameCanvas, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.08 }));
+              detections = await faceapi.detectAllFaces(frameCanvas, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.38 }));
             }
           } catch (eTiny) {}
         }
@@ -8376,7 +8390,7 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
           for (const tfFace of tfjsFaces) {
             const kps = tfFace.keypoints;
             let fBox = null;
-            if (kps && kps.length > 0) {
+            if (kps && kps.length >= 468) {
               let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
               for (let k = 0; k < kps.length; k++) {
                 const pt = kps[k];
@@ -8387,16 +8401,18 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
                 if (py < minY) minY = py;
                 if (py > maxY) maxY = py;
               }
-              const bw = Math.max(20, maxX - minX);
-              const bh = Math.max(20, maxY - minY);
-              const padX = bw * 0.06;
-              const padY = bh * 0.06;
-              fBox = {
-                x: Math.max(0, Math.round(minX - padX)),
-                y: Math.max(0, Math.round(minY - padY)),
-                width: Math.min(frameW - Math.max(0, minX - padX), Math.round(bw + padX * 2)),
-                height: Math.min(frameH - Math.max(0, minY - padY), Math.round(bh + padY * 2))
-              };
+              const bw = maxX - minX;
+              const bh = maxY - minY;
+              if (bw >= 24 && bh >= 24 && (bh / Math.max(1, bw) >= 0.7 && bh / Math.max(1, bw) <= 1.8)) {
+                const padX = bw * 0.06;
+                const padY = bh * 0.06;
+                fBox = {
+                  x: Math.max(0, Math.round(minX - padX)),
+                  y: Math.max(0, Math.round(minY - padY)),
+                  width: Math.min(frameW - Math.max(0, minX - padX), Math.round(bw + padX * 2)),
+                  height: Math.min(frameH - Math.max(0, minY - padY), Math.round(bh + padY * 2))
+                };
+              }
             }
             if (fBox && fBox.width >= 24 && fBox.height >= 24) {
               detections.push({
@@ -8414,7 +8430,7 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
         // 3. Fallback to SSD MobileNet if still empty
         if ((!detections || detections.length === 0) && faceAPIReady && typeof faceapi !== 'undefined' && faceapi.nets.ssdMobilenetv1 && faceapi.nets.ssdMobilenetv1.isLoaded) {
           try {
-            detections = await faceapi.detectAllFaces(frameCanvas, new faceapi.SsdMobilenetv1Options({ minConfidence: 0.10, maxResults: 6 }))
+            detections = await faceapi.detectAllFaces(frameCanvas, new faceapi.SsdMobilenetv1Options({ minConfidence: 0.45, maxResults: 6 }))
               .withFaceLandmarks(true)
               .withFaceDescriptors();
           } catch (eSSD) {}
@@ -8422,20 +8438,21 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
 
         const isCCTVMode = (video && !video.srcObject) && (currentAICamera && currentAICamera.id !== 'webcam');
 
-        // 4. CCTV SURVEILLANCE HUMAN & PEDESTRIAN DETECTION (COCO-SSD & SILHOUETTE TRACKER)
+        // 4. CCTV SURVEILLANCE PEDESTRIAN DETECTION (COCO-SSD Neural Model only, verified score >= 0.50)
         if (isCCTVMode && (!detections || detections.length === 0)) {
-          // A. TensorFlow.org COCO-SSD Neural Model
           if (cocoSSDModel) {
             try {
               const predictions = await cocoSSDModel.detect(frameCanvas);
               if (predictions && predictions.length > 0) {
                 for (const p of predictions) {
-                  if (p.class === 'person' && p.score >= 0.20) {
+                  if (p.class === 'person' && p.score >= 0.50) {
                     const bx = Math.max(0, Math.round(p.bbox[0]));
                     const by = Math.max(0, Math.round(p.bbox[1]));
                     const bw = Math.min(frameW - bx, Math.round(p.bbox[2]));
                     const bh = Math.min(frameH - by, Math.round(p.bbox[3]));
-                    if (bw >= 15 && bh >= 25) {
+                    const aspect = bh / Math.max(1, bw);
+                    // Valid human standing/walking aspect ratio
+                    if (bw >= 18 && bh >= 35 && aspect >= 1.2 && aspect <= 4.0) {
                       detections.push({
                         box: { x: bx, y: by, width: bw, height: bh },
                         descriptor: null,
@@ -8449,32 +8466,6 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
               }
             } catch (eCoco) {}
           }
-
-          // B. High-Speed CCTV Human Silhouette Fallback (Only active if DeepFace server is offline)
-          if (!deepfaceAvailable && (!detections || detections.length === 0) && frameCanvas) {
-            try {
-              const cctvHumans = findCCTVHumanSilhouettes(frameCanvas);
-              if (cctvHumans && cctvHumans.length > 0) {
-                detections.push(...cctvHumans);
-              }
-            } catch (eCctv) {}
-          }
-        }
-
-        // 5. Fallback to Optical YCbCr Skin-Tone Head Tracker (For live webcam)
-        if (!isCCTVMode && (!detections || detections.length === 0) && frameCanvas) {
-          try {
-            const opticalFace = findLiveWebcamHumanFace(frameCanvas);
-            if (opticalFace && opticalFace.box) {
-              detections.push({
-                box: opticalFace.box,
-                descriptor: null,
-                score: opticalFace.score,
-                type: 'face',
-                engine: 'Optical Head Tracker'
-              });
-            }
-          } catch (e) {}
         }
 
         if (detections && detections.length > 0) {
@@ -8530,17 +8521,24 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
             const spatialTrack = getStableSpatialTrack(box, frameW, frameH);
             const trackId = spatialTrack ? spatialTrack.id : `face_${i}`;
 
-            if (deepfaceAvailable && !isPerson && box.width >= 8 && box.height >= 8) {
-              // Check DeepFace cache first
+            if (deepfaceAvailable && !isPerson && box.width >= 12 && box.height >= 12) {
               const cachedDF = deepfaceResultCache.get(trackId);
-              if (cachedDF && (Date.now() - cachedDF.timestamp < DEEPFACE_CACHE_TTL)) {
+              const isPositiveMatch = Boolean(cachedDF && cachedDF.identity && cachedDF.identity !== 'STRANGER');
+              const ttl = isPositiveMatch ? 8000 : 700;
+
+              if (cachedDF && (Date.now() - cachedDF.timestamp < ttl)) {
                 deepfaceResult = cachedDF;
-              } else {
-                // Create face crop and send to DeepFace server (async, throttled)
+              } else if (!deepfaceCallInFlight && (Date.now() - deepfaceLastCallTime >= DEEPFACE_THROTTLE_MS)) {
+                // Non-blocking async background call - Keeps frame loop at fluid 60 FPS!
                 const dfCrop = createDeepFaceCrop(frameCanvas, box, frameW, frameH);
                 if (dfCrop) {
-                  deepfaceResult = await callDeepFaceFind(dfCrop, trackId);
+                  callDeepFaceFind(dfCrop, trackId).catch(() => {});
                 }
+                if (cachedDF) {
+                  deepfaceResult = cachedDF;
+                }
+              } else if (cachedDF) {
+                deepfaceResult = cachedDF;
               }
 
               if (deepfaceResult && deepfaceResult.identity && deepfaceResult.identity !== 'STRANGER' && deepfaceResult.confidence > 0) {
@@ -8593,7 +8591,8 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
               matchedFaceObj,
               bestDist,
               secondCandidate,
-              secondDist
+              secondDist,
+              deepFaceMatched
             );
 
             let conf = '88.0';

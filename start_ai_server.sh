@@ -34,7 +34,7 @@ export KMP_DUPLICATE_LIB_OK="TRUE"
 export OMP_NUM_THREADS="1"
 export LOEWIX_API_HOST="0.0.0.0"
 export LOEWIX_API_PORT="5050"
-export LOEWIX_MATCH_THRESHOLD="0.68"
+export LOEWIX_MATCH_THRESHOLD="0.42"
 export LOEWIX_DB_PATH="$SCRIPT_DIR/data/loewix_ai.db"
 export LOEWIX_FAISS_PATH="$SCRIPT_DIR/assets/uploads/faces/faiss_arcface.index"
 
@@ -43,6 +43,13 @@ echo "   Database    : $LOEWIX_DB_PATH"
 echo "   Vector DB   : $LOEWIX_FAISS_PATH"
 echo "   Threshold   : $LOEWIX_MATCH_THRESHOLD"
 echo "================================================================="
+
+# Clean up any lingering process on port 5050
+echo "🧹 Memastikan port $LOEWIX_API_PORT bersih..."
+fuser -k "$LOEWIX_API_PORT/tcp" 2>/dev/null || true
+pkill -f "app_fastapi_server" 2>/dev/null || true
+pkill -f "uvicorn.*5050" 2>/dev/null || true
+sleep 1
 
 # 3. Launch FastAPI Server via Uvicorn
 exec $UVICORN_EXEC app_fastapi_server:app \
