@@ -13,6 +13,8 @@ Stages:
 """
 
 import os
+os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 os.environ["OMP_NUM_THREADS"] = "1"
 import sys
@@ -88,6 +90,11 @@ class SmallFaceRecognitionPipeline:
         """Lazy load DeepFace module."""
         if self.deepface_module is None:
             try:
+                try:
+                    import tensorflow as tf
+                    tf.config.set_visible_devices([], 'GPU')
+                except Exception:
+                    pass
                 from deepface import DeepFace
                 self.deepface_module = DeepFace
                 logger.info("✅ DeepFace module loaded.")

@@ -30,6 +30,8 @@ else
 fi
 
 # 2. Server Configuration
+export CUDA_VISIBLE_DEVICES="-1"
+export TF_CPP_MIN_LOG_LEVEL="3"
 export TF_ENABLE_ONEDNN_OPTS="0"
 export KMP_DUPLICATE_LIB_OK="TRUE"
 export OMP_NUM_THREADS="1"
