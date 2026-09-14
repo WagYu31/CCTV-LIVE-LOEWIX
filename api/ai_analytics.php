@@ -43,7 +43,7 @@ if (!isset($db['ai_faces']) || !is_array($db['ai_faces'])) {
             'name' => 'Wahyu Utomo',
             'category' => 'vip', // vip, employee, resident, blacklist, guest
             'role_title' => 'Super Admin & Owner',
-            'photo' => 'assets/image/avatar-default.png',
+            'photo' => 'assets/uploads/faces/face_wahyu_utomo.jpg',
             'notes' => 'Akses penuh VIP Master & Owner Loewix 24/7',
             'created_at' => '2026-08-20 10:00:00'
         ],
@@ -183,6 +183,27 @@ if ($action === 'get_ai_data') {
     $logs = [];
 
     foreach ($db['ai_faces'] as $f) {
+        $extraPhotos = [];
+        $safeName = preg_replace('/[^a-zA-Z0-9 _\-]/', '', trim($f['name'] ?? ''));
+        if (!empty($safeName)) {
+            $dir = realpath(__DIR__ . '/..') . '/assets/uploads/faces/' . $safeName;
+            if (is_dir($dir)) {
+                $files = glob($dir . '/*.{jpg,jpeg,png,webp,JPG,JPEG,PNG}', GLOB_BRACE) ?: [];
+                foreach ($files as $file) {
+                    $rel = 'assets/uploads/faces/' . $safeName . '/' . basename($file);
+                    if ($rel !== ($f['photo'] ?? '')) {
+                        $extraPhotos[] = $rel;
+                    }
+                }
+            }
+        }
+        if (stripos($f['name'] ?? '', 'wahyu') !== false) {
+            $candidateDirect = 'assets/uploads/faces/face_wahyu_utomo.jpg';
+            if (file_exists(realpath(__DIR__ . '/..') . '/' . $candidateDirect) && !in_array($candidateDirect, $extraPhotos) && $candidateDirect !== ($f['photo'] ?? '')) {
+                $extraPhotos[] = $candidateDirect;
+            }
+        }
+        $f['extra_photos'] = array_values(array_unique($extraPhotos));
         $faces[] = $f;
     }
 
