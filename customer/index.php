@@ -7762,10 +7762,15 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
             });
 
             if (mappedFaces.length > 0) {
-              lastFaceAPIResult = {
-                faces: mappedFaces,
-                timestamp: Date.now()
-              };
+              const hadVerifiedMatch = lastFaceAPIResult && lastFaceAPIResult.faces && lastFaceAPIResult.faces.some(f => f.isMatch && f.name !== 'STRANGER');
+              const hasNewVerifiedMatch = mappedFaces.some(f => f.isMatch && f.name !== 'STRANGER');
+              
+              if (!hadVerifiedMatch || hasNewVerifiedMatch || (Date.now() - (lastFaceAPIResult.timestamp || 0) > 3000)) {
+                lastFaceAPIResult = {
+                  faces: mappedFaces,
+                  timestamp: Date.now()
+                };
+              }
             }
           }
         }
@@ -7880,12 +7885,23 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
         if (!face.photo) continue;
         try {
           const photoUrl = resolveFacePhotoUrl(face.photo);
-          const img = await faceapi.fetchImage(photoUrl);
+          let img;
+          if (photoUrl.startsWith('data:image')) {
+            img = await new Promise((resolve, reject) => {
+              const el = new Image();
+              el.crossOrigin = 'anonymous';
+              el.onload = () => resolve(el);
+              el.onerror = (e) => reject(new Error('Failed loading image data'));
+              el.src = photoUrl;
+            });
+          } else {
+            img = await faceapi.fetchImage(photoUrl);
+          }
           
           let det = null;
           try {
             // Pick largest/foreground face if photo contains background people
-            const allDets = await faceapi.detectAllFaces(img, new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.08 }))
+            const allDets = await faceapi.detectAllFaces(img, new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.05 }))
               .withFaceLandmarks(true)
               .withFaceDescriptors();
             if (allDets && allDets.length > 0) {
@@ -7899,9 +7915,18 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
           } catch (e) {}
 
           if (!det) {
-            det = await faceapi.detectSingleFace(img, new faceapi.TinyFaceDetectorOptions({ inputSize: 256, scoreThreshold: 0.06 }))
-              .withFaceLandmarks(true)
-              .withFaceDescriptor();
+            try {
+              det = await faceapi.detectSingleFace(img, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.03 }))
+                .withFaceLandmarks(true)
+                .withFaceDescriptor();
+            } catch (e) {}
+          }
+          if (!det && faceapi.nets.ssdMobilenetv1 && faceapi.nets.ssdMobilenetv1.isLoaded) {
+            try {
+              det = await faceapi.detectSingleFace(img, new faceapi.SsdMobilenetv1Options({ minConfidence: 0.15 }))
+                .withFaceLandmarks(true)
+                .withFaceDescriptor();
+            } catch (e) {}
           }
 
           if (det && det.descriptor) {
@@ -8018,9 +8043,13 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
       }
 
       // 3. Track not yet locked: Lock when verified biometric match occurs
-      // Strict matching: distance <= 0.48; or if distance <= 0.52 and margin against 2nd candidate >= 0.08
-      const hasMargin = (secondDistance - currentDistance >= 0.08) || (secondDistance >= 0.65);
-      const isQualified = candidateMatch && candidateFace && (currentDistance <= 0.48 || (currentDistance <= 0.52 && hasMargin));
+      const isDeepFaceVerified = Boolean(candidateMatch && candidateMatch !== 'STRANGER' && deepfaceResult && deepfaceResult.identity === candidateMatch);
+      const hasMargin = (secondDistance - currentDistance >= 0.05) || (secondDistance >= 0.60);
+      const isQualified = candidateMatch && candidateFace && (
+        isDeepFaceVerified ||
+        currentDistance <= 0.58 ||
+        (currentDistance <= 0.62 && hasMargin)
+      );
       if (isQualified) {
         track.candidateVotes[candidateMatch] = (track.candidateVotes[candidateMatch] || 0) + 1;
         if (track.candidateVotes[candidateMatch] >= 1) {
@@ -8526,7 +8555,8 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
             }
 
             // ===== FACE-API.JS FALLBACK RECOGNITION (Browser-side) =====
-            if (!deepfaceResult && desc && allRegisteredDescriptors.length > 0) {
+            const deepFaceMatched = Boolean(deepfaceResult && deepfaceResult.identity && deepfaceResult.identity !== 'STRANGER');
+            if (!deepFaceMatched && desc && allRegisteredDescriptors.length > 0) {
               for (const ld of allRegisteredDescriptors) {
                 for (const refDesc of ld.descriptors) {
                   const dist = faceapi.euclideanDistance(desc, refDesc);
@@ -8543,15 +8573,15 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
               }
             }
 
-            // High-Precision Surveillance Matching with Dynamic Margin Check (Threshold <= 0.45)
+            // High-Precision Surveillance Matching with Dynamic Margin Check
             let isMatch = false;
             if (deepfaceResult && deepfaceResult.identity && deepfaceResult.identity !== 'STRANGER') {
               isMatch = true;
             } else if (activeTrackedFace) {
               isMatch = true;
             } else {
-              const hasMargin = (secondDist - bestDist >= 0.08) || (secondDist >= 0.65);
-              isMatch = bestCandidate !== null && desc !== null && (bestDist <= 0.45 || (bestDist <= 0.50 && hasMargin));
+              const hasMargin = (secondDist - bestDist >= 0.05) || (secondDist >= 0.60);
+              isMatch = bestCandidate !== null && desc !== null && (bestDist <= 0.58 || (bestDist <= 0.62 && hasMargin));
             }
             const matchedFaceObj = activeTrackedFace || (isMatch ? cachedAIFaces.find(f => f.name.toLowerCase() === bestCandidate.toLowerCase()) : null);
 
@@ -11764,9 +11794,13 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
           await fetch(pyUrl, { method: 'POST' });
         } catch(e) {}
 
+        await loadAIData(true);
+        if (typeof buildFaceDescriptors === 'function') {
+          await buildFaceDescriptors(true);
+        }
+
         if (data.success) {
-          alert('🎉 ' + (data.message || 'Sinkronisasi berhasil!') + '\nSemua foto wajah di Direktori Wajah telah disinkronkan ke AI ArcFace FAISS.');
-          loadAIData(true);
+          alert('🎉 ' + (data.message || 'Sinkronisasi berhasil!') + '\nSemua foto wajah di Direktori Wajah telah disinkronkan ke AI ArcFace & Browser Matcher.');
         } else {
           alert('⚠️ ' + (data.message || 'Proses sinkronisasi selesai.'));
         }

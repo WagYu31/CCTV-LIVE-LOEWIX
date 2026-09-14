@@ -240,6 +240,7 @@ function syncFaceToDeepFaceDB($name, &$photoPath, $category = 'employee', $notes
     $b64Payload = null;
 
     if (str_starts_with($photoPath, 'data:image') || strpos($photoPath, 'data:image') === 0) {
+        $b64Payload = $photoPath;
         $parts = explode(',', $photoPath);
         if (count($parts) === 2) {
             $binary = base64_decode($parts[1]);
@@ -247,7 +248,6 @@ function syncFaceToDeepFaceDB($name, &$photoPath, $category = 'employee', $notes
                 $destFilename = 'face_' . date('Ymd_His') . '_' . rand(1000, 9999) . '.jpg';
                 $destPath = $personDir . '/' . $destFilename;
                 if (@file_put_contents($destPath, $binary)) {
-                    $b64Payload = $photoPath;
                     $photoPath = 'assets/uploads/faces/' . $safeName . '/' . $destFilename;
                 }
             }
@@ -274,8 +274,8 @@ function syncFaceToDeepFaceDB($name, &$photoPath, $category = 'employee', $notes
         curl_setopt_array($ch, [
             CURLOPT_POST => true,
             CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_TIMEOUT => 8,
-            CURLOPT_CONNECTTIMEOUT => 2,
+            CURLOPT_TIMEOUT => 12,
+            CURLOPT_CONNECTTIMEOUT => 3,
             CURLOPT_HTTPHEADER => ['Content-Type: application/json'],
             CURLOPT_POSTFIELDS => json_encode([
                 'name' => $name,
@@ -323,6 +323,17 @@ if ($action === 'deepface_status') {
 
 // DEEPFACE: Sync all registered face photos to DeepFace FAISS DB
 if ($action === 'sync_face_db') {
+    // 1. Tell Python server to import all faces from data/loewix_db.json directly
+    $pyCh = curl_init('http://127.0.0.1:5050/api/v1/system/sync-web-faces');
+    curl_setopt_array($pyCh, [
+        CURLOPT_POST => true,
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_TIMEOUT => 20,
+        CURLOPT_CONNECTTIMEOUT => 3
+    ]);
+    @curl_exec($pyCh);
+    @curl_close($pyCh);
+
     $synced = 0;
     $errors = 0;
     $details = [];

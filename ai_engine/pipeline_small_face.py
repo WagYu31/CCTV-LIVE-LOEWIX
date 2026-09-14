@@ -224,7 +224,7 @@ class SmallFaceRecognitionPipeline:
                 from deepface.modules import detection
                 extracted = detection.extract_faces(
                     img_path=crop,
-                    detector_backend="retinaface",
+                    detector_backend="opencv",
                     enforce_detection=False,
                     align=True
                 )
