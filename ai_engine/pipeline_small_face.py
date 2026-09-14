@@ -81,13 +81,8 @@ class SmallFaceRecognitionPipeline:
         except Exception as e:
             logger.warning(f"ℹ️ YuNet init notice: {e}")
 
-        # 2. YOLOv8 Person Detector
-        try:
-            from ultralytics import YOLO
-            self.yolo_model = YOLO("yolov8n.pt")
-            logger.info("✅ YOLOv8 Person Detector loaded successfully.")
-        except Exception as e:
-            logger.warning(f"ℹ️ YOLOv8 not loaded yet: {e}. Will use sliding window & YuNet.")
+        # 2. YOLOv8 Person Detector (Lazy loaded on demand to prevent PyTorch/TensorFlow OpenMP collision on Linux)
+        self.yolo_model = None
 
     def get_deepface(self):
         """Lazy load DeepFace module."""
@@ -110,6 +105,13 @@ class SmallFaceRecognitionPipeline:
         """
         h, w = frame.shape[:2]
         persons = []
+
+        if self.yolo_model is None:
+            try:
+                from ultralytics import YOLO
+                self.yolo_model = YOLO("yolov8n.pt")
+            except Exception:
+                pass
 
         if self.yolo_model is not None:
             try:

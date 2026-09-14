@@ -7,8 +7,13 @@ FAISS vector search, and WebSocket live broadcasting for CCTV streams.
 """
 
 import os
+os.environ["TF_ENABLE_ONEDNN_OPTS"] = "0"
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 os.environ["OMP_NUM_THREADS"] = "1"
+os.environ["MKL_NUM_THREADS"] = "1"
+os.environ["OPENBLAS_NUM_THREADS"] = "1"
+os.environ["NUMEXPR_NUM_THREADS"] = "1"
+os.environ["VECLIB_MAXIMUM_THREADS"] = "1"
 os.environ["OBJC_DISABLE_INITIALIZE_FORK_SAFETY"] = "YES"
 import sys
 import time
@@ -528,7 +533,10 @@ async def startup_event():
     init_db()
     vector_db.load()
     # Auto-import any registered faces from web database (data/loewix_db.json)
-    sync_registered_faces_from_web_db()
+    try:
+        sync_registered_faces_from_web_db()
+    except Exception as e:
+        logger.warning(f"Startup face sync notice: {e}")
     logger.info("=" * 65)
     logger.info("🚀 LOEWIX CCTV AI VISION — FastAPI Server Started")
     logger.info(f"   API Address : http://{HOST}:{PORT}")

@@ -30,8 +30,13 @@ else
 fi
 
 # 2. Server Configuration
+export TF_ENABLE_ONEDNN_OPTS="0"
 export KMP_DUPLICATE_LIB_OK="TRUE"
 export OMP_NUM_THREADS="1"
+export MKL_NUM_THREADS="1"
+export OPENBLAS_NUM_THREADS="1"
+export NUMEXPR_NUM_THREADS="1"
+export VECLIB_MAXIMUM_THREADS="1"
 export LOEWIX_API_HOST="0.0.0.0"
 export LOEWIX_API_PORT="5050"
 export LOEWIX_MATCH_THRESHOLD="0.42"

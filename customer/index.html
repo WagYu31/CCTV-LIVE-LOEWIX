@@ -8160,19 +8160,23 @@
         const bw = Math.max(1, box.width);
         const bh = Math.max(1, box.height);
         const aspect = bh / bw;
-        // Human faces are upright ovals (aspect ratio 0.60 - 2.4). Flat objects like car grills (aspect < 0.5) are rejected.
-        if (aspect < 0.60 || aspect > 2.4) return false;
+        // Human faces are upright ovals (aspect ratio 0.55 - 2.5). Flat objects like car grills (aspect < 0.55) are rejected.
+        if (aspect < 0.55 || aspect > 2.5) return false;
+        if (bw < 14 || bh < 14) return false;
       }
-      if (!landmarks) return !isCCTV;
+      if (!landmarks) return true; // Valid face box detected without landmarks is still a valid face!
       const positions = landmarks.positions || landmarks;
       if (!positions || positions.length !== 68) return true;
       try {
         const leftEye = positions[36];
         const rightEye = positions[45];
         const mouth = positions[57];
-        if (leftEye && rightEye && mouth) {
-          const eyeY = (leftEye.y + rightEye.y) / 2;
-          if (mouth.y <= eyeY) return false;
+        const ley = (leftEye && typeof leftEye.y === 'number') ? leftEye.y : (leftEye ? leftEye._y : null);
+        const rey = (rightEye && typeof rightEye.y === 'number') ? rightEye.y : (rightEye ? rightEye._y : null);
+        const my  = (mouth && typeof mouth.y === 'number') ? mouth.y : (mouth ? mouth._y : null);
+        if (ley !== null && rey !== null && my !== null) {
+          const eyeY = (ley + rey) / 2;
+          if (my <= eyeY) return false;
         }
       } catch (e) {}
       return true;
@@ -8255,7 +8259,7 @@
       }
     }
 
-    // High-Precision Real-Time Webcam Face & Head Tracker (YCbCr Chrominance Segmentation)
+    // High-Precision Real-Time Webcam Face & Head Tracker (YCbCr Chrominance + Color Segmentation)
     function findLiveWebcamHumanFace(canvas) {
       if (!canvas) return null;
       try {
@@ -8266,11 +8270,11 @@
         const img = ctx.getImageData(0, 0, w, h);
         const d = img.data;
 
-        // Search primary head area: upper 80% of frame, central 75% width
-        const startY = Math.round(h * 0.08);
-        const endY = Math.round(h * 0.82);
-        const startX = Math.round(w * 0.12);
-        const endX = Math.round(w * 0.88);
+        // Search primary head area: upper 85% of frame, central 80% width
+        const startY = Math.round(h * 0.06);
+        const endY = Math.round(h * 0.85);
+        const startX = Math.round(w * 0.10);
+        const endX = Math.round(w * 0.90);
         const step = 4;
 
         let sumX = 0, sumY = 0, count = 0;
@@ -8283,13 +8287,15 @@
             const g = d[i + 1];
             const b = d[i + 2];
 
-            // Standard YCbCr human skin chrominance test
-            // Rejects red gaming chairs, black hoods, bright backgrounds, blue clothing
+            // Standard YCbCr & RGB human skin test (robust across all skin tones and room lighting)
             const Y  =  0.299 * r + 0.587 * g + 0.114 * b;
             const Cb = -0.1687 * r - 0.3313 * g + 0.5 * b + 128;
             const Cr =  0.5 * r - 0.4187 * g - 0.0813 * b + 128;
 
-            if (Y >= 20 && Cb >= 70 && Cb <= 140 && Cr >= 125 && Cr <= 180) {
+            const isSkin = (Y >= 18 && Cb >= 65 && Cb <= 158 && Cr >= 116 && Cr <= 185) ||
+                           (r > 45 && g > 25 && b > 20 && (r - g) >= 6 && (r - b) >= 8);
+
+            if (isSkin) {
               sumX += x;
               sumY += y;
               count++;
@@ -8301,22 +8307,22 @@
           }
         }
 
-        // Need at least 15 skin samples to form a valid human face
-        if (count >= 15) {
+        // Need at least 12 skin samples to form a valid human face
+        if (count >= 12) {
           const cx = Math.round(sumX / count);
           const cy = Math.round(sumY / count);
 
           const spanW = maxX - minX;
           // Snug face box dimensions: tightly fitted to head/face
-          const fw = Math.max(65, Math.min(Math.round(w * 0.36), Math.round(spanW * 0.88)));
+          const fw = Math.max(70, Math.min(Math.round(w * 0.40), Math.round(spanW * 0.90)));
           const fh = Math.round(fw * 1.25); // human face golden ratio
 
           const bx = Math.max(4, Math.min(w - fw - 4, Math.round(cx - fw / 2)));
-          const by = Math.max(4, Math.min(h - fh - 4, Math.round(cy - fh * 0.42)));
+          const by = Math.max(4, Math.min(h - fh - 4, Math.round(cy - fh * 0.44)));
 
           return {
             box: { x: bx, y: by, width: fw, height: fh },
-            score: 0.94,
+            score: 0.95,
             type: 'face',
             engine: 'Optical Head Tracker'
           };
@@ -8364,24 +8370,28 @@
         const frameW = frameCanvas.width;
         const frameH = frameCanvas.height;
 
-        const isCCTVMode = (video && !video.srcObject) && (currentAICamera && currentAICamera.id !== 'webcam');
-        const tinyScoreThreshold = isCCTVMode ? 0.35 : 0.12;
+        const isWebcam = Boolean(video && (video.srcObject !== null || (currentAICamera && currentAICamera.id === 'webcam')));
+        const isCCTVMode = !isWebcam && (currentAICamera && currentAICamera.id !== 'webcam');
+        const tinyScoreThreshold = isCCTVMode ? 0.35 : 0.08;
 
         let detections = [];
 
-        // 1. FAST REAL-TIME PRIMARY ENGINE: face-api.js TinyFaceDetector (Ultra responsive on webcam: 0.12)
+        // 1. FAST REAL-TIME PRIMARY ENGINE: face-api.js TinyFaceDetector (Ultra responsive 0.08 on webcam)
         if (typeof faceapi !== 'undefined' && faceapi.nets && faceapi.nets.tinyFaceDetector && faceapi.nets.tinyFaceDetector.isLoaded) {
           try {
             const tinyOpts = new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: tinyScoreThreshold });
             if (faceapi.nets.faceLandmark68TinyNet && faceapi.nets.faceLandmark68TinyNet.isLoaded && faceapi.nets.faceRecognitionNet && faceapi.nets.faceRecognitionNet.isLoaded) {
-              detections = await faceapi.detectAllFaces(frameCanvas, tinyOpts)
-                .withFaceLandmarks(true)
-                .withFaceDescriptors();
+              try {
+                detections = await faceapi.detectAllFaces(frameCanvas, tinyOpts)
+                  .withFaceLandmarks(true)
+                  .withFaceDescriptors();
+              } catch (eDesc) {
+                detections = await faceapi.detectAllFaces(frameCanvas, tinyOpts).withFaceLandmarks(true).catch(() => []);
+              }
             } else if (faceapi.nets.faceLandmark68TinyNet && faceapi.nets.faceLandmark68TinyNet.isLoaded) {
-              detections = await faceapi.detectAllFaces(frameCanvas, tinyOpts)
-                .withFaceLandmarks(true);
+              detections = await faceapi.detectAllFaces(frameCanvas, tinyOpts).withFaceLandmarks(true).catch(() => []);
             } else {
-              detections = await faceapi.detectAllFaces(frameCanvas, tinyOpts);
+              detections = await faceapi.detectAllFaces(frameCanvas, tinyOpts).catch(() => []);
             }
           } catch (eTiny) {}
         }
@@ -8392,6 +8402,41 @@
           try {
             tfjsFaces = await tfjsFaceDetector.estimateFaces(frameCanvas, { flipHorizontal: false });
           } catch (eTF) {}
+        }
+
+        // Check if direct MediaPipe FaceMesh produced results
+        if ((!detections || detections.length === 0) && directMediaPipeResults && directMediaPipeResults.multiFaceLandmarks && directMediaPipeResults.multiFaceLandmarks.length > 0) {
+          for (const lms of directMediaPipeResults.multiFaceLandmarks) {
+            let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+            for (let k = 0; k < lms.length; k++) {
+              const pt = lms[k];
+              const px = pt.x * frameW;
+              const py = pt.y * frameH;
+              if (px < minX) minX = px;
+              if (px > maxX) maxX = px;
+              if (py < minY) minY = py;
+              if (py > maxY) maxY = py;
+            }
+            const bw = maxX - minX;
+            const bh = maxY - minY;
+            if (bw >= 16 && bh >= 16) {
+              detections.push({
+                box: { x: Math.max(0, Math.round(minX)), y: Math.max(0, Math.round(minY)), width: Math.min(frameW - minX, Math.round(bw)), height: Math.min(frameH - minY, Math.round(bh)) },
+                descriptor: null,
+                mesh468: lms,
+                landmarks: lms,
+                score: 0.99,
+                engine: 'MediaPipe FaceMesh'
+              });
+            }
+          }
+        }
+
+        // Trigger direct MediaPipe send asynchronously for next frame
+        if (directMediaPipeFaceMesh && frameCanvas) {
+          try {
+            directMediaPipeFaceMesh.send({ image: frameCanvas }).catch(() => {});
+          } catch (eSend) {}
         }
 
         // If FaceAPI had no detections but TensorFlow found faces:
@@ -10888,6 +10933,9 @@
       if (camId === 'webcam') {
         if (placeholder) placeholder.style.display = 'none';
         currentAICamera = { id: 'webcam', title: 'Live Webcam Laptop' };
+        if (statusLabel) {
+          statusLabel.innerHTML = '<span class="text-emerald" style="color: #34d399;"><i class="fas fa-video mr-1"></i> Live Webcam Scanner Aktif (Auto Detect)</span>';
+        }
         startAIWebcamLive();
       } else {
         if (aiMainWebcamStream) {
