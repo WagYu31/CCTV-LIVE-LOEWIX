@@ -8155,8 +8155,15 @@
     let lastFaceAPIResult = null;
     let faceAPIDetectionRunning = false;
 
-    function isValidHumanFaceLandmarks(landmarks, box) {
-      if (!landmarks) return true;
+    function isValidHumanFaceLandmarks(landmarks, box, isCCTV = false) {
+      if (box) {
+        const bw = Math.max(1, box.width);
+        const bh = Math.max(1, box.height);
+        const aspect = bh / bw;
+        // Human faces are upright ovals (aspect ratio 0.60 - 2.4). Flat objects like car grills (aspect < 0.5) are rejected.
+        if (aspect < 0.60 || aspect > 2.4) return false;
+      }
+      if (!landmarks) return !isCCTV;
       const positions = landmarks.positions || landmarks;
       if (!positions || positions.length !== 68) return true;
       try {
@@ -8357,20 +8364,24 @@
         const frameW = frameCanvas.width;
         const frameH = frameCanvas.height;
 
+        const isCCTVMode = (video && !video.srcObject) && (currentAICamera && currentAICamera.id !== 'webcam');
+        const tinyScoreThreshold = isCCTVMode ? 0.35 : 0.12;
+
         let detections = [];
 
-        // 1. FAST REAL-TIME PRIMARY ENGINE: face-api.js TinyFaceDetector (Accurate scoreThreshold 0.38)
+        // 1. FAST REAL-TIME PRIMARY ENGINE: face-api.js TinyFaceDetector (Ultra responsive on webcam: 0.12)
         if (typeof faceapi !== 'undefined' && faceapi.nets && faceapi.nets.tinyFaceDetector && faceapi.nets.tinyFaceDetector.isLoaded) {
           try {
+            const tinyOpts = new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: tinyScoreThreshold });
             if (faceapi.nets.faceLandmark68TinyNet && faceapi.nets.faceLandmark68TinyNet.isLoaded && faceapi.nets.faceRecognitionNet && faceapi.nets.faceRecognitionNet.isLoaded) {
-              detections = await faceapi.detectAllFaces(frameCanvas, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.38 }))
+              detections = await faceapi.detectAllFaces(frameCanvas, tinyOpts)
                 .withFaceLandmarks(true)
                 .withFaceDescriptors();
             } else if (faceapi.nets.faceLandmark68TinyNet && faceapi.nets.faceLandmark68TinyNet.isLoaded) {
-              detections = await faceapi.detectAllFaces(frameCanvas, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.38 }))
+              detections = await faceapi.detectAllFaces(frameCanvas, tinyOpts)
                 .withFaceLandmarks(true);
             } else {
-              detections = await faceapi.detectAllFaces(frameCanvas, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.38 }));
+              detections = await faceapi.detectAllFaces(frameCanvas, tinyOpts);
             }
           } catch (eTiny) {}
         }
@@ -8388,7 +8399,14 @@
           for (const tfFace of tfjsFaces) {
             const kps = tfFace.keypoints;
             let fBox = null;
-            if (kps && kps.length >= 468) {
+            if (tfFace.box) {
+              const b = tfFace.box;
+              const bx = Math.max(0, Math.round(b.xMin !== undefined ? b.xMin : (b.x || 0)));
+              const by = Math.max(0, Math.round(b.yMin !== undefined ? b.yMin : (b.y || 0)));
+              const bw = Math.round(b.width || ((b.xMax || 0) - (b.xMin || 0)) || 40);
+              const bh = Math.round(b.height || ((b.yMax || 0) - (b.yMin || 0)) || 40);
+              fBox = { x: bx, y: by, width: bw, height: bh };
+            } else if (kps && kps.length >= 4) {
               let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
               for (let k = 0; k < kps.length; k++) {
                 const pt = kps[k];
@@ -8401,26 +8419,25 @@
               }
               const bw = maxX - minX;
               const bh = maxY - minY;
-              if (bw >= 24 && bh >= 24 && (bh / Math.max(1, bw) >= 0.7 && bh / Math.max(1, bw) <= 1.8)) {
-                const padX = bw * 0.06;
-                const padY = bh * 0.06;
-                fBox = {
-                  x: Math.max(0, Math.round(minX - padX)),
-                  y: Math.max(0, Math.round(minY - padY)),
-                  width: Math.min(frameW - Math.max(0, minX - padX), Math.round(bw + padX * 2)),
-                  height: Math.min(frameH - Math.max(0, minY - padY), Math.round(bh + padY * 2))
-                };
-              }
+              fBox = {
+                x: Math.max(0, Math.round(minX)),
+                y: Math.max(0, Math.round(minY)),
+                width: Math.min(frameW - minX, Math.round(bw)),
+                height: Math.min(frameH - minY, Math.round(bh))
+              };
             }
-            if (fBox && fBox.width >= 24 && fBox.height >= 24) {
-              detections.push({
-                box: fBox,
-                descriptor: null,
-                mesh468: kps,
-                landmarks: kps,
-                score: 0.98,
-                engine: 'TensorFlow.org'
-              });
+            if (fBox && fBox.width >= 16 && fBox.height >= 16) {
+              const aspect = fBox.height / Math.max(1, fBox.width);
+              if (!isCCTVMode || (aspect >= 0.65 && aspect <= 2.0)) {
+                detections.push({
+                  box: fBox,
+                  descriptor: null,
+                  mesh468: kps,
+                  landmarks: kps,
+                  score: 0.98,
+                  engine: 'TensorFlow.org'
+                });
+              }
             }
           }
         }
@@ -8428,13 +8445,12 @@
         // 3. Fallback to SSD MobileNet if still empty
         if ((!detections || detections.length === 0) && faceAPIReady && typeof faceapi !== 'undefined' && faceapi.nets.ssdMobilenetv1 && faceapi.nets.ssdMobilenetv1.isLoaded) {
           try {
-            detections = await faceapi.detectAllFaces(frameCanvas, new faceapi.SsdMobilenetv1Options({ minConfidence: 0.45, maxResults: 6 }))
+            const minConf = isCCTVMode ? 0.38 : 0.15;
+            detections = await faceapi.detectAllFaces(frameCanvas, new faceapi.SsdMobilenetv1Options({ minConfidence: minConf, maxResults: 6 }))
               .withFaceLandmarks(true)
               .withFaceDescriptors();
           } catch (eSSD) {}
         }
-
-        const isCCTVMode = (video && !video.srcObject) && (currentAICamera && currentAICamera.id !== 'webcam');
 
         // 4. CCTV SURVEILLANCE PEDESTRIAN DETECTION (COCO-SSD Neural Model only, verified score >= 0.50)
         if (isCCTVMode && (!detections || detections.length === 0)) {
@@ -8464,6 +8480,22 @@
               }
             } catch (eCoco) {}
           }
+        }
+
+        // 5. Fallback to Optical YCbCr Skin-Tone Head Tracker (ONLY for live webcam fallback)
+        if (!isCCTVMode && (!detections || detections.length === 0) && frameCanvas) {
+          try {
+            const opticalFace = findLiveWebcamHumanFace(frameCanvas);
+            if (opticalFace && opticalFace.box) {
+              detections.push({
+                box: opticalFace.box,
+                descriptor: null,
+                score: opticalFace.score,
+                type: 'face',
+                engine: 'Optical Head Tracker'
+              });
+            }
+          } catch (e) {}
         }
 
         if (detections && detections.length > 0) {
@@ -8501,7 +8533,7 @@
             }
 
             // Reject false positives using gentle landmark check (only for faces)
-            if (!isPerson && !isValidHumanFaceLandmarks(landmarks, box)) {
+            if (!isPerson && !isValidHumanFaceLandmarks(landmarks, box, isCCTVMode)) {
               continue;
             }
 

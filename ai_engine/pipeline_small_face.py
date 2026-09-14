@@ -350,7 +350,8 @@ class SmallFaceRecognitionPipeline:
                     for f in yn_faces:
                         fx, fy, fw, fh = map(int, f[:4])
                         conf = float(f[14])
-                        if conf >= 0.35 and fw >= 6 and fh >= 6:
+                        aspect = fh / max(1, fw)
+                        if conf >= 0.45 and fw >= 16 and fh >= 16 and (0.65 <= aspect <= 1.8):
                             # Expand crop slightly (25% margin)
                             pad_x = max(4, int(fw * 0.35))
                             pad_y = max(4, int(fh * 0.35))
@@ -360,7 +361,7 @@ class SmallFaceRecognitionPipeline:
                             cy2 = min(frame_h, fy + fh + pad_y)
                             
                             face_crop = frame[cy1:cy2, cx1:cx2].copy()
-                            if face_crop.shape[0] >= 6 and face_crop.shape[1] >= 6:
+                            if face_crop.shape[0] >= 14 and face_crop.shape[1] >= 14:
                                 candidate_faces.append({
                                     "box": (fx, fy, fw, fh),
                                     "person_box": (cx1, cy1, cx2 - cx1, int((cy2 - cy1) * 2.8)),
@@ -448,8 +449,8 @@ class SmallFaceRecognitionPipeline:
                     best = matches[0]
                     sim = best["similarity"]
                     dist = best["distance"]
-
-                    if sim >= threshold:
+                    eff_threshold = max(threshold, 0.48) if (fw < 28 or fh < 28) else threshold
+                    if sim >= eff_threshold:
                         target_id = int(best["identity_id"])
                         identity = get_identity_by_id(target_id) or get_identity_by_vector_id(target_id)
                         if identity:

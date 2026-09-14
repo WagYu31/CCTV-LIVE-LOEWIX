@@ -22,11 +22,11 @@ echo "================================================================="
 if [ -d "venv_ai" ]; then
     echo "✅ Using dedicated virtual environment: venv_ai"
     PYTHON_EXEC="./venv_ai/bin/python3"
-    UVICORN_EXEC="./venv_ai/bin/uvicorn"
+    UVICORN_EXEC="./venv_ai/bin/python3 -m uvicorn"
 else
     echo "⚠️ venv_ai not found. Falling back to system python3..."
     PYTHON_EXEC="python3"
-    UVICORN_EXEC="uvicorn"
+    UVICORN_EXEC="python3 -m uvicorn"
 fi
 
 # 2. Server Configuration
@@ -46,9 +46,9 @@ echo "================================================================="
 
 # Clean up any lingering process on port 5050
 echo "🧹 Memastikan port $LOEWIX_API_PORT bersih..."
-fuser -k "$LOEWIX_API_PORT/tcp" 2>/dev/null || true
-pkill -f "app_fastapi_server" 2>/dev/null || true
-pkill -f "uvicorn.*5050" 2>/dev/null || true
+fuser -k -9 "$LOEWIX_API_PORT/tcp" 2>/dev/null || true
+pkill -9 -f "app_fastapi_server" 2>/dev/null || true
+pkill -9 -f "uvicorn" 2>/dev/null || true
 sleep 1
 
 # 3. Launch FastAPI Server via Uvicorn
