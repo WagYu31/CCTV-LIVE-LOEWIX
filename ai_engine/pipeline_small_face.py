@@ -37,8 +37,8 @@ from ai_engine.database import get_identity_by_id, get_identity_by_vector_id, lo
 logger = logging.getLogger("loewix_pipeline")
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
-# ArcFace Cosine Distance Threshold (Distance <= 0.32 <=> Similarity >= 0.68)
-DEFAULT_MATCH_THRESHOLD = float(os.environ.get("LOEWIX_MATCH_THRESHOLD", 0.68))
+# ArcFace Cosine Similarity Threshold (DeepFace distance <= 0.52 <=> Cosine Similarity >= 0.48)
+DEFAULT_MATCH_THRESHOLD = float(os.environ.get("LOEWIX_MATCH_THRESHOLD", 0.48))
 
 
 class SmallFaceRecognitionPipeline:

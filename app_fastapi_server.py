@@ -273,12 +273,16 @@ def analyze_frame(req: FrameAnalysisRequest, background_tasks: BackgroundTasks):
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Gagal mendecode frame gambar: {e}")
 
+    eff_threshold = req.threshold or DEFAULT_MATCH_THRESHOLD
+    if eff_threshold > 0.55:
+        eff_threshold = 0.48
+
     # Process frame through pipeline (running in worker thread pool)
     try:
         detections = pipeline.process_frame(
             frame=frame,
             camera_id=req.camera_id,
-            threshold=req.threshold or DEFAULT_MATCH_THRESHOLD
+            threshold=eff_threshold
         )
     except Exception as e:
         import traceback
@@ -333,6 +337,8 @@ def recognize_crop(req: CropRecognizeRequest):
     distance = 1.0
 
     threshold = req.threshold if (req.threshold and req.threshold > 0) else DEFAULT_MATCH_THRESHOLD
+    if threshold > 0.55:
+        threshold = 0.48
 
     if embedding is not None and vector_db.size() > 0:
         matches = vector_db.search(embedding, top_k=1)
@@ -376,10 +382,94 @@ async def get_detection_logs(camera_id: Optional[str] = None, limit: int = 50):
     return {"success": True, "count": len(logs), "logs": logs}
 
 
+def sync_registered_faces_from_web_db():
+    """Import registered faces from data/loewix_db.json into SQLite and FAISS."""
+    web_db_path = PROJECT_ROOT / "data" / "loewix_db.json"
+    if not web_db_path.exists():
+        return 0
+
+    try:
+        with open(web_db_path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+    except Exception as e:
+        logger.warning(f"Could not read {web_db_path}: {e}")
+        return 0
+
+    ai_faces = data.get("ai_faces", [])
+    if not ai_faces:
+        return 0
+
+    existing_names = {i["full_name"].strip().lower() for i in get_all_identities()}
+    synced_count = 0
+
+    for face in ai_faces:
+        name = face.get("name", "").strip()
+        category = face.get("category", "employee")
+        photo = face.get("photo", "")
+        notes = face.get("notes", "")
+
+        if not name or not photo or photo == "assets/image/avatar-default.png":
+            continue
+
+        np_img = None
+        if photo.startswith("data:image"):
+            try:
+                np_img = decode_image_input(photo)
+            except Exception:
+                pass
+        else:
+            photo_file = PROJECT_ROOT / photo.lstrip("/")
+            if photo_file.exists():
+                try:
+                    np_img = cv2.imread(str(photo_file))
+                except Exception:
+                    pass
+
+        if np_img is not None and np_img.size > 0:
+            try:
+                clean_name = "".join(c for c in name if c.isalnum() or c in (" ", "-", "_")).strip()
+                person_dir = FACES_DIR / clean_name
+                os.makedirs(person_dir, exist_ok=True)
+                save_path = person_dir / f"face_synced_{int(time.time())}.jpg"
+                cv2.imwrite(str(save_path), np_img)
+
+                emb = pipeline.extract_arcface_embedding(np_img)
+                if emb is not None:
+                    identity = register_identity(
+                        full_name=name,
+                        category=category,
+                        notes=notes,
+                        photo_path=str(save_path.relative_to(PROJECT_ROOT))
+                    )
+                    vector_db.add_face(identity["id"], emb)
+                    existing_names.add(name.lower())
+                    synced_count += 1
+                    logger.info(f"✅ Auto-synced face '{name}' ({category}) into FAISS ArcFace DB.")
+            except Exception as e:
+                logger.warning(f"Failed auto-syncing face '{name}': {e}")
+
+    if synced_count > 0:
+        vector_db.save()
+        logger.info(f"🎉 Auto-sync complete: Added {synced_count} faces to FAISS index.")
+    return synced_count
+
+
+@app.post("/api/v1/system/sync-web-faces")
+@app.get("/api/v1/system/sync-web-faces")
+def api_sync_web_faces():
+    """Trigger manual or automatic sync from web database to FAISS vector DB."""
+    count = sync_registered_faces_from_web_db()
+    return {
+        "success": True,
+        "synced": count,
+        "total_indexed_faces": vector_db.size()
+    }
+
+
 @app.post("/api/v1/system/rebuild-index")
 @app.post("/api/deepface/clear_cache")
-async def rebuild_faiss_index():
-    """Scan registered face photos on disk, extract embeddings, and rebuild FAISS index."""
+def rebuild_faiss_index():
+    """Scan registered face photos on disk and web DB, extract embeddings, and rebuild FAISS index."""
     vector_db.clear()
     count = 0
 
@@ -394,16 +484,19 @@ async def rebuild_faiss_index():
                         if img is not None:
                             emb = pipeline.extract_arcface_embedding(img)
                             if emb is not None:
-                                # Ensure identity exists in DB
                                 reg = register_identity(full_name=name, category="employee")
                                 vector_db.add_face(reg["id"], emb)
                                 count += 1
                     except Exception as e:
                         logger.warning(f"Failed to index photo {p}: {e}")
 
+    # Also sync any faces from web DB (loewix_db.json)
+    web_synced = sync_registered_faces_from_web_db()
+    count += web_synced
+
     vector_db.save()
     logger.info(f"Rebuilt FAISS vector index with {count} faces.")
-    return {"success": True, "indexed_faces": count}
+    return {"success": True, "indexed_faces": count, "total_faces": vector_db.size()}
 
 
 # ---------------------------------------------------------------------------
@@ -434,6 +527,8 @@ async def websocket_live_feed(websocket: WebSocket, camera_id: str):
 async def startup_event():
     init_db()
     vector_db.load()
+    # Auto-import any registered faces from web database (data/loewix_db.json)
+    sync_registered_faces_from_web_db()
     logger.info("=" * 65)
     logger.info("🚀 LOEWIX CCTV AI VISION — FastAPI Server Started")
     logger.info(f"   API Address : http://{HOST}:{PORT}")

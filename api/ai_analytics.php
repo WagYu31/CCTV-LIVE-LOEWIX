@@ -223,8 +223,8 @@ if ($action === 'get_ai_data') {
     exit;
 }
 
-// DEEPFACE INTEGRATION: Sync face photos to DeepFace DB directory
-function syncFaceToDeepFaceDB($name, $photoPath) {
+// DEEPFACE INTEGRATION: Sync face photos to DeepFace ArcFace FAISS DB
+function syncFaceToDeepFaceDB($name, &$photoPath, $category = 'employee', $notes = '') {
     $projectRoot = realpath(__DIR__ . '/..');
     $deepfaceDBDir = $projectRoot . '/assets/uploads/faces';
 
@@ -237,35 +237,59 @@ function syncFaceToDeepFaceDB($name, $photoPath) {
         @mkdir($personDir, 0777, true);
     }
 
-    // Resolve absolute photo path
-    $absPhotoPath = $photoPath;
-    if (!file_exists($absPhotoPath)) {
-        $absPhotoPath = $projectRoot . '/' . ltrim($photoPath, '/');
+    $b64Payload = null;
+
+    if (str_starts_with($photoPath, 'data:image') || strpos($photoPath, 'data:image') === 0) {
+        $parts = explode(',', $photoPath);
+        if (count($parts) === 2) {
+            $binary = base64_decode($parts[1]);
+            if ($binary !== false) {
+                $destFilename = 'face_' . date('Ymd_His') . '_' . rand(1000, 9999) . '.jpg';
+                $destPath = $personDir . '/' . $destFilename;
+                if (@file_put_contents($destPath, $binary)) {
+                    $b64Payload = $photoPath;
+                    $photoPath = 'assets/uploads/faces/' . $safeName . '/' . $destFilename;
+                }
+            }
+        }
+    } else {
+        $absPhotoPath = $photoPath;
+        if (!file_exists($absPhotoPath)) {
+            $absPhotoPath = $projectRoot . '/' . ltrim($photoPath, '/');
+        }
+        if (file_exists($absPhotoPath)) {
+            $ext = pathinfo($absPhotoPath, PATHINFO_EXTENSION) ?: 'jpg';
+            $destFilename = 'face_' . date('Ymd_His') . '_' . rand(1000, 9999) . '.' . $ext;
+            $destPath = $personDir . '/' . $destFilename;
+            @copy($absPhotoPath, $destPath);
+            $content = @file_get_contents($absPhotoPath);
+            if ($content) {
+                $b64Payload = 'data:image/jpeg;base64,' . base64_encode($content);
+            }
+        }
     }
 
-    if (!file_exists($absPhotoPath)) {
-        return false;
-    }
-
-    // Copy photo to DeepFace DB with unique name
-    $ext = pathinfo($absPhotoPath, PATHINFO_EXTENSION) ?: 'jpg';
-    $destFilename = 'face_' . date('Ymd_His') . '_' . rand(1000, 9999) . '.' . $ext;
-    $destPath = $personDir . '/' . $destFilename;
-
-    if (@copy($absPhotoPath, $destPath)) {
-        // Notify DeepFace server to clear cache (best-effort)
-        $ch = curl_init('http://localhost:5050/api/deepface/clear_cache');
+    if ($b64Payload) {
+        $ch = curl_init('http://127.0.0.1:5050/api/v1/faces/register');
         curl_setopt_array($ch, [
             CURLOPT_POST => true,
             CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_TIMEOUT => 2,
-            CURLOPT_CONNECTTIMEOUT => 1,
-            CURLOPT_HTTPHEADER => ['Content-Type: application/json']
+            CURLOPT_TIMEOUT => 8,
+            CURLOPT_CONNECTTIMEOUT => 2,
+            CURLOPT_HTTPHEADER => ['Content-Type: application/json'],
+            CURLOPT_POSTFIELDS => json_encode([
+                'name' => $name,
+                'category' => $category,
+                'notes' => $notes,
+                'img_b64' => $b64Payload
+            ])
         ]);
-        @curl_exec($ch);
-        @curl_close($ch);
-        return true;
+        $res = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+        return ($httpCode === 200);
     }
+
     return false;
 }
 
@@ -297,25 +321,34 @@ if ($action === 'deepface_status') {
     exit;
 }
 
-// DEEPFACE: Sync all registered face photos to DeepFace DB directory
+// DEEPFACE: Sync all registered face photos to DeepFace FAISS DB
 if ($action === 'sync_face_db') {
     $synced = 0;
     $errors = 0;
-    foreach ($db['ai_faces'] as $face) {
-        if (!empty($face['photo']) && $face['photo'] !== 'assets/image/avatar-default.png') {
-            if (syncFaceToDeepFaceDB($face['name'], $face['photo'])) {
+    $details = [];
+    foreach ($db['ai_faces'] as &$face) {
+        $fName = $face['name'] ?? '';
+        $fPhoto = $face['photo'] ?? '';
+        $fCat = $face['category'] ?? 'employee';
+        $fNotes = $face['notes'] ?? '';
+        if (!empty($fPhoto) && $fPhoto !== 'assets/image/avatar-default.png') {
+            if (syncFaceToDeepFaceDB($fName, $face['photo'], $fCat, $fNotes)) {
                 $synced++;
+                $details[] = "$fName (OK)";
             } else {
                 $errors++;
+                $details[] = "$fName (Gagal)";
             }
         }
     }
+    save_db_data($db);
 
     echo json_encode([
         'success' => true,
-        'message' => "Sinkronisasi selesai: $synced wajah berhasil, $errors gagal.",
+        'message' => "Sinkronisasi selesai: $synced wajah berhasil didaftarkan ke AI FAISS ArcFace.",
         'synced' => $synced,
-        'errors' => $errors
+        'errors' => $errors,
+        'details' => $details
     ]);
     exit;
 }
@@ -342,9 +375,9 @@ if ($action === 'register_face' || $action === 'update_face') {
                 $f['category'] = $category;
                 $f['role_title'] = $roleTitle;
                 if (!empty($photo)) {
+                    // Auto-sync photo to DeepFace ArcFace FAISS DB & convert base64 to clean file path
+                    syncFaceToDeepFaceDB($name, $photo, $category, $notes);
                     $f['photo'] = $photo;
-                    // Auto-sync updated photo to DeepFace DB
-                    syncFaceToDeepFaceDB($name, $photo);
                 }
                 $f['notes'] = $notes;
                 $f['updated_at'] = date('Y-m-d H:i:s');
@@ -355,13 +388,18 @@ if ($action === 'register_face' || $action === 'update_face') {
         }
         if ($found) {
             save_db_data($db);
-            echo json_encode(['success' => true, 'message' => 'Data wajah berhasil diperbarui & di-rescan!', 'face' => $savedFace]);
+            echo json_encode(['success' => true, 'message' => 'Data wajah berhasil diperbarui & disinkronkan ke AI ArcFace!', 'face' => $savedFace]);
             exit;
         }
     }
 
     $existingIds = array_column($db['ai_faces'], 'id');
     $newId = count($existingIds) > 0 ? max($existingIds) + 1 : 1;
+
+    // Auto-sync new face photo to DeepFace ArcFace FAISS DB before saving
+    if (!empty($photo) && $photo !== 'assets/image/avatar-default.png') {
+        syncFaceToDeepFaceDB($name, $photo, $category, $notes);
+    }
 
     $newFace = [
         'id' => $newId,
@@ -377,12 +415,7 @@ if ($action === 'register_face' || $action === 'update_face') {
     $db['ai_faces'][] = $newFace;
     save_db_data($db);
 
-    // Auto-sync new face photo to DeepFace DB
-    if (!empty($newFace['photo']) && $newFace['photo'] !== 'assets/image/avatar-default.png') {
-        syncFaceToDeepFaceDB($name, $newFace['photo']);
-    }
-
-    echo json_encode(['success' => true, 'message' => 'Data wajah berhasil didaftarkan!', 'face' => $newFace]);
+    echo json_encode(['success' => true, 'message' => 'Data wajah berhasil didaftarkan & disinkronkan ke AI ArcFace!', 'face' => $newFace]);
     exit;
 }
 

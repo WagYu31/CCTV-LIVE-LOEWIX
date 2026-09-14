@@ -2144,6 +2144,9 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
             <button class="btn btn-sm btn-primary font-weight-bold px-3 py-2" onclick="openRegisterPlateModal()" style="border-radius: 8px; font-size: 12.5px; background: #0284c7; border: none;">
               <i class="fas fa-plus-circle mr-1.5"></i> + Daftarkan Plat Kendaraan
             </button>
+            <button class="btn btn-sm font-weight-bold px-3 py-2 text-white" id="btn-sync-faces-ai" onclick="syncAllFacesToAI()" style="border-radius: 8px; font-size: 12.5px; background: #6366f1; border: none;" title="Sinkronkan database wajah ke Mesin AI ArcFace FAISS">
+              <i class="fas fa-arrows-rotate mr-1.5"></i> Sinkron Database AI
+            </button>
           </div>
         </div>
 
@@ -7687,7 +7690,7 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
           body: JSON.stringify({
             camera_id: camId,
             frame_b64: b64,
-            threshold: 0.65
+            threshold: 0.48
           }),
           signal: controller.signal
         });
@@ -11742,6 +11745,42 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
       loadAIData(true);
     }
 
+    async function syncAllFacesToAI() {
+      const btn = document.getElementById('btn-sync-faces-ai');
+      const origHtml = btn ? btn.innerHTML : '';
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1.5"></i> Sinkronisasi AI...';
+      }
+      try {
+        const fd = new FormData();
+        fd.append('action', 'sync_face_db');
+        const res = await fetch('../api/ai_analytics.php', { method: 'POST', body: fd });
+        const data = await res.json();
+
+        // Also trigger Python FAISS reload
+        try {
+          const pyUrl = getDeepFaceUrl('/api/v1/system/sync-web-faces');
+          await fetch(pyUrl, { method: 'POST' });
+        } catch(e) {}
+
+        if (data.success) {
+          alert('🎉 ' + (data.message || 'Sinkronisasi berhasil!') + '\nSemua foto wajah di Direktori Wajah telah disinkronkan ke AI ArcFace FAISS.');
+          loadAIData(true);
+        } else {
+          alert('⚠️ ' + (data.message || 'Proses sinkronisasi selesai.'));
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Gagal menyinkronkan data wajah ke AI: ' + err.message);
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = origHtml;
+        }
+      }
+    }
+
     function openRegisterPlateModal() {
       document.getElementById('formRegisterPlate').reset();
       openModalHelper('modalRegisterPlate');
@@ -11857,6 +11896,7 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
     window.clearAILogs = clearAILogs;
     window.filterFacesList = filterFacesList;
     window.filterPlatesList = filterPlatesList;
+    window.syncAllFacesToAI = syncAllFacesToAI;
   </script>
 </body>
 </html>
