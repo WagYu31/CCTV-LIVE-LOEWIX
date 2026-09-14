@@ -3808,6 +3808,8 @@
   <script src="../assets/js/popper.min.js"></script>
   <script src="../assets/js/bootstrap.min.js"></script>
   <script>
+    var currentAICamera = null;
+    var aiMainWebcamStream = null;
     let currentCustomer = null;
     let customerCameras = [];
     try {
@@ -7584,6 +7586,7 @@
 
       try {
         const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 8000);
         const url = getDeepFaceUrl('/api/deepface/find');
         const res = await fetch(url, {
           method: 'POST',
@@ -8392,10 +8395,10 @@
 
         let detections = [];
 
-        // 1. FAST REAL-TIME PRIMARY ENGINE: face-api.js TinyFaceDetector (Ultra responsive 0.08 on webcam)
+        // 1. FAST REAL-TIME PRIMARY ENGINE: face-api.js TinyFaceDetector (Ultra responsive 0.08 on webcam, 320px input)
         if (typeof faceapi !== 'undefined' && faceapi.nets && faceapi.nets.tinyFaceDetector && faceapi.nets.tinyFaceDetector.isLoaded) {
           try {
-            const tinyOpts = new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: tinyScoreThreshold });
+            const tinyOpts = new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: tinyScoreThreshold });
             if (faceapi.nets.faceLandmark68TinyNet && faceapi.nets.faceLandmark68TinyNet.isLoaded && faceapi.nets.faceRecognitionNet && faceapi.nets.faceRecognitionNet.isLoaded) {
               try {
                 detections = await faceapi.detectAllFaces(frameCanvas, tinyOpts)
@@ -8408,6 +8411,13 @@
               detections = await faceapi.detectAllFaces(frameCanvas, tinyOpts).withFaceLandmarks(true).catch(() => []);
             } else {
               detections = await faceapi.detectAllFaces(frameCanvas, tinyOpts).catch(() => []);
+            }
+
+            // Fallback: If 0 faces detected on canvas, try direct video element directly
+            if ((!detections || detections.length === 0) && video && (video.readyState >= 2 || video.srcObject)) {
+              try {
+                detections = await faceapi.detectAllFaces(video, tinyOpts).withFaceLandmarks(true).catch(() => []);
+              } catch (eVid) {}
             }
           } catch (eTiny) {}
         }
@@ -9889,7 +9899,7 @@
 
         // Render Active Face & Plate AI Entity Brackets
         activeAIEntities.forEach(ent => {
-          if (ent.type === 'plate') {
+          if (ent.type === 'plate' && typeof drawPlateBracket === 'function') {
             drawPlateBracket(ctx, ent);
           } else {
             drawEntityBracket(ctx, ent);
@@ -10823,8 +10833,6 @@
       }
     }
 
-    let aiMainWebcamStream = null;
-
     async function startAIWebcamLive() {
       const video = document.getElementById('ai-video-player');
       const select = document.getElementById('ai-camera-selector');
@@ -10868,8 +10876,6 @@
         alert('Gagal mengakses kamera laptop/HP. Pastikan browser diizinkan mengakses kamera.');
       }
     }
-
-    let currentAICamera = null;
 
     function showAICameraOfflineNotice(camTitle) {
       const placeholder = document.getElementById('ai-video-placeholder');

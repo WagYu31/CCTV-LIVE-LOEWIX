@@ -49,7 +49,7 @@ if (is_resource($ch)) {
 }
 
 if ($curlError || !$response) {
-    http_response_code(502);
+    http_response_code(200);
     echo json_encode([
         'status' => 'offline',
         'success' => false,
