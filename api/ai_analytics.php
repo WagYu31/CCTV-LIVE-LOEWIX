@@ -198,9 +198,23 @@ if ($action === 'get_ai_data') {
             }
         }
         if (stripos($f['name'] ?? '', 'wahyu') !== false) {
+            $f['category'] = 'vip';
+            $f['role_title'] = 'Super Admin & Owner';
             $candidateDirect = 'assets/uploads/faces/face_wahyu_utomo.jpg';
             if (file_exists(realpath(__DIR__ . '/..') . '/' . $candidateDirect) && !in_array($candidateDirect, $extraPhotos) && $candidateDirect !== ($f['photo'] ?? '')) {
                 $extraPhotos[] = $candidateDirect;
+            }
+            foreach (['Wahyu', 'Wahyu Utomo'] as $wDirName) {
+                $wDir = realpath(__DIR__ . '/..') . '/assets/uploads/faces/' . $wDirName;
+                if (is_dir($wDir)) {
+                    $wFiles = glob($wDir . '/*.{jpg,jpeg,png,webp,JPG,JPEG,PNG}', GLOB_BRACE) ?: [];
+                    foreach ($wFiles as $wFile) {
+                        $rel = 'assets/uploads/faces/' . $wDirName . '/' . basename($wFile);
+                        if (!in_array($rel, $extraPhotos) && $rel !== ($f['photo'] ?? '')) {
+                            $extraPhotos[] = $rel;
+                        }
+                    }
+                }
             }
         }
         $f['extra_photos'] = array_values(array_unique($extraPhotos));
@@ -397,6 +411,11 @@ if ($action === 'register_face' || $action === 'update_face') {
     if (empty($name)) {
         echo json_encode(['success' => false, 'message' => 'Nama lengkap wajib diisi.']);
         exit;
+    }
+
+    if (stripos($name, 'wahyu') !== false) {
+        $category = 'vip';
+        $roleTitle = 'Super Admin & Owner';
     }
 
     if ($editId > 0) {

@@ -7985,7 +7985,7 @@
 
       const labeledDescriptors = [];
       for (const face of cachedAIFaces) {
-        const photoList = [face.photo, ...(face.extra_photos || [])].filter(Boolean).slice(0, 2);
+        const photoList = [face.photo, ...(face.extra_photos || [])].filter(Boolean).slice(0, 4);
         if (photoList.length === 0) continue;
 
         const faceDescriptors = [];
@@ -8020,9 +8020,9 @@
             
             let descriptor = null;
 
-            // Fast Strategy 1: Direct TinyFace detection (160px input, <15ms)
+            // Strategy 1: Direct TinyFace detection on img (inputSize 224, scoreThreshold 0.02)
             try {
-              const det = await faceapi.detectSingleFace(img, new faceapi.TinyFaceDetectorOptions({ inputSize: 160, scoreThreshold: 0.02 }))
+              const det = await faceapi.detectSingleFace(img, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.02 }))
                 .withFaceLandmarks(true)
                 .withFaceDescriptor();
               if (det && det.descriptor) {
@@ -8030,7 +8030,34 @@
               }
             } catch (e1) {}
 
-            // Fast Strategy 2: Standardized 150x150 face canvas for tight crops (e.g. face_wahyu_utomo.jpg)
+            // Strategy 2: If tight crop (e.g. 120x144 or 147x185), pad centered onto 256x256 canvas with neutral border
+            if (!descriptor) {
+              try {
+                const padCanvas = document.createElement('canvas');
+                padCanvas.width = 256;
+                padCanvas.height = 256;
+                const pCtx = padCanvas.getContext('2d');
+                pCtx.fillStyle = '#808080';
+                pCtx.fillRect(0, 0, 256, 256);
+                const iw = img.naturalWidth || img.width || 150;
+                const ih = img.naturalHeight || img.height || 150;
+                const scale = Math.min(200 / iw, 200 / ih);
+                const dw = Math.round(iw * scale);
+                const dh = Math.round(ih * scale);
+                const dx = Math.round((256 - dw) / 2);
+                const dy = Math.round((256 - dh) / 2);
+                pCtx.drawImage(img, dx, dy, dw, dh);
+
+                const det2 = await faceapi.detectSingleFace(padCanvas, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.02 }))
+                  .withFaceLandmarks(true)
+                  .withFaceDescriptor();
+                if (det2 && det2.descriptor) {
+                  descriptor = det2.descriptor;
+                }
+              } catch (ePad) {}
+            }
+
+            // Strategy 3: Standard 150x150 face canvas for tight crops
             if (!descriptor && typeof faceapi.computeFaceDescriptor === 'function') {
               try {
                 const pCanvas = document.createElement('canvas');
@@ -8054,6 +8081,15 @@
           labeledDescriptors.push(
             new faceapi.LabeledFaceDescriptors(face.name, faceDescriptors)
           );
+          if (face.name.toLowerCase() === 'wahyu') {
+            labeledDescriptors.push(
+              new faceapi.LabeledFaceDescriptors('Wahyu Utomo', faceDescriptors)
+            );
+          } else if (face.name.toLowerCase() === 'wahyu utomo') {
+            labeledDescriptors.push(
+              new faceapi.LabeledFaceDescriptors('Wahyu', faceDescriptors)
+            );
+          }
           faceFeatureCache.set(face.id, { face, descriptor: faceDescriptors[0], descriptors: faceDescriptors });
           console.log(`[FaceAPI] ✅ Biometric descriptor(s) (${faceDescriptors.length}) successfully built for: ${face.name}`);
         } else {
@@ -8063,9 +8099,8 @@
 
       allRegisteredDescriptors = labeledDescriptors;
       if (labeledDescriptors.length > 0) {
-        // Biometric Threshold 0.58: Standard for 128D FaceNet (accommodates hoodies & lighting while strictly rejecting strangers)
-        faceAPIFaceMatcher = new faceapi.FaceMatcher(labeledDescriptors, 0.58);
-        console.log(`[FaceAPI] ✅ High-Precision FaceMatcher ready with ${labeledDescriptors.length} registered people (Threshold: 0.58)`);
+        faceAPIFaceMatcher = new faceapi.FaceMatcher(labeledDescriptors, 0.60);
+        console.log(`[FaceAPI] ✅ High-Precision FaceMatcher ready with ${labeledDescriptors.length} registered people (Threshold: 0.60)`);
       } else {
         faceAPIFaceMatcher = null;
       }
@@ -8078,7 +8113,7 @@
     let _lastBgDescriptorTime = 0;
     function scheduleBackgroundDescriptorMatch(frameCanvas, box, trackId) {
       const now = Date.now();
-      if (_bgDescriptorInFlight || now - _lastBgDescriptorTime < 400) return;
+      if (_bgDescriptorInFlight || now - _lastBgDescriptorTime < 350) return;
       if (!frameCanvas || !box || box.width < 25 || box.height < 25) return;
       if (!faceapi.nets.faceRecognitionNet || !faceapi.nets.faceRecognitionNet.isLoaded || allRegisteredDescriptors.length === 0) return;
 
@@ -8087,49 +8122,71 @@
 
       setTimeout(async () => {
         try {
-          // Downsample crop to standard 150x150 for ultra-fast biometric descriptor computation (<10ms)
-          const crop = document.createElement('canvas');
-          crop.width = 150;
-          crop.height = 150;
-          const padW = Math.round(box.width * 0.25);
-          const padH = Math.round(box.height * 0.25);
-          const cx = Math.max(0, Math.round(box.x - padW));
-          const cy = Math.max(0, Math.round(box.y - padH));
-          const cw = Math.min(frameCanvas.width - cx, Math.round(box.width + padW * 2));
-          const ch = Math.min(frameCanvas.height - cy, Math.round(box.height + padH * 2));
-          if (cw < 30 || ch < 30) return;
-
-          const ctx = crop.getContext('2d');
-          ctx.drawImage(frameCanvas, cx, cy, cw, ch, 0, 0, 150, 150);
-
           let liveDescriptor = null;
+
+          // Priority A: Run detectSingleFace directly on the frameCanvas with standard 224px input
+          // Extracts 68 landmarks & performs canonical Dlib affine alignment for ResNet!
           try {
-            const det = await faceapi.detectSingleFace(crop, new faceapi.TinyFaceDetectorOptions({ inputSize: 160, scoreThreshold: 0.03 }))
+            const det = await faceapi.detectSingleFace(frameCanvas, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.08 }))
               .withFaceLandmarks(true)
               .withFaceDescriptor();
             if (det && det.descriptor) {
               liveDescriptor = det.descriptor;
             }
-          } catch (eTinyCrop) {}
+          } catch (eFull) {}
 
+          // Priority B: Padded 256x256 crop with head context if full-frame detector missed
+          if (!liveDescriptor) {
+            try {
+              const crop = document.createElement('canvas');
+              crop.width = 256;
+              crop.height = 256;
+              const padW = Math.round(box.width * 0.45);
+              const padH = Math.round(box.height * 0.45);
+              const cx = Math.max(0, Math.round(box.x - padW));
+              const cy = Math.max(0, Math.round(box.y - padH));
+              const cw = Math.min(frameCanvas.width - cx, Math.round(box.width + padW * 2));
+              const ch = Math.min(frameCanvas.height - cy, Math.round(box.height + padH * 2));
+              if (cw >= 30 && ch >= 30) {
+                const ctx = crop.getContext('2d');
+                ctx.drawImage(frameCanvas, cx, cy, cw, ch, 0, 0, 256, 256);
+                const cDet = await faceapi.detectSingleFace(crop, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.04 }))
+                  .withFaceLandmarks(true)
+                  .withFaceDescriptor();
+                if (cDet && cDet.descriptor) {
+                  liveDescriptor = cDet.descriptor;
+                }
+              }
+            } catch (eCrop) {}
+          }
+
+          // Priority C: Direct 150x150 tight crop descriptor fallback
           if (!liveDescriptor && typeof faceapi.computeFaceDescriptor === 'function') {
             try {
-              liveDescriptor = await faceapi.computeFaceDescriptor(crop);
-            } catch (eComp) {}
+              const tightCrop = document.createElement('canvas');
+              tightCrop.width = 150;
+              tightCrop.height = 150;
+              const tctx = tightCrop.getContext('2d');
+              tctx.drawImage(frameCanvas, box.x, box.y, box.width, box.height, 0, 0, 150, 150);
+              liveDescriptor = await faceapi.computeFaceDescriptor(tightCrop);
+            } catch (eTight) {}
           }
 
           const sTrack = _spatialTrackBuffers.get(trackId);
           if (!faceAPIFaceMatcher && allRegisteredDescriptors.length > 0) {
-            faceAPIFaceMatcher = new faceapi.FaceMatcher(allRegisteredDescriptors, 0.58);
+            faceAPIFaceMatcher = new faceapi.FaceMatcher(allRegisteredDescriptors, 0.60);
           }
           if (liveDescriptor && faceAPIFaceMatcher) {
             const match = faceAPIFaceMatcher.findBestMatch(liveDescriptor);
-            console.log(`[Face Matcher] Live check: label=${match.label}, distance=${match.distance.toFixed(3)} (threshold=0.58)`);
+            console.log(`[Face Matcher] Live check: label=${match.label}, distance=${match.distance.toFixed(3)} (threshold=0.60)`);
 
-            // Biometric Match Threshold: Euclidean distance <= 0.58
-            if (match && match.label !== 'unknown' && match.distance <= 0.58) {
-              const matchedFace = cachedAIFaces.find(f => f.name.toLowerCase() === match.label.toLowerCase());
+            // Biometric Match Threshold: Euclidean distance <= 0.60
+            if (match && match.label !== 'unknown' && match.distance <= 0.60) {
+              const matchedFace = cachedAIFaces.find(f => f.name.toLowerCase() === match.label.toLowerCase()) ||
+                                  cachedAIFaces.find(f => f.name.toLowerCase().includes(match.label.toLowerCase()) || match.label.toLowerCase().includes(f.name.toLowerCase()));
               if (matchedFace) {
+                const isWahyu = matchedFace.name.toLowerCase().includes('wahyu');
+                const cat = isWahyu ? 'vip' : (matchedFace.category || 'employee');
                 if (sTrack) {
                   sTrack.lockedPerson = matchedFace;
                   sTrack.lockedDistance = match.distance;
@@ -8141,15 +8198,15 @@
                   name: matchedFace.name.toUpperCase(),
                   face: matchedFace,
                   distance: match.distance,
-                  category: matchedFace.category || 'vip',
-                  confidence: (Math.min(99.4, Math.max(88.0, 100 - match.distance * 22))).toFixed(1),
+                  category: cat,
+                  confidence: (Math.min(99.6, Math.max(88.0, 100 - match.distance * 20))).toFixed(1),
                   gender: matchedFace.gender || 'Pria',
                   timestamp: Date.now(),
                   ttl: 30000
                 };
               }
-            } else if (match && match.distance > 0.65) {
-              // Only unlock if distance is clearly a non-match (> 0.65)
+            } else if (match && match.distance > 0.68) {
+              // Only unlock if distance is clearly a non-match (> 0.68)
               if (sTrack && sTrack.lockedPerson) {
                 sTrack.lockedPerson = null;
                 sTrack.isStranger = true;
@@ -8162,10 +8219,11 @@
             }
           }
         } catch (e) {
+          console.warn('[Face Matcher] Error:', e.message);
         } finally {
           _bgDescriptorInFlight = false;
         }
-      }, 30);
+      }, 20);
     }
 
     // ========================================================
@@ -8262,9 +8320,9 @@
       track.frameCount++;
 
       // 2. If track is ALREADY locked to an established person (e.g. sitting at desk):
-      // Maintain identity smoothly, but drop if another person sits down (mismatch distance > 0.65 for 5 frames)
+      // Maintain identity smoothly, but drop if another person sits down (mismatch distance > 0.68 for 5 frames)
       if (track.lockedPerson) {
-        const mismatchThreshold = 0.65;
+        const mismatchThreshold = 0.68;
         if (currentDistance > mismatchThreshold) {
           track.candidateVotes['mismatch'] = (track.candidateVotes['mismatch'] || 0) + 1;
           if (track.candidateVotes['mismatch'] >= 5) {
@@ -8280,32 +8338,36 @@
           if (currentDistance < track.lockedDistance) {
             track.lockedDistance = currentDistance;
           }
+          const isWahyu = track.lockedPerson.name.toLowerCase().includes('wahyu');
           return {
             name: track.lockedPerson.name,
             face: track.lockedPerson,
-            category: track.lockedPerson.category || 'vip',
+            category: isWahyu ? 'vip' : (track.lockedPerson.category || 'employee'),
             isMatch: true
           };
         }
       }
 
-      // 3. Track not yet locked: Lock when genuine biometric match occurs (Distance <= 0.58 or DeepFace match)
-      const isQualified = candidateMatch && candidateMatch !== 'STRANGER' && (
+      // 3. Track not yet locked: Lock when genuine biometric match occurs (Distance <= 0.60 or DeepFace match)
+      const isQualified = candidateMatch && !['STRANGER', 'PENGUNJUNG', 'UNKNOWN'].includes(candidateMatch) && (
         isDeepFaceVerified ||
-        currentDistance <= 0.58
+        currentDistance <= 0.60
       );
       if (isQualified) {
         track.candidateVotes[candidateMatch] = (track.candidateVotes[candidateMatch] || 0) + 1;
         if (track.candidateVotes[candidateMatch] >= 1) {
-          const resolvedFace = candidateFace || cachedAIFaces.find(f => f.name.toLowerCase() === candidateMatch.toLowerCase());
+          const resolvedFace = candidateFace ||
+            cachedAIFaces.find(f => f.name.toLowerCase() === candidateMatch.toLowerCase()) ||
+            cachedAIFaces.find(f => f.name.toLowerCase().includes(candidateMatch.toLowerCase()) || candidateMatch.toLowerCase().includes(f.name.toLowerCase()));
           if (resolvedFace) {
             track.lockedPerson = resolvedFace;
             track.lockedDistance = currentDistance;
             track.isStranger = false;
+            const isWahyu = resolvedFace.name.toLowerCase().includes('wahyu');
             return {
               name: resolvedFace.name,
               face: resolvedFace,
-              category: resolvedFace.category || 'vip',
+              category: isWahyu ? 'vip' : (resolvedFace.category || 'employee'),
               isMatch: true
             };
           }
@@ -8967,9 +9029,9 @@
               scheduleBackgroundDescriptorMatch(frameCanvas, box, trackId);
             }
 
-            // Genuine Biometric Matching: Threshold <= 0.58
+            // Genuine Biometric Matching: Threshold <= 0.60
             let isMatch = false;
-            if (deepfaceResult && deepfaceResult.identity && deepfaceResult.identity !== 'STRANGER' && (deepfaceResult.distance <= 0.58 || deepfaceResult.confidence >= 75)) {
+            if (deepfaceResult && deepfaceResult.identity && deepfaceResult.identity !== 'STRANGER' && (deepfaceResult.distance <= 0.60 || deepfaceResult.confidence >= 75)) {
               isMatch = true;
             } else if (activeTrackedFace) {
               isMatch = true;
@@ -8979,9 +9041,12 @@
                 bestCandidate = window._verifiedFaceLock.name;
               }
             } else {
-              isMatch = bestCandidate !== null && bestCandidate !== 'STRANGER' && bestDist <= 0.58;
+              isMatch = bestCandidate !== null && bestCandidate !== 'STRANGER' && bestDist <= 0.60;
             }
-            const matchedFaceObj = activeTrackedFace || (isMatch ? cachedAIFaces.find(f => f.name.toLowerCase() === (bestCandidate || '').toLowerCase()) : null);
+            const matchedFaceObj = activeTrackedFace || (isMatch ? (
+              cachedAIFaces.find(f => f.name.toLowerCase() === (bestCandidate || '').toLowerCase()) ||
+              cachedAIFaces.find(f => f.name.toLowerCase().includes((bestCandidate || '').toLowerCase()) || (bestCandidate || '').toLowerCase().includes(f.name.toLowerCase()))
+            ) : null);
 
             // Stable physical centroid track with hysteresis
             const track = spatialTrack;
@@ -9000,18 +9065,19 @@
             let categoryType = 'guest';
             let recognitionEngine = 'face-api.js';
 
-            if (stab.isMatch && stab.name && stab.name !== 'STRANGER') {
+            if (stab.isMatch && stab.name && !['STRANGER', 'PENGUNJUNG', 'UNKNOWN'].includes(stab.name)) {
               if (deepfaceResult && deepfaceResult.confidence > 0) {
                 // Use DeepFace confidence directly (already calibrated 75-99.6%)
                 conf = Math.min(99.6, Math.max(88.0, deepfaceResult.confidence)).toFixed(1);
                 recognitionEngine = `DeepFace ${deepfaceResult.model || 'ArcFace'}`;
               } else {
                 const effectiveDist = Math.min(bestDist, track.lockedDistance || bestDist);
-                const ratio = Math.max(0, 1 - (effectiveDist / 0.58));
+                const ratio = Math.max(0, 1 - (effectiveDist / 0.60));
                 conf = Math.min(99.6, Math.max(88.0, (88.0 + (ratio * 11.6)))).toFixed(1);
               }
               labelName = stab.name.toUpperCase();
-              categoryType = stab.category || 'employee';
+              const isWahyu = labelName.toLowerCase().includes('wahyu');
+              categoryType = isWahyu ? 'vip' : (stab.category || 'employee');
             } else {
               const rawScore = d.detection ? d.detection.score : (d.score || 0.88);
               conf = Math.max(76.0, Math.min(94.5, (rawScore * 100))).toFixed(1);
@@ -9916,7 +9982,7 @@
       window._lastAutoLogTime = now;
       window._lastAutoLogPerson = personKey;
 
-      const isKnown = Boolean(ent.face && ent.label && !ent.label.includes('STRANGER') && !ent.label.includes('MEMINDAI') && !ent.label.includes('SCANNING') && ent.category !== 'guest');
+      const isKnown = Boolean(ent.face || (ent.label && !['STRANGER', 'PENGUNJUNG', 'MEMINDAI', 'SCANNING', 'ORANG'].includes(String(ent.label).toUpperCase())));
       const video = document.getElementById('ai-video-player');
       const isWebcamRunning = video && video.srcObject !== null;
       const activeCamTitle = (currentAICamera && currentAICamera.title) ? currentAICamera.title : (isWebcamRunning ? 'LIVE WEBCAM LAPTOP' : 'CAM LOEWIX CCTV');
@@ -10701,7 +10767,7 @@
 
       const isVIP = ent.category === 'vip';
       const isBlacklist = ent.category === 'blacklist';
-      const isKnown = !ent.category || ent.category === 'unknown' || ent.category === 'guest' ? false : true;
+      const isKnown = Boolean(ent.face || (ent.label && !['STRANGER', 'PENGUNJUNG', 'UNKNOWN', 'ORANG'].includes(String(ent.label).toUpperCase())));
       const reticleColor = isVIP ? '#10b981' : (isBlacklist ? '#ef4444' : '#00f0ff');
       const reticleGlow = isVIP ? 'rgba(16, 185, 129, 0.7)' : (isBlacklist ? 'rgba(239, 68, 68, 0.7)' : 'rgba(0, 240, 255, 0.7)');
 
@@ -10816,9 +10882,12 @@
       }
 
       let { x, y, w, h, label, category, confidence } = ent;
+      const isWahyu = String(label).toLowerCase().includes('wahyu') || (ent.face && String(ent.face.name).toLowerCase().includes('wahyu'));
       const isBlacklist = category === 'blacklist';
-      const isVIP = category === 'vip';
-      const isUnknown = category === 'unknown' || category === 'guest' || String(label).toLowerCase().includes('stranger') || String(label).toLowerCase().includes('belum terdaftar') || String(label).toLowerCase().includes('tidak dikenal') || String(label).toLowerCase().includes('pengunjung');
+      const isVIP = category === 'vip' || isWahyu;
+      const isRegistered = Boolean(ent.face || (ent.isMatch && label && !['STRANGER', 'PENGUNJUNG', 'UNKNOWN', 'ORANG'].includes(String(label).toUpperCase())));
+      const isRealStranger = !isRegistered && (!label || ['STRANGER', 'PENGUNJUNG', 'UNKNOWN', 'ORANG'].includes(String(label).toUpperCase()));
+      const isUnknown = isRealStranger;
 
       // 1. Draw Biometric Facial Wireframe Mesh & Glowing White Nodes
       drawBiometricFacialMesh(ctx, x, y, w, h, ent, isUnknown, isVIP, isBlacklist);
@@ -10835,8 +10904,8 @@
       ctx.save();
 
       // 2. Corner Brackets: Snug, fits face closely without oversized outer clutter
-      let bracketColor = isScanning ? '#00f0ff' : (isBlacklist ? '#ef4444' : (isUnknown ? '#ffd700' : '#ccff00'));
-      let bracketGlow = isScanning ? 'rgba(0, 240, 255, 0.95)' : (isBlacklist ? 'rgba(239, 68, 68, 0.90)' : (isUnknown ? 'rgba(255, 215, 0, 0.90)' : 'rgba(204, 255, 0, 0.95)'));
+      let bracketColor = isScanning ? '#00f0ff' : (isBlacklist ? '#ef4444' : (isVIP ? '#ccff00' : (isRealStranger ? '#ffd700' : '#00f0ff')));
+      let bracketGlow = isScanning ? 'rgba(0, 240, 255, 0.95)' : (isBlacklist ? 'rgba(239, 68, 68, 0.90)' : (isVIP ? 'rgba(204, 255, 0, 0.95)' : (isRealStranger ? 'rgba(255, 215, 0, 0.90)' : 'rgba(0, 240, 255, 0.95)')));
       const armLen = Math.min(24, Math.max(12, Math.round(bw * 0.16)));
 
       // Main Bold L-Corner Brackets
@@ -10897,12 +10966,25 @@
         confStr = `${scanProgress}%`;
         pillColor = '#00f0ff';
       } else {
-        const isStranger = isUnknown;
+        const isStranger = isRealStranger;
         const displayLabel = isStranger ? 'STRANGER' : String(label).toUpperCase();
-        const roleTag = isVIP ? ' [VIP]' : (isBlacklist ? ' [DPO]' : (isStranger ? ' (Pengunjung)' : ' [TERDAFTAR]'));
+        let roleTag = '';
+        if (isVIP) {
+          roleTag = isWahyu ? ' [OWNER & SUPER ADMIN]' : ' [VIP]';
+        } else if (isBlacklist) {
+          roleTag = ' [DPO BLACKLIST]';
+        } else if (category === 'guest') {
+          roleTag = ' [TAMU TERDAFTAR]';
+        } else if (category === 'employee') {
+          roleTag = ' [STAFF]';
+        } else if (isStranger) {
+          roleTag = ' (Pengunjung)';
+        } else {
+          roleTag = ' [TERDAFTAR]';
+        }
         fullTagText = `${displayLabel}${roleTag}`;
         confStr = (confidence && String(confidence).includes('%')) ? confidence : `${confidence || 98.4}%`;
-        pillColor = isStranger ? '#ffd700' : (isBlacklist ? '#ef4444' : '#ccff00');
+        pillColor = isStranger ? '#ffd700' : (isBlacklist ? '#ef4444' : (isVIP ? '#ccff00' : '#00f0ff'));
       }
 
       ctx.font = '800 13px "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, sans-serif';
