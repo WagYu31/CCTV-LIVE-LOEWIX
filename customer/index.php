@@ -1,8 +1,3 @@
-<?php
-header("Cache-Control: no-cache, no-store, must-revalidate, max-age=0");
-header("Pragma: no-cache");
-header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
-?>
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -7464,9 +7459,9 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
     }
 
     // ========================================================
+    // ========================================================
     // DEEPFACE RECOGNITION ENGINE (Python Backend — serengil/deepface)
     // High-accuracy face recognition using ArcFace model via local API server
-    // ========================================================
     function getDeepFaceUrl(endpoint) {
       if (window.location.protocol === 'https:' || (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1')) {
         return `../api/deepface_proxy.php?endpoint=${encodeURIComponent(endpoint)}`;
@@ -7546,6 +7541,7 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
     // Create a base64 JPEG crop of a detected face from the frame canvas
     function createDeepFaceCrop(frameCanvas, box, frameW, frameH) {
       try {
+        // Expand the crop area slightly for better recognition
         const padX = Math.round(box.width * 0.25);
         const padY = Math.round(box.height * 0.25);
         const cx = Math.max(0, Math.round(box.x - padX));
@@ -7556,6 +7552,7 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
         if (cw < 8 || ch < 8) return null;
 
         const cropCanvas = document.createElement('canvas');
+        // Resize crop to 224x224 for consistent DeepFace input
         const targetSize = 224;
         cropCanvas.width = targetSize;
         cropCanvas.height = targetSize;
@@ -7572,9 +7569,11 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
     async function callDeepFaceFind(base64Crop, trackId) {
       if (!deepfaceAvailable || deepfaceCallInFlight) return null;
 
+      // Throttle: avoid spamming the server
       const now = Date.now();
       if (now - deepfaceLastCallTime < DEEPFACE_THROTTLE_MS) return null;
 
+      // Check cache first
       const cached = deepfaceResultCache.get(trackId);
       if (cached && (now - cached.timestamp < DEEPFACE_CACHE_TTL)) {
         return cached;
@@ -7585,8 +7584,6 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
 
       try {
         const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 4500);
-
         const url = getDeepFaceUrl('/api/deepface/find');
         const res = await fetch(url, {
           method: 'POST',
@@ -7622,6 +7619,7 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
           }
         }
       } catch (e) {
+        // If server error, mark as unavailable and reset check timer
         if (e.name !== 'AbortError') {
           deepfaceAvailable = false;
           deepfaceLastCheck = 0;
@@ -7786,7 +7784,7 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
     // ========================================================
     // REAL FACE RECOGNITION ENGINE (face-api.js Neural Network)
     // ========================================================
-    // REAL FACE RECOGNITION ENGINE (face-api.js Neural Network)
+    // REAL FACE RECOGNITION ENGINE (face-api.js Neural Network) — FALLBACK when DeepFace is offline
     // ========================================================
     const FACE_API_MODEL_URLS = [
       '../assets/models',
@@ -7798,6 +7796,7 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
     let faceAPIReady = false;
     let faceAPIFaceMatcher = null;
     let faceAPILoading = false;
+    let allRegisteredDescriptors = [];
     const faceFeatureCache = new Map();
 
     function resolveFacePhotoUrl(photo) {
@@ -7825,21 +7824,36 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
       for (const modelUrl of FACE_API_MODEL_URLS) {
         try {
           console.log(`[FaceAPI] Attempting model load from: ${modelUrl}`);
-          await Promise.all([
-            faceapi.nets.tinyFaceDetector.loadFromUri(modelUrl),
-            faceapi.nets.faceLandmark68TinyNet.loadFromUri(modelUrl),
-            faceapi.nets.faceRecognitionNet.loadFromUri(modelUrl)
-          ]);
-          await faceapi.nets.faceLandmark68Net.loadFromUri(modelUrl).catch(() => {});
-          await faceapi.nets.ssdMobilenetv1.loadFromUri(modelUrl).catch(() => {});
+          // 1. FAST PATH (<300ms): Load lightweight detector (193 KB) & tiny landmarks (77 KB)
+          if (!faceapi.nets.tinyFaceDetector.isLoaded) {
+            await faceapi.nets.tinyFaceDetector.loadFromUri(modelUrl);
+          }
+          if (!faceapi.nets.faceLandmark68TinyNet.isLoaded) {
+            await faceapi.nets.faceLandmark68TinyNet.loadFromUri(modelUrl);
+          }
 
-          if (faceapi.nets.tinyFaceDetector.isLoaded && faceapi.nets.faceLandmark68TinyNet.isLoaded && faceapi.nets.faceRecognitionNet.isLoaded) {
+          if (faceapi.nets.tinyFaceDetector.isLoaded) {
             faceAPIReady = true;
             faceAPILoading = false;
-            console.log(`[FaceAPI] ✅ Core Biometric Models loaded successfully from: ${modelUrl}`);
-            if (cachedAIFaces.length > 0) {
+            console.log(`[FaceAPI] ✅ Fast Real-time Face Detector & Wireframe Mesh ready from: ${modelUrl}`);
+
+            // 2. BACKGROUND PATH: Load heavy biometric recognition model (6.4 MB) without blocking real-time detection
+            if (!faceapi.nets.faceRecognitionNet.isLoaded) {
+              faceapi.nets.faceRecognitionNet.loadFromUri(modelUrl).then(() => {
+                console.log(`[FaceAPI] ✅ Biometric Descriptors model loaded successfully`);
+                if (cachedAIFaces.length > 0) {
+                  buildFaceDescriptors();
+                }
+              }).catch((eRec) => {
+                console.warn('[FaceAPI] Background faceRecognitionNet load notice:', eRec.message);
+              });
+            } else if (cachedAIFaces.length > 0) {
               buildFaceDescriptors();
             }
+
+            // Optional fallback detectors
+            faceapi.nets.faceLandmark68Net.loadFromUri(modelUrl).catch(() => {});
+            faceapi.nets.ssdMobilenetv1.loadFromUri(modelUrl).catch(() => {});
             return;
           }
         } catch (e) {
@@ -7850,17 +7864,18 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
       // CDN Weights Fallback if local server failed to serve shard files
       try {
         const cdnUrl = 'https://cdn.jsdelivr.net/gh/justadudewhohacks/face-api.js@master/weights';
-        await Promise.all([
-          faceapi.nets.tinyFaceDetector.loadFromUri(cdnUrl),
-          faceapi.nets.faceLandmark68TinyNet.loadFromUri(cdnUrl),
-          faceapi.nets.faceRecognitionNet.loadFromUri(cdnUrl)
-        ]);
+        if (!faceapi.nets.tinyFaceDetector.isLoaded) {
+          await faceapi.nets.tinyFaceDetector.loadFromUri(cdnUrl);
+        }
+        if (!faceapi.nets.faceLandmark68TinyNet.isLoaded) {
+          await faceapi.nets.faceLandmark68TinyNet.loadFromUri(cdnUrl);
+        }
         faceAPIReady = true;
         faceAPILoading = false;
-        console.log(`[FaceAPI] ✅ Core Biometric Models loaded via CDN fallback`);
-        if (cachedAIFaces.length > 0) {
-          buildFaceDescriptors();
-        }
+        console.log(`[FaceAPI] ✅ Fast Face Detector & Wireframe Mesh loaded via CDN fallback`);
+        faceapi.nets.faceRecognitionNet.loadFromUri(cdnUrl).then(() => {
+          if (cachedAIFaces.length > 0) buildFaceDescriptors();
+        }).catch(() => {});
         return;
       } catch (errCdn) {
         console.warn('[FaceAPI] CDN fallback failed too:', errCdn);
@@ -7951,8 +7966,6 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
         faceAPIFaceMatcher = null;
       }
     }
-
-    let allRegisteredDescriptors = [];
 
     // ========================================================
     // SPATIAL CENTROID TRACKER & HYSTERESIS IDENTITY LOCK
@@ -8158,11 +8171,12 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
     let faceAPIDetectionRunning = false;
 
     function isValidHumanFaceLandmarks(landmarks, box, isCCTV = false) {
+      if (!isCCTV) return true; // Live webcam is ALWAYS a real human face! Never filter webcam!
       if (box) {
         const bw = Math.max(1, box.width);
         const bh = Math.max(1, box.height);
         const aspect = bh / bw;
-        // Human faces are upright ovals (aspect ratio 0.55 - 2.5). Flat objects like car grills (aspect < 0.55) are rejected.
+        // Human faces are upright ovals (aspect ratio 0.55 - 2.5). Flat objects like car grills (aspect < 0.55) on CCTV are rejected.
         if (aspect < 0.55 || aspect > 2.5) return false;
         if (bw < 14 || bh < 14) return false;
       }
@@ -8696,7 +8710,8 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
               categoryType = 'guest';
             }
 
-            const detectedGender = d.gender ? d.gender : (stab.isMatch && stab.face ? stab.face.gender : null);
+            // Gender: prefer DeepFace analysis (more accurate), fallback to existing
+            const detectedGender = deepfaceGender || d.gender || (stab.isMatch && stab.face ? stab.face.gender : null);
 
             let normMesh468 = null;
             if (d.mesh468 && Array.isArray(d.mesh468)) {
@@ -8709,10 +8724,14 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
 
             let normLms = null;
             if (landmarks && Array.isArray(landmarks)) {
-              normLms = landmarks.map(p => ({
-                x: (p.x <= 1.05) ? p.x : p.x / frameW,
-                y: (p.y <= 1.05) ? p.y : p.y / frameH
-              }));
+              normLms = landmarks.map(p => {
+                const px = (typeof p.x === 'number') ? p.x : (typeof p._x === 'number' ? p._x : 0);
+                const py = (typeof p.y === 'number') ? p.y : (typeof p._y === 'number' ? p._y : 0);
+                return {
+                  x: (px <= 1.05) ? px : px / frameW,
+                  y: (py <= 1.05) ? py : py / frameH
+                };
+              });
             }
 
             results.push({
@@ -8737,6 +8756,9 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
               mesh468: normMesh468,
               confidence: conf,
               gender: detectedGender,
+              age: deepfaceAge,
+              emotion: deepfaceEmotion,
+              recognitionEngine: recognitionEngine,
               snapshot: frameCanvas ? createFaceCropSnapshot(frameCanvas, box, frameW, frameH) : '',
               isMatch: stab.isMatch
             });
@@ -9146,10 +9168,13 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
                   <td class="lbl">Gender:</td>
                   <td class="val">${l.gender && l.gender !== 'Male' && l.gender !== 'Female' ? l.gender : (l.gender === 'Female' ? 'Perempuan' : (l.gender === 'Male' ? 'Laki-laki' : 'Staff'))} &bull; <span class="text-muted">Mask: ${l.mask || 'Not worn'}</span></td>
                 </tr>
+                ${l.age ? `<tr><td class="lbl">Age:</td><td class="val">~${l.age} tahun</td></tr>` : ''}
+                ${l.emotion ? `<tr><td class="lbl">Emotion:</td><td class="val">${l.emotion === 'happy' ? '😊 Senang' : l.emotion === 'sad' ? '😢 Sedih' : l.emotion === 'angry' ? '😠 Marah' : l.emotion === 'surprise' ? '😮 Terkejut' : l.emotion === 'fear' ? '😨 Takut' : l.emotion === 'disgust' ? '🤢 Jijik' : '😐 Netral'}</td></tr>` : ''}
                 <tr>
                   <td class="lbl">Camera:</td>
                   <td class="val text-truncate" style="max-width: 140px; color: #7dd3fc; font-size: 10px;">${l.camera_title}</td>
                 </tr>
+                ${l.engine ? `<tr><td class="lbl">Engine:</td><td class="val" style="font-size:9px;color:#a78bfa;">${l.engine}</td></tr>` : ''}
               </table>
             </div>
           `;
@@ -9184,10 +9209,13 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
                       <td class="lbl">Gender:</td>
                       <td class="val">${l.gender && l.gender !== 'Male' && l.gender !== 'Female' ? l.gender : (l.gender === 'Female' ? 'Perempuan' : (l.gender === 'Male' ? 'Laki-laki' : 'Pengunjung'))} &bull; <span class="text-muted">Mask: ${l.mask || 'Not worn'}</span></td>
                     </tr>
+                    ${l.age ? `<tr><td class="lbl">Age:</td><td class="val">~${l.age} tahun</td></tr>` : ''}
+                    ${l.emotion ? `<tr><td class="lbl">Emotion:</td><td class="val">${l.emotion === 'happy' ? '😊 Senang' : l.emotion === 'sad' ? '😢 Sedih' : l.emotion === 'angry' ? '😠 Marah' : l.emotion === 'surprise' ? '😮 Terkejut' : l.emotion === 'fear' ? '😨 Takut' : l.emotion === 'disgust' ? '🤢 Jijik' : '😐 Netral'}</td></tr>` : ''}
                     <tr>
                       <td class="lbl">Camera:</td>
                       <td class="val text-truncate" style="max-width: 130px; color: #7dd3fc; font-size: 10px;">${l.camera_title}</td>
                     </tr>
+                    ${l.engine ? `<tr><td class="lbl">Engine:</td><td class="val" style="font-size:9px;color:#a78bfa;">${l.engine}</td></tr>` : ''}
                   </table>
                 </div>
               </div>
@@ -9590,9 +9618,13 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
       if (registeredPhoto) {
         fd.append('registered_photo', registeredPhoto);
       }
-      const detectedGender = ent.gender ? (ent.gender === 'female' ? 'Perempuan' : 'Laki-laki') : (isKnown ? (ent.face.gender || 'Staff') : 'Pengunjung');
+      const detectedGender = ent.gender ? (ent.gender === 'female' || ent.gender === 'Woman' ? 'Perempuan' : 'Laki-laki') : (isKnown ? (ent.face.gender || 'Staff') : 'Pengunjung');
       fd.append('gender', detectedGender);
       fd.append('mask', ent.mask || 'Not worn');
+      // DeepFace attributes
+      if (ent.age) fd.append('age', ent.age);
+      if (ent.emotion) fd.append('emotion', ent.emotion);
+      if (ent.recognitionEngine) fd.append('engine', ent.recognitionEngine);
       fd.append('details', isKnown ? `${(ent.face && ent.face.role_title) ? ent.face.role_title : 'Staff'} • Whitelist Verified` : 'Stranger • Pengunjung Tidak Terdaftar');
       fd.append('timestamp', getLocalLogTimestamp());
 
@@ -9744,10 +9776,18 @@ header("Expires: Wed, 11 Jan 1984 05:00:00 GMT");
                 targetW = Math.round(fw + padX * 2);
                 targetH = Math.round(fh + padY * 2);
               } else {
-                targetX = Math.round(renderBox.x + nb.x * renderBox.width);
-                targetY = Math.round(renderBox.y + nb.y * renderBox.height);
-                targetW = Math.round(nb.width * renderBox.width);
-                targetH = Math.round(nb.height * renderBox.height);
+                targetX = Math.round(renderBox.x + (nb.x || 0.35) * renderBox.width);
+                targetY = Math.round(renderBox.y + (nb.y || 0.30) * renderBox.height);
+                targetW = Math.round((nb.width || 0.30) * renderBox.width);
+                targetH = Math.round((nb.height || 0.40) * renderBox.height);
+              }
+
+              // Guard against NaN or zero
+              if (isNaN(targetX) || isNaN(targetY) || isNaN(targetW) || isNaN(targetH) || targetW <= 0 || targetH <= 0) {
+                targetX = Math.round(renderBox.x + 0.35 * renderBox.width);
+                targetY = Math.round(renderBox.y + 0.25 * renderBox.height);
+                targetW = Math.round(0.30 * renderBox.width);
+                targetH = Math.round(0.40 * renderBox.height);
               }
 
               const targetLandmarks17 = extract17BiometricLandmarks(scaledLandmarks, targetX, targetY, targetW, targetH, scaledMesh468);

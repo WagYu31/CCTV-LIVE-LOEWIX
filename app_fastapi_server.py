@@ -404,6 +404,27 @@ def sync_registered_faces_from_web_db():
     if not ai_faces:
         return 0
 
+    # Auto-link Wahyu Utomo VIP face photo if still pointing to default avatar
+    wahyu_candidates = [
+        PROJECT_ROOT / "assets" / "uploads" / "faces" / "Wahyu Utomo" / "face_wahyu_utomo.jpg",
+        PROJECT_ROOT / "assets" / "uploads" / "faces" / "Wahyu_Utomo.jpg"
+    ]
+    for cand in wahyu_candidates:
+        if cand.exists():
+            for f_item in ai_faces:
+                if "wahyu" in f_item.get("name", "").lower() and ("avatar" in f_item.get("photo", "") or not f_item.get("photo")):
+                    f_item["photo"] = str(cand.relative_to(PROJECT_ROOT))
+                    f_item["category"] = "vip"
+                    f_item["role_title"] = "Super Admin & Owner"
+                    try:
+                        with open(web_db_path, "w", encoding="utf-8") as wf:
+                            json.dump(data, wf, indent=4)
+                        logger.info(f"✅ Auto-linked Wahyu Utomo face photo to {cand.name} in {web_db_path.name}")
+                    except Exception as we:
+                        logger.warning(f"Could not rewrite {web_db_path}: {we}")
+                    break
+            break
+
     existing_names = {i["full_name"].strip().lower() for i in get_all_identities()}
     synced_count = 0
 
