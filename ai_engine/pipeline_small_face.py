@@ -15,6 +15,7 @@ Stages:
 import os
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 os.environ["OMP_NUM_THREADS"] = "1"
+import sys
 import cv2
 import time
 import logging
@@ -112,7 +113,13 @@ class SmallFaceRecognitionPipeline:
 
         if self.yolo_model is not None:
             try:
-                results = self.yolo_model(frame, classes=[0], verbose=False, conf=0.35)
+                try:
+                    import torch
+                    with torch.no_grad():
+                        results = self.yolo_model(frame, classes=[0], verbose=False, conf=0.35)
+                except ImportError:
+                    results = self.yolo_model(frame, classes=[0], verbose=False, conf=0.35)
+
                 for r in results:
                     boxes = r.boxes.xyxy.cpu().numpy()
                     for box in boxes:
@@ -364,8 +371,11 @@ class SmallFaceRecognitionPipeline:
             except Exception as e:
                 logger.warning(f"YuNet full-frame detection notice: {e}")
 
-        # 2. Method B: YOLOv8 Person Detection -> Auto Crop & Digital Zoom
-        persons = self.detect_persons(frame)
+        # 2. Method B: YOLOv8 Person Detection -> Auto Crop & Digital Zoom (fallback if YuNet found 0 faces)
+        if len(candidate_faces) == 0:
+            persons = self.detect_persons(frame)
+        else:
+            persons = []
         for person_box in persons:
             px, py, pw, ph = person_box
             if pw >= frame_w and ph >= frame_h and len(candidate_faces) > 0:

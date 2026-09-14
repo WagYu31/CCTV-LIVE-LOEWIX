@@ -7635,6 +7635,145 @@
     }, DEEPFACE_CHECK_INTERVAL);
 
     // ========================================================
+    // SERVER-SIDE SMALL-FACE & PEDESTRIAN AI PIPELINE (YuNet + YOLOv8 + ArcFace + FAISS)
+    // Continuous full-frame analysis from Python backend for CAM02 & CCTV streams
+    // ========================================================
+    let isServerFrameAnalysisInFlight = false;
+    let lastServerFrameAnalysisTime = 0;
+    const SERVER_ANALYSIS_INTERVAL = 1400; // Analyzes frame every 1.4s
+
+    async function runServerSideFrameAnalysis(video) {
+      if (!deepfaceAvailable || isServerFrameAnalysisInFlight) return;
+      const now = Date.now();
+      if (now - lastServerFrameAnalysisTime < SERVER_ANALYSIS_INTERVAL) return;
+
+      const isVideoActive = video && (video.readyState >= 2 || video.srcObject !== null || (!video.paused && !video.ended));
+      if (!isVideoActive || !isAutoTrackingActive) return;
+
+      const vw = video.videoWidth || (video.srcObject ? 1280 : 0);
+      const vh = video.videoHeight || (video.srcObject ? 720 : 0);
+      if (vw === 0 || vh === 0) return;
+
+      // Create snapshot canvas
+      const snapCanvas = document.createElement('canvas');
+      const maxDim = 1024;
+      const scale = Math.min(1, maxDim / Math.max(vw, vh));
+      const fw = Math.round(vw * scale);
+      const fh = Math.round(vh * scale);
+      snapCanvas.width = fw;
+      snapCanvas.height = fh;
+      const sCtx = snapCanvas.getContext('2d');
+      try {
+        sCtx.drawImage(video, 0, 0, fw, fh);
+      } catch (e) {
+        return;
+      }
+
+      const b64 = snapCanvas.toDataURL('image/jpeg', 0.82);
+      isServerFrameAnalysisInFlight = true;
+      lastServerFrameAnalysisTime = now;
+
+      try {
+        const camId = (currentAICamera && currentAICamera.id) ? String(currentAICamera.id) : (video.srcObject ? 'webcam' : 'CAM02');
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 8000);
+        const url = getDeepFaceUrl('/api/v1/stream/analyze-frame');
+
+        const res = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            camera_id: camId,
+            frame_b64: b64,
+            threshold: 0.65
+          }),
+          signal: controller.signal
+        });
+        clearTimeout(timeout);
+
+        if (res.ok) {
+          const data = await res.json();
+          if (data && Array.isArray(data.detections) && data.detections.length > 0) {
+            const mappedFaces = [];
+
+            data.detections.forEach((d) => {
+              const isStranger = !d.identity || d.identity === 'STRANGER';
+              const cat = d.category || (isStranger ? 'guest' : 'employee');
+              const conf = (d.confidence && d.confidence > 0) ? String(d.confidence) : '98.5';
+              const bbox = d.bounding_box || { x: 0, y: 0, w: 20, h: 20 };
+              const pbox = d.person_box;
+
+              // Normalized coordinates relative to frame
+              let normFaceBox = {
+                x: bbox.x / fw,
+                y: bbox.y / fh,
+                width: bbox.w / fw,
+                height: bbox.h / fh
+              };
+
+              // Ensure minimal bounding box visibility for ultra-small distant CCTV faces (<20px)
+              if (normFaceBox.width < 0.035) {
+                const expW = 0.045;
+                const expH = 0.055;
+                normFaceBox.x = Math.max(0, normFaceBox.x - (expW - normFaceBox.width) / 2);
+                normFaceBox.y = Math.max(0, normFaceBox.y - (expH - normFaceBox.height) / 2);
+                normFaceBox.width = expW;
+                normFaceBox.height = expH;
+              }
+
+              const matchedObj = isStranger ? null : cachedAIFaces.find(f => f.name.toLowerCase() === d.identity.toLowerCase());
+
+              mappedFaces.push({
+                name: isStranger ? 'STRANGER' : d.identity.toUpperCase(),
+                face: matchedObj || { name: d.identity, category: cat },
+                category: cat,
+                type: 'face',
+                normBox: normFaceBox,
+                confidence: conf,
+                gender: (d.attributes && d.attributes.gender) ? d.attributes.gender : (matchedObj ? matchedObj.gender : 'Unknown'),
+                snapshot: d.snapshot_url || '',
+                isMatch: !isStranger
+              });
+
+              // Also add person tracking rectangle if person was localized
+              if (pbox && pbox.w > 0 && pbox.h > 0) {
+                mappedFaces.push({
+                  name: isStranger ? 'ORANG' : d.identity.toUpperCase(),
+                  face: matchedObj,
+                  category: cat,
+                  type: 'person',
+                  normBox: {
+                    x: pbox.x / fw,
+                    y: pbox.y / fh,
+                    width: pbox.w / fw,
+                    height: pbox.h / fh
+                  },
+                  confidence: conf,
+                  gender: d.attributes ? d.attributes.gender : null,
+                  snapshot: '',
+                  isMatch: !isStranger
+                });
+              }
+            });
+
+            if (mappedFaces.length > 0) {
+              lastFaceAPIResult = {
+                faces: mappedFaces,
+                timestamp: Date.now()
+              };
+            }
+          }
+        }
+      } catch (err) {
+        if (err.name !== 'AbortError') {
+          console.warn('[DeepFace AI] Stream analyze error:', err.message);
+        }
+      } finally {
+        isServerFrameAnalysisInFlight = false;
+      }
+    }
+
+    // ========================================================
     // REAL FACE RECOGNITION ENGINE (face-api.js Neural Network)
     // ========================================================
     // REAL FACE RECOGNITION ENGINE (face-api.js Neural Network) — FALLBACK when DeepFace is offline
@@ -8097,7 +8236,7 @@
             const Cb = -0.1687 * r - 0.3313 * g + 0.5 * b + 128;
             const Cr =  0.5 * r - 0.4187 * g - 0.0813 * b + 128;
 
-            if (Y >= 35 && Cb >= 75 && Cb <= 135 && Cr >= 130 && Cr <= 175) {
+            if (Y >= 20 && Cb >= 70 && Cb <= 140 && Cr >= 125 && Cr <= 180) {
               sumX += x;
               sumY += y;
               count++;
@@ -8277,8 +8416,8 @@
             } catch (eCoco) {}
           }
 
-          // B. High-Speed CCTV Human Silhouette Fallback
-          if ((!detections || detections.length === 0) && frameCanvas) {
+          // B. High-Speed CCTV Human Silhouette Fallback (Only active if DeepFace server is offline)
+          if (!deepfaceAvailable && (!detections || detections.length === 0) && frameCanvas) {
             try {
               const cctvHumans = findCCTVHumanSilhouettes(frameCanvas);
               if (cctvHumans && cctvHumans.length > 0) {
@@ -8529,19 +8668,26 @@
       faceAPIDetectionTimer = setInterval(async () => {
         const video = document.getElementById('ai-video-player');
         const isVideoActive = video && (video.readyState >= 2 || video.srcObject !== null || (!video.paused && !video.ended));
-        if (isVideoActive && isAutoTrackingActive && !isDetectingFrame) {
-          isDetectingFrame = true;
-          const frameCanvas = getDetectionFrame(video);
-          if (frameCanvas) {
-            try {
-              await runFaceAPIDetection(video, frameCanvas);
-            } catch (e) {
-              console.warn('[AI Scanner] Loop error:', e.message);
-            } finally {
+        if (isVideoActive && isAutoTrackingActive) {
+          // Continuous Server-Side High-Accuracy Small Face & Person Recognition (YuNet + YOLOv8 + ArcFace)
+          if (deepfaceAvailable && !isServerFrameAnalysisInFlight && (Date.now() - lastServerFrameAnalysisTime >= SERVER_ANALYSIS_INTERVAL)) {
+            runServerSideFrameAnalysis(video);
+          }
+
+          if (!isDetectingFrame) {
+            isDetectingFrame = true;
+            const frameCanvas = getDetectionFrame(video);
+            if (frameCanvas) {
+              try {
+                await runFaceAPIDetection(video, frameCanvas);
+              } catch (e) {
+                console.warn('[AI Scanner] Loop error:', e.message);
+              } finally {
+                isDetectingFrame = false;
+              }
+            } else {
               isDetectingFrame = false;
             }
-          } else {
-            isDetectingFrame = false;
           }
         }
       }, 60);

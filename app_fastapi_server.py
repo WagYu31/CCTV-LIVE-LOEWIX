@@ -9,6 +9,7 @@ FAISS vector search, and WebSocket live broadcasting for CCTV streams.
 import os
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 os.environ["OMP_NUM_THREADS"] = "1"
+os.environ["OBJC_DISABLE_INITIALIZE_FORK_SAFETY"] = "YES"
 import sys
 import time
 import json
@@ -21,6 +22,7 @@ from datetime import datetime
 from typing import List, Dict, Any, Optional
 
 import cv2
+cv2.setNumThreads(0)
 import numpy as np
 from PIL import Image
 
@@ -265,23 +267,23 @@ class FrameAnalysisRequest(BaseModel):
 
 
 @app.post("/api/v1/stream/analyze-frame")
-async def analyze_frame(req: FrameAnalysisRequest, background_tasks: BackgroundTasks):
-    """
-    Run full 5-stage small face detection pipeline on an incoming 1080p frame:
-      Person Detection -> Auto-Crop Zoom -> RetinaFace -> ArcFace -> FAISS Search.
-    Broadcasts results to active WebSockets in background.
-    """
+def analyze_frame(req: FrameAnalysisRequest, background_tasks: BackgroundTasks):
     try:
         frame = decode_image_input(req.frame_b64)
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Gagal mendecode frame gambar: {e}")
 
-    # Process frame through pipeline
-    detections = pipeline.process_frame(
-        frame=frame,
-        camera_id=req.camera_id,
-        threshold=req.threshold or DEFAULT_MATCH_THRESHOLD
-    )
+    # Process frame through pipeline (running in worker thread pool)
+    try:
+        detections = pipeline.process_frame(
+            frame=frame,
+            camera_id=req.camera_id,
+            threshold=req.threshold or DEFAULT_MATCH_THRESHOLD
+        )
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Pipeline error: {e}")
 
     payload = {
         "camera_id": req.camera_id,
@@ -291,7 +293,8 @@ async def analyze_frame(req: FrameAnalysisRequest, background_tasks: BackgroundT
     }
 
     # Asynchronously broadcast to WebSocket listeners
-    background_tasks.add_task(manager.broadcast_detection, req.camera_id, payload)
+    if req.camera_id in manager.active_connections and manager.active_connections[req.camera_id]:
+        background_tasks.add_task(manager.broadcast_detection, req.camera_id, payload)
 
     return payload
 
@@ -306,7 +309,7 @@ class CropRecognizeRequest(BaseModel):
 
 @app.post("/api/v1/faces/recognize-crop")
 @app.post("/api/deepface/find")
-async def recognize_crop(req: CropRecognizeRequest):
+def recognize_crop(req: CropRecognizeRequest):
     """
     Recognize a face from a client-provided crop (e.g. from browser face detector).
     Fully compatible with both /api/v1/faces/recognize-crop and /api/deepface/find.
