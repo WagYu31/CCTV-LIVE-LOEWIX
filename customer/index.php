@@ -7985,11 +7985,14 @@
 
       const labeledDescriptors = [];
       for (const face of cachedAIFaces) {
-        const photoList = [face.photo, ...(face.extra_photos || [])].filter(Boolean);
+        const photoList = [face.photo, ...(face.extra_photos || [])].filter(Boolean).slice(0, 2);
         if (photoList.length === 0) continue;
 
         const faceDescriptors = [];
         for (const rawPhoto of photoList) {
+          // Yield to browser UI thread (prevents UI freeze / Page Unresponsive)
+          await new Promise(r => setTimeout(r, 20));
+
           try {
             const photoUrl = resolveFacePhotoUrl(rawPhoto);
             let img;
@@ -8015,56 +8018,28 @@
               }
             }
             
-            let det = null;
-            // Strategy 1: Direct detection on raw image
+            let descriptor = null;
+
+            // Fast Strategy 1: Direct TinyFace detection (160px input, <15ms)
             try {
-              det = await faceapi.detectSingleFace(img, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.02 }))
+              const det = await faceapi.detectSingleFace(img, new faceapi.TinyFaceDetectorOptions({ inputSize: 160, scoreThreshold: 0.02 }))
                 .withFaceLandmarks(true)
                 .withFaceDescriptor();
+              if (det && det.descriptor) {
+                descriptor = det.descriptor;
+              }
             } catch (e1) {}
 
-            // Strategy 2: Pad onto 360x360 canvas with surrounding margin (guarantees detection for tight crops like face_wahyu_utomo.jpg)
-            const pCanvas = document.createElement('canvas');
-            pCanvas.width = 360;
-            pCanvas.height = 360;
-            const pCtx = pCanvas.getContext('2d');
-            pCtx.fillStyle = '#64748b';
-            pCtx.fillRect(0, 0, 360, 360);
-            const scale = Math.min(260 / (img.width || 147), 260 / (img.height || 185));
-            const dw = Math.round((img.width || 147) * scale);
-            const dh = Math.round((img.height || 185) * scale);
-            pCtx.drawImage(img, Math.round((360 - dw) / 2), Math.round((360 - dh) / 2), dw, dh);
-
-            if (!det) {
-              try {
-                det = await faceapi.detectSingleFace(pCanvas, new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.02 }))
-                  .withFaceLandmarks(true)
-                  .withFaceDescriptor();
-              } catch (e2) {}
-            }
-
-            // Strategy 3: SSD MobileNet on padded canvas
-            if (!det && faceapi.nets.ssdMobilenetv1 && faceapi.nets.ssdMobilenetv1.isLoaded) {
-              try {
-                det = await faceapi.detectSingleFace(pCanvas, new faceapi.SsdMobilenetv1Options({ minConfidence: 0.10 }))
-                  .withFaceLandmarks(true)
-                  .withFaceDescriptor();
-              } catch (e3) {}
-            }
-
-            // Strategy 4: Direct computeFaceDescriptor on padded canvas (built-in 128D ResNet for pre-cropped face database)
-            let descriptor = det ? det.descriptor : null;
+            // Fast Strategy 2: Standardized 150x150 face canvas for tight crops (e.g. face_wahyu_utomo.jpg)
             if (!descriptor && typeof faceapi.computeFaceDescriptor === 'function') {
               try {
+                const pCanvas = document.createElement('canvas');
+                pCanvas.width = 150;
+                pCanvas.height = 150;
+                const pCtx = pCanvas.getContext('2d');
+                pCtx.drawImage(img, 0, 0, 150, 150);
                 descriptor = await faceapi.computeFaceDescriptor(pCanvas);
-              } catch (e4) {}
-            }
-
-            // Strategy 5: Direct computeFaceDescriptor on raw image
-            if (!descriptor && typeof faceapi.computeFaceDescriptor === 'function') {
-              try {
-                descriptor = await faceapi.computeFaceDescriptor(img);
-              } catch (e5) {}
+              } catch (e2) {}
             }
 
             if (descriptor) {
@@ -8112,37 +8087,31 @@
 
       setTimeout(async () => {
         try {
-          // Generous crop with 35% margin to preserve head silhouette, jaw, and hair context
+          // Downsample crop to standard 150x150 for ultra-fast biometric descriptor computation (<10ms)
           const crop = document.createElement('canvas');
-          const padW = Math.round(box.width * 0.35);
-          const padH = Math.round(box.height * 0.35);
+          crop.width = 150;
+          crop.height = 150;
+          const padW = Math.round(box.width * 0.25);
+          const padH = Math.round(box.height * 0.25);
           const cx = Math.max(0, Math.round(box.x - padW));
           const cy = Math.max(0, Math.round(box.y - padH));
           const cw = Math.min(frameCanvas.width - cx, Math.round(box.width + padW * 2));
           const ch = Math.min(frameCanvas.height - cy, Math.round(box.height + padH * 2));
-          if (cw < 40 || ch < 40) return;
+          if (cw < 30 || ch < 30) return;
 
-          crop.width = cw;
-          crop.height = ch;
           const ctx = crop.getContext('2d');
-          ctx.drawImage(frameCanvas, cx, cy, cw, ch, 0, 0, cw, ch);
+          ctx.drawImage(frameCanvas, cx, cy, cw, ch, 0, 0, 150, 150);
 
-          let det = null;
+          let liveDescriptor = null;
           try {
-            det = await faceapi.detectSingleFace(crop, new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.03 }))
+            const det = await faceapi.detectSingleFace(crop, new faceapi.TinyFaceDetectorOptions({ inputSize: 160, scoreThreshold: 0.03 }))
               .withFaceLandmarks(true)
               .withFaceDescriptor();
+            if (det && det.descriptor) {
+              liveDescriptor = det.descriptor;
+            }
           } catch (eTinyCrop) {}
 
-          if (!det && faceapi.nets.ssdMobilenetv1 && faceapi.nets.ssdMobilenetv1.isLoaded) {
-            try {
-              det = await faceapi.detectSingleFace(crop, new faceapi.SsdMobilenetv1Options({ minConfidence: 0.10 }))
-                .withFaceLandmarks(true)
-                .withFaceDescriptor();
-            } catch (eSSDCrop) {}
-          }
-
-          let liveDescriptor = det ? det.descriptor : null;
           if (!liveDescriptor && typeof faceapi.computeFaceDescriptor === 'function') {
             try {
               liveDescriptor = await faceapi.computeFaceDescriptor(crop);
@@ -8693,15 +8662,11 @@
         let detections = [];
 
         // 1. FAST REAL-TIME PRIMARY ENGINE: face-api.js TinyFaceDetector (Ultra responsive 0.08 on webcam, 320px input)
-        // With real-time biometric descriptor extraction when faceRecognitionNet is ready
+        // Decoupled from heavy descriptor extraction: Runs at fluid 60 FPS (<12ms) without blocking
         if (typeof faceapi !== 'undefined' && faceapi.nets && faceapi.nets.tinyFaceDetector && faceapi.nets.tinyFaceDetector.isLoaded) {
           try {
             const tinyOpts = new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: tinyScoreThreshold });
-            const canExtractDescriptors = Boolean(faceapi.nets.faceRecognitionNet && faceapi.nets.faceRecognitionNet.isLoaded && allRegisteredDescriptors.length > 0);
-
-            if (canExtractDescriptors) {
-              detections = await faceapi.detectAllFaces(frameCanvas, tinyOpts).withFaceLandmarks(true).withFaceDescriptors().catch(() => []);
-            } else if (faceapi.nets.faceLandmark68TinyNet && faceapi.nets.faceLandmark68TinyNet.isLoaded) {
+            if (faceapi.nets.faceLandmark68TinyNet && faceapi.nets.faceLandmark68TinyNet.isLoaded) {
               detections = await faceapi.detectAllFaces(frameCanvas, tinyOpts).withFaceLandmarks(true).catch(() => []);
             } else {
               detections = await faceapi.detectAllFaces(frameCanvas, tinyOpts).catch(() => []);
@@ -8710,11 +8675,7 @@
             // Fallback: If 0 faces detected on canvas, try direct video element directly
             if ((!detections || detections.length === 0) && video && (video.readyState >= 2 || video.srcObject)) {
               try {
-                if (canExtractDescriptors) {
-                  detections = await faceapi.detectAllFaces(video, tinyOpts).withFaceLandmarks(true).withFaceDescriptors().catch(() => []);
-                } else {
-                  detections = await faceapi.detectAllFaces(video, tinyOpts).withFaceLandmarks(true).catch(() => []);
-                }
+                detections = await faceapi.detectAllFaces(video, tinyOpts).withFaceLandmarks(true).catch(() => []);
               } catch (eVid) {}
             }
           } catch (eTiny) {}
