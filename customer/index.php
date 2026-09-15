@@ -8246,65 +8246,6 @@
         }
       }, 10);
     }
-                face: matchedFace,
-                distance: bestCandidateDist,
-                category: cat,
-                confidence: confVal,
-                gender: matchedFace.gender || 'Laki-laki',
-                timestamp: Date.now(),
-                ttl: 60000
-              };
-
-              // Immediately sync active overlay entities & lastFaceAPIResult so HUD reticle turns neon green WAHYU instantly!
-              if (Array.isArray(activeAIEntities)) {
-                activeAIEntities.forEach(ent => {
-                  ent.label = matchedFace.name.toUpperCase();
-                  ent.face = matchedFace;
-                  ent.category = cat;
-                  ent.isMatch = true;
-                  ent.confidence = confVal;
-                  ent.isStranger = false;
-                });
-              }
-              if (lastFaceAPIResult && lastFaceAPIResult.faces) {
-                lastFaceAPIResult.faces.forEach(f => {
-                  f.name = matchedFace.name.toUpperCase();
-                  f.face = matchedFace;
-                  f.category = cat;
-                  f.isMatch = true;
-                  f.confidence = confVal;
-                });
-                lastFaceAPIResult.timestamp = Date.now();
-              }
-
-              // Audio announcement
-              const nowAnnounce = Date.now();
-              if (!window._lastAnnouncementTime || (nowAnnounce - window._lastAnnouncementTime > 25000) || window._lastAnnouncedName !== matchedFace.name) {
-                window._lastAnnouncementTime = nowAnnounce;
-                window._lastAnnouncedName = matchedFace.name;
-                showAIBanner(`${matchedFace.name.toUpperCase()} (${role})`, `Scan 100% Lock • Similarity: ${confVal}%`, cat === 'vip' ? 'badge-success' : 'badge-primary', 'WHITELIST VERIFIED', 'fas fa-user-check', '#059669');
-                speakVoiceAnnouncement(`Wajah terdeteksi: ${matchedFace.name}, ${role}`);
-              }
-            }
-          } else if (liveDescriptor && bestCandidateDist > 0.78) {
-            // Only unlock if an actual descriptor was compared and distance is clearly non-match
-            if (sTrack && sTrack.lockedPerson) {
-              sTrack.lockedPerson = null;
-              sTrack.isStranger = true;
-              sTrack.lockedDistance = bestCandidateDist;
-              sTrack.candidateVotes = {};
-            }
-            if (window._verifiedFaceLock && window._verifiedFaceLock.trackId === trackId) {
-              window._verifiedFaceLock = null;
-            }
-          }
-        } catch (e) {
-          console.warn('[Face Matcher] Error:', e.message);
-        } finally {
-          _bgDescriptorInFlight = false;
-        }
-      }, 20);
-    }
 
     // ========================================================
     // SPATIAL CENTROID TRACKER & HYSTERESIS IDENTITY LOCK
