@@ -10811,7 +10811,44 @@
       const has17 = Array.isArray(ent.currentLandmarks17) && ent.currentLandmarks17.length === 17;
       const has68 = ent.landmarks && Array.isArray(ent.landmarks) && ent.landmarks.length >= 68;
 
-      if (has68) {
+      // PRIORITY: Use LERP-smoothed 17-point landmarks FIRST (60fps interpolated)
+      // Only fall back to raw 68 landmarks if no smoothed data is available
+      if (has17) {
+        const c = ent.currentLandmarks17;
+        pts = {
+          foreheadTopL: c[0],
+          foreheadTopR: c[1],
+          templeL:      c[2],
+          templeR:      c[3],
+          glabella:     c[4],
+
+          browMidL:     { x: (c[0].x + c[4].x) / 2, y: (c[0].y + c[4].y) / 2 },
+          browMidR:     { x: (c[1].x + c[4].x) / 2, y: (c[1].y + c[4].y) / 2 },
+
+          eyeL:         c[5],
+          eyeR:         c[6],
+
+          noseBridge:   { x: (c[4].x + c[9].x) / 2, y: (c[4].y + c[9].y) / 2 - (h * 0.05) },
+          noseMid:      { x: (c[4].x + c[9].x) / 2, y: (c[4].y + c[9].y) / 2 },
+          noseTip:      c[9],
+          nostrilL:     { x: c[9].x - w * 0.08, y: c[9].y },
+          nostrilR:     { x: c[9].x + w * 0.08, y: c[9].y },
+
+          cheekUpperL:  c[7],
+          cheekUpperR:  c[8],
+          cheekLowerL:  { x: (c[7].x + c[14].x) / 2, y: (c[7].y + c[14].y) / 2 },
+          cheekLowerR:  { x: (c[8].x + c[15].x) / 2, y: (c[8].y + c[15].y) / 2 },
+
+          philtrum:     c[10],
+          mouthL:       c[11],
+          mouthR:       c[12],
+          lipBot:       c[13],
+
+          chinL:        c[14],
+          chinR:        c[15],
+          chinTip:      c[16]
+        };
+      } else if (has68) {
         const l = ent.landmarks;
         const ptPos = (p) => (p && typeof p.x === 'number') ? p : (p && typeof p._x === 'number' ? { x: p._x, y: p._y } : null);
 
@@ -10863,41 +10900,6 @@
           chinL:        ptPos(l[5])  || { x: x + w * 0.24, y: y + h * 0.90 },
           chinR:        ptPos(l[11]) || { x: x + w * 0.76, y: y + h * 0.90 },
           chinTip:      chin
-        };
-      } else if (has17) {
-        const c = ent.currentLandmarks17;
-        pts = {
-          foreheadTopL: c[0],
-          foreheadTopR: c[1],
-          templeL:      c[2],
-          templeR:      c[3],
-          glabella:     c[4],
-
-          browMidL:     { x: (c[0].x + c[4].x) / 2, y: (c[0].y + c[4].y) / 2 },
-          browMidR:     { x: (c[1].x + c[4].x) / 2, y: (c[1].y + c[4].y) / 2 },
-
-          eyeL:         c[5],
-          eyeR:         c[6],
-
-          noseBridge:   { x: (c[4].x + c[9].x) / 2, y: (c[4].y + c[9].y) / 2 - (h * 0.05) },
-          noseMid:      { x: (c[4].x + c[9].x) / 2, y: (c[4].y + c[9].y) / 2 },
-          noseTip:      c[9],
-          nostrilL:     { x: c[9].x - w * 0.08, y: c[9].y },
-          nostrilR:     { x: c[9].x + w * 0.08, y: c[9].y },
-
-          cheekUpperL:  c[7],
-          cheekUpperR:  c[8],
-          cheekLowerL:  { x: (c[7].x + c[14].x) / 2, y: (c[7].y + c[14].y) / 2 },
-          cheekLowerR:  { x: (c[8].x + c[15].x) / 2, y: (c[8].y + c[15].y) / 2 },
-
-          philtrum:     c[10],
-          mouthL:       c[11],
-          mouthR:       c[12],
-          lipBot:       c[13],
-
-          chinL:        c[14],
-          chinR:        c[15],
-          chinTip:      c[16]
         };
       } else {
         // High-Precision Anatomical Proportions (Faithful to Gambar 2 Geometry)
