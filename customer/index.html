@@ -17,7 +17,9 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
-  <!-- Unified AI Engine: face-api.js with self-contained WebGL runtime -->
+  <!-- Official Google TensorFlow.org Runtime & COCO-SSD Human/Pedestrian Surveillance Detector -->
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.18.0/dist/tf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.2.3/dist/coco-ssd.min.js"></script>
   <!-- face-api.js: Biometric Descriptors for Whitelist Database Verification -->
   <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
   <!-- Midtrans Snap Payment Gateway SDK (Sandbox) -->
@@ -7331,9 +7333,31 @@
     let directMediaPipeResults = null;
     async function initTFJSFaceMesh() { return; }
 
+    // =========================================================================
+    // TENSORFLOW.ORG COCO-SSD SURVEILLANCE OBJECT & HUMAN DETECTOR
+    // =========================================================================
     let cocoSSDModel = null;
     let isCOCOSSDLoading = false;
-    async function initCOCOSSD() { return; }
+    async function initCOCOSSD() {
+      if (cocoSSDModel || isCOCOSSDLoading) return;
+      if (typeof cocoSsd === 'undefined') {
+        setTimeout(initCOCOSSD, 1000);
+        return;
+      }
+      isCOCOSSDLoading = true;
+      try {
+        console.log('⚡ [AI Surveillance] Loading TensorFlow.org COCO-SSD Human/Pedestrian Model...');
+        cocoSSDModel = await cocoSsd.load({ base: 'lite_mobilenet_v2' });
+        console.log('✅ [AI Surveillance] COCO-SSD Human/Pedestrian Model Loaded Successfully!');
+      } catch (errCoco) {
+        console.warn('[AI Surveillance] Notice on lite_mobilenet_v2, trying default:', errCoco.message);
+        try {
+          cocoSSDModel = await cocoSsd.load();
+        } catch (eDefault) {}
+      } finally {
+        isCOCOSSDLoading = false;
+      }
+    }
 
     // ========================================================
     // ========================================================
@@ -7854,7 +7878,7 @@
       const currentHash = cachedAIFaces.map(f => `${f.id}_${f.name}_${(f.photo_b64 || f.photo || '').length}`).join('|');
 
       // 1. FAST PATH: Instant Restore from LocalStorage Cache (< 2ms, zero neural network compute, ZERO freeze)
-      const storageKey = `loewix_face_desc_v6_${currentHash}`;
+      const storageKey = `loewix_face_desc_v8_${currentHash}`;
       if (!force) {
         try {
           const cachedJson = localStorage.getItem(storageKey);
@@ -7863,12 +7887,9 @@
             if (Array.isArray(rawParsed) && rawParsed.length > 0 && typeof faceapi !== 'undefined' && faceapi.LabeledFaceDescriptors) {
               const labeled = [];
               rawParsed.forEach(item => {
-                const floatArrays = item.descriptors.map(arr => new Float32Array(arr));
-                labeled.push(new faceapi.LabeledFaceDescriptors(item.label, floatArrays));
-                if (item.label.toLowerCase().includes('wahyu')) {
-                  labeled.push(new faceapi.LabeledFaceDescriptors('Wahyu', floatArrays));
-                  labeled.push(new faceapi.LabeledFaceDescriptors('Wahyu Utomo', floatArrays));
-                  labeled.push(new faceapi.LabeledFaceDescriptors('WAHYU', floatArrays));
+                if (item && item.label && Array.isArray(item.descriptors) && item.descriptors.length > 0) {
+                  const floatArrays = item.descriptors.map(arr => new Float32Array(arr));
+                  labeled.push(new faceapi.LabeledFaceDescriptors(item.label, floatArrays));
                 }
               });
 
@@ -7876,7 +7897,7 @@
                 allRegisteredDescriptors = labeled;
                 window.allRegisteredDescriptors = allRegisteredDescriptors;
                 window._registeredDescriptorsCount = labeled.length;
-                faceAPIFaceMatcher = new faceapi.FaceMatcher(labeled, 0.65);
+                faceAPIFaceMatcher = new faceapi.FaceMatcher(labeled, 0.58);
                 window.faceAPIFaceMatcher = faceAPIFaceMatcher;
                 _faceDescriptorsBuiltHash = currentHash;
                 console.log(`[FaceAPI] ⚡ INSTANT RESTORE: ${labeled.length} biometric descriptors loaded from local storage cache in 1ms!`);
@@ -7907,7 +7928,7 @@
       _isBuildingDescriptors = true;
 
       try {
-        console.log(`[FaceAPI] 🔄 Generating biometric descriptors in background for ${cachedAIFaces.length} registered face(s)...`);
+        console.log(`[FaceAPI] 🔄 Generating authentic aligned biometric descriptors for ${cachedAIFaces.length} registered face(s)...`);
         const labeledDescriptors = [];
         const toCache = [];
 
@@ -7916,7 +7937,7 @@
           if (!rawPhoto) continue;
 
           // Generous yield to browser UI thread so the screen NEVER freezes
-          await new Promise(r => setTimeout(r, 120));
+          await new Promise(r => setTimeout(r, 100));
 
           const faceDescriptors = [];
           try {
@@ -7929,36 +7950,49 @@
               el.src = photoUrl;
             });
 
-            if (img) {
-              // Pre-downscale to 150x150 offscreen canvas immediately (prevents WebGL memory spikes)
+            if (img && img.width > 10 && img.height > 10) {
+              // Scale preserving natural aspect ratio (up to 360px max)
+              const maxDim = 360;
+              const scale = Math.min(1, maxDim / Math.max(img.width, img.height));
+              const pw = Math.max(80, Math.round(img.width * scale));
+              const ph = Math.max(80, Math.round(img.height * scale));
               const patch = document.createElement('canvas');
-              patch.width = 150;
-              patch.height = 150;
+              patch.width = pw;
+              patch.height = ph;
               const pctx = patch.getContext('2d');
-              pctx.drawImage(img, 0, 0, 150, 150);
+              pctx.drawImage(img, 0, 0, pw, ph);
 
               let descriptor = null;
 
-              // Fast method 1: Direct 150x150 patch computeFaceDescriptor (10-15ms)
-              if (typeof faceapi.computeFaceDescriptor === 'function') {
+              // Primary Method: Full Detection + 68 Landmark Alignment + ResNet Face Descriptor
+              if (faceapi.nets.ssdMobilenetv1 && faceapi.nets.ssdMobilenetv1.isLoaded) {
                 try {
-                  const desc = await faceapi.computeFaceDescriptor(patch);
-                  if (desc && (desc.length === 128 || desc.byteLength === 512)) {
-                    descriptor = desc;
-                  }
-                } catch (eDirect) {}
+                  const det = await faceapi.detectSingleFace(patch, new faceapi.SsdMobilenetv1Options({ minConfidence: 0.20 }))
+                    .withFaceLandmarks(Boolean(faceapi.nets.faceLandmark68TinyNet && faceapi.nets.faceLandmark68TinyNet.isLoaded))
+                    .withFaceDescriptor();
+                  if (det && det.descriptor) descriptor = det.descriptor;
+                } catch (eSSD) {}
               }
 
-              // Fast method 2: TinyFace detection on patch
               if (!descriptor && faceapi.nets.tinyFaceDetector && faceapi.nets.tinyFaceDetector.isLoaded) {
                 try {
-                  const det = await faceapi.detectSingleFace(patch, new faceapi.TinyFaceDetectorOptions({ inputSize: 160, scoreThreshold: 0.05 }))
-                    .withFaceLandmarks(true)
+                  const det = await faceapi.detectSingleFace(patch, new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.06 }))
+                    .withFaceLandmarks(Boolean(faceapi.nets.faceLandmark68TinyNet && faceapi.nets.faceLandmark68TinyNet.isLoaded))
                     .withFaceDescriptor();
-                  if (det && det.descriptor) {
-                    descriptor = det.descriptor;
-                  }
+                  if (det && det.descriptor) descriptor = det.descriptor;
                 } catch (eTiny) {}
+              }
+
+              // Fallback if portrait was already tightly pre-cropped
+              if (!descriptor && typeof faceapi.computeFaceDescriptor === 'function') {
+                try {
+                  const sq = document.createElement('canvas');
+                  sq.width = 150;
+                  sq.height = 150;
+                  sq.getContext('2d').drawImage(patch, 0, 0, 150, 150);
+                  const d = await faceapi.computeFaceDescriptor(sq);
+                  if (d && d.length === 128) descriptor = d;
+                } catch (eSq) {}
               }
 
               if (descriptor) {
@@ -7975,11 +8009,6 @@
             labeledDescriptors.push(
               new faceapi.LabeledFaceDescriptors(face.name, faceDescriptors)
             );
-            if (face.name.toLowerCase().includes('wahyu')) {
-              labeledDescriptors.push(new faceapi.LabeledFaceDescriptors('Wahyu', faceDescriptors));
-              labeledDescriptors.push(new faceapi.LabeledFaceDescriptors('Wahyu Utomo', faceDescriptors));
-              labeledDescriptors.push(new faceapi.LabeledFaceDescriptors('WAHYU', faceDescriptors));
-            }
             faceFeatureCache.set(face.id, { face, descriptor: faceDescriptors[0], descriptors: faceDescriptors });
             console.log(`[FaceAPI] ✅ Biometric descriptor built for: ${face.name}`);
           }
@@ -7989,7 +8018,7 @@
         window.allRegisteredDescriptors = allRegisteredDescriptors;
         window._registeredDescriptorsCount = labeledDescriptors.length;
         if (labeledDescriptors.length > 0) {
-          faceAPIFaceMatcher = new faceapi.FaceMatcher(labeledDescriptors, 0.65);
+          faceAPIFaceMatcher = new faceapi.FaceMatcher(labeledDescriptors, 0.58);
           window.faceAPIFaceMatcher = faceAPIFaceMatcher;
           console.log(`[FaceAPI] ✅ FaceMatcher ready with ${labeledDescriptors.length} registered entries`);
           try {
@@ -8010,16 +8039,16 @@
     let _lastBgDescriptorTime = 0;
     function scheduleBackgroundDescriptorMatch(frameCanvas, box, trackId) {
       const now = Date.now();
-      if (_bgDescriptorInFlight || now - _lastBgDescriptorTime < 350) return;
+      if (_bgDescriptorInFlight || now - _lastBgDescriptorTime < 300) return;
       if (!frameCanvas || !box || box.width < 25 || box.height < 25) return;
       if (!faceapi.nets.faceRecognitionNet || !faceapi.nets.faceRecognitionNet.isLoaded || allRegisteredDescriptors.length === 0) return;
 
       _bgDescriptorInFlight = true;
       _lastBgDescriptorTime = now;
 
-      // Extract tight face patch to 150x150 offscreen canvas
-      const padW = Math.round(box.width * 0.15);
-      const padH = Math.round(box.height * 0.15);
+      // Extract high-resolution 224x224 face patch with 25% margin for landmark alignment
+      const padW = Math.round(box.width * 0.25);
+      const padH = Math.round(box.height * 0.25);
       const cx = Math.max(0, Math.round(box.x - padW));
       const cy = Math.max(0, Math.round(box.y - padH));
       const cw = Math.min(frameCanvas.width - cx, Math.round(box.width + padW * 2));
@@ -8030,26 +8059,26 @@
       }
 
       const patch = document.createElement('canvas');
-      patch.width = 150;
-      patch.height = 150;
+      patch.width = 224;
+      patch.height = 224;
       const pctx = patch.getContext('2d');
-      pctx.drawImage(frameCanvas, cx, cy, cw, ch, 0, 0, 150, 150);
+      pctx.drawImage(frameCanvas, cx, cy, cw, ch, 0, 0, 224, 224);
 
       setTimeout(async () => {
         try {
           let liveDescriptor = null;
-          if (typeof faceapi.computeFaceDescriptor === 'function') {
+          if (faceapi.nets.tinyFaceDetector && faceapi.nets.tinyFaceDetector.isLoaded) {
             try {
-              liveDescriptor = await faceapi.computeFaceDescriptor(patch);
-            } catch (eC) {}
-          }
-          if (!liveDescriptor && faceapi.nets.tinyFaceDetector && faceapi.nets.tinyFaceDetector.isLoaded) {
-            try {
-              const cDet = await faceapi.detectSingleFace(patch, new faceapi.TinyFaceDetectorOptions({ inputSize: 160, scoreThreshold: 0.05 }))
+              const cDet = await faceapi.detectSingleFace(patch, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.06 }))
                 .withFaceLandmarks(true)
                 .withFaceDescriptor();
               if (cDet && cDet.descriptor) liveDescriptor = cDet.descriptor;
             } catch (eTiny) {}
+          }
+          if (!liveDescriptor && typeof faceapi.computeFaceDescriptor === 'function') {
+            try {
+              liveDescriptor = await faceapi.computeFaceDescriptor(patch);
+            } catch (eC) {}
           }
 
           if (liveDescriptor && allRegisteredDescriptors.length > 0) {
@@ -8079,35 +8108,35 @@
               };
             }
 
-            const isWebcam = Boolean(currentAICamera && currentAICamera.id === 'webcam');
-            const isWahyuCandidate = Boolean(bestCandidateLabel && bestCandidateLabel.toLowerCase().includes('wahyu'));
-            const isConfidentMatch = bestCandidateLabel && !['STRANGER', 'PENGUNJUNG', 'UNKNOWN'].includes(bestCandidateLabel) && (
-              bestCandidateDist <= 0.65 ||
-              (bestCandidateDist <= 0.68 && (secondCandidateDist - bestCandidateDist) >= 0.05) ||
-              (isWahyuCandidate && isWebcam && bestCandidateDist <= 0.75) ||
-              (isWebcam && bestCandidateDist <= 0.72)
+            // Calibrated Euclidean Distance: <= 0.56 genuine match, <= 0.60 with distinction
+            const isConfidentMatch = Boolean(
+              bestCandidateLabel &&
+              !['STRANGER', 'PENGUNJUNG', 'UNKNOWN'].includes(bestCandidateLabel.toUpperCase()) &&
+              (
+                bestCandidateDist <= 0.56 ||
+                (bestCandidateDist <= 0.60 && (secondCandidateDist - bestCandidateDist) >= 0.06)
+              )
             );
+
+            const sTrack = _spatialTrackBuffers.get(trackId);
 
             if (isConfidentMatch) {
               const matchedFace = cachedAIFaces.find(f => f.name.toLowerCase() === bestCandidateLabel.toLowerCase()) ||
-                                  cachedAIFaces.find(f => f.name.toLowerCase().includes(bestCandidateLabel.toLowerCase()) || bestCandidateLabel.toLowerCase().includes(f.name.toLowerCase())) ||
-                                  (isWahyuCandidate ? cachedAIFaces.find(f => f.name.toLowerCase().includes('wahyu')) : null) ||
-                                  (isWebcam ? cachedAIFaces.find(f => f.name.toLowerCase().includes('wahyu')) : null);
+                                  cachedAIFaces.find(f => f.name.toLowerCase().includes(bestCandidateLabel.toLowerCase()) || bestCandidateLabel.toLowerCase().includes(f.name.toLowerCase()));
               if (matchedFace) {
-                const isWahyu = matchedFace.name.toLowerCase().includes('wahyu') || isWahyuCandidate;
+                const isWahyu = matchedFace.name.toLowerCase().includes('wahyu');
                 const cat = isWahyu ? 'vip' : (matchedFace.category || 'employee');
-                const role = (matchedFace.role_title) ? matchedFace.role_title : (isWahyu ? 'Super Admin & Owner' : 'VIP');
-                const sTrack = _spatialTrackBuffers.get(trackId);
+                const role = (matchedFace.role_title) ? matchedFace.role_title : (isWahyu ? 'Super Admin & Owner' : 'Staff');
                 if (sTrack) {
                   sTrack.lockedPerson = matchedFace;
                   sTrack.lockedDistance = bestCandidateDist;
                   sTrack.isStranger = false;
-                  sTrack.candidateVotes = { [matchedFace.name]: 50 };
+                  sTrack.candidateVotes = { [matchedFace.name]: 5 };
                 }
                 const confVal = (Math.min(99.6, Math.max(88.0, 100 - bestCandidateDist * 18))).toFixed(1);
                 window._verifiedFaceLock = {
                   trackId: trackId,
-                  name: isWahyu ? 'WAHYU' : matchedFace.name.toUpperCase(),
+                  name: matchedFace.name.toUpperCase(),
                   fullName: matchedFace.name,
                   face: matchedFace,
                   distance: bestCandidateDist,
@@ -8116,29 +8145,21 @@
                   role: role,
                   gender: matchedFace.gender || 'Laki-laki',
                   timestamp: Date.now(),
-                  ttl: 60000
+                  ttl: 8000
                 };
 
-                // Immediately sync active overlay entities & lastFaceAPIResult so HUD reticle turns neon green WAHYU instantly!
+                // Sync only the corresponding active entity
                 if (Array.isArray(activeAIEntities)) {
                   activeAIEntities.forEach(ent => {
-                    ent.label = isWahyu ? 'WAHYU' : matchedFace.name.toUpperCase();
-                    ent.face = matchedFace;
-                    ent.category = cat;
-                    ent.isMatch = true;
-                    ent.confidence = confVal;
-                    ent.isStranger = false;
+                    if (ent.trackId === trackId || (!ent.trackId && ent.type !== 'person')) {
+                      ent.label = matchedFace.name.toUpperCase();
+                      ent.face = matchedFace;
+                      ent.category = cat;
+                      ent.isMatch = true;
+                      ent.confidence = confVal;
+                      ent.isStranger = false;
+                    }
                   });
-                }
-                if (lastFaceAPIResult && lastFaceAPIResult.faces) {
-                  lastFaceAPIResult.faces.forEach(f => {
-                    f.name = isWahyu ? 'WAHYU' : matchedFace.name.toUpperCase();
-                    f.face = matchedFace;
-                    f.category = cat;
-                    f.isMatch = true;
-                    f.confidence = confVal;
-                  });
-                  lastFaceAPIResult.timestamp = Date.now();
                 }
 
                 // Audio announcement
@@ -8148,6 +8169,15 @@
                   window._lastAnnouncedName = matchedFace.name;
                   speakVoiceAnnouncement(`Wajah terdeteksi: ${matchedFace.name}, ${role}`);
                 }
+              }
+            } else if (bestCandidateDist > 0.62) {
+              if (sTrack) {
+                sTrack.lockedPerson = null;
+                sTrack.isStranger = true;
+                sTrack.candidateVotes = {};
+              }
+              if (window._verifiedFaceLock && window._verifiedFaceLock.trackId === trackId) {
+                window._verifiedFaceLock = null;
               }
             }
           }
@@ -8469,7 +8499,7 @@
             const bw = maxX - minX;
             const bh = maxY - minY;
             const aspect = bh / Math.max(1, bw);
-            if (bh >= 30 && bh <= h * 0.75 && aspect >= 1.3 && aspect <= 4.0 && bw >= 14) {
+            if (bh >= 25 && bh <= h * 0.75 && aspect >= 0.70 && aspect <= 4.2 && bw >= 14) {
               const pad = Math.round(bw * 0.12);
               activeClusters.push({
                 box: {
@@ -8479,7 +8509,7 @@
                   height: Math.min(h - minY, bh + 8)
                 },
                 descriptor: null,
-                score: 0.89,
+                score: 0.76,
                 type: 'person',
                 engine: 'CCTV Silhouette Tracker'
               });
@@ -8767,21 +8797,23 @@
           } catch (eSSD) {}
         }
 
-        // 4. CCTV SURVEILLANCE PEDESTRIAN DETECTION (COCO-SSD Neural Model only, verified score >= 0.50)
+        // 4. CCTV SURVEILLANCE PEDESTRIAN DETECTION (COCO-SSD Neural Model + Silhouette Fallback)
         if (isCCTVMode && (!detections || detections.length === 0)) {
           if (cocoSSDModel) {
             try {
-              const predictions = await cocoSSDModel.detect(frameCanvas);
+              // Set minScore to 0.25 to prevent premature drop of surveillance pedestrians
+              const predictions = await cocoSSDModel.detect(frameCanvas, 15, 0.25);
               if (predictions && predictions.length > 0) {
                 for (const p of predictions) {
-                  if (p.class === 'person' && p.score >= 0.50) {
+                  const isPedestrian = p.class === 'person' || p.class === 'motorcycle' || p.class === 'bicycle';
+                  if (isPedestrian && p.score >= 0.25) {
                     const bx = Math.max(0, Math.round(p.bbox[0]));
                     const by = Math.max(0, Math.round(p.bbox[1]));
                     const bw = Math.min(frameW - bx, Math.round(p.bbox[2]));
                     const bh = Math.min(frameH - by, Math.round(p.bbox[3]));
                     const aspect = bh / Math.max(1, bw);
-                    // Valid human standing/walking aspect ratio
-                    if (bw >= 18 && bh >= 35 && aspect >= 1.2 && aspect <= 4.0) {
+                    // CCTV surveillance perspective: standing, walking, sitting, or motorcyclist
+                    if (bw >= 15 && bh >= 25 && aspect >= 0.70 && aspect <= 4.2) {
                       detections.push({
                         box: { x: bx, y: by, width: bw, height: bh },
                         descriptor: null,
@@ -8794,6 +8826,16 @@
                 }
               }
             } catch (eCoco) {}
+          }
+
+          // Fallback: High-Speed CCTV Silhouette Tracker (immediate detection even if COCO-SSD is loading)
+          if ((!detections || detections.length === 0) && frameCanvas) {
+            try {
+              const cctvHumans = findCCTVHumanSilhouettes(frameCanvas);
+              if (cctvHumans && cctvHumans.length > 0) {
+                detections.push(...cctvHumans);
+              }
+            } catch (eCctv) {}
           }
         }
 
@@ -8835,7 +8877,18 @@
           for (let i = 0; i < detections.length; i++) {
             const d = detections[i];
             const box = d.detection ? d.detection.box : d.box;
-            const landmarks = d.landmarks ? (d.landmarks.positions || d.landmarks) : null;
+            let landmarks = null;
+            if (d.landmarks) {
+              if (Array.isArray(d.landmarks)) {
+                landmarks = d.landmarks;
+              } else if (Array.isArray(d.landmarks.positions)) {
+                landmarks = d.landmarks.positions;
+              } else if (typeof d.landmarks.getPositions === 'function') {
+                landmarks = d.landmarks.getPositions();
+              } else if (Array.isArray(d.landmarks._positions)) {
+                landmarks = d.landmarks._positions;
+              }
+            }
             const desc = d.descriptor || null;
             const isPerson = d.type === 'person';
 
@@ -8878,19 +8931,17 @@
             let deepfaceEmotion = null;
 
             // ===== DEEPFACE PRIMARY RECOGNITION (Server-side ArcFace) =====
-            // Priority: DeepFace (higher accuracy) > face-api.js (fallback)
             const spatialTrack = getStableSpatialTrack(box, frameW, frameH);
             const trackId = spatialTrack ? spatialTrack.id : `face_${i}`;
 
             if (deepfaceAvailable && !isPerson && box.width >= 12 && box.height >= 12) {
-              const cachedDF = deepfaceResultCache.get(trackId) || (isWebcam ? deepfaceResultCache.get('webcam_primary') : null);
+              const cachedDF = deepfaceResultCache.get(trackId);
               const isPositiveMatch = Boolean(cachedDF && cachedDF.identity && cachedDF.identity !== 'STRANGER');
-              const ttl = isPositiveMatch ? 15000 : 700;
+              const ttl = isPositiveMatch ? 12000 : 700;
 
               if (cachedDF && (Date.now() - cachedDF.timestamp < ttl)) {
                 deepfaceResult = cachedDF;
               } else if (!deepfaceCallInFlight && (Date.now() - deepfaceLastCallTime >= DEEPFACE_THROTTLE_MS)) {
-                // Non-blocking async background call - Keeps frame loop at fluid 60 FPS!
                 const dfCrop = createDeepFaceCrop(frameCanvas, box, frameW, frameH);
                 if (dfCrop) {
                   callDeepFaceFind(dfCrop, trackId).catch(() => {});
@@ -8904,7 +8955,6 @@
 
               if (deepfaceResult && deepfaceResult.identity && deepfaceResult.identity !== 'STRANGER' && deepfaceResult.confidence > 0) {
                 bestCandidate = deepfaceResult.identity;
-                // Map DeepFace cosine distance to face-api.js-compatible distance scale
                 bestDist = Math.max(0, Math.min(1.0, deepfaceResult.distance));
                 secondDist = 1.0;
                 deepfaceAge = deepfaceResult.age;
@@ -8913,24 +8963,14 @@
               }
             }
 
-            // If persistent verified face lock is active for THIS specific track or webcam, maintain it
-            if (window._verifiedFaceLock && (Date.now() - window._verifiedFaceLock.timestamp < (window._verifiedFaceLock.ttl || 60000))) {
-              if (isWebcam || (spatialTrack && spatialTrack.id === window._verifiedFaceLock.trackId)) {
-                bestCandidate = window._verifiedFaceLock.name;
-                bestDist = window._verifiedFaceLock.distance || 0.35;
-                secondDist = 1.0;
-                if (!deepfaceGender && window._verifiedFaceLock.gender) {
-                  deepfaceGender = window._verifiedFaceLock.gender;
-                }
-                if (spatialTrack) {
-                  spatialTrack.lockedPerson = window._verifiedFaceLock.face;
-                  spatialTrack.lockedDistance = bestDist;
-                  spatialTrack.isStranger = false;
-                }
-              }
+            // Maintain lock if this physical track was already verified
+            if (spatialTrack && spatialTrack.lockedPerson && !spatialTrack.isStranger && (Date.now() - (spatialTrack.lockTimestamp || 0) < 8000)) {
+              bestCandidate = spatialTrack.lockedPerson.name;
+              bestDist = spatialTrack.lockedDistance || 0.42;
+              secondDist = 1.0;
             }
 
-            // ===== FACE-API.JS FALLBACK RECOGNITION (Browser-side) =====
+            // ===== FACE-API.JS RECOGNITION (Browser-side Aligned Biometrics) =====
             const deepFaceMatched = Boolean(deepfaceResult && deepfaceResult.identity && deepfaceResult.identity !== 'STRANGER');
             if (!deepFaceMatched && desc && allRegisteredDescriptors.length > 0) {
               for (const ld of allRegisteredDescriptors) {
@@ -8949,7 +8989,7 @@
               }
             }
 
-            // Record live biometric distance measurement for HUD overlay
+            // Record live biometric distance measurement for debugging
             if (bestCandidate && bestDist < 1.0) {
               window._lastLiveBiometricDebug = {
                 bestCandidate: bestCandidate,
@@ -8960,64 +9000,43 @@
               };
             }
 
-            // Schedule non-blocking background descriptor match if not yet identified or periodically re-verifying
-            const isTrackLocked = spatialTrack && spatialTrack.lockedPerson && !spatialTrack.isStranger;
-            const hasVerifiedLock = window._verifiedFaceLock && (Date.now() - window._verifiedFaceLock.timestamp < (window._verifiedFaceLock.ttl || 60000));
-            const shouldCheck = (!isTrackLocked && !hasVerifiedLock) || (Date.now() - (spatialTrack ? (spatialTrack.lastDescriptorCheck || 0) : 0) > 3000);
-            if (!isPerson && !deepFaceMatched && shouldCheck && frameCanvas && (isWebcam || box.width >= 40)) {
+            // Schedule background descriptor match for unaligned or unverified faces
+            const isTrackLocked = spatialTrack && spatialTrack.lockedPerson && !spatialTrack.isStranger && (Date.now() - (spatialTrack.lockTimestamp || 0) < 8000);
+            const shouldCheck = !isTrackLocked || (Date.now() - (spatialTrack ? (spatialTrack.lastDescriptorCheck || 0) : 0) > 3000);
+            if (!isPerson && !deepFaceMatched && shouldCheck && frameCanvas && (isWebcam || box.width >= 35)) {
               if (spatialTrack) spatialTrack.lastDescriptorCheck = Date.now();
               scheduleBackgroundDescriptorMatch(frameCanvas, box, trackId);
             }
 
-            // Genuine Biometric Matching: Calibrated threshold for webcam
+            // Calibrated Biometric Matching:
+            // Standard Euclidean distance threshold for 128D ResNet face embeddings
             let isMatch = false;
-            if (deepfaceResult && deepfaceResult.identity && deepfaceResult.identity !== 'STRANGER' && (deepfaceResult.distance <= 0.65 || deepfaceResult.confidence >= 75)) {
+            if (deepfaceResult && deepfaceResult.identity && deepfaceResult.identity !== 'STRANGER' && (deepfaceResult.distance <= 0.58 || deepfaceResult.confidence >= 80)) {
               isMatch = true;
             } else if (activeTrackedFace) {
               isMatch = true;
-            } else if (window._verifiedFaceLock && (Date.now() - window._verifiedFaceLock.timestamp < (window._verifiedFaceLock.ttl || 60000))) {
-              if (isWebcam || (spatialTrack && spatialTrack.id === window._verifiedFaceLock.trackId)) {
-                isMatch = true;
-                bestCandidate = window._verifiedFaceLock.name;
-              }
+            } else if (spatialTrack && spatialTrack.lockedPerson && !spatialTrack.isStranger && (Date.now() - (spatialTrack.lockTimestamp || 0) < 8000)) {
+              isMatch = true;
+              bestCandidate = spatialTrack.lockedPerson.name;
+              bestDist = spatialTrack.lockedDistance || 0.42;
             } else {
-              const isWahyuCandidate = Boolean(bestCandidate && bestCandidate.toLowerCase().includes('wahyu'));
-              isMatch = bestCandidate !== null && !['STRANGER', 'PENGUNJUNG', 'UNKNOWN'].includes(bestCandidate) && (
-                bestDist <= 0.65 ||
-                (bestDist <= 0.68 && (secondDist - bestDist) >= 0.05) ||
-                (bestDist <= 0.75 && isWahyuCandidate && isWebcam) ||
-                (isWebcam && bestDist <= 0.72)
+              isMatch = bestCandidate !== null && !['STRANGER', 'PENGUNJUNG', 'UNKNOWN'].includes(bestCandidate.toUpperCase()) && (
+                bestDist <= 0.56 ||
+                (bestDist <= 0.60 && (secondDist - bestDist) >= 0.06)
               );
             }
-            const isWahyuCand = Boolean(bestCandidate && bestCandidate.toLowerCase().includes('wahyu'));
-            const matchedFaceObj = activeTrackedFace || (isMatch ? (
-              cachedAIFaces.find(f => f.name.toLowerCase() === (bestCandidate || '').toLowerCase()) ||
-              cachedAIFaces.find(f => f.name.toLowerCase().includes((bestCandidate || '').toLowerCase()) || (bestCandidate || '').toLowerCase().includes(f.name.toLowerCase())) ||
-              (isWahyuCand ? cachedAIFaces.find(f => f.name.toLowerCase().includes('wahyu')) : null) ||
-              (isWebcam ? cachedAIFaces.find(f => f.name.toLowerCase().includes('wahyu')) : null)
-            ) : null);
 
-            // Immediate lock upon confirmed match
-            if (isMatch && matchedFaceObj) {
-              const cat = matchedFaceObj.name.toLowerCase().includes('wahyu') ? 'vip' : (matchedFaceObj.category || 'employee');
-              const confVal = (Math.min(99.6, Math.max(88.0, 100 - bestDist * 18))).toFixed(1);
-              window._verifiedFaceLock = {
-                trackId: trackId,
-                name: matchedFaceObj.name.toUpperCase(),
-                face: matchedFaceObj,
-                distance: bestDist,
-                category: cat,
-                confidence: confVal,
-                gender: matchedFaceObj.gender || 'Laki-laki',
-                timestamp: Date.now(),
-                ttl: 60000
-              };
-              if (spatialTrack) {
-                spatialTrack.lockedPerson = matchedFaceObj;
-                spatialTrack.lockedDistance = bestDist;
-                spatialTrack.isStranger = false;
-                spatialTrack.candidateVotes = { [matchedFaceObj.name]: 50 };
-              }
+            const matchedFaceObj = isMatch ? (
+              cachedAIFaces.find(f => f.name.toLowerCase() === (bestCandidate || '').toLowerCase()) ||
+              cachedAIFaces.find(f => f.name.toLowerCase().includes((bestCandidate || '').toLowerCase()) || (bestCandidate || '').toLowerCase().includes(f.name.toLowerCase()))
+            ) : null;
+
+            // Lock confirmed match to this specific spatial track
+            if (isMatch && matchedFaceObj && spatialTrack) {
+              spatialTrack.lockedPerson = matchedFaceObj;
+              spatialTrack.lockedDistance = bestDist;
+              spatialTrack.lockTimestamp = Date.now();
+              spatialTrack.isStranger = false;
             }
 
             // Stable physical centroid track with hysteresis
@@ -9866,24 +9885,44 @@
       if (Array.isArray(landmarks68) && landmarks68.length >= 68) {
         const l = landmarks68;
         const ptPos = (p) => (p && typeof p.x === 'number') ? p : (p && typeof p._x === 'number' ? { x: p._x, y: p._y } : null);
+
+        // Compute 3D head vertical orientation vector (chin tip -> glabella/bridge)
+        const chin = ptPos(l[8]) || { x: bx + bw * 0.5, y: by + bh * 0.98 };
+        const glab = ptPos(l[27]) || ptPos(l[21]) || { x: bx + bw * 0.5, y: by + bh * 0.25 };
+        const upX = glab.x - chin.x;
+        const upY = glab.y - chin.y;
+        const faceLen = Math.hypot(upX, upY) || bh;
+        const normUpX = upX / faceLen;
+        const normUpY = upY / faceLen;
+        const fhDist = faceLen * 0.32; // Offset forehead naturally above eyebrows
+
+        const browL = ptPos(l[19]) || { x: bx + bw * 0.30, y: by + bh * 0.22 };
+        const browR = ptPos(l[24]) || { x: bx + bw * 0.70, y: by + bh * 0.22 };
+
+        const foreheadL = { x: browL.x + normUpX * fhDist, y: browL.y + normUpY * fhDist };
+        const foreheadR = { x: browR.x + normUpX * fhDist, y: browR.y + normUpY * fhDist };
+
+        const eyeL = (l[36] && l[39]) ? { x: (l[36].x + l[39].x) / 2, y: (l[37].y + l[41].y) / 2 } : ptPos(l[36]);
+        const eyeR = (l[42] && l[45]) ? { x: (l[42].x + l[45].x) / 2, y: (l[43].y + l[47].y) / 2 } : ptPos(l[45]);
+
         return [
-          safePt(ptPos(l[19]), bx + bw * 0.30, by + bh * 0.08), // 0: foreheadTopL
-          safePt(ptPos(l[24]), bx + bw * 0.70, by + bh * 0.08), // 1: foreheadTopR
-          safePt(ptPos(l[0]),  bx + bw * 0.12, by + bh * 0.22), // 2: templeL
-          safePt(ptPos(l[16]), bx + bw * 0.88, by + bh * 0.22), // 3: templeR
-          safePt(ptPos(l[21]), bx + bw * 0.50, by + bh * 0.25), // 4: bridge (Glabella)
-          safePt(ptPos(l[36]), bx + bw * 0.30, by + bh * 0.38), // 5: underEyeL
-          safePt(ptPos(l[45]), bx + bw * 0.70, by + bh * 0.38), // 6: underEyeR
-          safePt(ptPos(l[1]),  bx + bw * 0.16, by + bh * 0.50), // 7: midCheekL
-          safePt(ptPos(l[15]), bx + bw * 0.84, by + bh * 0.50), // 8: midCheekR
-          safePt(ptPos(l[30]), bx + bw * 0.50, by + bh * 0.56), // 9: noseTip
-          safePt(ptPos(l[33]), bx + bw * 0.50, by + bh * 0.68), // 10: philtrum
-          safePt(ptPos(l[48]), bx + bw * 0.32, by + bh * 0.76), // 11: mouthCornerL
-          safePt(ptPos(l[54]), bx + bw * 0.68, by + bh * 0.76), // 12: mouthCornerR
-          safePt(ptPos(l[57]), bx + bw * 0.50, by + bh * 0.84), // 13: lipBottom
-          safePt(ptPos(l[5]),  bx + bw * 0.24, by + bh * 0.90), // 14: jawL
-          safePt(ptPos(l[11]), bx + bw * 0.76, by + bh * 0.90), // 15: jawR
-          safePt(ptPos(l[8]),  bx + bw * 0.50, by + bh * 0.98)  // 16: chinTip
+          safePt(foreheadL,   bx + bw * 0.30, by + bh * 0.08), // 0: foreheadTopL
+          safePt(foreheadR,   bx + bw * 0.70, by + bh * 0.08), // 1: foreheadTopR
+          safePt(ptPos(l[0]), bx + bw * 0.12, by + bh * 0.22), // 2: templeL
+          safePt(ptPos(l[16]),bx + bw * 0.88, by + bh * 0.22), // 3: templeR
+          safePt(glab,        bx + bw * 0.50, by + bh * 0.25), // 4: bridge (Glabella)
+          safePt(eyeL,        bx + bw * 0.30, by + bh * 0.38), // 5: underEyeL
+          safePt(eyeR,        bx + bw * 0.70, by + bh * 0.38), // 6: underEyeR
+          safePt(ptPos(l[1]), bx + bw * 0.16, by + bh * 0.50), // 7: midCheekL
+          safePt(ptPos(l[15]),bx + bw * 0.84, by + bh * 0.50), // 8: midCheekR
+          safePt(ptPos(l[30]),bx + bw * 0.50, by + bh * 0.56), // 9: noseTip
+          safePt(ptPos(l[33]),bx + bw * 0.50, by + bh * 0.68), // 10: philtrum
+          safePt(ptPos(l[48]),bx + bw * 0.32, by + bh * 0.76), // 11: mouthCornerL
+          safePt(ptPos(l[54]),bx + bw * 0.68, by + bh * 0.76), // 12: mouthCornerR
+          safePt(ptPos(l[57]),bx + bw * 0.50, by + bh * 0.84), // 13: lipBottom
+          safePt(ptPos(l[5]), bx + bw * 0.24, by + bh * 0.90), // 14: jawL
+          safePt(ptPos(l[11]),bx + bw * 0.76, by + bh * 0.90), // 15: jawR
+          safePt(chin,        bx + bw * 0.50, by + bh * 0.98)  // 16: chinTip
         ];
       }
 
@@ -10269,7 +10308,7 @@
         activeAIEntities.forEach(ent => {
           if (typeof ent.targetX === 'number') {
             const dist = Math.hypot(ent.targetX - ent.x, ent.targetY - ent.y);
-            const factor = dist > 40 ? 0.88 : 0.75;
+            const factor = dist > 30 ? 0.92 : 0.88;
             ent.x += (ent.targetX - ent.x) * factor;
             ent.y += (ent.targetY - ent.y) * factor;
             ent.w += (ent.targetW - ent.w) * factor;
@@ -10280,8 +10319,8 @@
               const cur = ent.currentLandmarks17[i];
               const tgt = ent.targetLandmarks17[i];
               if (cur && tgt && typeof cur.x === 'number' && typeof tgt.x === 'number') {
-                cur.x += (tgt.x - cur.x) * 0.75;
-                cur.y += (tgt.y - cur.y) * 0.75;
+                cur.x += (tgt.x - cur.x) * 0.88;
+                cur.y += (tgt.y - cur.y) * 0.88;
               }
             }
           }
@@ -10494,7 +10533,60 @@
       const has17 = Array.isArray(ent.currentLandmarks17) && ent.currentLandmarks17.length === 17;
       const has68 = ent.landmarks && Array.isArray(ent.landmarks) && ent.landmarks.length >= 68;
 
-      if (has17) {
+      if (has68) {
+        const l = ent.landmarks;
+        const ptPos = (p) => (p && typeof p.x === 'number') ? p : (p && typeof p._x === 'number' ? { x: p._x, y: p._y } : null);
+
+        // Compute 3D head vertical orientation vector (chin tip -> glabella/bridge)
+        const chin = ptPos(l[8]) || { x: x + w * 0.5, y: y + h * 0.98 };
+        const glab = ptPos(l[27]) || ptPos(l[21]) || { x: x + w * 0.5, y: y + h * 0.25 };
+        const upX = glab.x - chin.x;
+        const upY = glab.y - chin.y;
+        const faceLen = Math.hypot(upX, upY) || h;
+        const normUpX = upX / faceLen;
+        const normUpY = upY / faceLen;
+        const fhDist = faceLen * 0.32; // Offset forehead naturally above eyebrows
+
+        const browL = ptPos(l[19]) || { x: x + w * 0.30, y: y + h * 0.22 };
+        const browR = ptPos(l[24]) || { x: x + w * 0.70, y: y + h * 0.22 };
+
+        const eyeL = (l[36] && l[39]) ? { x: (l[36].x + l[39].x) / 2, y: (l[37].y + l[41].y) / 2 } : ptPos(l[36]) || { x: x + w * 0.30, y: y + h * 0.38 };
+        const eyeR = (l[42] && l[45]) ? { x: (l[42].x + l[45].x) / 2, y: (l[43].y + l[47].y) / 2 } : ptPos(l[45]) || { x: x + w * 0.70, y: y + h * 0.38 };
+
+        pts = {
+          foreheadTopL: { x: browL.x + normUpX * fhDist, y: browL.y + normUpY * fhDist },
+          foreheadTopR: { x: browR.x + normUpX * fhDist, y: browR.y + normUpY * fhDist },
+          templeL:      ptPos(l[0])  || { x: x + w * 0.12, y: y + h * 0.22 },
+          templeR:      ptPos(l[16]) || { x: x + w * 0.88, y: y + h * 0.22 },
+          glabella:     glab,
+
+          browMidL:     browL,
+          browMidR:     browR,
+
+          eyeL:         eyeL,
+          eyeR:         eyeR,
+
+          noseBridge:   ptPos(l[27]) || { x: x + w * 0.50, y: y + h * 0.35 },
+          noseMid:      ptPos(l[29]) || { x: x + w * 0.50, y: y + h * 0.46 },
+          noseTip:      ptPos(l[30]) || { x: x + w * 0.50, y: y + h * 0.56 },
+          nostrilL:     ptPos(l[31]) || { x: x + w * 0.40, y: y + h * 0.56 },
+          nostrilR:     ptPos(l[35]) || { x: x + w * 0.60, y: y + h * 0.56 },
+
+          cheekUpperL:  ptPos(l[1])  || { x: x + w * 0.16, y: y + h * 0.44 },
+          cheekUpperR:  ptPos(l[15]) || { x: x + w * 0.84, y: y + h * 0.44 },
+          cheekLowerL:  ptPos(l[3])  || { x: x + w * 0.16, y: y + h * 0.64 },
+          cheekLowerR:  ptPos(l[13]) || { x: x + w * 0.84, y: y + h * 0.64 },
+
+          philtrum:     ptPos(l[33]) || ptPos(l[51]) || { x: x + w * 0.50, y: y + h * 0.68 },
+          mouthL:       ptPos(l[48]) || { x: x + w * 0.32, y: y + h * 0.76 },
+          mouthR:       ptPos(l[54]) || { x: x + w * 0.68, y: y + h * 0.76 },
+          lipBot:       ptPos(l[57]) || { x: x + w * 0.50, y: y + h * 0.84 },
+
+          chinL:        ptPos(l[5])  || { x: x + w * 0.24, y: y + h * 0.90 },
+          chinR:        ptPos(l[11]) || { x: x + w * 0.76, y: y + h * 0.90 },
+          chinTip:      chin
+        };
+      } else if (has17) {
         const c = ent.currentLandmarks17;
         pts = {
           foreheadTopL: c[0],
@@ -10528,42 +10620,6 @@
           chinL:        c[14],
           chinR:        c[15],
           chinTip:      c[16]
-        };
-      } else if (has68) {
-        const l = ent.landmarks;
-        pts = {
-          // Forehead & hairline nodes (anchored naturally above eyebrows)
-          foreheadTopL: { x: l[19].x - (w * 0.01), y: l[19].y - (h * 0.09) },
-          foreheadTopR: { x: l[24].x + (w * 0.01), y: l[24].y - (h * 0.09) },
-          templeL:      { x: l[0].x,              y: l[17].y },
-          templeR:      { x: l[16].x,             y: l[26].y },
-          glabella:     { x: (l[21].x + l[22].x) / 2, y: (l[21].y + l[22].y) / 2 },
-
-          browMidL:     l[19],
-          browMidR:     l[24],
-
-          eyeL:         { x: (l[36].x + l[39].x) / 2, y: (l[37].y + l[41].y) / 2 },
-          eyeR:         { x: (l[42].x + l[45].x) / 2, y: (l[43].y + l[47].y) / 2 },
-
-          noseBridge:   l[27],
-          noseMid:      l[29],
-          noseTip:      l[30],
-          nostrilL:     l[31],
-          nostrilR:     l[35],
-
-          cheekUpperL:  { x: l[1].x + (w * 0.02), y: l[36].y + (h * 0.04) },
-          cheekUpperR:  { x: l[15].x - (w * 0.02), y: l[45].y + (h * 0.04) },
-          cheekLowerL:  l[3],
-          cheekLowerR:  l[13],
-
-          philtrum:     l[51],
-          mouthL:       l[48],
-          mouthR:       l[54],
-          lipBot:       l[57],
-
-          chinL:        l[6],
-          chinR:        l[10],
-          chinTip:      l[8]
         };
       } else {
         // High-Precision Anatomical Proportions (Faithful to Gambar 2 Geometry)
