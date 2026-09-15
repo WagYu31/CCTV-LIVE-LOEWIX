@@ -8797,45 +8797,77 @@
           } catch (eSSD) {}
         }
 
-        // 4. CCTV SURVEILLANCE PEDESTRIAN DETECTION (COCO-SSD Neural Model + Silhouette Fallback)
+        // 4. CCTV SURVEILLANCE CLASSIFICATION (COCO-SSD Deep Neural Network)
+        // Accurately differentiates humans (pedestrians) vs motorcycles vs cars vs bicycles
         if (isCCTVMode && (!detections || detections.length === 0)) {
           if (cocoSSDModel) {
             try {
-              // Set minScore to 0.25 to prevent premature drop of surveillance pedestrians
-              const predictions = await cocoSSDModel.detect(frameCanvas, 15, 0.25);
+              const predictions = await cocoSSDModel.detect(frameCanvas, 15, 0.32);
               if (predictions && predictions.length > 0) {
                 for (const p of predictions) {
-                  const isPedestrian = p.class === 'person' || p.class === 'motorcycle' || p.class === 'bicycle';
-                  if (isPedestrian && p.score >= 0.25) {
-                    const bx = Math.max(0, Math.round(p.bbox[0]));
-                    const by = Math.max(0, Math.round(p.bbox[1]));
-                    const bw = Math.min(frameW - bx, Math.round(p.bbox[2]));
-                    const bh = Math.min(frameH - by, Math.round(p.bbox[3]));
+                  const bx = Math.max(0, Math.round(p.bbox[0]));
+                  const by = Math.max(0, Math.round(p.bbox[1]));
+                  const bw = Math.min(frameW - bx, Math.round(p.bbox[2]));
+                  const bh = Math.min(frameH - by, Math.round(p.bbox[3]));
+                  if (bw < 16 || bh < 16) continue;
+
+                  if (p.class === 'person' && p.score >= 0.35) {
+                    // HUMAN / PEDESTRIAN (Walking, standing, or rider on foot)
                     const aspect = bh / Math.max(1, bw);
-                    // CCTV surveillance perspective: standing, walking, sitting, or motorcyclist
-                    if (bw >= 15 && bh >= 25 && aspect >= 0.70 && aspect <= 4.2) {
+                    if (bh >= 25 && aspect >= 0.85 && aspect <= 4.2) {
                       detections.push({
                         box: { x: bx, y: by, width: bw, height: bh },
                         descriptor: null,
                         score: p.score,
                         type: 'person',
+                        label: 'ORANG',
                         engine: 'COCO-SSD Pedestrian'
                       });
                     }
+                  } else if (p.class === 'motorcycle' && p.score >= 0.38) {
+                    // MOTORCYCLE (Distinct category from human)
+                    detections.push({
+                      box: { x: bx, y: by, width: bw, height: bh },
+                      descriptor: null,
+                      score: p.score,
+                      type: 'motorcycle',
+                      label: 'MOTOR',
+                      engine: 'COCO-SSD Vehicle'
+                    });
+                  } else if (p.class === 'car' && p.score >= 0.45) {
+                    // CAR
+                    detections.push({
+                      box: { x: bx, y: by, width: bw, height: bh },
+                      descriptor: null,
+                      score: p.score,
+                      type: 'car',
+                      label: 'MOBIL',
+                      engine: 'COCO-SSD Vehicle'
+                    });
+                  } else if (p.class === 'truck' && p.score >= 0.45) {
+                    // TRUCK
+                    detections.push({
+                      box: { x: bx, y: by, width: bw, height: bh },
+                      descriptor: null,
+                      score: p.score,
+                      type: 'truck',
+                      label: 'TRUK',
+                      engine: 'COCO-SSD Vehicle'
+                    });
+                  } else if (p.class === 'bicycle' && p.score >= 0.40) {
+                    // BICYCLE
+                    detections.push({
+                      box: { x: bx, y: by, width: bw, height: bh },
+                      descriptor: null,
+                      score: p.score,
+                      type: 'bicycle',
+                      label: 'SEPEDA',
+                      engine: 'COCO-SSD Vehicle'
+                    });
                   }
                 }
               }
             } catch (eCoco) {}
-          }
-
-          // Fallback: High-Speed CCTV Silhouette Tracker (immediate detection even if COCO-SSD is loading)
-          if ((!detections || detections.length === 0) && frameCanvas) {
-            try {
-              const cctvHumans = findCCTVHumanSilhouettes(frameCanvas);
-              if (cctvHumans && cctvHumans.length > 0) {
-                detections.push(...cctvHumans);
-              }
-            } catch (eCctv) {}
           }
         }
 
@@ -8891,9 +8923,11 @@
             }
             const desc = d.descriptor || null;
             const isPerson = d.type === 'person';
+            const isVehicle = ['motorcycle', 'car', 'truck', 'bicycle'].includes(d.type);
+            const isNonFace = isPerson || isVehicle;
 
-            // Link with closest TensorFlow.js MediaPipe 468 FaceMesh
-            if (!isPerson && !d.mesh468 && tfjsFaces && tfjsFaces.length > 0) {
+            // Link with closest TensorFlow.js MediaPipe 468 FaceMesh (only for human faces)
+            if (!isNonFace && !d.mesh468 && tfjsFaces && tfjsFaces.length > 0) {
               let bestTfMesh = null;
               let bestTfDist = Infinity;
               const bcx = box.x + box.width / 2;
@@ -8917,7 +8951,7 @@
             }
 
             // Reject false positives using gentle landmark check (only for faces)
-            if (!isPerson && !isValidHumanFaceLandmarks(landmarks, box, isCCTVMode)) {
+            if (!isNonFace && !isValidHumanFaceLandmarks(landmarks, box, isCCTVMode)) {
               continue;
             }
 
@@ -8934,7 +8968,7 @@
             const spatialTrack = getStableSpatialTrack(box, frameW, frameH);
             const trackId = spatialTrack ? spatialTrack.id : `face_${i}`;
 
-            if (deepfaceAvailable && !isPerson && box.width >= 12 && box.height >= 12) {
+            if (deepfaceAvailable && !isNonFace && box.width >= 12 && box.height >= 12) {
               const cachedDF = deepfaceResultCache.get(trackId);
               const isPositiveMatch = Boolean(cachedDF && cachedDF.identity && cachedDF.identity !== 'STRANGER');
               const ttl = isPositiveMatch ? 12000 : 700;
@@ -8972,7 +9006,7 @@
 
             // ===== FACE-API.JS RECOGNITION (Browser-side Aligned Biometrics) =====
             const deepFaceMatched = Boolean(deepfaceResult && deepfaceResult.identity && deepfaceResult.identity !== 'STRANGER');
-            if (!deepFaceMatched && desc && allRegisteredDescriptors.length > 0) {
+            if (!deepFaceMatched && !isNonFace && desc && allRegisteredDescriptors.length > 0) {
               for (const ld of allRegisteredDescriptors) {
                 for (const refDesc of ld.descriptors) {
                   const dist = faceapi.euclideanDistance(desc, refDesc);
@@ -9003,7 +9037,7 @@
             // Schedule background descriptor match for unaligned or unverified faces
             const isTrackLocked = spatialTrack && spatialTrack.lockedPerson && !spatialTrack.isStranger && (Date.now() - (spatialTrack.lockTimestamp || 0) < 8000);
             const shouldCheck = !isTrackLocked || (Date.now() - (spatialTrack ? (spatialTrack.lastDescriptorCheck || 0) : 0) > 3000);
-            if (!isPerson && !deepFaceMatched && shouldCheck && frameCanvas && (isWebcam || box.width >= 35)) {
+            if (!isNonFace && !deepFaceMatched && shouldCheck && frameCanvas && (isWebcam || box.width >= 35)) {
               if (spatialTrack) spatialTrack.lastDescriptorCheck = Date.now();
               scheduleBackgroundDescriptorMatch(frameCanvas, box, trackId);
             }
@@ -9011,15 +9045,15 @@
             // Calibrated Biometric Matching:
             // Standard Euclidean distance threshold for 128D ResNet face embeddings
             let isMatch = false;
-            if (deepfaceResult && deepfaceResult.identity && deepfaceResult.identity !== 'STRANGER' && (deepfaceResult.distance <= 0.58 || deepfaceResult.confidence >= 80)) {
+            if (!isNonFace && deepfaceResult && deepfaceResult.identity && deepfaceResult.identity !== 'STRANGER' && (deepfaceResult.distance <= 0.58 || deepfaceResult.confidence >= 80)) {
               isMatch = true;
-            } else if (activeTrackedFace) {
+            } else if (!isNonFace && activeTrackedFace) {
               isMatch = true;
-            } else if (spatialTrack && spatialTrack.lockedPerson && !spatialTrack.isStranger && (Date.now() - (spatialTrack.lockTimestamp || 0) < 8000)) {
+            } else if (!isNonFace && spatialTrack && spatialTrack.lockedPerson && !spatialTrack.isStranger && (Date.now() - (spatialTrack.lockTimestamp || 0) < 8000)) {
               isMatch = true;
               bestCandidate = spatialTrack.lockedPerson.name;
               bestDist = spatialTrack.lockedDistance || 0.42;
-            } else {
+            } else if (!isNonFace) {
               isMatch = bestCandidate !== null && !['STRANGER', 'PENGUNJUNG', 'UNKNOWN'].includes(bestCandidate.toUpperCase()) && (
                 bestDist <= 0.56 ||
                 (bestDist <= 0.60 && (secondDist - bestDist) >= 0.06)
@@ -9054,9 +9088,9 @@
             let conf = '88.0';
             let labelName = 'STRANGER';
             let categoryType = 'guest';
-            let recognitionEngine = 'face-api.js';
+            let recognitionEngine = d.engine || 'face-api.js';
 
-            if (stab.isMatch && stab.name && !['STRANGER', 'PENGUNJUNG', 'UNKNOWN'].includes(stab.name)) {
+            if (!isNonFace && stab.isMatch && stab.name && !['STRANGER', 'PENGUNJUNG', 'UNKNOWN'].includes(stab.name)) {
               if (deepfaceResult && deepfaceResult.confidence > 0) {
                 // Use DeepFace confidence directly (already calibrated 75-99.6%)
                 conf = Math.min(99.6, Math.max(88.0, deepfaceResult.confidence)).toFixed(1);
@@ -9071,9 +9105,14 @@
               categoryType = isWahyu ? 'vip' : (stab.category || 'employee');
             } else {
               const rawScore = d.detection ? d.detection.score : (d.score || 0.88);
-              conf = Math.max(76.0, Math.min(94.5, (rawScore * 100))).toFixed(1);
-              labelName = isPerson ? 'PENGUNJUNG' : 'STRANGER';
-              categoryType = 'guest';
+              conf = Math.max(76.0, Math.min(96.5, (rawScore * 100))).toFixed(1);
+              if (isVehicle) {
+                labelName = d.label || 'KENDARAAN';
+                categoryType = 'resident';
+              } else {
+                labelName = isPerson ? 'PENGUNJUNG' : 'STRANGER';
+                categoryType = 'guest';
+              }
             }
 
             // Gender: prefer DeepFace analysis (more accurate), fallback to existing
@@ -9104,7 +9143,7 @@
               name: labelName,
               face: stab.face,
               category: categoryType,
-              type: isPerson ? 'person' : 'face',
+              type: isVehicle ? d.type : (isPerson ? 'person' : 'face'),
               normBox: {
                 x: box.x / frameW,
                 y: box.y / frameH,
@@ -10011,6 +10050,7 @@
 
     // Auto-Log Face to Live Stream Deteksi AI sidebar upon 100% Biometric Lock
     function triggerAutoLogFace(ent, rawBox) {
+      if (!ent || ent.type !== 'face') return; // STRICT GUARD: Only log real human faces, NEVER log vehicles or pedestrians as faces!
       const now = Date.now();
       const personKey = ent.label || 'STRANGER';
       if (personKey.includes('MEMINDAI') || personKey.includes('SCANNING')) return;
@@ -10196,7 +10236,7 @@
               }
 
               let targetX, targetY, targetW, targetH;
-              if (f.type === 'person') {
+              if (f.type === 'person' || ['motorcycle', 'car', 'truck', 'bicycle'].includes(f.type)) {
                 targetX = Math.round(renderBox.x + nb.x * renderBox.width);
                 targetY = Math.round(renderBox.y + nb.y * renderBox.height);
                 targetW = Math.round(nb.width * renderBox.width);
@@ -10284,10 +10324,12 @@
                   : t.targetLandmarks17.map(p => ({ ...p }))
               };
 
-              // Auto-log to "Live Stream Deteksi AI" sidebar upon reaching 100% Biometric Lock
+              // Auto-log ONLY real human faces to "Live Stream Deteksi AI" sidebar upon reaching 100% Biometric Lock
               if (scanProgress >= 100 && !entObj.hasLogged) {
                 entObj.hasLogged = true;
-                triggerAutoLogFace(entObj, t.normBox);
+                if (entObj.type === 'face') {
+                  triggerAutoLogFace(entObj, t.normBox);
+                }
               }
 
               return entObj;
@@ -10943,9 +10985,143 @@
       ctx.restore();
     }
 
+    // High-Precision CCTV Surveillance Vehicle Reticle (Motorcycle, Car, Truck, Bicycle)
+    function drawSurveillanceVehicleReticle(ctx, bx, by, bw, bh, ent) {
+      ctx.save();
+      bx = Math.round(bx);
+      by = Math.round(by);
+      bw = Math.round(bw);
+      bh = Math.round(bh);
+
+      let icon = '🏍️';
+      let typeLabel = 'MOTOR';
+      let reticleColor = '#f59e0b'; // Amber Gold for motorcycles
+      let reticleGlow = 'rgba(245, 158, 11, 0.75)';
+
+      if (ent.type === 'car') {
+        icon = '🚗';
+        typeLabel = 'MOBIL';
+        reticleColor = '#38bdf8'; // Sky blue for cars
+        reticleGlow = 'rgba(56, 189, 248, 0.75)';
+      } else if (ent.type === 'truck') {
+        icon = '🚚';
+        typeLabel = 'TRUK';
+        reticleColor = '#10b981'; // Emerald for trucks
+        reticleGlow = 'rgba(16, 185, 129, 0.75)';
+      } else if (ent.type === 'bicycle') {
+        icon = '🚲';
+        typeLabel = 'SEPEDA';
+        reticleColor = '#14b8a6'; // Teal for bicycles
+        reticleGlow = 'rgba(20, 184, 166, 0.75)';
+      }
+
+      // Corner bracket arms tailored to vehicle proportions
+      const armW = Math.min(40, Math.max(16, Math.round(bw * 0.15)));
+      const armH = Math.min(40, Math.max(16, Math.round(bh * 0.15)));
+
+      ctx.strokeStyle = reticleColor;
+      ctx.shadowColor = reticleGlow;
+      ctx.shadowBlur = 12;
+      ctx.lineWidth = 3.2;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+
+      // 4 corners of the vehicle bounding box
+      // Top-Left
+      ctx.beginPath();
+      ctx.moveTo(bx, by + armH);
+      ctx.lineTo(bx, by);
+      ctx.lineTo(bx + armW, by);
+      ctx.stroke();
+
+      // Top-Right
+      ctx.beginPath();
+      ctx.moveTo(bx + bw - armW, by);
+      ctx.lineTo(bx + bw, by);
+      ctx.lineTo(bx + bw, by + armH);
+      ctx.stroke();
+
+      // Bottom-Left
+      ctx.beginPath();
+      ctx.moveTo(bx, by + bh - armH);
+      ctx.lineTo(bx, by + bh);
+      ctx.lineTo(bx + armW, by + bh);
+      ctx.stroke();
+
+      // Bottom-Right
+      ctx.beginPath();
+      ctx.moveTo(bx + bw - armW, by + bh);
+      ctx.lineTo(bx + bw, by + bh);
+      ctx.lineTo(bx + bw, by + bh - armH);
+      ctx.stroke();
+
+      // Vehicle Center Targeting Crosshair
+      const cx = bx + bw / 2;
+      const cy = by + bh / 2;
+      ctx.strokeStyle = reticleColor;
+      ctx.lineWidth = 1.2;
+      ctx.setLineDash([3, 3]);
+      ctx.beginPath();
+      ctx.moveTo(cx - 12, cy); ctx.lineTo(cx + 12, cy);
+      ctx.moveTo(cx, cy - 12); ctx.lineTo(cx, cy + 12);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // CCTV Vehicle Surveillance Tag (Clear distinct label)
+      const fullTagText = `${icon} ${typeLabel} (Kendaraan)`;
+      const confStr = ent.confidence ? (String(ent.confidence).includes('%') ? ent.confidence : `${ent.confidence}%`) : '88.5%';
+
+      ctx.font = '800 12px "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, sans-serif';
+      const textW = ctx.measureText(fullTagText).width;
+      ctx.font = '800 11px monospace';
+      const confW = ctx.measureText(confStr).width;
+
+      const tagH = 26;
+      const tagW = Math.max(bw, textW + confW + 36);
+      const canvasW = ctx.canvas ? ctx.canvas.width : 640;
+      const tagX = Math.max(4, Math.min(canvasW - tagW - 4, bx + (bw - tagW) / 2));
+      let tagY = by - tagH - 6;
+      if (tagY < 4) tagY = by + bh + 6;
+
+      // Dark translucent cyber tag pill
+      ctx.fillStyle = 'rgba(2, 6, 23, 0.94)';
+      ctx.strokeStyle = reticleColor;
+      ctx.lineWidth = 1.6;
+      ctx.shadowBlur = 10;
+      ctx.beginPath();
+      ctx.roundRect ? ctx.roundRect(tagX, tagY, tagW, tagH, 5) : ctx.rect(tagX, tagY, tagW, tagH);
+      ctx.fill();
+      ctx.stroke();
+
+      // Beacon Dot
+      ctx.shadowBlur = 0;
+      ctx.fillStyle = reticleColor;
+      ctx.beginPath();
+      ctx.arc(tagX + 11, tagY + tagH / 2, 3.8, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Label Text
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '800 11.5px "Plus Jakarta Sans", sans-serif';
+      ctx.fillText(fullTagText, tagX + 22, tagY + 17);
+
+      // Confidence Pill
+      ctx.fillStyle = reticleColor;
+      ctx.font = '800 11px monospace';
+      ctx.textAlign = 'right';
+      ctx.fillText(confStr, tagX + tagW - 8, tagY + 17);
+      ctx.textAlign = 'left';
+
+      ctx.restore();
+    }
+
     function drawEntityBracket(ctx, ent) {
       if (ent.type === 'person') {
         drawSurveillancePedestrianReticle(ctx, ent.x, ent.y, ent.w, ent.h, ent);
+        return;
+      }
+      if (['motorcycle', 'car', 'truck', 'bicycle'].includes(ent.type)) {
+        drawSurveillanceVehicleReticle(ctx, ent.x, ent.y, ent.w, ent.h, ent);
         return;
       }
 
