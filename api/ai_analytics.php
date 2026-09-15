@@ -218,6 +218,30 @@ if ($action === 'get_ai_data') {
             }
         }
         $f['extra_photos'] = array_values(array_unique($extraPhotos));
+
+        // Provide base64 data URIs for zero-latency, zero-CORS face descriptor building
+        $projectRoot = realpath(__DIR__ . '/..');
+        $photoRel = $f['photo'] ?? '';
+        $photoAbs = $projectRoot . '/' . ltrim($photoRel, '/');
+        if (file_exists($photoAbs) && !is_dir($photoAbs) && filesize($photoAbs) < 600000) {
+            $ext = strtolower(pathinfo($photoAbs, PATHINFO_EXTENSION));
+            $mime = ($ext === 'png') ? 'image/png' : (($ext === 'webp') ? 'image/webp' : 'image/jpeg');
+            $f['photo_b64'] = 'data:' . $mime . ';base64,' . base64_encode(file_get_contents($photoAbs));
+        } else {
+            $f['photo_b64'] = '';
+        }
+
+        $extraB64 = [];
+        foreach (array_slice($f['extra_photos'], 0, 5) as $ep) {
+            $epAbs = $projectRoot . '/' . ltrim($ep, '/');
+            if (file_exists($epAbs) && !is_dir($epAbs) && filesize($epAbs) < 600000) {
+                $ext = strtolower(pathinfo($epAbs, PATHINFO_EXTENSION));
+                $mime = ($ext === 'png') ? 'image/png' : (($ext === 'webp') ? 'image/webp' : 'image/jpeg');
+                $extraB64[] = 'data:' . $mime . ';base64,' . base64_encode(file_get_contents($epAbs));
+            }
+        }
+        $f['extra_photos_b64'] = $extraB64;
+
         $faces[] = $f;
     }
 
