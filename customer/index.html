@@ -10559,24 +10559,46 @@
         }
 
         // =========================================================================
-        // Continuous 60 FPS Landmark Interpolation (Smooth Sub-Pixel Glide)
+        // Adaptive 60 FPS Landmark Interpolation (Close-Range Responsive Tracking)
         // =========================================================================
         activeAIEntities.forEach(ent => {
           if (typeof ent.targetX === 'number') {
             const dist = Math.hypot(ent.targetX - ent.x, ent.targetY - ent.y);
-            const factor = dist > 30 ? 0.92 : 0.88;
+
+            // Adaptive LERP: faster tracking for close-up faces (large bounding box)
+            // and fast movements. At close range the face covers a large portion of
+            // the canvas so pixel deltas are bigger — the mesh must keep up.
+            const canvasArea = canvas.width * canvas.height || 1;
+            const faceArea = (ent.targetW || 1) * (ent.targetH || 1);
+            const faceRatio = Math.min(faceArea / canvasArea, 1); // 0..1 (0 = far, 1 = fills frame)
+
+            // Base factor: 0.88 (far) → 0.97 (close-up, fills >40% of frame)
+            const closeFactor = 0.88 + Math.min(faceRatio * 0.225, 0.09);
+            // Speed boost: large jumps (>20px) push factor towards 0.97
+            const speedBoost = Math.min(dist / 120, 0.06);
+            const factor = Math.min(closeFactor + speedBoost, 0.97);
+
             ent.x += (ent.targetX - ent.x) * factor;
             ent.y += (ent.targetY - ent.y) * factor;
             ent.w += (ent.targetW - ent.w) * factor;
             ent.h += (ent.targetH - ent.h) * factor;
           }
           if (Array.isArray(ent.targetLandmarks17) && Array.isArray(ent.currentLandmarks17)) {
+            // Landmark LERP uses same adaptive factor as bounding box for tight tracking
+            const canvasArea = canvas.width * canvas.height || 1;
+            const faceArea = (ent.targetW || 1) * (ent.targetH || 1);
+            const faceRatio = Math.min(faceArea / canvasArea, 1);
+            const lmBaseFactor = 0.88 + Math.min(faceRatio * 0.225, 0.09);
+
             for (let i = 0; i < ent.currentLandmarks17.length; i++) {
               const cur = ent.currentLandmarks17[i];
               const tgt = ent.targetLandmarks17[i];
               if (cur && tgt && typeof cur.x === 'number' && typeof tgt.x === 'number') {
-                cur.x += (tgt.x - cur.x) * 0.88;
-                cur.y += (tgt.y - cur.y) * 0.88;
+                const ptDist = Math.hypot(tgt.x - cur.x, tgt.y - cur.y);
+                const ptBoost = Math.min(ptDist / 80, 0.08);
+                const lmFactor = Math.min(lmBaseFactor + ptBoost, 0.97);
+                cur.x += (tgt.x - cur.x) * lmFactor;
+                cur.y += (tgt.y - cur.y) * lmFactor;
               }
             }
           }
