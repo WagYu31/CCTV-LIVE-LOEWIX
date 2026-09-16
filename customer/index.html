@@ -7745,14 +7745,16 @@
       const isVideoActive = video && (video.readyState >= 2 || video.srcObject !== null || (!video.paused && !video.ended));
       if (!isVideoActive || !isAutoTrackingActive) return;
 
+      const isWebcamActive = Boolean(video.srcObject || (currentAICamera && currentAICamera.id === 'webcam'));
+      if (isWebcamActive) return; // Live webcam is tracked 100% locally at 60 FPS in browser, avoid network lag!
+
       const vw = video.videoWidth || (video.srcObject ? 1280 : 0);
       const vh = video.videoHeight || (video.srcObject ? 720 : 0);
       if (vw === 0 || vh === 0) return;
 
       // Create snapshot canvas
-      const isWebcamActive = Boolean(video.srcObject || (currentAICamera && currentAICamera.id === 'webcam'));
       const snapCanvas = document.createElement('canvas');
-      const maxDim = isWebcamActive ? 512 : 1024;
+      const maxDim = 1024;
       const scale = Math.min(1, maxDim / Math.max(vw, vh));
       const fw = Math.round(vw * scale);
       const fh = Math.round(vh * scale);
@@ -8723,9 +8725,9 @@
     const _liveWebcamTrack = {
       active: true,
       targetX: 0.34,
-      targetY: 0.18,
+      targetY: 0.14,
       targetW: 0.32,
-      targetH: 0.44,
+      targetH: 0.40,
       lastSeen: Date.now()
     };
 
@@ -8747,9 +8749,9 @@
         const img = mctx.getImageData(0, 0, miniW, miniH);
         const d = img.data;
 
-        // Search primary head area: upper 85% of frame, central 80% width
-        const startY = Math.round(miniH * 0.06);
-        const endY = Math.round(miniH * 0.85);
+        // Search primary head area: upper 65% of frame (head & face, excludes clothing/torso), central 80% width
+        const startY = Math.round(miniH * 0.05);
+        const endY = Math.round(miniH * 0.65);
         const startX = Math.round(miniW * 0.10);
         const endX = Math.round(miniW * 0.90);
         const step = 2;
@@ -8869,35 +8871,58 @@
         const isWebcam = Boolean(video && (video.srcObject !== null || (currentAICamera && currentAICamera.id === 'webcam')));
         const isCCTVMode = !isWebcam && (currentAICamera && currentAICamera.id !== 'webcam');
         const tinyScoreThreshold = isCCTVMode ? 0.35 : 0.08;
+        const tinyInputSize = isWebcam ? 224 : 320;
+
+        // Determine primary input source for detection
+        // For live webcam: feed HTMLVideoElement directly to WebGL for zero-copy ultra-fast GPU processing
+        let detectionSource = (isWebcam && video && video.readyState >= 2 && video.videoWidth > 0) ? video : frameCanvas;
+        let detW = (detectionSource === video) ? video.videoWidth : frameW;
+        let detH = (detectionSource === video) ? video.videoHeight : frameH;
 
         let detections = [];
 
-        // 1. FAST REAL-TIME PRIMARY ENGINE: face-api.js TinyFaceDetector (Ultra responsive 0.08 on webcam, 320px input)
-        // Decoupled from heavy descriptor extraction: Runs at fluid 60 FPS (<12ms) without blocking
+        // 1. FAST REAL-TIME PRIMARY ENGINE: face-api.js TinyFaceDetector (Ultra responsive on webcam, blazing <8ms)
+        // Decoupled from heavy descriptor extraction: Runs at fluid 60 FPS without blocking
         if (typeof faceapi !== 'undefined' && faceapi.nets && faceapi.nets.tinyFaceDetector && faceapi.nets.tinyFaceDetector.isLoaded) {
           try {
-            const tinyOpts = new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: tinyScoreThreshold });
-            if (faceapi.nets.faceLandmark68TinyNet && faceapi.nets.faceLandmark68TinyNet.isLoaded) {
-              detections = await faceapi.detectAllFaces(frameCanvas, tinyOpts).withFaceLandmarks(true).catch(() => []);
-            } else if (faceapi.nets.faceLandmark68Net && faceapi.nets.faceLandmark68Net.isLoaded) {
-              detections = await faceapi.detectAllFaces(frameCanvas, tinyOpts).withFaceLandmarks(false).catch(() => []);
+            const tinyOpts = new faceapi.TinyFaceDetectorOptions({ inputSize: tinyInputSize, scoreThreshold: tinyScoreThreshold });
+            const useTinyLandmarks = Boolean(faceapi.nets.faceLandmark68TinyNet && faceapi.nets.faceLandmark68TinyNet.isLoaded);
+            const hasLandmarkNet = useTinyLandmarks || Boolean(faceapi.nets.faceLandmark68Net && faceapi.nets.faceLandmark68Net.isLoaded);
+
+            if (hasLandmarkNet) {
+              detections = await faceapi.detectAllFaces(detectionSource, tinyOpts).withFaceLandmarks(useTinyLandmarks).catch(() => []);
             } else {
-              detections = await faceapi.detectAllFaces(frameCanvas, tinyOpts).catch(() => []);
+              detections = await faceapi.detectAllFaces(detectionSource, tinyOpts).catch(() => []);
             }
 
-            // Fallback: If 0 faces detected on canvas, try direct video element directly
-            if ((!detections || detections.length === 0) && video && (video.readyState >= 2 || video.srcObject)) {
-              try {
-                if (faceapi.nets.faceLandmark68TinyNet && faceapi.nets.faceLandmark68TinyNet.isLoaded) {
-                  detections = await faceapi.detectAllFaces(video, tinyOpts).withFaceLandmarks(true).catch(() => []);
-                } else if (faceapi.nets.faceLandmark68Net && faceapi.nets.faceLandmark68Net.isLoaded) {
-                  detections = await faceapi.detectAllFaces(video, tinyOpts).withFaceLandmarks(false).catch(() => []);
-                } else {
-                  detections = await faceapi.detectAllFaces(video, tinyOpts).catch(() => []);
-                }
-              } catch (eVid) {}
+            // Fallback: If 0 faces detected on primary source, try secondary source (frameCanvas <-> video)
+            if ((!detections || detections.length === 0)) {
+              const fallbackSource = (detectionSource === video) ? frameCanvas : video;
+              if (fallbackSource && (fallbackSource === frameCanvas || (video && (video.readyState >= 2 || video.srcObject)))) {
+                try {
+                  let fbDets = [];
+                  if (hasLandmarkNet) {
+                    fbDets = await faceapi.detectAllFaces(fallbackSource, tinyOpts).withFaceLandmarks(useTinyLandmarks).catch(() => []);
+                  } else {
+                    fbDets = await faceapi.detectAllFaces(fallbackSource, tinyOpts).catch(() => []);
+                  }
+                  if (fbDets && fbDets.length > 0) {
+                    detections = fbDets;
+                    detectionSource = fallbackSource;
+                    detW = (fallbackSource === video) ? video.videoWidth : frameCanvas.width;
+                    detH = (fallbackSource === video) ? video.videoHeight : frameCanvas.height;
+                  }
+                } catch (eFb) {}
+              }
             }
           } catch (eTiny) {}
+        }
+
+        // Subsequent engines (TensorFlow FaceMesh, Optical Tracker) run on frameCanvas
+        if (!detections || detections.length === 0) {
+          detectionSource = frameCanvas;
+          detW = frameW;
+          detH = frameH;
         }
 
         // 2. TENSORFLOW.ORG & MEDIAPIPE (Enhance with 468 3D landmarks or detect if FaceAPI had no results)
@@ -9374,8 +9399,8 @@
             let normMesh468 = null;
             if (d.mesh468 && Array.isArray(d.mesh468)) {
               normMesh468 = d.mesh468.map(p => ({
-                x: (p.x <= 1.05) ? p.x : p.x / frameW,
-                y: (p.y <= 1.05) ? p.y : p.y / frameH,
+                x: (p.x <= 1.05) ? p.x : p.x / detW,
+                y: (p.y <= 1.05) ? p.y : p.y / detH,
                 z: p.z || 0
               }));
             }
@@ -9386,10 +9411,19 @@
                 const px = (typeof p.x === 'number') ? p.x : (typeof p._x === 'number' ? p._x : 0);
                 const py = (typeof p.y === 'number') ? p.y : (typeof p._y === 'number' ? p._y : 0);
                 return {
-                  x: (px <= 1.05) ? px : px / frameW,
-                  y: (py <= 1.05) ? py : py / frameH
+                  x: (px <= 1.05) ? px : px / detW,
+                  y: (py <= 1.05) ? py : py / detH
                 };
               });
+            }
+
+            // Dynamically anchor live webcam tracking state to real detected face
+            if (isWebcam && i === 0 && box) {
+              _liveWebcamTrack.targetX = box.x / detW;
+              _liveWebcamTrack.targetY = box.y / detH;
+              _liveWebcamTrack.targetW = box.width / detW;
+              _liveWebcamTrack.targetH = box.height / detH;
+              _liveWebcamTrack.lastSeen = Date.now();
             }
 
             results.push({
@@ -9402,18 +9436,18 @@
               reId: d.reId || null,
               isOpticalZoom: d.isOpticalZoom || false,
               normBox: {
-                x: box.x / frameW,
-                y: box.y / frameH,
-                width: box.width / frameW,
-                height: box.height / frameH
+                x: box.x / detW,
+                y: box.y / detH,
+                width: box.width / detW,
+                height: box.height / detH
               },
               normLandmarks: normLms || [
-                { x: (box.x + box.width * 0.32) / frameW, y: (box.y + box.height * 0.38) / frameH },
-                { x: (box.x + box.width * 0.68) / frameW, y: (box.y + box.height * 0.38) / frameH },
-                { x: (box.x + box.width * 0.50) / frameW, y: (box.y + box.height * 0.55) / frameH },
-                { x: (box.x + box.width * 0.50) / frameW, y: (box.y + box.height * 0.75) / frameH },
-                { x: (box.x + box.width * 0.12) / frameW, y: (box.y + box.height * 0.45) / frameH },
-                { x: (box.x + box.width * 0.88) / frameW, y: (box.y + box.height * 0.45) / frameH }
+                { x: (box.x + box.width * 0.32) / detW, y: (box.y + box.height * 0.38) / detH },
+                { x: (box.x + box.width * 0.68) / detW, y: (box.y + box.height * 0.38) / detH },
+                { x: (box.x + box.width * 0.50) / detW, y: (box.y + box.height * 0.55) / detH },
+                { x: (box.x + box.width * 0.50) / detW, y: (box.y + box.height * 0.75) / detH },
+                { x: (box.x + box.width * 0.12) / detW, y: (box.y + box.height * 0.45) / detH },
+                { x: (box.x + box.width * 0.88) / detW, y: (box.y + box.height * 0.45) / detH }
               ],
               mesh468: normMesh468,
               confidence: conf,
@@ -9488,8 +9522,10 @@
           }
         }
 
-        // Self-schedule next frame tick: 100ms (10 FPS) maintains low CPU and keeps browser at 60 FPS
-        faceAPIDetectionTimer = setTimeout(detectionTick, 100);
+        // Self-schedule next frame tick: 33ms (~30 FPS) for responsive real-time webcam tracking, 100ms for CCTV
+        const isWebcamTick = Boolean(video && (video.srcObject !== null || (currentAICamera && currentAICamera.id === 'webcam')));
+        const nextTickDelay = isWebcamTick ? 33 : 100;
+        faceAPIDetectionTimer = setTimeout(detectionTick, nextTickDelay);
       }
 
       detectionTick();
@@ -11131,7 +11167,52 @@
         const has17 = Array.isArray(ent.currentLandmarks17) && ent.currentLandmarks17.length === 17;
         const has68 = ent.landmarks && Array.isArray(ent.landmarks) && ent.landmarks.length >= 68;
 
-        if (has68) {
+        if (has17) {
+          const c = ent.currentLandmarks17;
+          const pAt = (idx, defX, defY) => safePt(c[idx], defX, defY);
+          const p0 = pAt(0, x + w * 0.28, y - h * 0.03);
+          const p1 = pAt(1, x + w * 0.72, y - h * 0.03);
+          const p4 = pAt(4, x + w * 0.50, y + h * 0.24);
+          const p9 = pAt(9, x + w * 0.50, y + h * 0.58);
+          const p14 = pAt(14, x + w * 0.32, y + h * 0.96);
+          const p15 = pAt(15, x + w * 0.68, y + h * 0.96);
+
+          const fhMid = { x: (p0.x + p1.x) / 2, y: Math.min(p0.y, p1.y) - (h * 0.05) };
+          pts = {
+            foreheadMid:  fhMid,
+            foreheadTopL: p0,
+            foreheadTopR: p1,
+            templeL:      pAt(2, x + w * 0.10, y + h * 0.20),
+            templeR:      pAt(3, x + w * 0.90, y + h * 0.20),
+            glabella:     p4,
+
+            browMidL:     { x: (p0.x + p4.x) / 2, y: (p0.y + p4.y) / 2 },
+            browMidR:     { x: (p1.x + p4.x) / 2, y: (p1.y + p4.y) / 2 },
+
+            eyeL:         pAt(5, x + w * 0.30, y + h * 0.36),
+            eyeR:         pAt(6, x + w * 0.70, y + h * 0.36),
+
+            noseBridge:   { x: (p4.x + p9.x) / 2, y: (p4.y + p9.y) / 2 - (h * 0.05) },
+            noseMid:      { x: (p4.x + p9.x) / 2, y: (p4.y + p9.y) / 2 },
+            noseTip:      p9,
+            nostrilL:     { x: p9.x - w * 0.08, y: p9.y },
+            nostrilR:     { x: p9.x + w * 0.08, y: p9.y },
+
+            cheekUpperL:  pAt(7, x + w * 0.14, y + h * 0.44),
+            cheekUpperR:  pAt(8, x + w * 0.86, y + h * 0.44),
+            cheekLowerL:  { x: (pAt(7, x + w * 0.14, y + h * 0.44).x + p14.x) / 2, y: (pAt(7, x + w * 0.14, y + h * 0.44).y + p14.y) / 2 },
+            cheekLowerR:  { x: (pAt(8, x + w * 0.86, y + h * 0.44).x + p15.x) / 2, y: (pAt(8, x + w * 0.86, y + h * 0.44).y + p15.y) / 2 },
+
+            philtrum:     pAt(10, x + w * 0.50, y + h * 0.68),
+            mouthL:       pAt(11, x + w * 0.32, y + h * 0.78),
+            mouthR:       pAt(12, x + w * 0.68, y + h * 0.78),
+            lipBot:       pAt(13, x + w * 0.50, y + h * 0.86),
+
+            chinL:        p14,
+            chinR:        p15,
+            chinTip:      pAt(16, x + w * 0.50, y + h * 1.08)
+          };
+        } else if (has68) {
           const l = ent.landmarks;
           const chin = ptPos(l[8]) || { x: x + w * 0.50, y: y + h * 1.08 };
           const glab = ptPos(l[27]) || ptPos(l[21]) || { x: x + w * 0.50, y: y + h * 0.24 };
@@ -11188,51 +11269,6 @@
             chinL:        safePt(l[5],  x + w * 0.32, y + h * 0.96),
             chinR:        safePt(l[11], x + w * 0.68, y + h * 0.96),
             chinTip:      chin
-          };
-        } else if (has17) {
-          const c = ent.currentLandmarks17;
-          const pAt = (idx, defX, defY) => safePt(c[idx], defX, defY);
-          const p0 = pAt(0, x + w * 0.28, y - h * 0.03);
-          const p1 = pAt(1, x + w * 0.72, y - h * 0.03);
-          const p4 = pAt(4, x + w * 0.50, y + h * 0.24);
-          const p9 = pAt(9, x + w * 0.50, y + h * 0.58);
-          const p14 = pAt(14, x + w * 0.32, y + h * 0.96);
-          const p15 = pAt(15, x + w * 0.68, y + h * 0.96);
-
-          const fhMid = { x: (p0.x + p1.x) / 2, y: Math.min(p0.y, p1.y) - (h * 0.05) };
-          pts = {
-            foreheadMid:  fhMid,
-            foreheadTopL: p0,
-            foreheadTopR: p1,
-            templeL:      pAt(2, x + w * 0.10, y + h * 0.20),
-            templeR:      pAt(3, x + w * 0.90, y + h * 0.20),
-            glabella:     p4,
-
-            browMidL:     { x: (p0.x + p4.x) / 2, y: (p0.y + p4.y) / 2 },
-            browMidR:     { x: (p1.x + p4.x) / 2, y: (p1.y + p4.y) / 2 },
-
-            eyeL:         pAt(5, x + w * 0.30, y + h * 0.36),
-            eyeR:         pAt(6, x + w * 0.70, y + h * 0.36),
-
-            noseBridge:   { x: (p4.x + p9.x) / 2, y: (p4.y + p9.y) / 2 - (h * 0.05) },
-            noseMid:      { x: (p4.x + p9.x) / 2, y: (p4.y + p9.y) / 2 },
-            noseTip:      p9,
-            nostrilL:     { x: p9.x - w * 0.08, y: p9.y },
-            nostrilR:     { x: p9.x + w * 0.08, y: p9.y },
-
-            cheekUpperL:  pAt(7, x + w * 0.14, y + h * 0.44),
-            cheekUpperR:  pAt(8, x + w * 0.86, y + h * 0.44),
-            cheekLowerL:  { x: (pAt(7, x + w * 0.14, y + h * 0.44).x + p14.x) / 2, y: (pAt(7, x + w * 0.14, y + h * 0.44).y + p14.y) / 2 },
-            cheekLowerR:  { x: (pAt(8, x + w * 0.86, y + h * 0.44).x + p15.x) / 2, y: (pAt(8, x + w * 0.86, y + h * 0.44).y + p15.y) / 2 },
-
-            philtrum:     pAt(10, x + w * 0.50, y + h * 0.68),
-            mouthL:       pAt(11, x + w * 0.32, y + h * 0.78),
-            mouthR:       pAt(12, x + w * 0.68, y + h * 0.78),
-            lipBot:       pAt(13, x + w * 0.50, y + h * 0.86),
-
-            chinL:        p14,
-            chinR:        p15,
-            chinTip:      pAt(16, x + w * 0.50, y + h * 1.08)
           };
         } else {
           // High-Precision Anatomical Proportions (Faithful to Gambar 2 Geometry)
