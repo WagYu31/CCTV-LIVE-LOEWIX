@@ -12980,8 +12980,10 @@
     // ========================================================
     let faceWebcamStream = null;
     let faceEnrollmentInterval = null;
+    let _lastEnrollmentDetection = null;
 
     async function startFaceEnrollmentCamera() {
+      _lastEnrollmentDetection = null;
       const video = document.getElementById('face-webcam-video');
       const viewFinder = document.getElementById('face-scanner-viewfinder');
       const previewBox = document.getElementById('face-scanned-preview-box');
@@ -12993,7 +12995,11 @@
 
       if (viewFinder) viewFinder.style.display = 'block';
       if (previewBox) previewBox.style.display = 'none';
-      if (btnCapture) btnCapture.style.display = 'inline-block';
+      if (btnCapture) {
+        btnCapture.style.display = 'inline-block';
+        btnCapture.disabled = false;
+        btnCapture.innerHTML = '<i class="fas fa-camera mr-1.5"></i> Scan Webcam';
+      }
       if (btnRescan) btnRescan.style.display = 'none';
       if (statusBadge) statusBadge.innerHTML = '<span class="pulse-dot" style="background: #00f0ff; margin-right: 4px;"></span> Menghubungkan Kamera...';
 
@@ -13010,13 +13016,14 @@
           statusBadge.innerHTML = '<span class="pulse-dot" style="background: #10b981; margin-right: 4px;"></span> Kamera Aktif • Posisikan Wajah di Lingkaran';
         }
 
-        // Real-time quality guide check using faceapi if available
+        // Real-time background face detector so capture has pre-computed coordinates (0ms latency!)
         if (typeof faceapi !== 'undefined' && faceAPIReady) {
           faceEnrollmentInterval = setInterval(async () => {
             if (!video || video.paused || video.ended || !video.videoWidth) return;
             try {
-              const detection = await faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.3 }));
-              if (detection && statusBadge) {
+              const detection = await faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.25 }));
+              if (detection && detection.box && statusBadge) {
+                _lastEnrollmentDetection = detection;
                 statusBadge.innerHTML = '<span class="text-success font-weight-bold"><i class="fas fa-check-circle mr-1"></i> Wajah Terdeteksi Jelas (Siap Di-scan)</span>';
                 statusBadge.style.borderColor = '#10b981';
               } else if (statusBadge) {
@@ -13024,7 +13031,7 @@
                 statusBadge.style.borderColor = 'rgba(0, 240, 255, 0.5)';
               }
             } catch (e) {}
-          }, 600);
+          }, 500);
         }
 
       } catch (err) {
@@ -13036,7 +13043,7 @@
       }
     }
 
-    async function captureFaceFromWebcam() {
+    function captureFaceFromWebcam() {
       const video = document.getElementById('face-webcam-video');
       const viewFinder = document.getElementById('face-scanner-viewfinder');
       const previewBox = document.getElementById('face-scanned-preview-box');
@@ -13050,11 +13057,6 @@
         return;
       }
 
-      if (btnCapture) {
-        btnCapture.disabled = true;
-        btnCapture.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> Mendeteksi Wajah...';
-      }
-
       try {
         const canvas = document.createElement('canvas');
         canvas.width = 400;
@@ -13064,52 +13066,47 @@
         const vw = video.videoWidth;
         const vh = video.videoHeight;
 
-        // Smart Biometric Auto-Crop: Use Face-API to find exact face coordinates
         let cropX = 0, cropY = 0, cropW = vw, cropH = vh;
         let faceFound = false;
 
-        if (typeof faceapi !== 'undefined' && faceapi.nets && faceapi.nets.tinyFaceDetector && faceapi.nets.tinyFaceDetector.isLoaded) {
-          try {
-            const det = await faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.15 }));
-            if (det && det.box && det.box.width > 30) {
-              const b = det.box;
-              const padX = b.width * 0.28;
-              const padY = b.height * 0.32;
-              cropX = Math.max(0, b.x - padX);
-              cropY = Math.max(0, b.y - padY * 1.1); // Room for hair/forehead
-              cropW = Math.min(vw - cropX, b.width + padX * 2);
-              cropH = Math.min(vh - cropY, b.height + padY * 2);
+        // Path A: Instant 0ms crop from cached background detection
+        if (_lastEnrollmentDetection && _lastEnrollmentDetection.box && _lastEnrollmentDetection.box.width > 30) {
+          const b = _lastEnrollmentDetection.box;
+          const padX = b.width * 0.28;
+          const padY = b.height * 0.32;
+          cropX = Math.max(0, b.x - padX);
+          cropY = Math.max(0, b.y - padY * 1.1);
+          cropW = Math.min(vw - cropX, b.width + padX * 2);
+          cropH = Math.min(vh - cropY, b.height + padY * 2);
 
-              // Square aspect ratio centered on face
-              const maxDim = Math.max(cropW, cropH);
-              const cx = cropX + cropW / 2;
-              const cy = cropY + cropH / 2;
-              cropX = Math.max(0, Math.min(vw - maxDim, cx - maxDim / 2));
-              cropY = Math.max(0, Math.min(vh - maxDim, cy - maxDim / 2));
-              cropW = Math.min(maxDim, vw - cropX);
-              cropH = Math.min(maxDim, vh - cropY);
-              faceFound = true;
-            }
-          } catch (eDet) {}
+          const maxDim = Math.max(cropW, cropH);
+          const cx = cropX + cropW / 2;
+          const cy = cropY + cropH / 2;
+          cropX = Math.max(0, Math.min(vw - maxDim, cx - maxDim / 2));
+          cropY = Math.max(0, Math.min(vh - maxDim, cy - maxDim / 2));
+          cropW = Math.min(maxDim, vw - cropX);
+          cropH = Math.min(maxDim, vh - cropY);
+          faceFound = true;
         }
 
+        // Path B: Instant center oval target crop (matches the blue dashed oval guide exactly)
         if (!faceFound) {
-          // Standard center square fallback
           const minDim = Math.min(vw, vh);
-          cropX = (vw - minDim) / 2;
-          cropY = (vh - minDim) / 2;
-          cropW = minDim;
-          cropH = minDim;
+          const cropDim = Math.round(minDim * 0.72);
+          cropX = Math.round((vw - cropDim) / 2);
+          cropY = Math.round((vh - cropDim) / 2);
+          cropW = cropDim;
+          cropH = cropDim;
         }
 
-        // Draw CLEAN UNMIRRORED portrait so orientation matches live CCTV & ArcFace recognition perfectly!
+        // Draw CLEAN UNMIRRORED portrait (True camera orientation for CCTV/ArcFace matching)
         ctx.drawImage(video, cropX, cropY, cropW, cropH, 0, 0, 400, 400);
         const base64 = canvas.toDataURL('image/jpeg', 0.94);
 
         if (img) img.src = base64;
         if (hiddenInput) hiddenInput.value = base64;
 
-        // Update UI state
+        // Update UI state instantly
         if (viewFinder) viewFinder.style.display = 'none';
         if (previewBox) previewBox.style.display = 'block';
         if (btnCapture) btnCapture.style.display = 'none';
@@ -13119,11 +13116,6 @@
       } catch (err) {
         console.error('Face capture error:', err);
         alert('Gagal mengambil foto wajah. Silakan coba lagi.');
-      } finally {
-        if (btnCapture) {
-          btnCapture.disabled = false;
-          btnCapture.innerHTML = '<i class="fas fa-camera mr-1.5"></i> Scan Webcam';
-        }
       }
     }
 
