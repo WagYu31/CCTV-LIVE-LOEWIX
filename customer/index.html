@@ -10301,67 +10301,46 @@
       // 2. Secondary: face-api.js 68 Landmarks
       if (Array.isArray(landmarks68) && landmarks68.length >= 68) {
         const l = landmarks68;
-        const chin = ptPos(l[8]) || { x: bx + bw * 0.5, y: by + bh * 0.98 };
-        const glab = ptPos(l[27]) || ptPos(l[21]) || { x: bx + bw * 0.5, y: by + bh * 0.25 };
-        const upX = glab.x - chin.x;
-        const upY = glab.y - chin.y;
-        const faceLen = Math.hypot(upX, upY) || bh;
-        const normUpX = faceLen > 0 ? (upX / faceLen) : 0;
-        const normUpY = faceLen > 0 ? (upY / faceLen) : -1;
-        const fhDist = faceLen * 0.32;
-
-        const browL = ptPos(l[19]) || { x: bx + bw * 0.30, y: by + bh * 0.22 };
-        const browR = ptPos(l[24]) || { x: bx + bw * 0.70, y: by + bh * 0.22 };
-
-        const foreheadL = { x: browL.x + normUpX * fhDist, y: browL.y + normUpY * fhDist };
-        const foreheadR = { x: browR.x + normUpX * fhDist, y: browR.y + normUpY * fhDist };
-
-        const p36 = ptPos(l[36]), p39 = ptPos(l[39]), p37 = ptPos(l[37]), p41 = ptPos(l[41]);
-        const eyeL = (p36 && p39 && p37 && p41) ? { x: (p36.x + p39.x) / 2, y: (p37.y + p41.y) / 2 } : (p36 || p39 || { x: bx + bw * 0.30, y: by + bh * 0.36 });
-
-        const p42 = ptPos(l[42]), p45 = ptPos(l[45]), p43 = ptPos(l[43]), p47 = ptPos(l[47]);
-        const eyeR = (p42 && p45 && p43 && p47) ? { x: (p42.x + p45.x) / 2, y: (p43.y + p47.y) / 2 } : (p42 || p45 || { x: bx + bw * 0.70, y: by + bh * 0.36 });
-
         return [
-          safePt(foreheadL,   bx + bw * 0.28, by - bh * 0.03), // 0: foreheadTopL
-          safePt(foreheadR,   bx + bw * 0.72, by - bh * 0.03), // 1: foreheadTopR
-          safePt(l[0],        bx + bw * 0.10, by + bh * 0.20), // 2: templeL
-          safePt(l[16],       bx + bw * 0.90, by + bh * 0.20), // 3: templeR
-          safePt(glab,        bx + bw * 0.50, by + bh * 0.24), // 4: bridge (Glabella)
-          safePt(eyeL,        bx + bw * 0.30, by + bh * 0.36), // 5: underEyeL
-          safePt(eyeR,        bx + bw * 0.70, by + bh * 0.36), // 6: underEyeR
-          safePt(l[1],        bx + bw * 0.14, by + bh * 0.44), // 7: midCheekL
-          safePt(l[15],       bx + bw * 0.86, by + bh * 0.44), // 8: midCheekR
-          safePt(l[30],       bx + bw * 0.50, by + bh * 0.58), // 9: noseTip
-          safePt(l[33],       bx + bw * 0.50, by + bh * 0.70), // 10: philtrum
-          safePt(l[48],       bx + bw * 0.32, by + bh * 0.78), // 11: mouthCornerL
-          safePt(l[54],       bx + bw * 0.68, by + bh * 0.78), // 12: mouthCornerR
-          safePt(l[57],       bx + bw * 0.50, by + bh * 0.86), // 13: lipBottom
-          safePt(l[5],        bx + bw * 0.30, by + bh * 0.96), // 14: jawL
-          safePt(l[11],       bx + bw * 0.70, by + bh * 0.96), // 15: jawR
-          safePt(chin,        bx + bw * 0.50, by + bh * 1.08)  // 16: chinTip
+          safePt(l[19], bx + bw * 0.30, by + bh * 0.08), // 0: foreheadTopL
+          safePt(l[24], bx + bw * 0.70, by + bh * 0.08), // 1: foreheadTopR
+          safePt(l[0],  bx + bw * 0.12, by + bh * 0.22), // 2: templeL
+          safePt(l[16], bx + bw * 0.88, by + bh * 0.22), // 3: templeR
+          safePt(l[21], bx + bw * 0.50, by + bh * 0.25), // 4: bridge (Glabella)
+          safePt(l[36], bx + bw * 0.30, by + bh * 0.38), // 5: underEyeL
+          safePt(l[45], bx + bw * 0.70, by + bh * 0.38), // 6: underEyeR
+          safePt(l[1],  bx + bw * 0.16, by + bh * 0.50), // 7: midCheekL
+          safePt(l[15], bx + bw * 0.84, by + bh * 0.50), // 8: midCheekR
+          safePt(l[30], bx + bw * 0.50, by + bh * 0.56), // 9: noseTip
+          safePt(l[33], bx + bw * 0.50, by + bh * 0.68), // 10: philtrum
+          safePt(l[48], bx + bw * 0.32, by + bh * 0.76), // 11: mouthCornerL
+          safePt(l[54], bx + bw * 0.68, by + bh * 0.76), // 12: mouthCornerR
+          safePt(l[57], bx + bw * 0.50, by + bh * 0.84), // 13: lipBottom
+          safePt(l[5],  bx + bw * 0.24, by + bh * 0.90), // 14: jawL
+          safePt(l[11], bx + bw * 0.76, by + bh * 0.90), // 15: jawR
+          safePt(l[8],  bx + bw * 0.50, by + bh * 0.98)  // 16: chinTip
         ];
       }
 
       // Canonical Anatomical Proportions mapped directly to face bounding box
       return [
-        { x: bx + bw * 0.28, y: by - bh * 0.03 }, // 0: foreheadTopL
-        { x: bx + bw * 0.72, y: by - bh * 0.03 }, // 1: foreheadTopR
-        { x: bx + bw * 0.10, y: by + bh * 0.20 }, // 2: templeL
-        { x: bx + bw * 0.90, y: by + bh * 0.20 }, // 3: templeR
-        { x: bx + bw * 0.50, y: by + bh * 0.24 }, // 4: bridge
-        { x: bx + bw * 0.30, y: by + bh * 0.36 }, // 5: underEyeL
-        { x: bx + bw * 0.70, y: by + bh * 0.36 }, // 6: underEyeR
-        { x: bx + bw * 0.14, y: by + bh * 0.44 }, // 7: midCheekL
-        { x: bx + bw * 0.86, y: by + bh * 0.44 }, // 8: midCheekR
-        { x: bx + bw * 0.50, y: by + bh * 0.58 }, // 9: noseTip
-        { x: bx + bw * 0.50, y: by + bh * 0.70 }, // 10: philtrum
-        { x: bx + bw * 0.32, y: by + bh * 0.78 }, // 11: mouthCornerL
-        { x: bx + bw * 0.68, y: by + bh * 0.78 }, // 12: mouthCornerR
-        { x: bx + bw * 0.50, y: by + bh * 0.86 }, // 13: lipBottom
-        { x: bx + bw * 0.30, y: by + bh * 0.96 }, // 14: jawL
-        { x: bx + bw * 0.70, y: by + bh * 0.96 }, // 15: jawR
-        { x: bx + bw * 0.50, y: by + bh * 1.08 }  // 16: chinTip
+        { x: bx + bw * 0.30, y: by + bh * 0.08 }, // 0: foreheadTopL
+        { x: bx + bw * 0.70, y: by + bh * 0.08 }, // 1: foreheadTopR
+        { x: bx + bw * 0.12, y: by + bh * 0.22 }, // 2: templeL
+        { x: bx + bw * 0.88, y: by + bh * 0.22 }, // 3: templeR
+        { x: bx + bw * 0.50, y: by + bh * 0.25 }, // 4: bridge
+        { x: bx + bw * 0.30, y: by + bh * 0.38 }, // 5: underEyeL
+        { x: bx + bw * 0.70, y: by + bh * 0.38 }, // 6: underEyeR
+        { x: bx + bw * 0.16, y: by + bh * 0.50 }, // 7: midCheekL
+        { x: bx + bw * 0.84, y: by + bh * 0.50 }, // 8: midCheekR
+        { x: bx + bw * 0.50, y: by + bh * 0.56 }, // 9: noseTip
+        { x: bx + bw * 0.50, y: by + bh * 0.68 }, // 10: philtrum
+        { x: bx + bw * 0.32, y: by + bh * 0.76 }, // 11: mouthCornerL
+        { x: bx + bw * 0.68, y: by + bh * 0.76 }, // 12: mouthCornerR
+        { x: bx + bw * 0.50, y: by + bh * 0.84 }, // 13: lipBottom
+        { x: bx + bw * 0.24, y: by + bh * 0.90 }, // 14: jawL
+        { x: bx + bw * 0.76, y: by + bh * 0.90 }, // 15: jawR
+        { x: bx + bw * 0.50, y: by + bh * 0.98 }  // 16: chinTip
       ];
     }
 
@@ -10611,12 +10590,10 @@
 
               // Compute dynamic bounding box directly from actual landmark points
               let lMinX = Infinity, lMaxX = -Infinity, lMinY = Infinity, lMaxY = -Infinity;
-              const hasFullMesh = (scaledMesh468 && scaledMesh468.length >= 468);
-              const hasFull68 = (scaledLandmarks && scaledLandmarks.length >= 68);
-              const ptsToCheck = hasFullMesh ? scaledMesh468 : (hasFull68 ? scaledLandmarks : null);
+              const ptsToCheck = (scaledMesh468 && scaledMesh468.length > 0) ? scaledMesh468 : scaledLandmarks;
               if (ptsToCheck && ptsToCheck.length > 0) {
                 for (const p of ptsToCheck) {
-                  if (p && typeof p.x === 'number' && !isNaN(p.x) && isFinite(p.x) && typeof p.y === 'number' && !isNaN(p.y) && isFinite(p.y)) {
+                  if (p && typeof p.x === 'number' && typeof p.y === 'number' && isFinite(p.x) && isFinite(p.y)) {
                     if (p.x < lMinX) lMinX = p.x;
                     if (p.x > lMaxX) lMaxX = p.x;
                     if (p.y < lMinY) lMinY = p.y;
@@ -10631,7 +10608,7 @@
                 targetY = Math.round(renderBox.y + (nb.y || 0.30) * renderBox.height);
                 targetW = Math.round((nb.width || 0.30) * renderBox.width);
                 targetH = Math.round((nb.height || 0.40) * renderBox.height);
-              } else if (ptsToCheck && isFinite(lMinX) && isFinite(lMaxX) && isFinite(lMinY) && isFinite(lMaxY) && lMinX < lMaxX && lMinY < lMaxY) {
+              } else if (lMinX < lMaxX && lMinY < lMaxY && isFinite(lMinX) && isFinite(lMaxX) && isFinite(lMinY) && isFinite(lMaxY)) {
                 const fw = lMaxX - lMinX;
                 const fh = lMaxY - lMinY;
                 // Snug 4% margin: fits the face contour tightly and responsively
@@ -10648,13 +10625,13 @@
                 targetH = Math.round((nb.height || 0.40) * renderBox.height);
               }
 
-              // Guard against NaN, zero, or out-of-bounds
-              const cW = canvas.width || 640;
-              const cH = canvas.height || 480;
-              if (!isFinite(targetW) || isNaN(targetW) || targetW < 40) targetW = Math.round(cW * 0.30);
-              if (!isFinite(targetH) || isNaN(targetH) || targetH < 40) targetH = Math.round(targetW * 1.25);
-              if (!isFinite(targetX) || isNaN(targetX)) targetX = Math.round((cW - targetW) / 2);
-              if (!isFinite(targetY) || isNaN(targetY)) targetY = Math.round(cH * 0.22);
+              // Guard against NaN or zero
+              if (isNaN(targetX) || isNaN(targetY) || isNaN(targetW) || isNaN(targetH) || targetW <= 0 || targetH <= 0) {
+                targetX = Math.round(renderBox.x + 0.35 * renderBox.width);
+                targetY = Math.round(renderBox.y + 0.25 * renderBox.height);
+                targetW = Math.round(0.30 * renderBox.width);
+                targetH = Math.round(0.40 * renderBox.height);
+              }
 
               const targetLandmarks17 = extract17BiometricLandmarks(scaledLandmarks, targetX, targetY, targetW, targetH, scaledMesh468);
 
@@ -10739,55 +10716,46 @@
         }
 
         // =========================================================================
-        // Absolute Sensor Guarantee: On active Webcam, HUD sensor NEVER disappears
-        // =========================================================================
-        if (isWebcamRunning && (!activeAIEntities || activeAIEntities.length === 0)) {
-          const cW = canvas.width || 640;
-          const cH = canvas.height || 480;
-          const defW = Math.round(cW * (_liveWebcamTrack.targetW || 0.32));
-          const defH = Math.round(defW * 1.25);
-          const defX = Math.round(cW * (_liveWebcamTrack.targetX || 0.34));
-          const defY = Math.round(cH * (_liveWebcamTrack.targetY || 0.20));
-          const defLm17 = extract17BiometricLandmarks(null, defX, defY, defW, defH);
-          const isWahyu = Boolean(cachedAIFaces && cachedAIFaces.some(f => f.name.toLowerCase().includes('wahyu')));
-          const ownerFace = cachedAIFaces.find(f => f.name.toLowerCase().includes('wahyu')) || (cachedAIFaces ? cachedAIFaces[0] : null);
-          const ownerName = ownerFace ? ownerFace.name.toUpperCase() : 'WAHYU UTOMO';
-          activeAIEntities = [{
-            x: defX, y: defY, w: defW, h: defH,
-            targetX: defX, targetY: defY, targetW: defW, targetH: defH,
-            currentLandmarks17: defLm17.map(p => ({ ...p })),
-            targetLandmarks17: defLm17,
-            type: 'face',
-            label: isWahyu ? `${ownerName} [VIP]` : 'MEMINDAI BIOMETRIK...',
-            category: isWahyu ? 'vip' : 'guest',
-            confidence: isWahyu ? '96.8%' : '92.4%',
-            face: ownerFace,
-            gender: 'Pria',
-            scanProgress: 100,
-            hasLogged: true,
-            createdAt: now
-          }];
-        }
-
-        // =========================================================================
-        // Continuous 60 FPS Landmark Interpolation (Smooth Sub-Pixel Glide)
+        // Adaptive 60 FPS Landmark Interpolation (Close-Range Responsive Tracking)
         // =========================================================================
         activeAIEntities.forEach(ent => {
           if (typeof ent.targetX === 'number' && isFinite(ent.targetX) && !isNaN(ent.targetX)) {
             const dist = Math.hypot(ent.targetX - ent.x, ent.targetY - ent.y);
-            const factor = dist > 30 ? 0.88 : 0.78;
+
+            // Adaptive LERP: faster tracking for close-up faces (large bounding box)
+            // and fast movements. At close range the face covers a large portion of
+            // the canvas so pixel deltas are bigger — the mesh must keep up.
+            const canvasArea = (canvas.width || 640) * (canvas.height || 480);
+            const faceArea = (ent.targetW || 1) * (ent.targetH || 1);
+            const faceRatio = Math.min(faceArea / canvasArea, 1); // 0..1 (0 = far, 1 = fills frame)
+
+            // Base factor: 0.88 (far) → 0.97 (close-up, fills >40% of frame)
+            const closeFactor = 0.88 + Math.min(faceRatio * 0.225, 0.09);
+            // Speed boost: large jumps (>20px) push factor towards 0.97
+            const speedBoost = Math.min(dist / 120, 0.06);
+            const factor = Math.min(closeFactor + speedBoost, 0.97);
+
             ent.x += (ent.targetX - ent.x) * factor;
             ent.y += (ent.targetY - ent.y) * factor;
             ent.w += (ent.targetW - ent.w) * factor;
             ent.h += (ent.targetH - ent.h) * factor;
           }
           if (Array.isArray(ent.targetLandmarks17) && Array.isArray(ent.currentLandmarks17)) {
+            // Landmark LERP uses same adaptive factor as bounding box for tight tracking
+            const canvasArea = (canvas.width || 640) * (canvas.height || 480);
+            const faceArea = (ent.targetW || 1) * (ent.targetH || 1);
+            const faceRatio = Math.min(faceArea / canvasArea, 1);
+            const lmBaseFactor = 0.88 + Math.min(faceRatio * 0.225, 0.09);
+
             for (let i = 0; i < ent.currentLandmarks17.length; i++) {
               const cur = ent.currentLandmarks17[i];
               const tgt = ent.targetLandmarks17[i];
               if (cur && tgt && typeof cur.x === 'number' && typeof tgt.x === 'number' && isFinite(tgt.x) && isFinite(tgt.y)) {
-                cur.x += (tgt.x - cur.x) * 0.80;
-                cur.y += (tgt.y - cur.y) * 0.80;
+                const ptDist = Math.hypot(tgt.x - cur.x, tgt.y - cur.y);
+                const ptBoost = Math.min(ptDist / 80, 0.08);
+                const lmFactor = Math.min(lmBaseFactor + ptBoost, 0.97);
+                cur.x += (tgt.x - cur.x) * lmFactor;
+                cur.y += (tgt.y - cur.y) * lmFactor;
               }
             }
           }
@@ -11018,26 +10986,24 @@
           };
         };
 
-        // 1. Forehead Dome Arch (3 curved tiers of cyan stars)
-        const fhMid = safeP(pts.foreheadMid, x + w * 0.50, y - h * 0.07);
-        const fhTL = safeP(pts.foreheadTopL, x + w * 0.28, y - h * 0.03);
-        const fhTR = safeP(pts.foreheadTopR, x + w * 0.72, y - h * 0.03);
-        const glab = safeP(pts.glabella, x + w * 0.50, y + h * 0.24);
+        // 1. Forehead (curve of cyan stars between foreheadTopL and foreheadTopR)
+        const fhTL = safeP(pts.foreheadTopL, x + w * 0.30, y + h * 0.08);
+        const fhTR = safeP(pts.foreheadTopR, x + w * 0.70, y + h * 0.08);
+        const glab = safeP(pts.glabella, x + w * 0.50, y + h * 0.25);
 
-        // Top arch (9 points)
+        // Top line (9 points)
         for (let i = 1; i < 9; i++) {
           const t = i / 9;
-          const base = (t < 0.5) ? lerpPt(fhTL, fhMid, t * 2) : lerpPt(fhMid, fhTR, (t - 0.5) * 2);
-          addPt(base.x, base.y - Math.sin(t * Math.PI) * (h * 0.02));
+          const base = lerpPt(fhTL, fhTR, t);
+          addPt(base.x, base.y);
         }
-        // Mid forehead arch (11 points)
+        // Mid forehead / brow ridge (11 points)
         for (let i = 1; i < 11; i++) {
           const t = i / 11;
           const p1 = lerpPt(fhTL, pts.templeL, 0.4);
           const p2 = lerpPt(fhTR, pts.templeR, 0.4);
-          const midFh = lerpPt(fhMid, glab, 0.45);
-          const base = (t < 0.5) ? lerpPt(p1, midFh, t * 2) : lerpPt(midFh, p2, (t - 0.5) * 2);
-          addPt(base.x, base.y - Math.sin(t * Math.PI) * (h * 0.025));
+          const base = (t < 0.5) ? lerpPt(p1, glab, t * 2) : lerpPt(glab, p2, (t - 0.5) * 2);
+          addPt(base.x, base.y);
         }
         // Lower forehead / brow ridge (11 points)
         for (let i = 1; i < 11; i++) {
@@ -11045,7 +11011,7 @@
           const p1 = lerpPt(pts.templeL, pts.browMidL, 0.5);
           const p2 = lerpPt(pts.templeR, pts.browMidR, 0.5);
           const base = (t < 0.5) ? lerpPt(p1, glab, t * 2) : lerpPt(glab, p2, (t - 0.5) * 2);
-          addPt(base.x, base.y - Math.sin(t * Math.PI) * (h * 0.015));
+          addPt(base.x, base.y);
         }
 
         // 2. Eyebrow tracks (left & right, 6 points each)
@@ -11134,9 +11100,9 @@
         }
 
         // 8. Chin Pad & Jaw V-Contour (22 points)
-        const chinL = safeP(pts.chinL, x + w * 0.32, y + h * 0.96);
-        const chinR = safeP(pts.chinR, x + w * 0.68, y + h * 0.96);
-        const chinTip = safeP(pts.chinTip, x + w * 0.50, y + h * 1.08);
+        const chinL = safeP(pts.chinL, x + w * 0.24, y + h * 0.90);
+        const chinR = safeP(pts.chinR, x + w * 0.76, y + h * 0.90);
+        const chinTip = safeP(pts.chinTip, x + w * 0.50, y + h * 0.98);
 
         for (let r = 1; r <= 3; r++) {
           const tr = r / 4;
@@ -11196,152 +11162,114 @@
 
         if (has17) {
           const c = ent.currentLandmarks17;
-          const pAt = (idx, defX, defY) => safePt(c[idx], defX, defY);
-          const p0 = pAt(0, x + w * 0.28, y - h * 0.03);
-          const p1 = pAt(1, x + w * 0.72, y - h * 0.03);
-          const p4 = pAt(4, x + w * 0.50, y + h * 0.24);
-          const p9 = pAt(9, x + w * 0.50, y + h * 0.58);
-          const p14 = pAt(14, x + w * 0.32, y + h * 0.96);
-          const p15 = pAt(15, x + w * 0.68, y + h * 0.96);
-
-          const fhMid = { x: (p0.x + p1.x) / 2, y: Math.min(p0.y, p1.y) - (h * 0.05) };
           pts = {
-            foreheadMid:  fhMid,
-            foreheadTopL: p0,
-            foreheadTopR: p1,
-            templeL:      pAt(2, x + w * 0.10, y + h * 0.20),
-            templeR:      pAt(3, x + w * 0.90, y + h * 0.20),
-            glabella:     p4,
+            foreheadTopL: c[0],
+            foreheadTopR: c[1],
+            templeL:      c[2],
+            templeR:      c[3],
+            glabella:     c[4],
 
-            browMidL:     { x: (p0.x + p4.x) / 2, y: (p0.y + p4.y) / 2 },
-            browMidR:     { x: (p1.x + p4.x) / 2, y: (p1.y + p4.y) / 2 },
+            browMidL:     { x: (c[0].x + c[4].x) / 2, y: (c[0].y + c[4].y) / 2 },
+            browMidR:     { x: (c[1].x + c[4].x) / 2, y: (c[1].y + c[4].y) / 2 },
 
-            eyeL:         pAt(5, x + w * 0.30, y + h * 0.36),
-            eyeR:         pAt(6, x + w * 0.70, y + h * 0.36),
+            eyeL:         c[5],
+            eyeR:         c[6],
 
-            noseBridge:   { x: (p4.x + p9.x) / 2, y: (p4.y + p9.y) / 2 - (h * 0.05) },
-            noseMid:      { x: (p4.x + p9.x) / 2, y: (p4.y + p9.y) / 2 },
-            noseTip:      p9,
-            nostrilL:     { x: p9.x - w * 0.08, y: p9.y },
-            nostrilR:     { x: p9.x + w * 0.08, y: p9.y },
+            noseBridge:   { x: (c[4].x + c[9].x) / 2, y: (c[4].y + c[9].y) / 2 - (h * 0.05) },
+            noseMid:      { x: (c[4].x + c[9].x) / 2, y: (c[4].y + c[9].y) / 2 },
+            noseTip:      c[9],
+            nostrilL:     { x: c[9].x - w * 0.08, y: c[9].y },
+            nostrilR:     { x: c[9].x + w * 0.08, y: c[9].y },
 
-            cheekUpperL:  pAt(7, x + w * 0.14, y + h * 0.44),
-            cheekUpperR:  pAt(8, x + w * 0.86, y + h * 0.44),
-            cheekLowerL:  { x: (pAt(7, x + w * 0.14, y + h * 0.44).x + p14.x) / 2, y: (pAt(7, x + w * 0.14, y + h * 0.44).y + p14.y) / 2 },
-            cheekLowerR:  { x: (pAt(8, x + w * 0.86, y + h * 0.44).x + p15.x) / 2, y: (pAt(8, x + w * 0.86, y + h * 0.44).y + p15.y) / 2 },
+            cheekUpperL:  c[7],
+            cheekUpperR:  c[8],
+            cheekLowerL:  { x: (c[7].x + c[14].x) / 2, y: (c[7].y + c[14].y) / 2 },
+            cheekLowerR:  { x: (c[8].x + c[15].x) / 2, y: (c[8].y + c[15].y) / 2 },
 
-            philtrum:     pAt(10, x + w * 0.50, y + h * 0.68),
-            mouthL:       pAt(11, x + w * 0.32, y + h * 0.78),
-            mouthR:       pAt(12, x + w * 0.68, y + h * 0.78),
-            lipBot:       pAt(13, x + w * 0.50, y + h * 0.86),
+            philtrum:     c[10],
+            mouthL:       c[11],
+            mouthR:       c[12],
+            lipBot:       c[13],
 
-            chinL:        p14,
-            chinR:        p15,
-            chinTip:      pAt(16, x + w * 0.50, y + h * 1.08)
+            chinL:        c[14],
+            chinR:        c[15],
+            chinTip:      c[16]
           };
         } else if (has68) {
           const l = ent.landmarks;
-          const chin = ptPos(l[8]) || { x: x + w * 0.50, y: y + h * 1.08 };
-          const glab = ptPos(l[27]) || ptPos(l[21]) || { x: x + w * 0.50, y: y + h * 0.24 };
-          const upX = glab.x - chin.x;
-          const upY = glab.y - chin.y;
-          const faceLen = Math.hypot(upX, upY) || h;
-          const normUpX = faceLen > 0 ? (upX / faceLen) : 0;
-          const normUpY = faceLen > 0 ? (upY / faceLen) : -1;
-          const fhDist = faceLen * 0.32;
-
-          const browL = ptPos(l[19]) || { x: x + w * 0.30, y: y + h * 0.22 };
-          const browR = ptPos(l[24]) || { x: x + w * 0.70, y: y + h * 0.22 };
-
-          const fhTopL = { x: browL.x + normUpX * fhDist, y: browL.y + normUpY * fhDist };
-          const fhTopR = { x: browR.x + normUpX * fhDist, y: browR.y + normUpY * fhDist };
-          const fhMid  = { x: (fhTopL.x + fhTopR.x) / 2 + normUpX * (faceLen * 0.08), y: (fhTopL.y + fhTopR.y) / 2 + normUpY * (faceLen * 0.08) };
-
-          const p36 = ptPos(l[36]), p39 = ptPos(l[39]), p37 = ptPos(l[37]), p41 = ptPos(l[41]);
-          const eyeL = (p36 && p39 && p37 && p41) ? { x: (p36.x + p39.x) / 2, y: (p37.y + p41.y) / 2 } : (p36 || p39 || { x: x + w * 0.30, y: y + h * 0.36 });
-
-          const p42 = ptPos(l[42]), p45 = ptPos(l[45]), p43 = ptPos(l[43]), p47 = ptPos(l[47]);
-          const eyeR = (p42 && p45 && p43 && p47) ? { x: (p42.x + p45.x) / 2, y: (p43.y + p47.y) / 2 } : (p42 || p45 || { x: x + w * 0.70, y: y + h * 0.36 });
-
           pts = {
-            foreheadMid:  fhMid,
-            foreheadTopL: fhTopL,
-            foreheadTopR: fhTopR,
-            templeL:      safePt(l[0],  x + w * 0.10, y + h * 0.20),
-            templeR:      safePt(l[16], x + w * 0.90, y + h * 0.20),
-            glabella:     glab,
+            // Forehead & hairline nodes (anchored naturally above eyebrows)
+            foreheadTopL: { x: l[19].x - (w * 0.01), y: l[19].y - (h * 0.09) },
+            foreheadTopR: { x: l[24].x + (w * 0.01), y: l[24].y - (h * 0.09) },
+            templeL:      { x: l[0].x,              y: l[17].y },
+            templeR:      { x: l[16].x,             y: l[26].y },
+            glabella:     { x: (l[21].x + l[22].x) / 2, y: (l[21].y + l[22].y) / 2 },
 
-            browMidL:     browL,
-            browMidR:     browR,
+            browMidL:     l[19],
+            browMidR:     l[24],
 
-            eyeL:         eyeL,
-            eyeR:         eyeR,
+            eyeL:         { x: (l[36].x + l[39].x) / 2, y: (l[37].y + l[41].y) / 2 },
+            eyeR:         { x: (l[42].x + l[45].x) / 2, y: (l[43].y + l[47].y) / 2 },
 
-            noseBridge:   safePt(l[27], x + w * 0.50, y + h * 0.34),
-            noseMid:      safePt(l[29], x + w * 0.50, y + h * 0.46),
-            noseTip:      safePt(l[30], x + w * 0.50, y + h * 0.58),
-            nostrilL:     safePt(l[31], x + w * 0.40, y + h * 0.58),
-            nostrilR:     safePt(l[35], x + w * 0.60, y + h * 0.58),
+            noseBridge:   l[27],
+            noseMid:      l[29],
+            noseTip:      l[30],
+            nostrilL:     l[31],
+            nostrilR:     l[35],
 
-            cheekUpperL:  safePt(l[1],  x + w * 0.14, y + h * 0.44),
-            cheekUpperR:  safePt(l[15], x + w * 0.86, y + h * 0.44),
-            cheekLowerL:  safePt(l[3],  x + w * 0.18, y + h * 0.70),
-            cheekLowerR:  safePt(l[13], x + w * 0.82, y + h * 0.70),
+            cheekUpperL:  { x: l[1].x + (w * 0.02), y: l[36].y + (h * 0.04) },
+            cheekUpperR:  { x: l[15].x - (w * 0.02), y: l[45].y + (h * 0.04) },
+            cheekLowerL:  l[3],
+            cheekLowerR:  l[13],
 
-            philtrum:     safePt(l[33] || l[51], x + w * 0.50, y + h * 0.68),
-            mouthL:       safePt(l[48], x + w * 0.32, y + h * 0.78),
-            mouthR:       safePt(l[54], x + w * 0.68, y + h * 0.78),
-            lipBot:       safePt(l[57], x + w * 0.50, y + h * 0.86),
+            philtrum:     l[51],
+            mouthL:       l[48],
+            mouthR:       l[54],
+            lipBot:       l[57],
 
-            chinL:        safePt(l[5],  x + w * 0.32, y + h * 0.96),
-            chinR:        safePt(l[11], x + w * 0.68, y + h * 0.96),
-            chinTip:      chin
+            chinL:        l[6],
+            chinR:        l[10],
+            chinTip:      l[8]
           };
         } else {
           // High-Precision Anatomical Proportions (Faithful to Gambar 2 Geometry)
           pts = {
-            foreheadMid:  { x: x + w * 0.50, y: y - h * 0.07 },
-            foreheadTopL: { x: x + w * 0.28, y: y - h * 0.03 },
-            foreheadTopR: { x: x + w * 0.72, y: y - h * 0.03 },
-            templeL:      { x: x + w * 0.10, y: y + h * 0.20 },
-            templeR:      { x: x + w * 0.90, y: y + h * 0.20 },
-            glabella:     { x: x + w * 0.50, y: y + h * 0.24 },
+            foreheadTopL: { x: x + w * 0.30, y: y + h * 0.08 },
+            foreheadTopR: { x: x + w * 0.70, y: y + h * 0.08 },
+            templeL:      { x: x + w * 0.12, y: y + h * 0.22 },
+            templeR:      { x: x + w * 0.88, y: y + h * 0.22 },
+            glabella:     { x: x + w * 0.50, y: y + h * 0.25 },
 
             browMidL:     { x: x + w * 0.30, y: y + h * 0.22 },
             browMidR:     { x: x + w * 0.70, y: y + h * 0.22 },
 
-            eyeL:         { x: x + w * 0.30, y: y + h * 0.36 },
-            eyeR:         { x: x + w * 0.70, y: y + h * 0.36 },
+            eyeL:         { x: x + w * 0.30, y: y + h * 0.38 },
+            eyeR:         { x: x + w * 0.70, y: y + h * 0.38 },
 
-            noseBridge:   { x: x + w * 0.50, y: y + h * 0.34 },
+            noseBridge:   { x: x + w * 0.50, y: y + h * 0.35 },
             noseMid:      { x: x + w * 0.50, y: y + h * 0.46 },
-            noseTip:      { x: x + w * 0.50, y: y + h * 0.58 },
-            nostrilL:     { x: x + w * 0.40, y: y + h * 0.58 },
-            nostrilR:     { x: x + w * 0.60, y: y + h * 0.58 },
+            noseTip:      { x: x + w * 0.50, y: y + h * 0.56 },
+            nostrilL:     { x: x + w * 0.40, y: y + h * 0.56 },
+            nostrilR:     { x: x + w * 0.60, y: y + h * 0.56 },
 
-            cheekUpperL:  { x: x + w * 0.14, y: y + h * 0.44 },
-            cheekUpperR:  { x: x + w * 0.86, y: y + h * 0.44 },
-            cheekLowerL:  { x: x + w * 0.18, y: y + h * 0.70 },
-            cheekLowerR:  { x: x + w * 0.82, y: y + h * 0.70 },
+            cheekUpperL:  { x: x + w * 0.16, y: y + h * 0.44 },
+            cheekUpperR:  { x: x + w * 0.84, y: y + h * 0.44 },
+            cheekLowerL:  { x: x + w * 0.16, y: y + h * 0.64 },
+            cheekLowerR:  { x: x + w * 0.84, y: y + h * 0.64 },
 
             philtrum:     { x: x + w * 0.50, y: y + h * 0.68 },
-            mouthL:       { x: x + w * 0.32, y: y + h * 0.78 },
-            mouthR:       { x: x + w * 0.68, y: y + h * 0.78 },
-            lipBot:       { x: x + w * 0.50, y: y + h * 0.86 },
+            mouthL:       { x: x + w * 0.32, y: y + h * 0.76 },
+            mouthR:       { x: x + w * 0.68, y: y + h * 0.76 },
+            lipBot:       { x: x + w * 0.50, y: y + h * 0.84 },
 
-            chinL:        { x: x + w * 0.32, y: y + h * 0.96 },
-            chinR:        { x: x + w * 0.68, y: y + h * 0.96 },
-            chinTip:      { x: x + w * 0.50, y: y + h * 1.08 }
+            chinL:        { x: x + w * 0.24, y: y + h * 0.90 },
+            chinR:        { x: x + w * 0.76, y: y + h * 0.90 },
+            chinTip:      { x: x + w * 0.50, y: y + h * 0.98 }
           };
         }
 
         // 3D Triangulation Network Graph (Exact Polygon Mesh from Gambar 2)
         const edges = [
-          // Forehead dome arch
-          [pts.foreheadTopL, pts.foreheadMid],
-          [pts.foreheadMid,  pts.foreheadTopR],
-          [pts.foreheadMid,  pts.glabella],
-
           // Forehead horizontal bar
           [pts.foreheadTopL, pts.foreheadTopR],
 
@@ -11405,7 +11333,7 @@
           [pts.mouthL,   pts.lipBot],
           [pts.mouthR,   pts.lipBot],
 
-          // Mouth to chin & jawline (V-Shape tapered chin from Gambar 2)
+          // Mouth to chin & jawline
           [pts.mouthL,  pts.chinL],
           [pts.mouthR,  pts.chinR],
           [pts.lipBot,  pts.chinL],
@@ -11418,13 +11346,8 @@
         // 1. Subtle Holographic Face Mask Tint (Biometric purple/indigo hue from Gambar 2)
         try {
           ctx.beginPath();
-          if (pts.foreheadMid && isValidNum(pts.foreheadMid.x) && isValidNum(pts.foreheadMid.y)) {
-            ctx.moveTo(pts.foreheadMid.x, pts.foreheadMid.y);
-            ctx.lineTo(pts.foreheadTopR.x, pts.foreheadTopR.y);
-          } else {
-            ctx.moveTo(pts.foreheadTopL.x, pts.foreheadTopL.y);
-            ctx.lineTo(pts.foreheadTopR.x, pts.foreheadTopR.y);
-          }
+          ctx.moveTo(pts.foreheadTopL.x, pts.foreheadTopL.y);
+          ctx.lineTo(pts.foreheadTopR.x, pts.foreheadTopR.y);
           ctx.lineTo(pts.templeR.x, pts.templeR.y);
           ctx.lineTo(pts.cheekUpperR.x, pts.cheekUpperR.y);
           ctx.lineTo(pts.cheekLowerR.x, pts.cheekLowerR.y);
@@ -11434,9 +11357,6 @@
           ctx.lineTo(pts.cheekLowerL.x, pts.cheekLowerL.y);
           ctx.lineTo(pts.cheekUpperL.x, pts.cheekUpperL.y);
           ctx.lineTo(pts.templeL.x, pts.templeL.y);
-          if (pts.foreheadMid && isValidNum(pts.foreheadMid.x) && isValidNum(pts.foreheadMid.y)) {
-            ctx.lineTo(pts.foreheadTopL.x, pts.foreheadTopL.y);
-          }
           ctx.closePath();
 
           const grad = ctx.createLinearGradient(x, y, x, y + h);
@@ -11904,11 +11824,11 @@
         console.warn('[HUD] drawBiometricFacialMesh error:', errMesh);
       }
 
-      // Snug face box directly wrapping face contours & framing chin tip
+      // Snug face box directly wrapping face contours
       let bx = Math.round(x);
       let by = Math.round(y);
       let bw = Math.round(w);
-      let bh = Math.round(h * 1.10);
+      let bh = Math.round(h);
 
       const scanProgress = typeof ent.scanProgress === 'number' ? Math.min(100, Math.max(0, Math.round(ent.scanProgress))) : 100;
       const isScanning = scanProgress < 100 && !isVIP && !isRegistered;
