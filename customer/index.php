@@ -9117,12 +9117,22 @@
             if (d.landmarks) {
               if (Array.isArray(d.landmarks)) {
                 landmarks = d.landmarks;
-              } else if (Array.isArray(d.landmarks.positions)) {
+              } else if (typeof d.landmarks.positions !== 'undefined' && Array.isArray(d.landmarks.positions)) {
                 landmarks = d.landmarks.positions;
               } else if (typeof d.landmarks.getPositions === 'function') {
                 landmarks = d.landmarks.getPositions();
               } else if (Array.isArray(d.landmarks._positions)) {
                 landmarks = d.landmarks._positions;
+              } else if (d.landmarks._positions && d.landmarks._positions.length) {
+                // Handle ArrayLike _positions that aren't true Arrays
+                landmarks = Array.from(d.landmarks._positions);
+              } else if (typeof d.landmarks.relativePositions !== 'undefined') {
+                landmarks = d.landmarks.relativePositions;
+              }
+              // Debug: Log actual landmark count on first detection
+              if (!window._lmDebugLogged) {
+                window._lmDebugLogged = true;
+                console.log(`[FaceAPI Mesh Debug] d.landmarks type: ${typeof d.landmarks}, isArray: ${Array.isArray(d.landmarks)}, has .positions: ${typeof d.landmarks.positions}, has ._positions: ${typeof d.landmarks._positions}, has .getPositions: ${typeof d.landmarks.getPositions}, extracted count: ${landmarks ? landmarks.length : 'NULL'}`);
               }
             }
             const desc = d.descriptor || null;
@@ -10833,6 +10843,12 @@
       let pts = {};
       const has17 = Array.isArray(ent.currentLandmarks17) && ent.currentLandmarks17.length === 17;
       const has68 = ent.landmarks && Array.isArray(ent.landmarks) && ent.landmarks.length >= 68;
+
+      // Debug: Log which mesh rendering path is used (one-time)
+      if (!window._meshPathDebugLogged) {
+        window._meshPathDebugLogged = true;
+        console.log(`[Mesh Debug] has68: ${has68} (landmarks: ${ent.landmarks ? (Array.isArray(ent.landmarks) ? ent.landmarks.length : typeof ent.landmarks) : 'NULL'}), has17: ${has17}, path: ${has68 ? 'RAW-68' : (has17 ? 'LERP-17' : 'PROPORTIONAL')}`);
+      }
 
       // PRIORITY: Use RAW 68-landmark data FIRST for anatomically precise mesh rendering
       // (This produces the detailed, spread-out jewel node effect matching Gambar 2)
