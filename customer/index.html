@@ -9065,7 +9065,7 @@
               const by = Math.max(0, Math.round(b.yMin !== undefined ? b.yMin : (b.y || 0)));
               const bw = Math.round(b.width || ((b.xMax || 0) - (b.xMin || 0)) || 40);
               const bh = Math.round(b.height || ((b.yMax || 0) - (b.yMin || 0)) || 40);
-              fBox = { x: bx, y: by, width: bw, height: Math.round(bh * 1.45) };
+              fBox = { x: bx, y: by, width: bw, height: bh };
             }
             if (fBox && fBox.width >= 16 && fBox.height >= 16) {
               const aspect = fBox.height / Math.max(1, fBox.width);
@@ -10322,7 +10322,7 @@
         };
       }
 
-      // 2. Secondary: face-api.js 68 Landmarks - Dynamic Anatomical Anchoring
+      // 2. Secondary: face-api.js 68 Landmarks - Dynamic Anatomical Anchoring with Chin->Glabella 3D vector
       if (Array.isArray(landmarks68) && landmarks68.length >= 68) {
         const l = landmarks68;
         const pt = (idx, fbX, fbY) => {
@@ -10330,35 +10330,35 @@
           return p || { x: (isValidNum(fbX) ? fbX : bx + bw * 0.5), y: (isValidNum(fbY) ? fbY : by + bh * 0.5) };
         };
 
-        const chinTip = pt(8, bx + bw * 0.50, by + bh * 0.98);
+        // Compute 3D head vertical orientation vector (chin tip -> glabella/bridge)
+        const chin = pt(8, bx + bw * 0.50, by + bh * 0.98);
+        const glab = pt(27, bx + bw * 0.50, by + bh * 0.25);
+        const upX = glab.x - chin.x;
+        const upY = glab.y - chin.y;
+        const faceLen = Math.hypot(upX, upY) || bh;
+        const normUpX = upX / faceLen;
+        const normUpY = upY / faceLen;
+        const fhDist = faceLen * 0.32; // Offset forehead naturally above eyebrows
+
         const browL = pt(19, bx + bw * 0.30, by + bh * 0.22);
         const browR = pt(24, bx + bw * 0.70, by + bh * 0.22);
-        const browMidY = (browL.y + browR.y) / 2;
-        const faceSpan = Math.max(30, chinTip.y - browMidY);
-        // Forehead height is ~36% of brow-to-chin distance
-        const foreheadUp = faceSpan * 0.36;
 
-        const p21 = pt(21, bx + bw * 0.48, by + bh * 0.25);
-        const p22 = pt(22, bx + bw * 0.52, by + bh * 0.25);
-        const p36 = pt(36, bx + bw * 0.25, by + bh * 0.38);
-        const p39 = pt(39, bx + bw * 0.35, by + bh * 0.38);
-        const p37 = pt(37, bx + bw * 0.30, by + bh * 0.36);
-        const p41 = pt(41, bx + bw * 0.30, by + bh * 0.40);
-        const p42 = pt(42, bx + bw * 0.65, by + bh * 0.38);
-        const p45 = pt(45, bx + bw * 0.75, by + bh * 0.38);
-        const p43 = pt(43, bx + bw * 0.70, by + bh * 0.36);
-        const p47 = pt(47, bx + bw * 0.70, by + bh * 0.40);
+        const foreheadL = { x: browL.x + normUpX * fhDist, y: browL.y + normUpY * fhDist };
+        const foreheadR = { x: browR.x + normUpX * fhDist, y: browR.y + normUpY * fhDist };
+
+        const eyeL = (l[36] && l[39]) ? { x: (l[36].x + l[39].x) / 2, y: (l[37].y + l[41].y) / 2 } : pt(36, bx + bw * 0.30, by + bh * 0.38);
+        const eyeR = (l[42] && l[45]) ? { x: (l[42].x + l[45].x) / 2, y: (l[43].y + l[47].y) / 2 } : pt(45, bx + bw * 0.70, by + bh * 0.38);
 
         return {
-          foreheadTopL: { x: browL.x - (bw * 0.01), y: browL.y - foreheadUp },
-          foreheadTopR: { x: browR.x + (bw * 0.01), y: browR.y - foreheadUp },
+          foreheadTopL: foreheadL,
+          foreheadTopR: foreheadR,
           templeL:      pt(0,  bx + bw * 0.12, by + bh * 0.22),
           templeR:      pt(16, bx + bw * 0.88, by + bh * 0.22),
-          glabella:     { x: (p21.x + p22.x) / 2, y: (p21.y + p22.y) / 2 },
+          glabella:     glab,
           browMidL:     browL,
           browMidR:     browR,
-          eyeL:         { x: (p36.x + p39.x) / 2, y: (p37.y + p41.y) / 2 },
-          eyeR:         { x: (p42.x + p45.x) / 2, y: (p43.y + p47.y) / 2 },
+          eyeL:         eyeL,
+          eyeR:         eyeR,
           noseBridge:   pt(27, bx + bw * 0.50, by + bh * 0.35),
           noseMid:      pt(29, bx + bw * 0.50, by + bh * 0.46),
           noseTip:      pt(30, bx + bw * 0.50, by + bh * 0.56),
@@ -10368,68 +10368,61 @@
           cheekUpperR:  pt(15, bx + bw * 0.84, by + bh * 0.44),
           cheekLowerL:  pt(3,  bx + bw * 0.16, by + bh * 0.64),
           cheekLowerR:  pt(13, bx + bw * 0.84, by + bh * 0.64),
-          philtrum:     pt(51, bx + bw * 0.50, by + bh * 0.68),
+          philtrum:     pt(33, bx + bw * 0.50, by + bh * 0.68) || pt(51, bx + bw * 0.50, by + bh * 0.68),
           mouthL:       pt(48, bx + bw * 0.32, by + bh * 0.76),
           mouthR:       pt(54, bx + bw * 0.68, by + bh * 0.76),
           lipBot:       pt(57, bx + bw * 0.50, by + bh * 0.84),
-          chinL:        pt(6,  bx + bw * 0.24, by + bh * 0.90),
-          chinR:        pt(10, bx + bw * 0.76, by + bh * 0.90),
-          chinTip:      chinTip
+          chinL:        pt(5,  bx + bw * 0.24, by + bh * 0.90),
+          chinR:        pt(11, bx + bw * 0.76, by + bh * 0.90),
+          chinTip:      chin
         };
       }
 
-      // 3. Tertiary: Small Keypoint Models (BlazeFace 6/10 keypoints or similar)
-      if (Array.isArray(landmarks68) && landmarks68.length >= 5) {
+      // 3. Tertiary: 10-Point Canonical Fallback (Mapped safely within bounding box)
+      if (Array.isArray(landmarks68) && landmarks68.length === 10) {
         const l = landmarks68;
         const pt = (idx, fbX, fbY) => {
           const p = getPt(l[idx]);
           return p || { x: (isValidNum(fbX) ? fbX : bx + bw * 0.5), y: (isValidNum(fbY) ? fbY : by + bh * 0.5) };
         };
 
-        const eyeR = pt(0, bx + bw * 0.68, by + bh * 0.38);
-        const eyeL = pt(1, bx + bw * 0.32, by + bh * 0.38);
-        const nose = pt(2, bx + bw * 0.50, by + bh * 0.56);
-        const mouth = pt(3, bx + bw * 0.50, by + bh * 0.76);
-        const earR = pt(4, bx + bw * 0.88, by + bh * 0.35);
-        const earL = pt(5, bx + bw * 0.12, by + bh * 0.35);
-
-        const eyeMidX = (eyeL.x + eyeR.x) / 2;
-        const eyeMidY = (eyeL.y + eyeR.y) / 2;
-        const eyeSpan = Math.hypot(eyeR.x - eyeL.x, eyeR.y - eyeL.y);
-        const eyeDx = (eyeR.x - eyeL.x) / Math.max(1, eyeSpan);
-        const eyeDy = (eyeR.y - eyeL.y) / Math.max(1, eyeSpan);
-        const upX = -eyeDy;
-        const upY = eyeDx;
-
-        const faceH = Math.max(30, Math.hypot(mouth.x - eyeMidX, mouth.y - eyeMidY) * 2);
-        const foreheadDist = faceH * 0.36;
+        const fhL = pt(0, bx + bw * 0.30, by + bh * 0.08);
+        const fhR = pt(1, bx + bw * 0.70, by + bh * 0.08);
+        const glab = pt(2, bx + bw * 0.50, by + bh * 0.25);
+        const eL = pt(3, bx + bw * 0.30, by + bh * 0.38);
+        const eR = pt(4, bx + bw * 0.70, by + bh * 0.38);
+        const nTip = pt(5, bx + bw * 0.50, by + bh * 0.56);
+        const mth = pt(6, bx + bw * 0.50, by + bh * 0.76);
+        const chkL = pt(7, bx + bw * 0.12, by + bh * 0.50);
+        const chkR = pt(8, bx + bw * 0.88, by + bh * 0.50);
+        const chn = pt(9, bx + bw * 0.50, by + bh * 0.98);
 
         return {
-          foreheadTopL: { x: eyeL.x + upX * foreheadDist, y: eyeL.y + upY * foreheadDist },
-          foreheadTopR: { x: eyeR.x + upX * foreheadDist, y: eyeR.y + upY * foreheadDist },
-          templeL:      earL,
-          templeR:      earR,
-          glabella:     { x: eyeMidX + upX * (foreheadDist * 0.3), y: eyeMidY + upY * (foreheadDist * 0.3) },
-          browMidL:     { x: eyeL.x + upX * (foreheadDist * 0.4), y: eyeL.y + upY * (foreheadDist * 0.4) },
-          browMidR:     { x: eyeR.x + upX * (foreheadDist * 0.4), y: eyeR.y + upY * (foreheadDist * 0.4) },
-          eyeL:         eyeL,
-          eyeR:         eyeR,
-          noseBridge:   { x: (eyeMidX + nose.x) / 2, y: (eyeMidY + nose.y) / 2 },
-          noseMid:      { x: (eyeMidX + nose.x * 3) / 4, y: (eyeMidY + nose.y * 3) / 4 },
-          noseTip:      nose,
-          nostrilL:     { x: nose.x - (eyeSpan * 0.22), y: nose.y },
-          nostrilR:     { x: nose.x + (eyeSpan * 0.22), y: nose.y },
-          cheekUpperL:  { x: (eyeL.x + earL.x) / 2, y: (eyeL.y + nose.y) / 2 },
-          cheekUpperR:  { x: (eyeR.x + earR.x) / 2, y: (eyeR.y + nose.y) / 2 },
-          cheekLowerL:  { x: (mouth.x + earL.x) / 2, y: mouth.y },
-          cheekLowerR:  { x: (mouth.x + earR.x) / 2, y: mouth.y },
-          philtrum:     { x: (nose.x + mouth.x) / 2, y: (nose.y + mouth.y) / 2 },
-          mouthL:       { x: mouth.x - (eyeSpan * 0.35), y: mouth.y },
-          mouthR:       { x: mouth.x + (eyeSpan * 0.35), y: mouth.y },
-          lipBot:       { x: mouth.x, y: mouth.y + (faceH * 0.12) },
-          chinL:        { x: mouth.x - (eyeSpan * 0.25), y: mouth.y + (faceH * 0.30) },
-          chinR:        { x: mouth.x + (eyeSpan * 0.25), y: mouth.y + (faceH * 0.30) },
-          chinTip:      { x: mouth.x, y: mouth.y + (faceH * 0.38) }
+          foreheadTopL: fhL,
+          foreheadTopR: fhR,
+          templeL:      { x: bx + bw * 0.12, y: by + bh * 0.22 },
+          templeR:      { x: bx + bw * 0.88, y: by + bh * 0.22 },
+          glabella:     glab,
+          browMidL:     { x: (fhL.x + glab.x) / 2, y: (fhL.y + glab.y) / 2 },
+          browMidR:     { x: (fhR.x + glab.x) / 2, y: (fhR.y + glab.y) / 2 },
+          eyeL:         eL,
+          eyeR:         eR,
+          noseBridge:   { x: (glab.x + nTip.x) / 2, y: (glab.y + nTip.y) / 2 - bh * 0.05 },
+          noseMid:      { x: (glab.x + nTip.x) / 2, y: (glab.y + nTip.y) / 2 },
+          noseTip:      nTip,
+          nostrilL:     { x: nTip.x - bw * 0.09, y: nTip.y },
+          nostrilR:     { x: nTip.x + bw * 0.09, y: nTip.y },
+          cheekUpperL:  chkL,
+          cheekUpperR:  chkR,
+          cheekLowerL:  { x: (chkL.x + chn.x) / 2, y: (chkL.y + chn.y) / 2 },
+          cheekLowerR:  { x: (chkR.x + chn.x) / 2, y: (chkR.y + chn.y) / 2 },
+          philtrum:     { x: (nTip.x + mth.x) / 2, y: (nTip.y + mth.y) / 2 },
+          mouthL:       { x: mth.x - bw * 0.16, y: mth.y },
+          mouthR:       { x: mth.x + bw * 0.16, y: mth.y },
+          lipBot:       { x: mth.x, y: mth.y + bh * 0.06 },
+          chinL:        { x: chn.x - bw * 0.22, y: chn.y - bh * 0.06 },
+          chinR:        { x: chn.x + bw * 0.22, y: chn.y - bh * 0.06 },
+          chinTip:      chn
         };
       }
 
@@ -12366,6 +12359,8 @@
           targetY: seedY,
           targetW: seedW,
           targetH: seedH,
+          currentMeshNodes: resolveBiometricMeshNodes(null, null, seedX, seedY, seedW, seedH),
+          targetMeshNodes: resolveBiometricMeshNodes(null, null, seedX, seedY, seedW, seedH),
           currentLandmarks17: seedLm17.map(p => ({ ...p })),
           targetLandmarks17: seedLm17,
           type: 'face',
