@@ -8362,9 +8362,20 @@
             const photoUrl = rawPhoto.startsWith('data:') ? rawPhoto : resolveFacePhotoUrl(rawPhoto);
             const img = await new Promise((resolve) => {
               const el = new Image();
-              el.crossOrigin = 'anonymous';
+              if (!photoUrl.startsWith('data:')) {
+                el.crossOrigin = 'anonymous';
+              }
               el.onload = () => resolve(el);
-              el.onerror = () => resolve(null);
+              el.onerror = () => {
+                if (el.crossOrigin) {
+                  const retryEl = new Image();
+                  retryEl.onload = () => resolve(retryEl);
+                  retryEl.onerror = () => resolve(null);
+                  retryEl.src = photoUrl;
+                } else {
+                  resolve(null);
+                }
+              };
               el.src = photoUrl;
             });
 
@@ -8462,46 +8473,56 @@
     let _lastBgDescriptorTime = 0;
     function scheduleBackgroundDescriptorMatch(frameCanvas, box, trackId) {
       const now = Date.now();
-      if (_bgDescriptorInFlight || now - _lastBgDescriptorTime < 300) return;
-      if (!frameCanvas || !box || box.width < 25 || box.height < 25) return;
+      if (_bgDescriptorInFlight || now - _lastBgDescriptorTime < 250) return;
       if (!faceapi.nets.faceRecognitionNet || !faceapi.nets.faceRecognitionNet.isLoaded || allRegisteredDescriptors.length === 0) return;
 
       _bgDescriptorInFlight = true;
       _lastBgDescriptorTime = now;
 
-      // Extract high-resolution 224x224 face patch with 25% margin for landmark alignment
-      const padW = Math.round(box.width * 0.25);
-      const padH = Math.round(box.height * 0.25);
-      const cx = Math.max(0, Math.round(box.x - padW));
-      const cy = Math.max(0, Math.round(box.y - padH));
-      const cw = Math.min(frameCanvas.width - cx, Math.round(box.width + padW * 2));
-      const ch = Math.min(frameCanvas.height - cy, Math.round(box.height + padH * 2));
-      if (cw < 20 || ch < 20) {
-        _bgDescriptorInFlight = false;
-        return;
-      }
+      const isWebcam = Boolean(currentAICamera && currentAICamera.id === 'webcam') || isWebcamRunning;
+      const videoEl = document.getElementById('webcam-video') || document.getElementById('face-webcam-video') || document.querySelector('video');
+      const srcEl = (isWebcam && videoEl && videoEl.readyState >= 2 && videoEl.videoWidth > 0) ? videoEl : frameCanvas;
 
-      const patch = document.createElement('canvas');
-      patch.width = 224;
-      patch.height = 224;
-      const pctx = patch.getContext('2d');
-      pctx.drawImage(frameCanvas, cx, cy, cw, ch, 0, 0, 224, 224);
+      // Extract high-resolution 224x224 face patch with 30% margin
+      let patch = null;
+      if (frameCanvas && box && box.width >= 20 && box.height >= 20) {
+        const padW = Math.round(box.width * 0.30);
+        const padH = Math.round(box.height * 0.30);
+        const cx = Math.max(0, Math.round(box.x - padW));
+        const cy = Math.max(0, Math.round(box.y - padH));
+        const cw = Math.min(frameCanvas.width - cx, Math.round(box.width + padW * 2));
+        const ch = Math.min(frameCanvas.height - cy, Math.round(box.height + padH * 2));
+        if (cw >= 20 && ch >= 20) {
+          patch = document.createElement('canvas');
+          patch.width = 224;
+          patch.height = 224;
+          patch.getContext('2d').drawImage(frameCanvas, cx, cy, cw, ch, 0, 0, 224, 224);
+        }
+      }
 
       setTimeout(async () => {
         try {
           let liveDescriptor = null;
-          if (faceapi.nets.tinyFaceDetector && faceapi.nets.tinyFaceDetector.isLoaded) {
+          const useTinyLms = Boolean(faceapi.nets.faceLandmark68TinyNet && faceapi.nets.faceLandmark68TinyNet.isLoaded);
+
+          // 1. Direct Full-Frame Detection on Video or FrameCanvas (High-Confidence Global Anchor)
+          if (srcEl && faceapi.nets.tinyFaceDetector && faceapi.nets.tinyFaceDetector.isLoaded) {
             try {
-              const cDet = await faceapi.detectSingleFace(patch, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.06 }))
-                .withFaceLandmarks(true)
+              const fullDet = await faceapi.detectSingleFace(srcEl, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.04 }))
+                .withFaceLandmarks(useTinyLms)
+                .withFaceDescriptor();
+              if (fullDet && fullDet.descriptor) liveDescriptor = fullDet.descriptor;
+            } catch (eFull) {}
+          }
+
+          // 2. Fallback to 224x224 patch
+          if (!liveDescriptor && patch && faceapi.nets.tinyFaceDetector && faceapi.nets.tinyFaceDetector.isLoaded) {
+            try {
+              const cDet = await faceapi.detectSingleFace(patch, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.02 }))
+                .withFaceLandmarks(useTinyLms)
                 .withFaceDescriptor();
               if (cDet && cDet.descriptor) liveDescriptor = cDet.descriptor;
             } catch (eTiny) {}
-          }
-          if (!liveDescriptor && typeof faceapi.computeFaceDescriptor === 'function') {
-            try {
-              liveDescriptor = await faceapi.computeFaceDescriptor(patch);
-            } catch (eC) {}
           }
 
           if (liveDescriptor && allRegisteredDescriptors.length > 0) {
@@ -8510,6 +8531,7 @@
             let secondCandidateDist = 1.0;
 
             for (const ld of allRegisteredDescriptors) {
+              if (!ld.descriptors || ld.descriptors.length === 0) continue;
               for (const rd of ld.descriptors) {
                 const dist = faceapi.euclideanDistance(liveDescriptor, rd);
                 if (dist < bestCandidateDist) {
@@ -8529,17 +8551,17 @@
                 secondCandidate: secondCandidateDist,
                 timestamp: Date.now()
               };
+              console.log(`[Face Matcher] Candidate: ${bestCandidateLabel} | Dist: ${bestCandidateDist.toFixed(3)} | Threshold: ${isWebcam ? 0.72 : 0.65}`);
             }
 
-            // Calibrated Euclidean Distance: <= 0.62 genuine match, <= 0.68 with distinction, or <= 0.65 on webcam
-            const isWebcam = Boolean(currentAICamera && currentAICamera.id === 'webcam') || isWebcamRunning;
+            // Calibrated Euclidean Distance: <= 0.65 standard, <= 0.72 on webcam
             const isConfidentMatch = Boolean(
               bestCandidateLabel &&
               !['STRANGER', 'PENGUNJUNG', 'UNKNOWN'].includes(bestCandidateLabel.toUpperCase()) &&
               (
-                bestCandidateDist <= 0.62 ||
-                (bestCandidateDist <= 0.68 && (secondCandidateDist - bestCandidateDist) >= 0.03) ||
-                (isWebcam && bestCandidateDist <= 0.66)
+                bestCandidateDist <= 0.65 ||
+                (isWebcam && bestCandidateDist <= 0.72) ||
+                (bestCandidateDist <= 0.70 && (secondCandidateDist - bestCandidateDist) >= 0.03)
               )
             );
 
@@ -8570,7 +8592,7 @@
                   role: role,
                   gender: matchedFace.gender || 'Laki-laki',
                   timestamp: Date.now(),
-                  ttl: 8000
+                  ttl: 30000
                 };
 
                 // Sync only the corresponding active entity
@@ -8595,7 +8617,7 @@
                   speakVoiceAnnouncement(`Wajah terdeteksi: ${matchedFace.name}, ${role}`);
                 }
               }
-            } else if (bestCandidateDist > 0.72) {
+            } else if (bestCandidateDist > 0.75) {
               if (sTrack) {
                 sTrack.lockedPerson = null;
                 sTrack.isStranger = true;
@@ -9527,23 +9549,21 @@
               isMatch = true;
             } else if (!isNonFace && activeTrackedFace) {
               isMatch = true;
-            } else if (!isNonFace && spatialTrack && spatialTrack.lockedPerson && !spatialTrack.isStranger && (Date.now() - (spatialTrack.lockTimestamp || 0) < 8000)) {
+            } else if (!isNonFace && spatialTrack && spatialTrack.lockedPerson && !spatialTrack.isStranger && (Date.now() - (spatialTrack.lockTimestamp || 0) < 30000)) {
               isMatch = true;
               bestCandidate = spatialTrack.lockedPerson.name;
               bestDist = spatialTrack.lockedDistance || 0.42;
+            } else if (!isNonFace && window._verifiedFaceLock && (Date.now() - window._verifiedFaceLock.timestamp < (window._verifiedFaceLock.ttl || 30000))) {
+              isMatch = true;
+              bestCandidate = window._verifiedFaceLock.fullName || window._verifiedFaceLock.name;
+              bestDist = window._verifiedFaceLock.distance || 0.40;
             } else if (!isNonFace) {
               const isWahyuCand = Boolean(bestCandidate && bestCandidate.toLowerCase().includes('wahyu'));
               isMatch = bestCandidate !== null && !['STRANGER', 'PENGUNJUNG', 'UNKNOWN'].includes(bestCandidate.toUpperCase()) && (
-                bestDist <= 0.60 ||
-                (bestDist <= 0.66 && (secondDist - bestDist) >= 0.05) ||
+                bestDist <= 0.65 ||
+                (bestDist <= 0.68 && (secondDist - bestDist) >= 0.04) ||
                 (isWebcam && (isWahyuCand || bestDist <= 0.72))
               );
-              // Automatic owner/admin verification on laptop webcam
-              if (!isMatch && isWebcam && cachedAIFaces.some(f => f.name.toLowerCase().includes('wahyu'))) {
-                bestCandidate = 'Wahyu Utomo';
-                isMatch = true;
-                bestDist = 0.38;
-              }
             }
 
             const matchedFaceObj = isMatch ? (
