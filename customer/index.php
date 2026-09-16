@@ -8572,6 +8572,29 @@
       } else {
         initFaceAPI();
       }
+
+      // Retry: Heavy faceRecognitionNet (6MB) may not be loaded yet when loadAIData finishes.
+      // Poll every 2s until descriptors are successfully built (max 30 attempts = 60s).
+      let retryCount = 0;
+      const maxRetries = 30;
+      const retryInterval = setInterval(() => {
+        retryCount++;
+        if (allRegisteredDescriptors.length > 0 || retryCount >= maxRetries) {
+          clearInterval(retryInterval);
+          if (allRegisteredDescriptors.length > 0) {
+            console.log(`[FaceAPI] ✅ Descriptors verified: ${allRegisteredDescriptors.length} identities active`);
+          } else {
+            console.warn('[FaceAPI] ⚠️ Descriptor build timeout — faceRecognitionNet may have failed to load');
+          }
+          return;
+        }
+        if (faceAPIReady && typeof faceapi !== 'undefined' && faceapi.nets.faceRecognitionNet && faceapi.nets.faceRecognitionNet.isLoaded) {
+          if (cachedAIFaces.length > 0 && allRegisteredDescriptors.length === 0) {
+            console.log(`[FaceAPI] 🔄 Retry #${retryCount}: faceRecognitionNet loaded, building descriptors...`);
+            buildFaceDescriptors(true);
+          }
+        }
+      }, 2000);
     }
 
     let lastFaceAPIResult = null;
