@@ -7318,6 +7318,26 @@
           renderAISimulatorButtons(cachedAIFaces, cachedAIPlates);
           populateAICameraSelector();
           populateAITargetFaceSelector();
+
+          // Instant In-Memory activation from data/encoding.json
+          if (Array.isArray(data.encodings) && data.encodings.length > 0) {
+            window._cachedEncodings = data.encodings;
+            for (const ef of data.encodings) {
+              if (Array.isArray(ef.encoding) && ef.encoding.length === 128) {
+                const fArr = new Float32Array(ef.encoding);
+                allRegisteredDescriptors = allRegisteredDescriptors.filter(ld => ld.label.toLowerCase() !== ef.name.toLowerCase());
+                allRegisteredDescriptors.push(new faceapi.LabeledFaceDescriptors(ef.name, [fArr]));
+              }
+            }
+            window.allRegisteredDescriptors = allRegisteredDescriptors;
+            window._registeredDescriptorsCount = allRegisteredDescriptors.length;
+            if (allRegisteredDescriptors.length > 0) {
+              faceAPIFaceMatcher = new faceapi.FaceMatcher(allRegisteredDescriptors, 0.65);
+              window.faceAPIFaceMatcher = faceAPIFaceMatcher;
+              console.log(`[FaceAPI] 🚀 ${allRegisteredDescriptors.length} encodings directly active from encoding.json!`);
+            }
+          }
+
           precomputeRegisteredFaceFeatures(forceRefresh);
         }
       } catch (err) {
@@ -14003,7 +14023,30 @@
       fd.append('photo', photoVal);
       fd.append('notes', document.getElementById('face-input-notes').value);
 
-      const descVal = document.getElementById('face-input-descriptor')?.value || (window._lastCapturedFaceDescriptor ? JSON.stringify(window._lastCapturedFaceDescriptor) : '');
+      let descVal = document.getElementById('face-input-descriptor')?.value || (window._lastCapturedFaceDescriptor ? JSON.stringify(window._lastCapturedFaceDescriptor) : '');
+
+      // AUTO-EXTRACT DESCRIPTOR FROM PREVIEW IF NOT ALREADY GENERATED
+      if (!descVal && photoVal && typeof faceapi !== 'undefined' && faceapi.nets.faceRecognitionNet && faceapi.nets.faceRecognitionNet.isLoaded) {
+        const previewImg = document.getElementById('face-preview-img');
+        if (previewImg && previewImg.complete && previewImg.naturalWidth > 10) {
+          try {
+            let det = await faceapi.detectSingleFace(previewImg, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.03 }))
+              .withFaceLandmarks(Boolean(faceapi.nets.faceLandmark68TinyNet && faceapi.nets.faceLandmark68TinyNet.isLoaded))
+              .withFaceDescriptor().catch(() => null);
+            if (!det || !det.descriptor) {
+              det = await faceapi.detectSingleFace(previewImg, new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.02 }))
+                .withFaceLandmarks(Boolean(faceapi.nets.faceLandmark68TinyNet && faceapi.nets.faceLandmark68TinyNet.isLoaded))
+                .withFaceDescriptor().catch(() => null);
+            }
+            if (det && det.descriptor && det.descriptor.length === 128) {
+              descVal = JSON.stringify(Array.from(det.descriptor));
+              window._lastCapturedFaceDescriptor = Array.from(det.descriptor);
+              console.log('[Auto-Extract] ✅ 128D descriptor extracted from preview image before submit!');
+            }
+          } catch (eAuto) {}
+        }
+      }
+
       if (descVal) fd.append('descriptor', descVal);
 
       const btnSubmit = document.getElementById('btn-submit-face');

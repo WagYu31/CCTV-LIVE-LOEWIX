@@ -265,9 +265,19 @@ if ($action === 'get_ai_data') {
         }
     }
 
+    $encFile = __DIR__ . '/../data/encoding.json';
+    $encodings = [];
+    if (file_exists($encFile)) {
+        $encData = json_decode(file_get_contents($encFile), true);
+        if (isset($encData['faces']) && is_array($encData['faces'])) {
+            $encodings = $encData['faces'];
+        }
+    }
+
     echo json_encode([
         'success' => true,
         'faces' => $faces,
+        'encodings' => $encodings,
         'plates' => $plates,
         'logs' => $logs,
         'cameras' => $cameras,
@@ -350,6 +360,42 @@ function syncFaceToDeepFaceDB($name, &$photoPath, $category = 'employee', $notes
     }
 
     return false;
+}
+
+function syncEncodingJSON($name, $descriptor, $category = 'employee', $role = 'Staff', $photo = '') {
+    if (!$descriptor || !is_array($descriptor) || count($descriptor) < 64) return;
+    $encFile = __DIR__ . '/../data/encoding.json';
+    $data = file_exists($encFile) ? json_decode(file_get_contents($encFile), true) : null;
+    if (!is_array($data)) {
+        $data = ['description' => 'Loewix CCTV AI Vision Face Encodings Database', 'faces' => []];
+    }
+    if (!isset($data['faces']) || !is_array($data['faces'])) {
+        $data['faces'] = [];
+    }
+    $updated = false;
+    foreach ($data['faces'] as &$ef) {
+        if (strtolower($ef['name'] ?? '') === strtolower($name)) {
+            $ef['encoding'] = $descriptor;
+            $ef['category'] = $category;
+            $ef['role'] = $role;
+            if ($photo) $ef['photo'] = $photo;
+            $ef['updated_at'] = date('Y-m-d H:i:s');
+            $updated = true;
+            break;
+        }
+    }
+    if (!$updated) {
+        $data['faces'][] = [
+            'name' => $name,
+            'category' => $category,
+            'role' => $role,
+            'photo' => $photo,
+            'encoding' => $descriptor,
+            'created_at' => date('Y-m-d H:i:s')
+        ];
+    }
+    $data['updated_at'] = date('Y-m-d H:i:s');
+    @file_put_contents($encFile, json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
 }
 
 // DEEPFACE: Health check proxy
@@ -464,6 +510,7 @@ if ($action === 'register_face' || $action === 'update_face') {
                 }
                 if ($descriptor !== null) {
                     $f['descriptor'] = $descriptor;
+                    syncEncodingJSON($name, $descriptor, $category, $f['role_title'] ?? 'Staff', $f['photo'] ?? '');
                 }
                 $f['notes'] = $notes;
                 $f['updated_at'] = date('Y-m-d H:i:s');
@@ -485,6 +532,10 @@ if ($action === 'register_face' || $action === 'update_face') {
     // Auto-sync new face photo to DeepFace ArcFace FAISS DB before saving
     if (!empty($photo) && $photo !== 'assets/image/avatar-default.png') {
         syncFaceToDeepFaceDB($name, $photo, $category, $notes);
+    }
+
+    if ($descriptor !== null) {
+        syncEncodingJSON($name, $descriptor, $category, $roleTitle, $photo);
     }
 
     $newFace = [
