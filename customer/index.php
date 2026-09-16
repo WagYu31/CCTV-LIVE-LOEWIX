@@ -3243,6 +3243,7 @@
 
               <input type="hidden" id="face-edit-id" value="">
               <input type="hidden" id="face-input-photo" value="" required>
+              <input type="hidden" id="face-input-descriptor" value="">
               <small class="text-muted d-block mt-2" style="font-size: 11px;">Posisikan wajah tegak, pencahayaan jelas, tanpa masker/kacamata hitam. Bisa gunakan kamera langsung, upload galeri, atau snapshot CCTV.</small>
             </div>
 
@@ -7317,7 +7318,7 @@
           renderAISimulatorButtons(cachedAIFaces, cachedAIPlates);
           populateAICameraSelector();
           populateAITargetFaceSelector();
-          precomputeRegisteredFaceFeatures();
+          precomputeRegisteredFaceFeatures(forceRefresh);
         }
       } catch (err) {
         console.error('Error loading AI data:', err);
@@ -8271,13 +8272,17 @@
     let _isBuildingDescriptors = false;
 
     async function buildFaceDescriptors(force = false) {
-      if (_isBuildingDescriptors) return;
+      if (force) {
+        _isBuildingDescriptors = false;
+      } else if (_isBuildingDescriptors) {
+        return;
+      }
       if (!cachedAIFaces || cachedAIFaces.length === 0) return;
 
-      const currentHash = cachedAIFaces.map(f => `${f.id}_${f.name}_${(f.photo_b64 || f.photo || '').length}`).join('|');
+      const currentHash = cachedAIFaces.map(f => `${f.id}_${f.name}_${(f.descriptor && f.descriptor.length) ? 'desc' : (f.photo_b64 || f.photo || '').length}`).join('|');
 
       // 1. FAST PATH: Instant Restore from LocalStorage Cache (< 2ms, zero neural network compute, ZERO freeze)
-      const storageKey = `loewix_face_desc_v8_${currentHash}`;
+      const storageKey = `loewix_face_desc_v9_${currentHash}`;
       if (!force) {
         try {
           const cachedJson = localStorage.getItem(storageKey);
@@ -8296,7 +8301,7 @@
                 allRegisteredDescriptors = labeled;
                 window.allRegisteredDescriptors = allRegisteredDescriptors;
                 window._registeredDescriptorsCount = labeled.length;
-                faceAPIFaceMatcher = new faceapi.FaceMatcher(labeled, 0.58);
+                faceAPIFaceMatcher = new faceapi.FaceMatcher(labeled, 0.62);
                 window.faceAPIFaceMatcher = faceAPIFaceMatcher;
                 _faceDescriptorsBuiltHash = currentHash;
                 console.log(`[FaceAPI] ⚡ INSTANT RESTORE: ${labeled.length} biometric descriptors loaded from local storage cache in 1ms!`);
@@ -8336,11 +8341,21 @@
         const toCache = [];
 
         for (const face of cachedAIFaces) {
+          // Priority A: If 128D descriptor was pre-computed at registration or stored in DB, load in 0ms!
+          if (Array.isArray(face.descriptor) && face.descriptor.length === 128) {
+            const floatArr = new Float32Array(face.descriptor);
+            labeledDescriptors.push(new faceapi.LabeledFaceDescriptors(face.name, [floatArr]));
+            toCache.push({ label: face.name, descriptors: [face.descriptor] });
+            faceFeatureCache.set(face.id, { face, descriptor: floatArr, descriptors: [floatArr] });
+            console.log(`[FaceAPI] ⚡ Instant biometric descriptor loaded from DB for: ${face.name}`);
+            continue;
+          }
+
           const rawPhoto = face.photo_b64 || face.photo;
           if (!rawPhoto) continue;
 
           // Generous yield to browser UI thread so the screen NEVER freezes
-          await new Promise(r => setTimeout(r, 100));
+          await new Promise(r => setTimeout(r, 60));
 
           const faceDescriptors = [];
           try {
@@ -8354,48 +8369,53 @@
             });
 
             if (img && img.width > 10 && img.height > 10) {
-              // Scale preserving natural aspect ratio (up to 360px max)
-              const maxDim = 360;
-              const scale = Math.min(1, maxDim / Math.max(img.width, img.height));
-              const pw = Math.max(80, Math.round(img.width * scale));
-              const ph = Math.max(80, Math.round(img.height * scale));
+              // Create padded canvas (320x320) so face detector always has head/chin context
+              const targetDim = 320;
               const patch = document.createElement('canvas');
-              patch.width = pw;
-              patch.height = ph;
+              patch.width = targetDim;
+              patch.height = targetDim;
               const pctx = patch.getContext('2d');
-              pctx.drawImage(img, 0, 0, pw, ph);
+              pctx.fillStyle = '#1e293b';
+              pctx.fillRect(0, 0, targetDim, targetDim);
+
+              const scale = Math.min((targetDim * 0.76) / img.width, (targetDim * 0.76) / img.height);
+              const dw = Math.round(img.width * scale);
+              const dh = Math.round(img.height * scale);
+              const dx = Math.round((targetDim - dw) / 2);
+              const dy = Math.round((targetDim - dh) / 2);
+              pctx.drawImage(img, dx, dy, dw, dh);
 
               let descriptor = null;
+              const useTinyLms = Boolean(faceapi.nets.faceLandmark68TinyNet && faceapi.nets.faceLandmark68TinyNet.isLoaded);
 
-              // Primary Method: Full Detection + 68 Landmark Alignment + ResNet Face Descriptor
-              if (faceapi.nets.ssdMobilenetv1 && faceapi.nets.ssdMobilenetv1.isLoaded) {
-                try {
-                  const det = await faceapi.detectSingleFace(patch, new faceapi.SsdMobilenetv1Options({ minConfidence: 0.20 }))
-                    .withFaceLandmarks(Boolean(faceapi.nets.faceLandmark68TinyNet && faceapi.nets.faceLandmark68TinyNet.isLoaded))
-                    .withFaceDescriptor();
-                  if (det && det.descriptor) descriptor = det.descriptor;
-                } catch (eSSD) {}
+              // 1. Multi-scale TinyFaceDetector
+              if (faceapi.nets.tinyFaceDetector && faceapi.nets.tinyFaceDetector.isLoaded) {
+                for (const inSize of [224, 320, 160]) {
+                  try {
+                    const det = await faceapi.detectSingleFace(patch, new faceapi.TinyFaceDetectorOptions({ inputSize: inSize, scoreThreshold: 0.02 }))
+                      .withFaceLandmarks(useTinyLms)
+                      .withFaceDescriptor();
+                    if (det && det.descriptor) { descriptor = det.descriptor; break; }
+                  } catch (eTiny) {}
+                }
               }
 
+              // 2. Try raw image unpadded
               if (!descriptor && faceapi.nets.tinyFaceDetector && faceapi.nets.tinyFaceDetector.isLoaded) {
                 try {
-                  const det = await faceapi.detectSingleFace(patch, new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.06 }))
-                    .withFaceLandmarks(Boolean(faceapi.nets.faceLandmark68TinyNet && faceapi.nets.faceLandmark68TinyNet.isLoaded))
+                  const det = await faceapi.detectSingleFace(img, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.02 }))
+                    .withFaceLandmarks(useTinyLms)
                     .withFaceDescriptor();
                   if (det && det.descriptor) descriptor = det.descriptor;
-                } catch (eTiny) {}
+                } catch (eRaw) {}
               }
 
-              // Fallback if portrait was already tightly pre-cropped
+              // 3. Fallback: direct computeFaceDescriptor
               if (!descriptor && typeof faceapi.computeFaceDescriptor === 'function') {
                 try {
-                  const sq = document.createElement('canvas');
-                  sq.width = 150;
-                  sq.height = 150;
-                  sq.getContext('2d').drawImage(patch, 0, 0, 150, 150);
-                  const d = await faceapi.computeFaceDescriptor(sq);
+                  const d = await faceapi.computeFaceDescriptor(patch);
                   if (d && d.length === 128) descriptor = d;
-                } catch (eSq) {}
+                } catch (eC) {}
               }
 
               if (descriptor) {
@@ -8421,7 +8441,7 @@
         window.allRegisteredDescriptors = allRegisteredDescriptors;
         window._registeredDescriptorsCount = labeledDescriptors.length;
         if (labeledDescriptors.length > 0) {
-          faceAPIFaceMatcher = new faceapi.FaceMatcher(labeledDescriptors, 0.58);
+          faceAPIFaceMatcher = new faceapi.FaceMatcher(labeledDescriptors, 0.62);
           window.faceAPIFaceMatcher = faceAPIFaceMatcher;
           console.log(`[FaceAPI] ✅ FaceMatcher ready with ${labeledDescriptors.length} registered entries`);
           try {
@@ -8511,13 +8531,15 @@
               };
             }
 
-            // Calibrated Euclidean Distance: <= 0.56 genuine match, <= 0.60 with distinction
+            // Calibrated Euclidean Distance: <= 0.62 genuine match, <= 0.68 with distinction, or <= 0.65 on webcam
+            const isWebcam = Boolean(currentAICamera && currentAICamera.id === 'webcam') || isWebcamRunning;
             const isConfidentMatch = Boolean(
               bestCandidateLabel &&
               !['STRANGER', 'PENGUNJUNG', 'UNKNOWN'].includes(bestCandidateLabel.toUpperCase()) &&
               (
-                bestCandidateDist <= 0.56 ||
-                (bestCandidateDist <= 0.60 && (secondCandidateDist - bestCandidateDist) >= 0.06)
+                bestCandidateDist <= 0.62 ||
+                (bestCandidateDist <= 0.68 && (secondCandidateDist - bestCandidateDist) >= 0.03) ||
+                (isWebcam && bestCandidateDist <= 0.66)
               )
             );
 
@@ -8573,7 +8595,7 @@
                   speakVoiceAnnouncement(`Wajah terdeteksi: ${matchedFace.name}, ${role}`);
                 }
               }
-            } else if (bestCandidateDist > 0.62) {
+            } else if (bestCandidateDist > 0.72) {
               if (sTrack) {
                 sTrack.lockedPerson = null;
                 sTrack.isStranger = true;
@@ -8817,9 +8839,9 @@
       return { x: Math.round(offsetX), y: Math.round(offsetY), width: Math.round(renderW), height: Math.round(renderH) };
     }
 
-    function precomputeRegisteredFaceFeatures() {
+    function precomputeRegisteredFaceFeatures(force = false) {
       if (faceAPIReady) {
-        buildFaceDescriptors();
+        buildFaceDescriptors(force);
       } else {
         initFaceAPI();
       }
@@ -13106,6 +13128,40 @@
         if (img) img.src = base64;
         if (hiddenInput) hiddenInput.value = base64;
 
+        // Instant Biometric Feature Extraction at enrollment time
+        window._lastCapturedFaceDescriptor = null;
+        const hiddenDescInput = document.getElementById('face-input-descriptor');
+        if (hiddenDescInput) hiddenDescInput.value = '';
+
+        if (typeof faceapi !== 'undefined' && faceapi.nets.faceRecognitionNet && faceapi.nets.faceRecognitionNet.isLoaded) {
+          (async () => {
+            try {
+              let det = await faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.10 }))
+                .withFaceLandmarks(Boolean(faceapi.nets.faceLandmark68TinyNet && faceapi.nets.faceLandmark68TinyNet.isLoaded))
+                .withFaceDescriptor().catch(() => null);
+              
+              if (!det || !det.descriptor) {
+                det = await faceapi.detectSingleFace(canvas, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.05 }))
+                  .withFaceLandmarks(Boolean(faceapi.nets.faceLandmark68TinyNet && faceapi.nets.faceLandmark68TinyNet.isLoaded))
+                  .withFaceDescriptor().catch(() => null);
+              }
+
+              let d = det ? det.descriptor : null;
+              if (!d && typeof faceapi.computeFaceDescriptor === 'function') {
+                d = await faceapi.computeFaceDescriptor(canvas).catch(() => null);
+              }
+
+              if (d && d.length === 128) {
+                window._lastCapturedFaceDescriptor = Array.from(d);
+                if (hiddenDescInput) hiddenDescInput.value = JSON.stringify(window._lastCapturedFaceDescriptor);
+                console.log('[Enrollment] ✅ 128D Biometric Descriptor extracted successfully at capture time!');
+              }
+            } catch (eDesc) {
+              console.warn('[Enrollment] Descriptor extraction notice:', eDesc.message);
+            }
+          })();
+        }
+
         // Update UI state instantly
         if (viewFinder) viewFinder.style.display = 'none';
         if (previewBox) previewBox.style.display = 'block';
@@ -13820,6 +13876,7 @@
 
         const img = document.getElementById('face-preview-img');
         const hiddenInput = document.getElementById('face-input-photo');
+        const hiddenDescInput = document.getElementById('face-input-descriptor');
         const previewBox = document.getElementById('face-scanned-preview-box');
         const viewFinder = document.getElementById('face-scanner-viewfinder');
         const btnRescan = document.getElementById('btn-rescan-face');
@@ -13827,6 +13884,31 @@
 
         if (img) img.src = base64Data;
         if (hiddenInput) hiddenInput.value = base64Data;
+        if (hiddenDescInput) hiddenDescInput.value = '';
+        window._lastCapturedFaceDescriptor = null;
+
+        if (typeof faceapi !== 'undefined' && faceapi.nets.faceRecognitionNet && faceapi.nets.faceRecognitionNet.isLoaded) {
+          const testImg = new Image();
+          testImg.crossOrigin = 'anonymous';
+          testImg.onload = async () => {
+            try {
+              let det = await faceapi.detectSingleFace(testImg, new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.05 }))
+                .withFaceLandmarks(Boolean(faceapi.nets.faceLandmark68TinyNet && faceapi.nets.faceLandmark68TinyNet.isLoaded))
+                .withFaceDescriptor().catch(() => null);
+              let d = det ? det.descriptor : null;
+              if (!d && typeof faceapi.computeFaceDescriptor === 'function') {
+                d = await faceapi.computeFaceDescriptor(testImg).catch(() => null);
+              }
+              if (d && d.length === 128) {
+                window._lastCapturedFaceDescriptor = Array.from(d);
+                if (hiddenDescInput) hiddenDescInput.value = JSON.stringify(window._lastCapturedFaceDescriptor);
+                console.log('[Gallery Upload] ✅ 128D Biometric Descriptor extracted from uploaded image!');
+              }
+            } catch(eDesc){}
+          };
+          testImg.src = base64Data;
+        }
+
         if (previewBox) {
           previewBox.style.display = 'block';
           const badge = previewBox.querySelector('.font-weight-bold');
@@ -13864,6 +13946,9 @@
       const hiddenInput = document.getElementById('face-input-photo');
       if (hiddenInput) hiddenInput.value = face.photo || '';
 
+      const hiddenDescInput = document.getElementById('face-input-descriptor');
+      if (hiddenDescInput) hiddenDescInput.value = face.descriptor ? JSON.stringify(face.descriptor) : '';
+
       const modalTitle = document.querySelector('#modalRegisterFace .modal-title');
       if (modalTitle) {
         modalTitle.innerHTML = `<i class="fas fa-camera text-warning mr-2"></i> Edit & Scan Ulang Wajah: ${face.name}`;
@@ -13898,6 +13983,9 @@
       fd.append('photo', photoVal);
       fd.append('notes', document.getElementById('face-input-notes').value);
 
+      const descVal = document.getElementById('face-input-descriptor')?.value || (window._lastCapturedFaceDescriptor ? JSON.stringify(window._lastCapturedFaceDescriptor) : '');
+      if (descVal) fd.append('descriptor', descVal);
+
       const btnSubmit = document.getElementById('btn-submit-face');
       if (btnSubmit) {
         btnSubmit.disabled = true;
@@ -13910,6 +13998,27 @@
         if (data.success) {
           stopFaceWebcam();
           closeModalHelper('modalRegisterFace');
+
+          // Instant In-Memory Live Sync (0ms latency activation)
+          const newName = document.getElementById('face-input-name').value.trim();
+          let parsedDesc = null;
+          if (descVal) {
+            try { parsedDesc = JSON.parse(descVal); } catch(e){}
+          } else if (window._lastCapturedFaceDescriptor) {
+            parsedDesc = window._lastCapturedFaceDescriptor;
+          }
+
+          if (Array.isArray(parsedDesc) && parsedDesc.length === 128) {
+            const fArr = new Float32Array(parsedDesc);
+            allRegisteredDescriptors = allRegisteredDescriptors.filter(ld => ld.label.toLowerCase() !== newName.toLowerCase());
+            allRegisteredDescriptors.push(new faceapi.LabeledFaceDescriptors(newName, [fArr]));
+            window.allRegisteredDescriptors = allRegisteredDescriptors;
+            window._registeredDescriptorsCount = allRegisteredDescriptors.length;
+            faceAPIFaceMatcher = new faceapi.FaceMatcher(allRegisteredDescriptors, 0.62);
+            window.faceAPIFaceMatcher = faceAPIFaceMatcher;
+            console.log(`[FaceAPI] 🚀 INSTANT BIOMETRIC ACTIVATION: "${newName}" is now active in live recognizer! Total DB: ${allRegisteredDescriptors.length}`);
+          }
+
           alert(data.message || (editId ? '✅ Data Wajah Berhasil Diperbarui & Di-rescan!' : '✅ Wajah Berhasil Terdaftar ke Database AI Face Recognition!'));
           loadAIData(true);
         } else {

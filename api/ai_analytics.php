@@ -442,6 +442,14 @@ if ($action === 'register_face' || $action === 'update_face') {
         $roleTitle = 'Super Admin & Owner';
     }
 
+    $descriptor = null;
+    if (!empty($_POST['descriptor'])) {
+        $rawDesc = is_array($_POST['descriptor']) ? $_POST['descriptor'] : json_decode($_POST['descriptor'], true);
+        if (is_array($rawDesc) && count($rawDesc) === 128) {
+            $descriptor = array_map('floatval', $rawDesc);
+        }
+    }
+
     if ($editId > 0) {
         $found = false;
         foreach ($db['ai_faces'] as &$f) {
@@ -453,6 +461,9 @@ if ($action === 'register_face' || $action === 'update_face') {
                     // Auto-sync photo to DeepFace ArcFace FAISS DB & convert base64 to clean file path
                     syncFaceToDeepFaceDB($name, $photo, $category, $notes);
                     $f['photo'] = $photo;
+                }
+                if ($descriptor !== null) {
+                    $f['descriptor'] = $descriptor;
                 }
                 $f['notes'] = $notes;
                 $f['updated_at'] = date('Y-m-d H:i:s');
@@ -483,6 +494,7 @@ if ($action === 'register_face' || $action === 'update_face') {
         'category' => $category,
         'role_title' => $roleTitle,
         'photo' => !empty($photo) ? $photo : 'assets/image/avatar-default.png',
+        'descriptor' => $descriptor,
         'notes' => $notes,
         'created_at' => date('Y-m-d H:i:s')
     ];
