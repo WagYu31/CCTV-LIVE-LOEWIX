@@ -8357,127 +8357,103 @@
         const toCache = [];
 
         for (const face of cachedAIFaces) {
-          // Priority A: If 128D descriptor was pre-computed at registration or stored in DB, load in 0ms!
-          if (Array.isArray(face.descriptor) && face.descriptor.length === 128) {
-            const floatArr = new Float32Array(face.descriptor);
-            labeledDescriptors.push(new faceapi.LabeledFaceDescriptors(face.name, [floatArr]));
-            toCache.push({ label: face.name, descriptors: [face.descriptor] });
-            faceFeatureCache.set(face.id, { face, descriptor: floatArr, descriptors: [floatArr] });
-            console.log(`[FaceAPI] ⚡ Instant biometric descriptor loaded from DB for: ${face.name}`);
-            continue;
-          }
-
           const rawPhoto = face.photo_b64 || face.photo;
-          if (!rawPhoto) continue;
-
-          // Generous yield to browser UI thread so the screen NEVER freezes
-          await new Promise(r => setTimeout(r, 60));
-
           const faceDescriptors = [];
-          try {
-            const photoUrl = rawPhoto.startsWith('data:') ? rawPhoto : resolveFacePhotoUrl(rawPhoto);
-            const img = await new Promise((resolve) => {
-              const el = new Image();
-              if (!photoUrl.startsWith('data:')) {
-                el.crossOrigin = 'anonymous';
-              }
-              el.onload = () => resolve(el);
-              el.onerror = () => {
-                if (el.crossOrigin) {
-                  const retryEl = new Image();
-                  retryEl.onload = () => resolve(retryEl);
-                  retryEl.onerror = () => resolve(null);
-                  retryEl.src = photoUrl;
-                } else {
-                  resolve(null);
+
+          // Priority 1: Extract authentic ResNet-34 biometric descriptor directly from photo
+          if (rawPhoto) {
+            try {
+              const photoUrl = rawPhoto.startsWith('data:') ? rawPhoto : resolveFacePhotoUrl(rawPhoto);
+              const img = await new Promise((resolve) => {
+                const el = new Image();
+                if (!photoUrl.startsWith('data:')) {
+                  el.crossOrigin = 'anonymous';
                 }
-              };
-              el.src = photoUrl;
-            });
+                el.onload = () => resolve(el);
+                el.onerror = () => {
+                  if (el.crossOrigin) {
+                    const retryEl = new Image();
+                    retryEl.onload = () => resolve(retryEl);
+                    retryEl.onerror = () => resolve(null);
+                    retryEl.src = photoUrl;
+                  } else {
+                    resolve(null);
+                  }
+                };
+                el.src = photoUrl;
+              });
 
-            if (img && img.width > 10 && img.height > 10) {
-              // Create padded canvas (320x320) so face detector always has head/chin context
-              const targetDim = 320;
-              const patch = document.createElement('canvas');
-              patch.width = targetDim;
-              patch.height = targetDim;
-              const pctx = patch.getContext('2d');
-              pctx.fillStyle = '#1e293b';
-              pctx.fillRect(0, 0, targetDim, targetDim);
+              if (img && img.width > 10 && img.height > 10) {
+                let descriptor = null;
+                const useTinyLms = Boolean(faceapi.nets.faceLandmark68TinyNet && faceapi.nets.faceLandmark68TinyNet.isLoaded);
 
-              const scale = Math.min((targetDim * 0.76) / img.width, (targetDim * 0.76) / img.height);
-              const dw = Math.round(img.width * scale);
-              const dh = Math.round(img.height * scale);
-              const dx = Math.round((targetDim - dw) / 2);
-              const dy = Math.round((targetDim - dh) / 2);
-              pctx.drawImage(img, dx, dy, dw, dh);
+                // Strategy 1: Natural full image detection with TinyFaceDetector
+                if (faceapi.nets.tinyFaceDetector && faceapi.nets.tinyFaceDetector.isLoaded) {
+                  for (const inSize of [224, 320, 160, 416]) {
+                    try {
+                      const det = await faceapi.detectSingleFace(img, new faceapi.TinyFaceDetectorOptions({ inputSize: inSize, scoreThreshold: 0.01 }))
+                        .withFaceLandmarks(useTinyLms)
+                        .withFaceDescriptor();
+                      if (det && det.descriptor) { descriptor = det.descriptor; break; }
+                    } catch (eTiny) {}
+                  }
+                }
 
-              let descriptor = null;
-              const useTinyLms = Boolean(faceapi.nets.faceLandmark68TinyNet && faceapi.nets.faceLandmark68TinyNet.isLoaded);
-
-              // 1. Multi-scale TinyFaceDetector
-              if (faceapi.nets.tinyFaceDetector && faceapi.nets.tinyFaceDetector.isLoaded) {
-                for (const inSize of [224, 320, 160]) {
+                // Strategy 2: SSD MobileNet on natural image
+                if (!descriptor && faceapi.nets.ssdMobilenetv1 && faceapi.nets.ssdMobilenetv1.isLoaded) {
                   try {
-                    const det = await faceapi.detectSingleFace(patch, new faceapi.TinyFaceDetectorOptions({ inputSize: inSize, scoreThreshold: 0.02 }))
+                    const det = await faceapi.detectSingleFace(img, new faceapi.SsdMobilenetv1Options({ minConfidence: 0.08 }))
                       .withFaceLandmarks(useTinyLms)
                       .withFaceDescriptor();
-                    if (det && det.descriptor) { descriptor = det.descriptor; break; }
-                  } catch (eTiny) {}
+                    if (det && det.descriptor) descriptor = det.descriptor;
+                  } catch (eSSD) {}
+                }
+
+                // Strategy 3: Direct ResNet-34 Embedding via computeFaceDescriptor (150x150 face crop)
+                if (!descriptor && typeof faceapi.computeFaceDescriptor === 'function') {
+                  try {
+                    const fCanvas = document.createElement('canvas');
+                    fCanvas.width = 150; fCanvas.height = 150;
+                    const fCtx = fCanvas.getContext('2d');
+                    const sx = Math.round(img.width * 0.08);
+                    const sy = Math.round(img.height * 0.05);
+                    const sw = Math.round(img.width * 0.84);
+                    const sh = Math.round(img.height * 0.88);
+                    fCtx.drawImage(img, sx, sy, sw, sh, 0, 0, 150, 150);
+                    const d = await faceapi.computeFaceDescriptor(fCanvas);
+                    if (d && d.length === 128) {
+                      descriptor = d;
+                      console.log(`[FaceAPI] 🎯 Direct ResNet-34 descriptor extracted from photo for: ${face.name}`);
+                    }
+                  } catch (eC) {}
+                }
+
+                if (descriptor) {
+                  const floatArr = new Float32Array(descriptor);
+                  faceDescriptors.push(floatArr);
+                  toCache.push({ label: face.name, descriptors: [Array.from(floatArr)] });
+                  faceFeatureCache.set(face.id, { face, descriptor: floatArr, descriptors: [floatArr] });
+                  console.log(`[FaceAPI] ✅ Authentic biometric descriptor generated from photo for: ${face.name}`);
                 }
               }
-
-              // 2. Try raw image unpadded
-              if (!descriptor && faceapi.nets.tinyFaceDetector && faceapi.nets.tinyFaceDetector.isLoaded) {
-                try {
-                  const det = await faceapi.detectSingleFace(img, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.02 }))
-                    .withFaceLandmarks(useTinyLms)
-                    .withFaceDescriptor();
-                  if (det && det.descriptor) descriptor = det.descriptor;
-                } catch (eRaw) {}
-              }
-
-              // 3. Fallback: direct computeFaceDescriptor
-              if (!descriptor && typeof faceapi.computeFaceDescriptor === 'function') {
-                try {
-                  const d = await faceapi.computeFaceDescriptor(patch);
-                  if (d && d.length === 128) descriptor = d;
-                } catch (eC) {}
-              }
-
-              // 4. Guaranteed 128D visual projection fallback (for masked/bandage/low-light faces)
-              if (!descriptor && img && (img.naturalWidth || img.width) > 0) {
-                try {
-                  const cvs = document.createElement('canvas');
-                  cvs.width = 16; cvs.height = 8;
-                  const cx = cvs.getContext('2d');
-                  cx.drawImage(img, 0, 0, 16, 8);
-                  const idata = cx.getImageData(0, 0, 16, 8).data;
-                  const vec = new Float32Array(128);
-                  for (let k = 0; k < 128; k++) {
-                    vec[k] = ((idata[k * 3] || 128) / 255.0 - 0.5) * 0.8;
-                  }
-                  descriptor = vec;
-                  console.log(`[FaceAPI] ⚡ Guaranteed 128D projection descriptor generated for: ${face.name}`);
-                } catch(eVec) {}
-              }
-
-              if (descriptor) {
-                const floatArr = Array.from(descriptor);
-                faceDescriptors.push(new Float32Array(descriptor));
-                toCache.push({ label: face.name, descriptors: [floatArr] });
-              }
+            } catch (errFace) {
+              console.warn('[FaceAPI] Photo descriptor build notice for ' + face.name, errFace);
             }
-          } catch (errFace) {
-            console.warn('[FaceAPI] Person descriptor build notice for ' + face.name, errFace);
+          }
+
+          // Priority 2: Fallback to stored DB descriptor if no photo or photo extraction failed
+          if (faceDescriptors.length === 0 && Array.isArray(face.descriptor) && face.descriptor.length === 128) {
+            const floatArr = new Float32Array(face.descriptor);
+            faceDescriptors.push(floatArr);
+            toCache.push({ label: face.name, descriptors: [face.descriptor] });
+            faceFeatureCache.set(face.id, { face, descriptor: floatArr, descriptors: [floatArr] });
+            console.log(`[FaceAPI] ⚡ Stored biometric descriptor loaded from DB for: ${face.name}`);
           }
 
           if (faceDescriptors.length > 0) {
             labeledDescriptors.push(
               new faceapi.LabeledFaceDescriptors(face.name, faceDescriptors)
             );
-            faceFeatureCache.set(face.id, { face, descriptor: faceDescriptors[0], descriptors: faceDescriptors });
-            console.log(`[FaceAPI] ✅ Biometric descriptor built for: ${face.name}`);
           }
         }
 
@@ -8558,6 +8534,17 @@
             } catch (eTiny) {}
           }
 
+          // 3. Direct ResNet-34 Embedding on face patch if detector missed angle/tilt
+          if (!liveDescriptor && patch && typeof faceapi.computeFaceDescriptor === 'function') {
+            try {
+              const fC = document.createElement('canvas');
+              fC.width = 150; fC.height = 150;
+              fC.getContext('2d').drawImage(patch, 0, 0, 150, 150);
+              const d = await faceapi.computeFaceDescriptor(fC);
+              if (d && d.length === 128) liveDescriptor = d;
+            } catch(eC) {}
+          }
+
           if (liveDescriptor && allRegisteredDescriptors.length > 0) {
             let bestCandidateLabel = null;
             let bestCandidateDist = 1.0;
@@ -8584,17 +8571,17 @@
                 secondCandidate: secondCandidateDist,
                 timestamp: Date.now()
               };
-              console.log(`[Face Matcher] Candidate: ${bestCandidateLabel} | Dist: ${bestCandidateDist.toFixed(3)} | Threshold: ${isWebcam ? 0.72 : 0.65}`);
+              console.log(`[Face Matcher] Candidate: ${bestCandidateLabel} | Dist: ${bestCandidateDist.toFixed(3)} | Threshold: ${isWebcam ? 0.74 : 0.65}`);
             }
 
-            // Calibrated Euclidean Distance: <= 0.65 standard, <= 0.72 on webcam
+            // Calibrated Euclidean Distance: <= 0.65 standard, <= 0.74 on webcam
             const isConfidentMatch = Boolean(
               bestCandidateLabel &&
               !['STRANGER', 'PENGUNJUNG', 'UNKNOWN'].includes(bestCandidateLabel.toUpperCase()) &&
               (
                 bestCandidateDist <= 0.65 ||
-                (isWebcam && bestCandidateDist <= 0.72) ||
-                (bestCandidateDist <= 0.70 && (secondCandidateDist - bestCandidateDist) >= 0.03)
+                (isWebcam && bestCandidateDist <= 0.74) ||
+                (bestCandidateDist <= 0.72 && (secondCandidateDist - bestCandidateDist) >= 0.03)
               )
             );
 
@@ -9245,13 +9232,18 @@
             const useTinyLandmarks = Boolean(faceapi.nets.faceLandmark68TinyNet && faceapi.nets.faceLandmark68TinyNet.isLoaded);
             const useStdLandmarks = !useTinyLandmarks && Boolean(faceapi.nets.faceLandmark68Net && faceapi.nets.faceLandmark68Net.isLoaded);
 
+            const hasRecNet = Boolean(faceapi.nets.faceRecognitionNet && faceapi.nets.faceRecognitionNet.isLoaded);
             const inputSizes = isWebcam ? [224, 320] : [320];
             for (const inSize of inputSizes) {
               const tinyOpts = new faceapi.TinyFaceDetectorOptions({ inputSize: inSize, scoreThreshold: tinyScoreThreshold });
               if (useTinyLandmarks) {
-                detections = await faceapi.detectAllFaces(inputTarget, tinyOpts).withFaceLandmarks(true).catch(() => []);
+                detections = hasRecNet
+                  ? await faceapi.detectAllFaces(inputTarget, tinyOpts).withFaceLandmarks(true).withFaceDescriptors().catch(() => [])
+                  : await faceapi.detectAllFaces(inputTarget, tinyOpts).withFaceLandmarks(true).catch(() => []);
               } else if (useStdLandmarks) {
-                detections = await faceapi.detectAllFaces(inputTarget, tinyOpts).withFaceLandmarks(false).catch(() => []);
+                detections = hasRecNet
+                  ? await faceapi.detectAllFaces(inputTarget, tinyOpts).withFaceLandmarks(false).withFaceDescriptors().catch(() => [])
+                  : await faceapi.detectAllFaces(inputTarget, tinyOpts).withFaceLandmarks(false).catch(() => []);
               } else {
                 detections = await faceapi.detectAllFaces(inputTarget, tinyOpts).catch(() => []);
               }
@@ -9266,9 +9258,13 @@
             if ((!detections || detections.length === 0) && inputTarget !== frameCanvas && frameCanvas) {
               const tinyOpts = new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: tinyScoreThreshold });
               if (useTinyLandmarks) {
-                detections = await faceapi.detectAllFaces(frameCanvas, tinyOpts).withFaceLandmarks(true).catch(() => []);
+                detections = hasRecNet
+                  ? await faceapi.detectAllFaces(frameCanvas, tinyOpts).withFaceLandmarks(true).withFaceDescriptors().catch(() => [])
+                  : await faceapi.detectAllFaces(frameCanvas, tinyOpts).withFaceLandmarks(true).catch(() => []);
               } else if (useStdLandmarks) {
-                detections = await faceapi.detectAllFaces(frameCanvas, tinyOpts).withFaceLandmarks(false).catch(() => []);
+                detections = hasRecNet
+                  ? await faceapi.detectAllFaces(frameCanvas, tinyOpts).withFaceLandmarks(false).withFaceDescriptors().catch(() => [])
+                  : await faceapi.detectAllFaces(frameCanvas, tinyOpts).withFaceLandmarks(false).catch(() => []);
               } else {
                 detections = await faceapi.detectAllFaces(frameCanvas, tinyOpts).catch(() => []);
               }
