@@ -22,6 +22,8 @@
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.2.3/dist/coco-ssd.min.js"></script>
   <!-- face-api.js: Biometric Descriptors for Whitelist Database Verification -->
   <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+  <!-- MediaPipe FaceMesh Engine (468 3D Biometric Facial Landmarks & Responsive 60 FPS Tracking) -->
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4.1633559619/face_mesh.js" crossorigin="anonymous"></script>
   <!-- Midtrans Snap Payment Gateway SDK (Sandbox) -->
   <script type="text/javascript" src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="Mid-client-mGA7v04cXrux3KNF"></script>
   <style>
@@ -7357,14 +7359,33 @@
               locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4.1633559619/${file}`
             });
             directMediaPipeFaceMesh.setOptions({
-              maxNumFaces: 4,
-              refineLandmarks: true,
-              minDetectionConfidence: 0.45,
-              minTrackingConfidence: 0.45
+              maxNumFaces: 2,
+              refineLandmarks: false,
+              minDetectionConfidence: 0.35,
+              minTrackingConfidence: 0.35
             });
             directMediaPipeFaceMesh.onResults((results) => {
               if (results && results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0) {
                 directMediaPipeResults = results;
+                // Instantly update live webcam tracking coordinates for 60 FPS responsiveness
+                const lms = results.multiFaceLandmarks[0];
+                let minX = 1, maxX = 0, minY = 1, maxY = 0;
+                for (let k = 0; k < lms.length; k++) {
+                  const pt = lms[k];
+                  if (pt.x < minX) minX = pt.x;
+                  if (pt.x > maxX) maxX = pt.x;
+                  if (pt.y < minY) minY = pt.y;
+                  if (pt.y > maxY) maxY = pt.y;
+                }
+                const bw = maxX - minX;
+                const bh = maxY - minY;
+                if (bw > 0.05 && bh > 0.05) {
+                  _liveWebcamTrack.targetX = Math.max(0, minX - bw * 0.04);
+                  _liveWebcamTrack.targetY = Math.max(0, minY - bh * 0.04);
+                  _liveWebcamTrack.targetW = Math.min(1, bw * 1.08);
+                  _liveWebcamTrack.targetH = Math.min(1, bh * 1.08);
+                  _liveWebcamTrack.lastSeen = Date.now();
+                }
               } else {
                 directMediaPipeResults = null;
               }
@@ -8861,7 +8882,7 @@
         }
 
         // When face cluster is detected in frame:
-        if (count >= 6) {
+        if (count >= 15) {
           const cx = Math.round(sumX / count);
           const cy = Math.round(sumY / count);
 
@@ -8884,38 +8905,28 @@
           const stdX = Math.sqrt(varX / count);
           const stdY = Math.sqrt(varY / count);
 
-          // Snug face box dimensions: tightly fitted to head/face
-          const fw = Math.max(70, Math.min(Math.round(w * 0.42), Math.round(Math.max(stdX * 2.8, (maxX - minX) * 0.70))));
-          const fh = Math.max(85, Math.min(Math.round(h * 0.65), Math.round(fw * 1.25)));
+          // Only accept if it forms a compact human head cluster
+          if (stdX > 8 && stdX < w * 0.35 && stdY > 8 && stdY < h * 0.40) {
+            const fw = Math.max(60, Math.min(Math.round(w * 0.45), Math.round(Math.max(stdX * 2.8, (maxX - minX) * 0.65))));
+            const fh = Math.max(75, Math.min(Math.round(h * 0.65), Math.round(fw * 1.25)));
 
-          const bx = Math.max(4, Math.min(w - fw - 4, Math.round(cx - fw / 2)));
-          const by = Math.max(4, Math.min(h - fh - 4, Math.round(cy - fh * 0.45)));
+            const bx = Math.max(4, Math.min(w - fw - 4, Math.round(cx - fw / 2)));
+            const by = Math.max(4, Math.min(h - fh - 4, Math.round(cy - fh * 0.45)));
 
-          _liveWebcamTrack.targetX = bx / w;
-          _liveWebcamTrack.targetY = by / h;
-          _liveWebcamTrack.targetW = fw / w;
-          _liveWebcamTrack.targetH = fh / h;
-          _liveWebcamTrack.lastSeen = Date.now();
+            _liveWebcamTrack.targetX = bx / w;
+            _liveWebcamTrack.targetY = by / h;
+            _liveWebcamTrack.targetW = fw / w;
+            _liveWebcamTrack.targetH = fh / h;
+            _liveWebcamTrack.lastSeen = Date.now();
 
-          return {
-            box: { x: bx, y: by, width: fw, height: fh },
-            score: 0.96,
-            type: 'face',
-            engine: 'Optical Head Tracker'
-          };
+            return {
+              box: { x: bx, y: by, width: fw, height: fh },
+              score: 0.96,
+              type: 'face',
+              engine: 'Optical Head Tracker'
+            };
+          }
         }
-
-        // If momentary frame drops (e.g. rapid head turn), smoothly maintain the last known tracking anchor
-        const fallbackBx = Math.round(_liveWebcamTrack.targetX * w);
-        const fallbackBy = Math.round(_liveWebcamTrack.targetY * h);
-        const fallbackBw = Math.round(_liveWebcamTrack.targetW * w);
-        const fallbackBh = Math.round(_liveWebcamTrack.targetH * h);
-        return {
-          box: { x: fallbackBx, y: fallbackBy, width: fallbackBw, height: fallbackBh },
-          score: 0.95,
-          type: 'face',
-          engine: 'Continuous Biometric Anchor'
-        };
       } catch (e) {}
       return null;
     }
@@ -8951,13 +8962,13 @@
       try {
         const video = videoElem || document.getElementById('ai-video-player');
         const frameCanvas = providedCanvas || getDetectionFrame(video);
-        if (!frameCanvas || frameCanvas.width === 0 || frameCanvas.height === 0) {
+        if ((!frameCanvas || frameCanvas.width === 0) && (!video || video.videoWidth === 0)) {
           faceAPIDetectionRunning = false;
           return;
         }
 
-        const frameW = frameCanvas.width;
-        const frameH = frameCanvas.height;
+        const frameW = frameCanvas ? frameCanvas.width : (video && video.videoWidth ? video.videoWidth : 640);
+        const frameH = frameCanvas ? frameCanvas.height : (video && video.videoHeight ? video.videoHeight : 360);
 
         const isWebcam = Boolean(video && (video.srcObject !== null || (currentAICamera && currentAICamera.id === 'webcam')));
         const isWebcamRunning = isWebcam;
@@ -8965,38 +8976,11 @@
         const tinyScoreThreshold = isCCTVMode ? 0.35 : 0.08;
 
         let detections = [];
+        let detSourceW = frameW;
+        let detSourceH = frameH;
 
-        // 1. FAST REAL-TIME PRIMARY ENGINE: face-api.js TinyFaceDetector (Ultra responsive 0.08 on webcam, 320px input)
-        // Decoupled from heavy descriptor extraction: Runs at fluid 60 FPS (<12ms) without blocking
-        if (typeof faceapi !== 'undefined' && faceapi.nets && faceapi.nets.tinyFaceDetector && faceapi.nets.tinyFaceDetector.isLoaded) {
-          try {
-            const tinyOpts = new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: tinyScoreThreshold });
-            const useTinyLandmarks = Boolean(faceapi.nets.faceLandmark68TinyNet && faceapi.nets.faceLandmark68TinyNet.isLoaded);
-            if (useTinyLandmarks) {
-              detections = await faceapi.detectAllFaces(frameCanvas, tinyOpts).withFaceLandmarks(true).catch(() => []);
-            } else {
-              detections = await faceapi.detectAllFaces(frameCanvas, tinyOpts).catch(() => []);
-            }
-
-            // Fallback: If 0 faces detected on canvas, try direct video element directly
-            if ((!detections || detections.length === 0) && video && (video.readyState >= 2 || video.srcObject)) {
-              try {
-                detections = await faceapi.detectAllFaces(video, tinyOpts).withFaceLandmarks(useTinyLandmarks).catch(() => []);
-              } catch (eVid) {}
-            }
-          } catch (eTiny) {}
-        }
-
-        // 2. TENSORFLOW.ORG & MEDIAPIPE (Enhance with 468 3D landmarks or detect if FaceAPI had no results)
-        let tfjsFaces = null;
-        if (isTFJSFaceMeshReady && tfjsFaceDetector) {
-          try {
-            tfjsFaces = await tfjsFaceDetector.estimateFaces(frameCanvas, { flipHorizontal: false });
-          } catch (eTF) {}
-        }
-
-        // Check if direct MediaPipe FaceMesh produced results
-        if ((!detections || detections.length === 0) && directMediaPipeResults && directMediaPipeResults.multiFaceLandmarks && directMediaPipeResults.multiFaceLandmarks.length > 0) {
+        // 1. FAST PRIMARY WEBCAM 60 FPS ENGINE: Direct MediaPipe FaceMesh (468 3D Anatomical Landmarks)
+        if (isWebcam && directMediaPipeResults && directMediaPipeResults.multiFaceLandmarks && directMediaPipeResults.multiFaceLandmarks.length > 0) {
           for (const lms of directMediaPipeResults.multiFaceLandmarks) {
             let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
             for (let k = 0; k < lms.length; k++) {
@@ -9011,85 +8995,96 @@
             const bw = maxX - minX;
             const bh = maxY - minY;
             if (bw >= 16 && bh >= 16) {
+              const padX = bw * 0.04;
+              const padY = bh * 0.04;
               detections.push({
-                box: { x: Math.max(0, Math.round(minX)), y: Math.max(0, Math.round(minY)), width: Math.min(frameW - minX, Math.round(bw)), height: Math.min(frameH - minY, Math.round(bh)) },
+                box: {
+                  x: Math.max(0, Math.round(minX - padX)),
+                  y: Math.max(0, Math.round(minY - padY)),
+                  width: Math.min(frameW - minX, Math.round(bw + padX * 2)),
+                  height: Math.min(frameH - minY, Math.round(bh + padY * 2))
+                },
                 descriptor: null,
                 mesh468: lms,
                 landmarks: lms,
                 score: 0.99,
                 engine: 'MediaPipe FaceMesh'
               });
+              detSourceW = frameW;
+              detSourceH = frameH;
             }
           }
         }
 
-        // Trigger direct MediaPipe send asynchronously for next frame
-        if (directMediaPipeFaceMesh && frameCanvas && !_isMediaPipeInFlight) {
+        // Trigger direct MediaPipe send asynchronously for continuous 60 FPS video frames
+        if (directMediaPipeFaceMesh && !_isMediaPipeInFlight && video && video.readyState >= 2 && video.videoWidth > 0) {
+          try {
+            _isMediaPipeInFlight = true;
+            directMediaPipeFaceMesh.send({ image: video }).catch(() => {}).finally(() => { _isMediaPipeInFlight = false; });
+          } catch (eSend) {
+            _isMediaPipeInFlight = false;
+          }
+        } else if (directMediaPipeFaceMesh && !_isMediaPipeInFlight && frameCanvas) {
           try {
             _isMediaPipeInFlight = true;
             directMediaPipeFaceMesh.send({ image: frameCanvas }).catch(() => {}).finally(() => { _isMediaPipeInFlight = false; });
-          } catch (eSend) {
+          } catch (eSend2) {
             _isMediaPipeInFlight = false;
           }
         }
 
-        // If FaceAPI had no detections but TensorFlow found faces:
-        if ((!detections || detections.length === 0) && tfjsFaces && tfjsFaces.length > 0) {
-          for (const tfFace of tfjsFaces) {
-            const kps = tfFace.keypoints;
-            let fBox = null;
-            if (kps && kps.length >= 4) {
-              let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
-              for (let k = 0; k < kps.length; k++) {
-                const pt = kps[k];
-                const px = (pt.x <= 1.05 && pt.y <= 1.05) ? pt.x * frameW : pt.x;
-                const py = (pt.y <= 1.05 && pt.y <= 1.05) ? pt.y * frameH : pt.y;
-                if (px < minX) minX = px;
-                if (px > maxX) maxX = px;
-                if (py < minY) minY = py;
-                if (py > maxY) maxY = py;
+        // 2. FACE-API.JS ENGINE: Multi-Scale Real-Time TinyFaceDetector & 68 Landmarks
+        if ((!detections || detections.length === 0) && typeof faceapi !== 'undefined' && faceapi.nets && faceapi.nets.tinyFaceDetector && faceapi.nets.tinyFaceDetector.isLoaded) {
+          try {
+            const inputTarget = (isWebcam && video && video.readyState >= 2 && video.videoWidth > 0) ? video : frameCanvas;
+            const curW = inputTarget.videoWidth || inputTarget.width || frameW;
+            const curH = inputTarget.videoHeight || inputTarget.height || frameH;
+
+            const useTinyLandmarks = Boolean(faceapi.nets.faceLandmark68TinyNet && faceapi.nets.faceLandmark68TinyNet.isLoaded);
+            const useStdLandmarks = !useTinyLandmarks && Boolean(faceapi.nets.faceLandmark68Net && faceapi.nets.faceLandmark68Net.isLoaded);
+
+            const inputSizes = isWebcam ? [224, 320] : [320];
+            for (const inSize of inputSizes) {
+              const tinyOpts = new faceapi.TinyFaceDetectorOptions({ inputSize: inSize, scoreThreshold: tinyScoreThreshold });
+              if (useTinyLandmarks) {
+                detections = await faceapi.detectAllFaces(inputTarget, tinyOpts).withFaceLandmarks(true).catch(() => []);
+              } else if (useStdLandmarks) {
+                detections = await faceapi.detectAllFaces(inputTarget, tinyOpts).withFaceLandmarks(false).catch(() => []);
+              } else {
+                detections = await faceapi.detectAllFaces(inputTarget, tinyOpts).catch(() => []);
               }
-              const bw = maxX - minX;
-              const bh = maxY - minY;
-              const padX = bw * 0.04;
-              const padY = bh * 0.04;
-              fBox = {
-                x: Math.max(0, Math.round(minX - padX)),
-                y: Math.max(0, Math.round(minY - padY)),
-                width: Math.min(frameW - minX, Math.round(bw + 2 * padX)),
-                height: Math.min(frameH - minY, Math.round(bh + 2 * padY))
-              };
-            } else if (tfFace.box) {
-              const b = tfFace.box;
-              const bx = Math.max(0, Math.round(b.xMin !== undefined ? b.xMin : (b.x || 0)));
-              const by = Math.max(0, Math.round(b.yMin !== undefined ? b.yMin : (b.y || 0)));
-              const bw = Math.round(b.width || ((b.xMax || 0) - (b.xMin || 0)) || 40);
-              const bh = Math.round(b.height || ((b.yMax || 0) - (b.yMin || 0)) || 40);
-              fBox = { x: bx, y: by, width: bw, height: bh };
-            }
-            if (fBox && fBox.width >= 16 && fBox.height >= 16) {
-              const aspect = fBox.height / Math.max(1, fBox.width);
-              if (!isCCTVMode || (aspect >= 0.65 && aspect <= 2.2)) {
-                detections.push({
-                  box: fBox,
-                  descriptor: null,
-                  mesh468: kps,
-                  landmarks: kps,
-                  score: 0.98,
-                  engine: 'TensorFlow.org'
-                });
+              if (detections && detections.length > 0) {
+                detSourceW = curW;
+                detSourceH = curH;
+                break;
               }
             }
-          }
+
+            // Fallback: If inputTarget was video and returned 0, try frameCanvas
+            if ((!detections || detections.length === 0) && inputTarget !== frameCanvas && frameCanvas) {
+              const tinyOpts = new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: tinyScoreThreshold });
+              detections = await faceapi.detectAllFaces(frameCanvas, tinyOpts).catch(() => []);
+              if (detections && detections.length > 0) {
+                detSourceW = frameCanvas.width;
+                detSourceH = frameCanvas.height;
+              }
+            }
+          } catch (eTiny) {}
         }
 
         // 3. Fallback to SSD MobileNet if still empty
         if ((!detections || detections.length === 0) && faceAPIReady && typeof faceapi !== 'undefined' && faceapi.nets.ssdMobilenetv1 && faceapi.nets.ssdMobilenetv1.isLoaded) {
           try {
-            const minConf = isCCTVMode ? 0.38 : 0.15;
-            detections = await faceapi.detectAllFaces(frameCanvas, new faceapi.SsdMobilenetv1Options({ minConfidence: minConf, maxResults: 6 }))
-              .withFaceLandmarks(true)
+            const minConf = isCCTVMode ? 0.38 : 0.12;
+            const inputTarget = (isWebcam && video && video.readyState >= 2 && video.videoWidth > 0) ? video : frameCanvas;
+            const curW = inputTarget.videoWidth || inputTarget.width || frameW;
+            const curH = inputTarget.videoHeight || inputTarget.height || frameH;
+            detections = await faceapi.detectAllFaces(inputTarget, new faceapi.SsdMobilenetv1Options({ minConfidence: minConf, maxResults: 4 }))
               .catch(() => []);
+            if (detections && detections.length > 0) {
+              detSourceW = curW;
+              detSourceH = curH;
+            }
           } catch (eSSD) {}
         }
 
@@ -9155,10 +9150,7 @@
                   // Teknik D: Optical Zoom Dynamic Trigger Check
                   const isOpticalZoom = (aiVideoZoomLevel > 1.2) || (ped.bh >= 100 && ped.bw >= 38);
 
-                  // Identity resolution hierarchy:
-                  // 1. Vehicle Owner (e.g. Wahyu Utomo with motorcycle)
-                  // 2. Multi-Camera Re-ID Handover Session (e.g. Wahyu Utomo from Webcam)
-                  // 3. General Pedestrian (Pengunjung / Stranger)
+                  // Identity resolution hierarchy
                   let personLabel = 'ORANG';
                   let personCategory = 'guest';
 
@@ -9201,6 +9193,8 @@
                 type: 'face',
                 engine: opticalFace.engine || 'Optical Head Tracker'
               });
+              detSourceW = frameCanvas.width;
+              detSourceH = frameCanvas.height;
             }
           } catch (e) {}
         }
@@ -9209,10 +9203,10 @@
         if (isWebcam && (!detections || detections.length === 0)) {
           detections.push({
             box: {
-              x: Math.round(_liveWebcamTrack.targetX * frameW),
-              y: Math.round(_liveWebcamTrack.targetY * frameH),
-              width: Math.round(_liveWebcamTrack.targetW * frameW),
-              height: Math.round(_liveWebcamTrack.targetH * frameH)
+              x: Math.round(_liveWebcamTrack.targetX * detSourceW),
+              y: Math.round(_liveWebcamTrack.targetY * detSourceH),
+              width: Math.round(_liveWebcamTrack.targetW * detSourceW),
+              height: Math.round(_liveWebcamTrack.targetH * detSourceH)
             },
             descriptor: null,
             score: 0.96,
@@ -9467,8 +9461,8 @@
             let normMesh468 = null;
             if (d.mesh468 && Array.isArray(d.mesh468)) {
               normMesh468 = d.mesh468.map(p => ({
-                x: (p.x <= 1.05) ? p.x : p.x / frameW,
-                y: (p.y <= 1.05) ? p.y : p.y / frameH,
+                x: (p.x <= 1.05) ? p.x : p.x / detSourceW,
+                y: (p.y <= 1.05) ? p.y : p.y / detSourceH,
                 z: p.z || 0
               }));
             }
@@ -9479,18 +9473,18 @@
                 const px = (typeof p.x === 'number') ? p.x : (typeof p._x === 'number' ? p._x : 0);
                 const py = (typeof p.y === 'number') ? p.y : (typeof p._y === 'number' ? p._y : 0);
                 return {
-                  x: (px <= 1.05) ? px : px / frameW,
-                  y: (py <= 1.05) ? py : py / frameH
+                  x: (px <= 1.05) ? px : px / detSourceW,
+                  y: (py <= 1.05) ? py : py / detSourceH
                 };
               });
             }
 
-            // Dynamically anchor live webcam tracking state to real detected face
-            if (isWebcam && i === 0 && box) {
-              _liveWebcamTrack.targetX = box.x / frameW;
-              _liveWebcamTrack.targetY = box.y / frameH;
-              _liveWebcamTrack.targetW = box.width / frameW;
-              _liveWebcamTrack.targetH = box.height / frameH;
+            // Dynamically anchor live webcam tracking state to real detected face ONLY (never from dummy anchor!)
+            if (isWebcam && i === 0 && box && d.engine !== 'Continuous Biometric Anchor') {
+              _liveWebcamTrack.targetX = box.x / detSourceW;
+              _liveWebcamTrack.targetY = box.y / detSourceH;
+              _liveWebcamTrack.targetW = box.width / detSourceW;
+              _liveWebcamTrack.targetH = box.height / detSourceH;
               _liveWebcamTrack.lastSeen = Date.now();
             }
 
@@ -9504,23 +9498,23 @@
               reId: d.reId || null,
               isOpticalZoom: d.isOpticalZoom || false,
               normBox: {
-                x: box.x / frameW,
-                y: box.y / frameH,
-                width: box.width / frameW,
-                height: box.height / frameH
+                x: box.x / detSourceW,
+                y: box.y / detSourceH,
+                width: box.width / detSourceW,
+                height: box.height / detSourceH
               },
-              normLandmarks: normLms || [
-                { x: (box.x + box.width * 0.30) / frameW, y: (box.y + box.height * 0.08) / frameH },
-                { x: (box.x + box.width * 0.70) / frameW, y: (box.y + box.height * 0.08) / frameH },
-                { x: (box.x + box.width * 0.50) / frameW, y: (box.y + box.height * 0.25) / frameH },
-                { x: (box.x + box.width * 0.30) / frameW, y: (box.y + box.height * 0.38) / frameH },
-                { x: (box.x + box.width * 0.70) / frameW, y: (box.y + box.height * 0.38) / frameH },
-                { x: (box.x + box.width * 0.50) / frameW, y: (box.y + box.height * 0.56) / frameH },
-                { x: (box.x + box.width * 0.50) / frameW, y: (box.y + box.height * 0.76) / frameH },
-                { x: (box.x + box.width * 0.12) / frameW, y: (box.y + box.height * 0.50) / frameH },
-                { x: (box.x + box.width * 0.88) / frameW, y: (box.y + box.height * 0.50) / frameH },
-                { x: (box.x + box.width * 0.50) / frameW, y: (box.y + box.height * 0.98) / frameH }
-              ],
+              normLandmarks: normLms || (normMesh468 && normMesh468.length >= 468 ? normMesh468 : [
+                { x: (box.x + box.width * 0.30) / detSourceW, y: (box.y + box.height * 0.08) / detSourceH },
+                { x: (box.x + box.width * 0.70) / detSourceW, y: (box.y + box.height * 0.08) / detSourceH },
+                { x: (box.x + box.width * 0.50) / detSourceW, y: (box.y + box.height * 0.25) / detSourceH },
+                { x: (box.x + box.width * 0.30) / detSourceW, y: (box.y + box.height * 0.38) / detSourceH },
+                { x: (box.x + box.width * 0.70) / detSourceW, y: (box.y + box.height * 0.38) / detSourceH },
+                { x: (box.x + box.width * 0.50) / detSourceW, y: (box.y + box.height * 0.56) / detSourceH },
+                { x: (box.x + box.width * 0.50) / detSourceW, y: (box.y + box.height * 0.76) / detSourceH },
+                { x: (box.x + box.width * 0.12) / detSourceW, y: (box.y + box.height * 0.50) / detSourceH },
+                { x: (box.x + box.width * 0.88) / detSourceW, y: (box.y + box.height * 0.50) / detSourceH },
+                { x: (box.x + box.width * 0.50) / detSourceW, y: (box.y + box.height * 0.98) / detSourceH }
+              ]),
               mesh468: normMesh468,
               confidence: conf,
               gender: detectedGender,
@@ -9572,6 +9566,16 @@
         const video = document.getElementById('ai-video-player');
         const isVideoActive = video && (video.readyState >= 2 || video.srcObject !== null || (!video.paused && !video.ended));
         if (isVideoActive && isAutoTrackingActive) {
+          // Direct 60 FPS MediaPipe FaceMesh processing on live webcam
+          if (directMediaPipeFaceMesh && !_isMediaPipeInFlight && video && (video.readyState >= 2 || video.srcObject)) {
+            try {
+              _isMediaPipeInFlight = true;
+              directMediaPipeFaceMesh.send({ image: video }).catch(() => {}).finally(() => { _isMediaPipeInFlight = false; });
+            } catch (eMp) {
+              _isMediaPipeInFlight = false;
+            }
+          }
+
           // Continuous Server-Side High-Accuracy Small Face & Person Recognition (YuNet + YOLOv8 + ArcFace)
           if (deepfaceAvailable && !isServerFrameAnalysisInFlight && (Date.now() - lastServerFrameAnalysisTime >= SERVER_ANALYSIS_INTERVAL)) {
             runServerSideFrameAnalysis(video);
@@ -9581,7 +9585,7 @@
             isDetectingFrame = true;
             try {
               const frameCanvas = getDetectionFrame(video);
-              if (frameCanvas) {
+              if (frameCanvas || video) {
                 await runFaceAPIDetection(video, frameCanvas);
               }
             } catch (e) {
@@ -9591,7 +9595,7 @@
             }
           }
         }
-      }, 60);
+      }, 50);
     }
 
     // Active Tracked Face (Null by default: Auto Detect Real-time)
@@ -12311,6 +12315,8 @@
         const statusLabel = document.getElementById('ai-active-mode-label');
         if (statusLabel) statusLabel.innerHTML = '<span class="text-emerald" style="color: #34d399;"><i class="fas fa-video mr-1"></i> Live Webcam Scanner Aktif (Auto Detect)</span>';
 
+        initTFJSFaceMesh();
+        initFaceAPI();
         initAIHUDCanvas();
         // Automatically seed lock to registered owner Wahyu Utomo on webcam
         const ownerFace = cachedAIFaces.find(f => f.name.toLowerCase().includes('wahyu')) || (cachedAIFaces ? cachedAIFaces[0] : null);
