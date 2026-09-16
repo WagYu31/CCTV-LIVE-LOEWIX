@@ -8978,6 +8978,7 @@
         let detections = [];
         let detSourceW = frameW;
         let detSourceH = frameH;
+        let tfjsFaces = null;
 
         // 1. FAST PRIMARY WEBCAM 60 FPS ENGINE: Direct MediaPipe FaceMesh (468 3D Anatomical Landmarks)
         if (isWebcam && directMediaPipeResults && directMediaPipeResults.multiFaceLandmarks && directMediaPipeResults.multiFaceLandmarks.length > 0) {
@@ -9031,6 +9032,13 @@
           } catch (eSend2) {
             _isMediaPipeInFlight = false;
           }
+        }
+
+        // Async TFJS FaceMesh estimation for 468 landmarks enrichment
+        if (isTFJSFaceMeshReady && tfjsFaceDetector && frameCanvas) {
+          try {
+            tfjsFaces = await tfjsFaceDetector.estimateFaces(frameCanvas, { flipHorizontal: false });
+          } catch (eTF) {}
         }
 
         // 2. FACE-API.JS ENGINE: Multi-Scale Real-Time TinyFaceDetector & 68 Landmarks
