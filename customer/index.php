@@ -13036,7 +13036,7 @@
       }
     }
 
-    function captureFaceFromWebcam() {
+    async function captureFaceFromWebcam() {
       const video = document.getElementById('face-webcam-video');
       const viewFinder = document.getElementById('face-scanner-viewfinder');
       const previewBox = document.getElementById('face-scanned-preview-box');
@@ -13050,31 +13050,81 @@
         return;
       }
 
-      const canvas = document.createElement('canvas');
-      canvas.width = 400;
-      canvas.height = 400;
-      const ctx = canvas.getContext('2d');
+      if (btnCapture) {
+        btnCapture.disabled = true;
+        btnCapture.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> Mendeteksi Wajah...';
+      }
 
-      const minDim = Math.min(video.videoWidth, video.videoHeight) || 400;
-      const sx = (video.videoWidth - minDim) / 2 || 0;
-      const sy = (video.videoHeight - minDim) / 2 || 0;
+      try {
+        const canvas = document.createElement('canvas');
+        canvas.width = 400;
+        canvas.height = 400;
+        const ctx = canvas.getContext('2d');
 
-      // Draw mirrored frame like a selfie mirror
-      ctx.translate(400, 0);
-      ctx.scale(-1, 1);
-      ctx.drawImage(video, sx, sy, minDim, minDim, 0, 0, 400, 400);
-      const base64 = canvas.toDataURL('image/jpeg', 0.92);
+        const vw = video.videoWidth;
+        const vh = video.videoHeight;
 
-      if (img) img.src = base64;
-      if (hiddenInput) hiddenInput.value = base64;
+        // Smart Biometric Auto-Crop: Use Face-API to find exact face coordinates
+        let cropX = 0, cropY = 0, cropW = vw, cropH = vh;
+        let faceFound = false;
 
-      // Update UI state
-      if (viewFinder) viewFinder.style.display = 'none';
-      if (previewBox) previewBox.style.display = 'block';
-      if (btnCapture) btnCapture.style.display = 'none';
-      if (btnRescan) btnRescan.style.display = 'inline-block';
+        if (typeof faceapi !== 'undefined' && faceapi.nets && faceapi.nets.tinyFaceDetector && faceapi.nets.tinyFaceDetector.isLoaded) {
+          try {
+            const det = await faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.15 }));
+            if (det && det.box && det.box.width > 30) {
+              const b = det.box;
+              const padX = b.width * 0.28;
+              const padY = b.height * 0.32;
+              cropX = Math.max(0, b.x - padX);
+              cropY = Math.max(0, b.y - padY * 1.1); // Room for hair/forehead
+              cropW = Math.min(vw - cropX, b.width + padX * 2);
+              cropH = Math.min(vh - cropY, b.height + padY * 2);
 
-      stopFaceWebcam();
+              // Square aspect ratio centered on face
+              const maxDim = Math.max(cropW, cropH);
+              const cx = cropX + cropW / 2;
+              const cy = cropY + cropH / 2;
+              cropX = Math.max(0, Math.min(vw - maxDim, cx - maxDim / 2));
+              cropY = Math.max(0, Math.min(vh - maxDim, cy - maxDim / 2));
+              cropW = Math.min(maxDim, vw - cropX);
+              cropH = Math.min(maxDim, vh - cropY);
+              faceFound = true;
+            }
+          } catch (eDet) {}
+        }
+
+        if (!faceFound) {
+          // Standard center square fallback
+          const minDim = Math.min(vw, vh);
+          cropX = (vw - minDim) / 2;
+          cropY = (vh - minDim) / 2;
+          cropW = minDim;
+          cropH = minDim;
+        }
+
+        // Draw CLEAN UNMIRRORED portrait so orientation matches live CCTV & ArcFace recognition perfectly!
+        ctx.drawImage(video, cropX, cropY, cropW, cropH, 0, 0, 400, 400);
+        const base64 = canvas.toDataURL('image/jpeg', 0.94);
+
+        if (img) img.src = base64;
+        if (hiddenInput) hiddenInput.value = base64;
+
+        // Update UI state
+        if (viewFinder) viewFinder.style.display = 'none';
+        if (previewBox) previewBox.style.display = 'block';
+        if (btnCapture) btnCapture.style.display = 'none';
+        if (btnRescan) btnRescan.style.display = 'inline-block';
+
+        stopFaceWebcam();
+      } catch (err) {
+        console.error('Face capture error:', err);
+        alert('Gagal mengambil foto wajah. Silakan coba lagi.');
+      } finally {
+        if (btnCapture) {
+          btnCapture.disabled = false;
+          btnCapture.innerHTML = '<i class="fas fa-camera mr-1.5"></i> Scan Webcam';
+        }
+      }
     }
 
     function stopFaceWebcam() {
