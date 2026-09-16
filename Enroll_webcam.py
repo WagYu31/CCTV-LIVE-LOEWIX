@@ -296,14 +296,28 @@ def sync_all_existing_faces():
             register_encoding_record(name, desc, cat, role, photo)
             count += 1
         elif photo:
-            img_p = PROJECT_ROOT / photo.lstrip("/")
-            if img_p.exists():
-                img = cv2.imread(str(img_p))
-                if img is not None:
-                    enc = extract_face_encoding(img)
-                    if enc:
-                        register_encoding_record(name, enc, cat, role, photo)
-                        count += 1
+            img = None
+            if photo.startswith("data:image") or ";base64," in photo:
+                try:
+                    import base64
+                    b64_data = photo.split(",", 1)[1] if "," in photo else photo
+                    img_bytes = base64.b64decode(b64_data)
+                    nparr = np.frombuffer(img_bytes, np.uint8)
+                    img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+                except Exception as eB64:
+                    print(f"⚠️ Base64 decode error for {name}: {eB64}")
+            else:
+                img_p = PROJECT_ROOT / photo.lstrip("/")
+                if img_p.exists():
+                    img = cv2.imread(str(img_p))
+
+            if img is not None:
+                enc = extract_face_encoding(img)
+                if enc:
+                    register_encoding_record(name, enc, cat, role, photo if not photo.startswith("data:") else "")
+                    count += 1
+                else:
+                    print(f"⚠️ Gagal mengekstrak encoding untuk: {name}")
     print(f"✅ Selesai: {count} profil wajah berhasil disinkronkan ke encoding.json!")
 
 
