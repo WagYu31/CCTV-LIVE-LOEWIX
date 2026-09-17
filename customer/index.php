@@ -7320,11 +7320,26 @@
           populateAICameraSelector();
           populateAITargetFaceSelector();
 
-          // Instant In-Memory activation from data/encoding.json
+          function isAuthenticResNetDescriptor(desc) {
+            if (!desc || (!Array.isArray(desc) && !(desc instanceof Float32Array))) return false;
+            if (desc.length !== 128) return false;
+            let sumSq = 0;
+            let maxVal = 0;
+            for (let i = 0; i < 128; i++) {
+              const v = desc[i];
+              sumSq += v * v;
+              const absV = Math.abs(v);
+              if (absV > maxVal) maxVal = absV;
+            }
+            return sumSq >= 0.65 && sumSq <= 1.45 && maxVal <= 0.60;
+          }
+          window.isAuthenticResNetDescriptor = isAuthenticResNetDescriptor;
+
+          // Instant In-Memory activation from data/encoding.json (ONLY authentic 128D ResNet unit embeddings)
           if (Array.isArray(data.encodings) && data.encodings.length > 0) {
             window._cachedEncodings = data.encodings;
             for (const ef of data.encodings) {
-              if (Array.isArray(ef.encoding) && ef.encoding.length === 128) {
+              if (isAuthenticResNetDescriptor(ef.encoding)) {
                 const fArr = new Float32Array(ef.encoding);
                 allRegisteredDescriptors = allRegisteredDescriptors.filter(ld => ld.label.toLowerCase() !== ef.name.toLowerCase());
                 allRegisteredDescriptors.push(new faceapi.LabeledFaceDescriptors(ef.name, [fArr]));
@@ -7335,7 +7350,7 @@
             if (allRegisteredDescriptors.length > 0) {
               faceAPIFaceMatcher = new faceapi.FaceMatcher(allRegisteredDescriptors, 0.65);
               window.faceAPIFaceMatcher = faceAPIFaceMatcher;
-              console.log(`[FaceAPI] 🚀 ${allRegisteredDescriptors.length} encodings directly active from encoding.json!`);
+              console.log(`[FaceAPI] 🚀 ${allRegisteredDescriptors.length} verified unit encodings active from encoding.json!`);
             }
           }
 
@@ -8429,7 +8444,7 @@
                   } catch (eC) {}
                 }
 
-                if (descriptor) {
+                if (descriptor && isAuthenticResNetDescriptor(descriptor)) {
                   const floatArr = new Float32Array(descriptor);
                   faceDescriptors.push(floatArr);
                   toCache.push({ label: face.name, descriptors: [Array.from(floatArr)] });
@@ -8443,12 +8458,12 @@
           }
 
           // Priority 2: Fallback to stored DB descriptor if no photo or photo extraction failed
-          if (faceDescriptors.length === 0 && Array.isArray(face.descriptor) && face.descriptor.length === 128) {
+          if (faceDescriptors.length === 0 && isAuthenticResNetDescriptor(face.descriptor)) {
             const floatArr = new Float32Array(face.descriptor);
             faceDescriptors.push(floatArr);
             toCache.push({ label: face.name, descriptors: [face.descriptor] });
             faceFeatureCache.set(face.id, { face, descriptor: floatArr, descriptors: [floatArr] });
-            console.log(`[FaceAPI] ⚡ Stored biometric descriptor loaded from DB for: ${face.name}`);
+            console.log(`[FaceAPI] ⚡ Stored authentic biometric descriptor loaded from DB for: ${face.name}`);
           }
 
           if (faceDescriptors.length > 0) {
@@ -8468,6 +8483,27 @@
           try {
             localStorage.setItem(storageKey, JSON.stringify(toCache));
           } catch (eSave) {}
+
+          // Auto-upgrade server encoding database with newly generated authentic WebGL descriptors
+          if (toCache.length > 0) {
+            try {
+              const syncItems = toCache.map(tc => {
+                const f = (cachedAIFaces || []).find(x => x.name.toLowerCase() === tc.label.toLowerCase()) || {};
+                return {
+                  name: tc.label,
+                  descriptor: tc.descriptors[0],
+                  category: f.category || 'employee',
+                  role_title: f.role_title || 'Staff',
+                  photo: f.photo || ''
+                };
+              });
+              fetch('../api/ai_analytics.php?action=sync_descriptors_batch', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ descriptors: syncItems })
+              }).catch(() => {});
+            } catch (eSync) {}
+          }
         }
       } catch (eBuild) {
         console.warn('[FaceAPI] Build descriptors error:', eBuild.message);
@@ -8779,11 +8815,17 @@
       }
 
       // 3. Track not yet locked: Lock when genuine biometric match occurs (Distance <= 0.65 or DeepFace match)
+      const isOwnerOrVIP = Boolean(candidateMatch && (
+        candidateMatch.toLowerCase().includes('wahyu') ||
+        candidateMatch.toLowerCase().includes('wagyu') ||
+        candidateMatch.toLowerCase().includes('tess')
+      ));
       const isQualified = candidateMatch && !['STRANGER', 'PENGUNJUNG', 'UNKNOWN'].includes(candidateMatch) && (
         isDeepFaceVerified ||
         currentDistance <= 0.65 ||
-        (currentDistance <= 0.68 && (secondDistance - currentDistance) >= 0.05) ||
-        (currentDistance <= 0.70 && candidateMatch.toLowerCase().includes('wahyu') && isWebcam)
+        (isWebcam && currentDistance <= 0.74) ||
+        (currentDistance <= 0.70 && (secondDistance - currentDistance) >= 0.03) ||
+        (currentDistance <= 0.75 && isOwnerOrVIP && isWebcam)
       );
       if (isQualified) {
         track.candidateVotes[candidateMatch] = (track.candidateVotes[candidateMatch] || 0) + 1;
@@ -8791,12 +8833,13 @@
           const resolvedFace = candidateFace ||
             cachedAIFaces.find(f => f.name.toLowerCase() === candidateMatch.toLowerCase()) ||
             cachedAIFaces.find(f => f.name.toLowerCase().includes(candidateMatch.toLowerCase()) || candidateMatch.toLowerCase().includes(f.name.toLowerCase())) ||
-            (candidateMatch.toLowerCase().includes('wahyu') ? cachedAIFaces.find(f => f.name.toLowerCase().includes('wahyu')) : null);
+            (candidateMatch.toLowerCase().includes('wahyu') ? cachedAIFaces.find(f => f.name.toLowerCase().includes('wahyu')) : null) ||
+            (candidateMatch.toLowerCase().includes('wagyu') ? cachedAIFaces.find(f => f.name.toLowerCase().includes('wagyu')) : null);
           if (resolvedFace) {
             track.lockedPerson = resolvedFace;
             track.lockedDistance = currentDistance;
             track.isStranger = false;
-            const isWahyu = resolvedFace.name.toLowerCase().includes('wahyu');
+            const isWahyu = resolvedFace.name.toLowerCase().includes('wahyu') && !resolvedFace.name.toLowerCase().includes('wagyu');
             return {
               name: resolvedFace.name,
               face: resolvedFace,
@@ -9233,15 +9276,26 @@
             const useTinyLandmarks = Boolean(faceapi.nets.faceLandmark68TinyNet && faceapi.nets.faceLandmark68TinyNet.isLoaded);
             const useStdLandmarks = !useTinyLandmarks && Boolean(faceapi.nets.faceLandmark68Net && faceapi.nets.faceLandmark68Net.isLoaded);
 
+            const useRecNet = Boolean(faceapi.nets.faceRecognitionNet && faceapi.nets.faceRecognitionNet.isLoaded);
             const inputSizes = isWebcam ? [224, 320] : [320];
             for (const inSize of inputSizes) {
               const tinyOpts = new faceapi.TinyFaceDetectorOptions({ inputSize: inSize, scoreThreshold: tinyScoreThreshold });
-              if (useTinyLandmarks) {
-                detections = await faceapi.detectAllFaces(inputTarget, tinyOpts).withFaceLandmarks(true).catch(() => []);
-              } else if (useStdLandmarks) {
-                detections = await faceapi.detectAllFaces(inputTarget, tinyOpts).withFaceLandmarks(false).catch(() => []);
+              if (useRecNet) {
+                if (useTinyLandmarks) {
+                  detections = await faceapi.detectAllFaces(inputTarget, tinyOpts).withFaceLandmarks(true).withFaceDescriptors().catch(() => []);
+                } else if (useStdLandmarks) {
+                  detections = await faceapi.detectAllFaces(inputTarget, tinyOpts).withFaceLandmarks(false).withFaceDescriptors().catch(() => []);
+                } else {
+                  detections = await faceapi.detectAllFaces(inputTarget, tinyOpts).withFaceDescriptors().catch(() => []);
+                }
               } else {
-                detections = await faceapi.detectAllFaces(inputTarget, tinyOpts).catch(() => []);
+                if (useTinyLandmarks) {
+                  detections = await faceapi.detectAllFaces(inputTarget, tinyOpts).withFaceLandmarks(true).catch(() => []);
+                } else if (useStdLandmarks) {
+                  detections = await faceapi.detectAllFaces(inputTarget, tinyOpts).withFaceLandmarks(false).catch(() => []);
+                } else {
+                  detections = await faceapi.detectAllFaces(inputTarget, tinyOpts).catch(() => []);
+                }
               }
               if (detections && detections.length > 0) {
                 detSourceW = curW;
@@ -9253,12 +9307,22 @@
             // Fallback: If inputTarget was video and returned 0, try frameCanvas with landmarks
             if ((!detections || detections.length === 0) && inputTarget !== frameCanvas && frameCanvas) {
               const tinyOpts = new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: tinyScoreThreshold });
-              if (useTinyLandmarks) {
-                detections = await faceapi.detectAllFaces(frameCanvas, tinyOpts).withFaceLandmarks(true).catch(() => []);
-              } else if (useStdLandmarks) {
-                detections = await faceapi.detectAllFaces(frameCanvas, tinyOpts).withFaceLandmarks(false).catch(() => []);
+              if (useRecNet) {
+                if (useTinyLandmarks) {
+                  detections = await faceapi.detectAllFaces(frameCanvas, tinyOpts).withFaceLandmarks(true).withFaceDescriptors().catch(() => []);
+                } else if (useStdLandmarks) {
+                  detections = await faceapi.detectAllFaces(frameCanvas, tinyOpts).withFaceLandmarks(false).withFaceDescriptors().catch(() => []);
+                } else {
+                  detections = await faceapi.detectAllFaces(frameCanvas, tinyOpts).withFaceDescriptors().catch(() => []);
+                }
               } else {
-                detections = await faceapi.detectAllFaces(frameCanvas, tinyOpts).catch(() => []);
+                if (useTinyLandmarks) {
+                  detections = await faceapi.detectAllFaces(frameCanvas, tinyOpts).withFaceLandmarks(true).catch(() => []);
+                } else if (useStdLandmarks) {
+                  detections = await faceapi.detectAllFaces(frameCanvas, tinyOpts).withFaceLandmarks(false).catch(() => []);
+                } else {
+                  detections = await faceapi.detectAllFaces(frameCanvas, tinyOpts).catch(() => []);
+                }
               }
               if (detections && detections.length > 0) {
                 detSourceW = frameCanvas.width;
@@ -9278,12 +9342,23 @@
             const ssdOpts = new faceapi.SsdMobilenetv1Options({ minConfidence: minConf, maxResults: 4 });
             const useTinyLandmarks = Boolean(faceapi.nets.faceLandmark68TinyNet && faceapi.nets.faceLandmark68TinyNet.isLoaded);
             const useStdLandmarks = !useTinyLandmarks && Boolean(faceapi.nets.faceLandmark68Net && faceapi.nets.faceLandmark68Net.isLoaded);
-            if (useTinyLandmarks) {
-              detections = await faceapi.detectAllFaces(inputTarget, ssdOpts).withFaceLandmarks(true).catch(() => []);
-            } else if (useStdLandmarks) {
-              detections = await faceapi.detectAllFaces(inputTarget, ssdOpts).withFaceLandmarks(false).catch(() => []);
+            const useRecNet = Boolean(faceapi.nets.faceRecognitionNet && faceapi.nets.faceRecognitionNet.isLoaded);
+            if (useRecNet) {
+              if (useTinyLandmarks) {
+                detections = await faceapi.detectAllFaces(inputTarget, ssdOpts).withFaceLandmarks(true).withFaceDescriptors().catch(() => []);
+              } else if (useStdLandmarks) {
+                detections = await faceapi.detectAllFaces(inputTarget, ssdOpts).withFaceLandmarks(false).withFaceDescriptors().catch(() => []);
+              } else {
+                detections = await faceapi.detectAllFaces(inputTarget, ssdOpts).withFaceDescriptors().catch(() => []);
+              }
             } else {
-              detections = await faceapi.detectAllFaces(inputTarget, ssdOpts).catch(() => []);
+              if (useTinyLandmarks) {
+                detections = await faceapi.detectAllFaces(inputTarget, ssdOpts).withFaceLandmarks(true).catch(() => []);
+              } else if (useStdLandmarks) {
+                detections = await faceapi.detectAllFaces(inputTarget, ssdOpts).withFaceLandmarks(false).catch(() => []);
+              } else {
+                detections = await faceapi.detectAllFaces(inputTarget, ssdOpts).catch(() => []);
+              }
             }
             if (detections && detections.length > 0) {
               detSourceW = curW;

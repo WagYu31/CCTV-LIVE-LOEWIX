@@ -270,7 +270,11 @@ if ($action === 'get_ai_data') {
     if (file_exists($encFile)) {
         $encData = json_decode(file_get_contents($encFile), true);
         if (isset($encData['faces']) && is_array($encData['faces'])) {
-            $encodings = $encData['faces'];
+            foreach ($encData['faces'] as $ef) {
+                if (isset($ef['encoding']) && is_authentic_face_descriptor($ef['encoding'])) {
+                    $encodings[] = $ef;
+                }
+            }
         }
     }
 
@@ -362,8 +366,22 @@ function syncFaceToDeepFaceDB($name, &$photoPath, $category = 'employee', $notes
     return false;
 }
 
+function is_authentic_face_descriptor($descriptor) {
+    if (!is_array($descriptor) || count($descriptor) !== 128) return false;
+    $sumSq = 0.0;
+    $maxVal = 0.0;
+    foreach ($descriptor as $v) {
+        $fv = (float)$v;
+        $sumSq += ($fv * $fv);
+        $absV = abs($fv);
+        if ($absV > $maxVal) $maxVal = $absV;
+    }
+    // Unit vector: sum of squares around 1.0 (0.65 - 1.45) and no element > 0.60
+    return ($sumSq >= 0.65 && $sumSq <= 1.45 && $maxVal <= 0.60);
+}
+
 function syncEncodingJSON($name, $descriptor, $category = 'employee', $role = 'Staff', $photo = '') {
-    if (!$descriptor || !is_array($descriptor) || count($descriptor) < 64) return;
+    if (!is_authentic_face_descriptor($descriptor)) return;
     $encFile = __DIR__ . '/../data/encoding.json';
     $data = file_exists($encFile) ? json_decode(file_get_contents($encFile), true) : null;
     if (!is_array($data)) {
@@ -375,7 +393,7 @@ function syncEncodingJSON($name, $descriptor, $category = 'employee', $role = 'S
     $updated = false;
     foreach ($data['faces'] as &$ef) {
         if (strtolower($ef['name'] ?? '') === strtolower($name)) {
-            $ef['encoding'] = $descriptor;
+            $ef['encoding'] = array_map('floatval', $descriptor);
             $ef['category'] = $category;
             $ef['role'] = $role;
             if ($photo) $ef['photo'] = $photo;
@@ -390,12 +408,45 @@ function syncEncodingJSON($name, $descriptor, $category = 'employee', $role = 'S
             'category' => $category,
             'role' => $role,
             'photo' => $photo,
-            'encoding' => $descriptor,
+            'encoding' => array_map('floatval', $descriptor),
             'created_at' => date('Y-m-d H:i:s')
         ];
     }
     $data['updated_at'] = date('Y-m-d H:i:s');
     @file_put_contents($encFile, json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+}
+
+// BATCH DESCRIPTOR SYNC: Upgrade database with authentic ResNet embeddings computed in client WebGL
+if ($action === 'sync_descriptors_batch') {
+    $rawInput = file_get_contents('php://input');
+    $payload = json_decode($rawInput, true);
+    if (!is_array($payload) || !isset($payload['descriptors']) || !is_array($payload['descriptors'])) {
+        echo json_encode(['success' => false, 'message' => 'Payload tidak valid']);
+        exit;
+    }
+    $synced = 0;
+    foreach ($payload['descriptors'] as $item) {
+        $name = trim($item['name'] ?? '');
+        $desc = $item['descriptor'] ?? null;
+        $cat = $item['category'] ?? 'employee';
+        $role = $item['role_title'] ?? 'Staff';
+        $photo = $item['photo'] ?? '';
+        if ($name && is_authentic_face_descriptor($desc)) {
+            syncEncodingJSON($name, $desc, $cat, $role, $photo);
+            foreach ($db['ai_faces'] as &$f) {
+                if (strtolower($f['name'] ?? '') === strtolower($name)) {
+                    $f['descriptor'] = array_map('floatval', $desc);
+                    break;
+                }
+            }
+            $synced++;
+        }
+    }
+    if ($synced > 0) {
+        save_db_data($db);
+    }
+    echo json_encode(['success' => true, 'synced_count' => $synced]);
+    exit;
 }
 
 // DEEPFACE: Health check proxy

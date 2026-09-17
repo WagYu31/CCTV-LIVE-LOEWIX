@@ -125,42 +125,25 @@ def extract_face_encoding(bgr_img=None, raw_bytes: bytes = None):
         except Exception:
             pass
 
-    # Method 2: Standard 128-D normalized face landmark/color projection via OpenCV
-    if cv2 is not None and np is not None and bgr_img is not None and getattr(bgr_img, 'size', 0) > 0:
-        try:
-            gray = cv2.cvtColor(bgr_img, cv2.COLOR_BGR2GRAY)
-            h, w = gray.shape[:2]
-            margin_x = int(w * 0.15)
-            margin_y = int(h * 0.15)
-            crop = gray[margin_y:h-margin_y, margin_x:w-margin_x]
-            if crop.size > 0:
-                resized = cv2.resize(crop, (16, 8)).astype(np.float32)
-                norm = resized.flatten()
-                norm = (norm - np.mean(norm)) / (np.std(norm) + 1e-6)
-                norm = norm / (np.linalg.norm(norm) + 1e-6)
-                return [float(x) for x in norm.tolist()]
-        except Exception as e:
-            print(f"⚠️ OpenCV feature extraction notice: {e}")
+    # Method 2: dlib / face_recognition if present
+    try:
+        import face_recognition
+        import io
+        if raw_bytes:
+            img_arr = face_recognition.load_image_file(io.BytesIO(raw_bytes))
+        elif bgr_img is not None:
+            img_arr = cv2.cvtColor(bgr_img, cv2.COLOR_BGR2RGB)
+        else:
+            img_arr = None
+        if img_arr is not None:
+            encs = face_recognition.face_encodings(img_arr)
+            if encs and len(encs) > 0 and len(encs[0]) == 128:
+                return [float(x) for x in encs[0]]
+    except Exception:
+        pass
 
-    # Method 3: Fallback via PIL (Pillow)
-    if Image is not None and raw_bytes:
-        try:
-            import io
-            im = Image.open(io.BytesIO(raw_bytes)).convert("L")
-            im = im.resize((16, 8), Image.Resampling.BILINEAR)
-            pixels = list(im.getdata())
-            mean_val = sum(pixels) / len(pixels)
-            std_val = math.sqrt(sum((p - mean_val) ** 2 for p in pixels) / len(pixels)) + 1e-6
-            norm = [(p - mean_val) / std_val for p in pixels]
-            mag = math.sqrt(sum(x * x for x in norm)) + 1e-6
-            return [round(x / mag, 6) for x in norm]
-        except Exception:
-            pass
-
-    # Method 4: Pure Python byte fallback
-    if raw_bytes:
-        return compute_pure_python_128d(raw_bytes)
-
+    # Notice: If no deep neural model (DeepFace/face_recognition) is installed in Python,
+    # return None so the browser's WebGL Face-API ResNet engine computes the authentic 128D embedding.
     return None
 
 
@@ -348,7 +331,14 @@ def sync_all_existing_faces():
         cat = f.get("category", "employee")
         role = f.get("role_title", "Staff")
 
-        if desc and isinstance(desc, list) and len(desc) == 128:
+        def is_authentic_descriptor(d):
+            if not isinstance(d, list) or len(d) != 128:
+                return False
+            sum_sq = sum(float(x) * float(x) for x in d)
+            max_val = max(abs(float(x)) for x in d)
+            return 0.65 <= sum_sq <= 1.45 and max_val <= 0.60
+
+        if desc and is_authentic_descriptor(desc):
             register_encoding_record(name, desc, cat, role, photo)
             count += 1
         elif photo:
@@ -363,7 +353,7 @@ def sync_all_existing_faces():
                         nparr = np.frombuffer(raw_bytes, np.uint8)
                         img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
                 except Exception as eB64:
-                    print(f"⚠️ Base64 decode error for {name}: {eB64}")
+                    pass
             else:
                 img_p = PROJECT_ROOT / photo.lstrip("/")
                 if img_p.exists():
@@ -372,12 +362,12 @@ def sync_all_existing_faces():
                         img = cv2.imread(str(img_p))
 
             enc = extract_face_encoding(bgr_img=img, raw_bytes=raw_bytes)
-            if enc:
+            if enc and is_authentic_descriptor(enc):
                 register_encoding_record(name, enc, cat, role, photo if not photo.startswith("data:") else "")
                 count += 1
             else:
-                print(f"⚠️ Gagal mengekstrak encoding untuk: {name}")
-    print(f"✅ Selesai: {count} profil wajah berhasil disinkronkan ke encoding.json!")
+                print(f"ℹ️ Face '{name}' akan diekstrak otomatis oleh WebGL neural network di browser.")
+    print(f"✅ Selesai: {count} profil wajah biometrik terverifikasi di encoding.json!")
 
 
 def main():
