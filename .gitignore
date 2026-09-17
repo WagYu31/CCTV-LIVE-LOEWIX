@@ -20,3 +20,9 @@ data/loewix_ai.db
 assets/uploads/snapshots/
 assets/uploads/faces/registered_wahyu_new.jpg
 assets/uploads/faces/Wahyu/
+
+# Backup files
+*.bak
+
+# Scratch/temp
+scratch/

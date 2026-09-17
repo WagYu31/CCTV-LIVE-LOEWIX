@@ -7325,13 +7325,26 @@
             if (desc.length !== 128) return false;
             let sumSq = 0;
             let maxVal = 0;
+            let mean = 0;
             for (let i = 0; i < 128; i++) {
               const v = desc[i];
               sumSq += v * v;
+              mean += v;
               const absV = Math.abs(v);
               if (absV > maxVal) maxVal = absV;
             }
-            return sumSq >= 0.50 && sumSq <= 5.0 && maxVal <= 0.85;
+            mean /= 128;
+            // Compute variance + unique count to reject flat/dummy embeddings
+            let variance = 0;
+            const uniqueSet = new Set();
+            for (let i = 0; i < 128; i++) {
+              const v = desc[i];
+              variance += (v - mean) * (v - mean);
+              uniqueSet.add(Math.round(v * 1e6) / 1e6);
+            }
+            variance /= 128;
+            // Real ResNet: sumSq 1.0-5.0, maxVal<=0.85, variance>0.005, mostly unique
+            return sumSq >= 0.50 && sumSq <= 5.0 && maxVal <= 0.85 && variance >= 0.005 && uniqueSet.size >= 50;
           }
           window.isAuthenticResNetDescriptor = isAuthenticResNetDescriptor;
 
@@ -7356,7 +7369,7 @@
             window.allRegisteredDescriptors = allRegisteredDescriptors;
             window._registeredDescriptorsCount = allRegisteredDescriptors.length;
             if (allRegisteredDescriptors.length > 0) {
-              faceAPIFaceMatcher = new faceapi.FaceMatcher(allRegisteredDescriptors, 0.68);
+              faceAPIFaceMatcher = new faceapi.FaceMatcher(allRegisteredDescriptors, 0.60);
               window.faceAPIFaceMatcher = faceAPIFaceMatcher;
               console.log(`[FaceAPI] 🚀 ${allRegisteredDescriptors.length} verified unit encodings active from encoding.json!`);
             }
@@ -8349,7 +8362,7 @@
                 }
                 window.allRegisteredDescriptors = allRegisteredDescriptors;
                 window._registeredDescriptorsCount = allRegisteredDescriptors.length;
-                faceAPIFaceMatcher = new faceapi.FaceMatcher(allRegisteredDescriptors, 0.65);
+                faceAPIFaceMatcher = new faceapi.FaceMatcher(allRegisteredDescriptors, 0.60);
                 window.faceAPIFaceMatcher = faceAPIFaceMatcher;
                 _faceDescriptorsBuiltHash = currentHash;
                 console.log(`[FaceAPI] ⚡ INSTANT RESTORE: ${labeled.length} biometric descriptors restored! Total DB: ${allRegisteredDescriptors.length}`);
@@ -8495,7 +8508,7 @@
         window.allRegisteredDescriptors = allRegisteredDescriptors;
         window._registeredDescriptorsCount = allRegisteredDescriptors.length;
         if (allRegisteredDescriptors.length > 0) {
-          faceAPIFaceMatcher = new faceapi.FaceMatcher(allRegisteredDescriptors, 0.65);
+          faceAPIFaceMatcher = new faceapi.FaceMatcher(allRegisteredDescriptors, 0.60);
           window.faceAPIFaceMatcher = faceAPIFaceMatcher;
           console.log(`[FaceAPI] ✅ FaceMatcher ready with ${allRegisteredDescriptors.length} registered entries active!`);
           try {
@@ -8840,7 +8853,7 @@
       ));
       const isQualified = candidateMatch && !['STRANGER', 'PENGUNJUNG', 'UNKNOWN'].includes(candidateMatch) && (
         isDeepFaceVerified ||
-        currentDistance <= 0.65 ||
+        currentDistance <= 0.60 ||
         (isWebcam && currentDistance <= 0.74) ||
         (currentDistance <= 0.70 && (secondDistance - currentDistance) >= 0.03) ||
         (currentDistance <= 0.75 && isOwnerOrVIP && isWebcam)
@@ -9677,7 +9690,7 @@
                 bestCandidate.toLowerCase().includes('tess')
               ));
               isMatch = bestCandidate !== null && !['STRANGER', 'PENGUNJUNG', 'UNKNOWN'].includes(bestCandidate.toUpperCase()) && (
-                bestDist <= 0.65 ||
+                bestDist <= 0.60 ||
                 (bestDist <= 0.70 && (secondDist - bestDist) >= 0.03) ||
                 (isWebcam && (isOwnerCand || bestDist <= 0.75))
               );
@@ -14216,7 +14229,7 @@
             allRegisteredDescriptors.push(new faceapi.LabeledFaceDescriptors(nameVal, [fArr]));
             window.allRegisteredDescriptors = allRegisteredDescriptors;
             window._registeredDescriptorsCount = allRegisteredDescriptors.length;
-            faceAPIFaceMatcher = new faceapi.FaceMatcher(allRegisteredDescriptors, 0.65);
+            faceAPIFaceMatcher = new faceapi.FaceMatcher(allRegisteredDescriptors, 0.60);
             window.faceAPIFaceMatcher = faceAPIFaceMatcher;
             console.log(`[FaceAPI] 🚀 INSTANT BIOMETRIC ACTIVATION: "${nameVal}" is now active in live recognizer! Total DB: ${allRegisteredDescriptors.length}`);
           }

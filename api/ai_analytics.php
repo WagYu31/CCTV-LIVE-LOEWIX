@@ -377,14 +377,27 @@ function is_authentic_face_descriptor($descriptor) {
     if (!is_array($descriptor) || count($descriptor) !== 128) return false;
     $sumSq = 0.0;
     $maxVal = 0.0;
+    $mean = 0.0;
     foreach ($descriptor as $v) {
         $fv = (float)$v;
         $sumSq += ($fv * $fv);
+        $mean += $fv;
         $absV = abs($fv);
         if ($absV > $maxVal) $maxVal = $absV;
     }
-    // Unit vector: sum of squares around 1.0 - 2.5 and maxVal <= 0.85
-    return ($sumSq >= 0.50 && $sumSq <= 5.0 && $maxVal <= 0.85);
+    $mean /= 128;
+    // Compute variance to reject flat/dummy embeddings
+    $variance = 0.0;
+    $uniqueVals = [];
+    foreach ($descriptor as $v) {
+        $fv = (float)$v;
+        $variance += ($fv - $mean) * ($fv - $mean);
+        $uniqueVals[round($fv, 6)] = true;
+    }
+    $variance /= 128;
+    $uniqueCount = count($uniqueVals);
+    // Real ResNet embeddings: sumSq 1.0-5.0, maxVal <= 0.85, variance > 0.005, mostly unique values
+    return ($sumSq >= 0.50 && $sumSq <= 5.0 && $maxVal <= 0.85 && $variance >= 0.005 && $uniqueCount >= 50);
 }
 
 function syncEncodingJSON($name, $descriptor, $category = 'employee', $role = 'Staff', $photo = '', $oldName = '') {
