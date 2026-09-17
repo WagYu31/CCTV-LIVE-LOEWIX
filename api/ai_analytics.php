@@ -183,63 +183,70 @@ if ($action === 'get_ai_data') {
     if (file_exists($encFile)) {
         $encData = json_decode(file_get_contents($encFile), true);
         if (isset($encData['faces']) && is_array($encData['faces'])) {
-            $existingNames = [];
-            $initialCount = count($db['ai_faces'] ?? []);
-            foreach (($db['ai_faces'] ?? []) as $f) {
-                $existingNames[strtolower(trim($f['name'] ?? ''))] = true;
-            }
-            // Purge obsolete dummy entries (Bambang, Siti, Tersangka)
-            $db['ai_faces'] = array_values(array_filter($db['ai_faces'] ?? [], function($f) {
-                $n = strtolower(trim($f['name'] ?? ''));
-                return !in_array($n, ['bambang supriyanto', 'siti rahmawati', 'tersangka residu dpo (peringatan)']);
-            }));
-            $dbUpdated = (count($db['ai_faces']) !== $initialCount);
-
-            $maxId = 0;
-            foreach ($db['ai_faces'] as &$f) {
-                if (!isset($f['id']) || empty($f['id'])) {
-                    $f['id'] = ++$maxId;
-                    $dbUpdated = true;
-                } else if ((int)$f['id'] > $maxId) {
-                    $maxId = (int)$f['id'];
+            if (empty($encData['faces'])) {
+                if (!empty($db['ai_faces'])) {
+                    $db['ai_faces'] = [];
+                    save_db_data($db);
                 }
-            }
-            unset($f);
-
-            foreach ($db['ai_faces'] as &$efCheck) {
-                $curName = strtolower(trim($efCheck['name'] ?? ''));
-                if ($curName === 'wagyu' || $curName === 'yu' || str_contains($curName, 'wahyu')) {
-                    $efCheck['category'] = 'vip';
-                    $efCheck['role_title'] = 'Super Admin & Owner';
-                    $dbUpdated = true;
+            } else {
+                $existingNames = [];
+                $initialCount = count($db['ai_faces'] ?? []);
+                foreach (($db['ai_faces'] ?? []) as $f) {
+                    $existingNames[strtolower(trim($f['name'] ?? ''))] = true;
                 }
-            }
-            unset($efCheck);
+                // Purge obsolete dummy entries (Bambang, Siti, Tersangka)
+                $db['ai_faces'] = array_values(array_filter($db['ai_faces'] ?? [], function($f) {
+                    $n = strtolower(trim($f['name'] ?? ''));
+                    return !in_array($n, ['bambang supriyanto', 'siti rahmawati', 'tersangka residu dpo (peringatan)']);
+                }));
+                $dbUpdated = (count($db['ai_faces']) !== $initialCount);
 
-            foreach ($encData['faces'] as $ef) {
-                $efName = trim($ef['name'] ?? '');
-                if (!empty($efName) && !isset($existingNames[strtolower($efName)])) {
-                    $isOwnerSync = (
-                        stripos($efName, 'wahyu') !== false || 
-                        stripos($efName, 'wagyu') !== false || 
-                        strtolower($efName) === 'yu'
-                    );
-                    $newFace = [
-                        'id' => ++$maxId,
-                        'name' => $efName,
-                        'category' => $isOwnerSync ? 'vip' : ($ef['category'] ?? 'employee'),
-                        'role_title' => $isOwnerSync ? 'Super Admin & Owner' : ($ef['role'] ?? 'Staff'),
-                        'photo' => $ef['photo'] ?? '',
-                        'notes' => $isOwnerSync ? 'Super Admin Master & Owner Loewix 24/7' : 'Tersinkronisasi dari Database Biometrik Face AI',
-                        'created_at' => $ef['created_at'] ?? date('Y-m-d H:i:s')
-                    ];
-                    $db['ai_faces'][] = $newFace;
-                    $existingNames[strtolower($efName)] = true;
-                    $dbUpdated = true;
+                $maxId = 0;
+                foreach ($db['ai_faces'] as &$f) {
+                    if (!isset($f['id']) || empty($f['id'])) {
+                        $f['id'] = ++$maxId;
+                        $dbUpdated = true;
+                    } else if ((int)$f['id'] > $maxId) {
+                        $maxId = (int)$f['id'];
+                    }
                 }
-            }
-            if ($dbUpdated) {
-                save_db_data($db);
+                unset($f);
+
+                foreach ($db['ai_faces'] as &$efCheck) {
+                    $curName = strtolower(trim($efCheck['name'] ?? ''));
+                    if ($curName === 'wagyu' || $curName === 'yu' || str_contains($curName, 'wahyu')) {
+                        $efCheck['category'] = 'vip';
+                        $efCheck['role_title'] = 'Super Admin & Owner';
+                        $dbUpdated = true;
+                    }
+                }
+                unset($efCheck);
+
+                foreach ($encData['faces'] as $ef) {
+                    $efName = trim($ef['name'] ?? '');
+                    if (!empty($efName) && !isset($existingNames[strtolower($efName)])) {
+                        $isOwnerSync = (
+                            stripos($efName, 'wahyu') !== false || 
+                            stripos($efName, 'wagyu') !== false || 
+                            strtolower($efName) === 'yu'
+                        );
+                        $newFace = [
+                            'id' => ++$maxId,
+                            'name' => $efName,
+                            'category' => $isOwnerSync ? 'vip' : ($ef['category'] ?? 'employee'),
+                            'role_title' => $isOwnerSync ? 'Super Admin & Owner' : ($ef['role'] ?? 'Staff'),
+                            'photo' => $ef['photo'] ?? '',
+                            'notes' => $isOwnerSync ? 'Super Admin Master & Owner Loewix 24/7' : 'Tersinkronisasi dari Database Biometrik Face AI',
+                            'created_at' => $ef['created_at'] ?? date('Y-m-d H:i:s')
+                        ];
+                        $db['ai_faces'][] = $newFace;
+                        $existingNames[strtolower($efName)] = true;
+                        $dbUpdated = true;
+                    }
+                }
+                if ($dbUpdated) {
+                    save_db_data($db);
+                }
             }
         }
     }

@@ -4736,7 +4736,13 @@
         return;
       }
 
+      let streamConnectTimeout = setTimeout(() => {
+        if (!activeInlinePlayers.has(camId) || (video && video.style.display === 'block')) return;
+        showInlineError('Kamera Sedang Offline / Tidak Merespon', 'Stream belum masuk ke MediaMTX. Periksa daya kamera, IP RTSP, atau jalankan bridge.');
+      }, 12000);
+
       function revealVideo() {
+        if (streamConnectTimeout) clearTimeout(streamConnectTimeout);
         if (loading) loading.style.display = 'none';
         if (thumb) thumb.style.display = 'none';
         const standby = document.getElementById(`cam-standby-${camId}`);
@@ -4872,12 +4878,15 @@
       video.onplaying = revealVideo;
       video.onloadeddata = revealVideo;
 
-      activeInlinePlayers.set(camId, { hls, video });
+      activeInlinePlayers.set(camId, { hls, video, streamConnectTimeout });
     }
 
     function stopCameraInline(camId, keepErrorState = false) {
       const playerObj = activeInlinePlayers.get(camId);
       if (playerObj) {
+        if (playerObj.streamConnectTimeout) {
+          clearTimeout(playerObj.streamConnectTimeout);
+        }
         if (playerObj.hls) {
           playerObj.hls.destroy();
         }
