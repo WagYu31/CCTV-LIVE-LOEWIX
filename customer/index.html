@@ -3187,7 +3187,7 @@
             <span aria-hidden="true">&times;</span>
           </button>
         </div>
-        <form id="formRegisterFace" onsubmit="submitRegisterFace(event)">
+        <form id="formRegisterFace" onsubmit="event.preventDefault(); submitRegisterFace(event);">
           <div class="modal-body p-4" style="max-height: 75vh; overflow-y: auto;">
             
             <!-- Live Biometric AI Face Enrollment Scanner -->
@@ -3229,20 +3229,20 @@
 
               <!-- Scan Action Buttons -->
               <div class="mt-3 d-flex flex-wrap justify-content-center gap-2">
-                <button type="button" id="btn-capture-face" class="btn btn-info font-weight-bold px-3 py-2" onclick="captureFaceFromWebcam()" style="border-radius: 10px; font-size: 12.5px; background: linear-gradient(135deg, #0284c7, #00f0ff); color: #000; border: none; box-shadow: 0 0 15px rgba(0, 240, 255, 0.4);">
+                <button type="button" id="btn-capture-face" class="btn btn-info font-weight-bold px-3 py-2" onclick="captureFaceFromWebcam()" style="border-radius: 10px; font-size: 12.5px; background: linear-gradient(135deg, #0284c7, #00f0ff); color: #000; border: none; box-shadow: 0 0 15px rgba(0, 240, 255, 0.4); cursor: pointer;">
                   <i class="fas fa-camera mr-1.5"></i> Scan Webcam
                 </button>
-                <button type="button" class="btn btn-outline-info font-weight-bold px-3 py-2" onclick="document.getElementById('face-file-upload').click()" style="border-radius: 10px; font-size: 12.5px; border-color: rgba(56,189,248,0.6); color: #38bdf8; background: rgba(56,189,248,0.08);">
+                <button type="button" class="btn btn-outline-info font-weight-bold px-3 py-2" onclick="document.getElementById('face-file-upload').click()" style="border-radius: 10px; font-size: 12.5px; border-color: rgba(56,189,248,0.6); color: #38bdf8; background: rgba(56,189,248,0.08); cursor: pointer;">
                   <i class="fas fa-image mr-1.5"></i> Pilih Foto dari Galeri HP
                 </button>
                 <input type="file" id="face-file-upload" accept="image/*" style="display: none;" onchange="handleFaceFileUpload(this)">
-                <button type="button" id="btn-rescan-face" class="btn btn-outline-warning font-weight-bold px-3 py-2" onclick="startFaceEnrollmentCamera()" style="display: none; border-radius: 10px; font-size: 12px;">
+                <button type="button" id="btn-rescan-face" class="btn btn-outline-warning font-weight-bold px-3 py-2" onclick="startFaceEnrollmentCamera()" style="display: none; border-radius: 10px; font-size: 12px; cursor: pointer;">
                   <i class="fas fa-sync-alt mr-1"></i> Scan Ulang
                 </button>
               </div>
 
               <input type="hidden" id="face-edit-id" value="">
-              <input type="hidden" id="face-input-photo" value="" required>
+              <input type="hidden" id="face-input-photo" value="">
               <input type="hidden" id="face-input-descriptor" value="">
               <small class="text-muted d-block mt-2" style="font-size: 11px;">Posisikan wajah tegak, pencahayaan jelas, tanpa masker/kacamata hitam. Bisa gunakan kamera langsung, upload galeri, atau snapshot CCTV.</small>
             </div>
@@ -3277,7 +3277,7 @@
           </div>
           <div class="modal-footer" style="border-top: 1px solid rgba(255,255,255,0.08); background: rgba(15, 23, 42, 0.95); padding: 14px 24px;">
             <button type="button" class="btn btn-secondary btn-sm px-3" onclick="closeModalHelper('modalRegisterFace')" style="border-radius: 8px;">Batal</button>
-            <button type="submit" id="btn-submit-face" class="btn btn-success btn-sm px-4 font-weight-bold" style="border-radius: 8px; background: #059669; border: none;">
+            <button type="button" id="btn-submit-face" onclick="submitRegisterFace(event)" class="btn btn-success btn-sm px-4 font-weight-bold" style="border-radius: 8px; background: #059669; border: none; cursor: pointer;">
               <i class="fas fa-save mr-1"></i> Simpan Data Wajah
             </button>
           </div>
@@ -14015,103 +14015,114 @@
     }
 
     async function submitRegisterFace(e) {
-      e.preventDefault();
-      const photoVal = document.getElementById('face-input-photo').value;
-      if (!photoVal || (!photoVal.startsWith('data:image') && !photoVal.startsWith('http') && !photoVal.startsWith('assets/'))) {
-        alert('⚠️ Wajib sertakan foto wajah terlebih dahulu (bisa lewat scan kamera, upload galeri, atau snapshot CCTV)!');
+      if (e && e.preventDefault) e.preventDefault();
+
+      const btnSubmit = document.getElementById('btn-submit-face');
+      const editId = document.getElementById('face-edit-id')?.value || '';
+
+      const nameInput = document.getElementById('face-input-name');
+      const nameVal = nameInput ? nameInput.value.trim() : '';
+      if (!nameVal) {
+        alert('⚠️ Nama lengkap wajib diisi!');
+        nameInput?.focus();
         return;
       }
 
-      const editId = document.getElementById('face-edit-id')?.value || '';
-      const fd = new FormData();
-      fd.append('action', editId ? 'update_face' : 'register_face');
-      if (editId) fd.append('id', editId);
-      fd.append('name', document.getElementById('face-input-name').value);
-      fd.append('category', document.getElementById('face-input-category').value);
-      fd.append('role_title', document.getElementById('face-input-role').value);
-      fd.append('photo', photoVal);
-      fd.append('notes', document.getElementById('face-input-notes').value);
+      const photoInput = document.getElementById('face-input-photo');
+      let photoVal = photoInput ? photoInput.value : '';
 
-      let descVal = document.getElementById('face-input-descriptor')?.value || (window._lastCapturedFaceDescriptor ? JSON.stringify(window._lastCapturedFaceDescriptor) : '');
-
-      // AUTO-EXTRACT DESCRIPTOR FROM PREVIEW IF NOT ALREADY GENERATED
-      if (!descVal && photoVal && typeof faceapi !== 'undefined' && faceapi.nets.faceRecognitionNet && faceapi.nets.faceRecognitionNet.isLoaded) {
-        const previewImg = document.getElementById('face-preview-img');
-        if (previewImg && previewImg.complete && previewImg.naturalWidth > 10) {
-          try {
-            let det = await faceapi.detectSingleFace(previewImg, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.03 }))
-              .withFaceLandmarks(Boolean(faceapi.nets.faceLandmark68TinyNet && faceapi.nets.faceLandmark68TinyNet.isLoaded))
-              .withFaceDescriptor().catch(() => null);
-            if (!det || !det.descriptor) {
-              det = await faceapi.detectSingleFace(previewImg, new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.02 }))
-                .withFaceLandmarks(Boolean(faceapi.nets.faceLandmark68TinyNet && faceapi.nets.faceLandmark68TinyNet.isLoaded))
-                .withFaceDescriptor().catch(() => null);
-            }
-            if (det && det.descriptor && det.descriptor.length === 128) {
-              descVal = JSON.stringify(Array.from(det.descriptor));
-              window._lastCapturedFaceDescriptor = Array.from(det.descriptor);
-            }
-          } catch(eAuto) {}
+      // Fallback: If hidden input photo is empty, check face-preview-img src
+      if (!photoVal) {
+        const pImg = document.getElementById('face-preview-img');
+        if (pImg && pImg.src && (pImg.src.startsWith('data:image') || pImg.src.startsWith('http') || pImg.src.startsWith('assets/'))) {
+          photoVal = pImg.src;
+          if (photoInput) photoInput.value = photoVal;
         }
       }
 
-      if (!descVal) {
-        // Fallback 1: Try live webcam video stream
-        const faceVideo = document.getElementById('face-webcam-video');
-        const liveVideo = (faceVideo && faceVideo.readyState >= 2 && faceVideo.videoWidth > 0) ? faceVideo : (video && video.readyState >= 2 && video.videoWidth > 0 ? video : null);
-        if (liveVideo && typeof faceapi !== 'undefined' && faceapi.nets.tinyFaceDetector && faceapi.nets.tinyFaceDetector.isLoaded) {
-          try {
-            let det = await faceapi.detectSingleFace(liveVideo, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.02 }))
-              .withFaceLandmarks(Boolean(faceapi.nets.faceLandmark68TinyNet && faceapi.nets.faceLandmark68TinyNet.isLoaded))
-              .withFaceDescriptor().catch(() => null);
-            if (det && det.descriptor) {
-              descVal = JSON.stringify(Array.from(det.descriptor));
-              window._lastCapturedFaceDescriptor = Array.from(det.descriptor);
-            }
-          } catch(e) {}
-        }
+      if (!photoVal || (!photoVal.startsWith('data:image') && !photoVal.startsWith('http') && !photoVal.startsWith('assets/'))) {
+        alert('⚠️ Wajib sertakan foto wajah terlebih dahulu (bisa lewat scan webcam, upload galeri, atau snapshot CCTV)!');
+        return;
       }
 
-      // Fallback 2: Guaranteed 128D normalized feature vector from photo
-      if (!descVal && photoVal) {
-        try {
-          const cvs = document.createElement('canvas');
-          cvs.width = 16; cvs.height = 8;
-          const cx = cvs.getContext('2d');
-          const pImg = new Image();
-          await new Promise((res) => {
-            pImg.onload = () => { cx.drawImage(pImg, 0, 0, 16, 8); res(); };
-            pImg.onerror = () => res();
-            pImg.src = photoVal;
-          });
-          const idata = cx.getImageData(0, 0, 16, 8).data;
-          const vec = [];
-          for (let k = 0; k < 128; k++) {
-            vec.push(Number(((idata[k * 3] || 128) / 255.0 - 0.5).toFixed(4)));
-          }
-          descVal = JSON.stringify(vec);
-          window._lastCapturedFaceDescriptor = vec;
-          console.log('[Guaranteed Encoding] ✅ 128D visual embedding generated!');
-        } catch(e) {}
-      }
-
-      if (descVal) fd.append('descriptor', descVal);
-
-      const btnSubmit = document.getElementById('btn-submit-face');
+      // Instant UI response: show loading spinner immediately
       if (btnSubmit) {
         btnSubmit.disabled = true;
         btnSubmit.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> Menyimpan...';
       }
 
       try {
+        let descVal = document.getElementById('face-input-descriptor')?.value || (window._lastCapturedFaceDescriptor ? JSON.stringify(window._lastCapturedFaceDescriptor) : '');
+
+        // AUTO-EXTRACT DESCRIPTOR FROM PREVIEW IF NOT ALREADY GENERATED
+        if (!descVal && photoVal && typeof faceapi !== 'undefined' && faceapi.nets.faceRecognitionNet && faceapi.nets.faceRecognitionNet.isLoaded) {
+          const previewImg = document.getElementById('face-preview-img');
+          if (previewImg && previewImg.complete && previewImg.naturalWidth > 10) {
+            try {
+              let det = await faceapi.detectSingleFace(previewImg, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.03 }))
+                .withFaceLandmarks(Boolean(faceapi.nets.faceLandmark68TinyNet && faceapi.nets.faceLandmark68TinyNet.isLoaded))
+                .withFaceDescriptor().catch(() => null);
+              if (!det || !det.descriptor) {
+                det = await faceapi.detectSingleFace(previewImg, new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.02 }))
+                  .withFaceLandmarks(Boolean(faceapi.nets.faceLandmark68TinyNet && faceapi.nets.faceLandmark68TinyNet.isLoaded))
+                  .withFaceDescriptor().catch(() => null);
+              }
+              if (det && det.descriptor && det.descriptor.length === 128) {
+                descVal = JSON.stringify(Array.from(det.descriptor));
+                window._lastCapturedFaceDescriptor = Array.from(det.descriptor);
+              }
+            } catch(eAuto) {}
+          }
+        }
+
+        // Guaranteed 128D normalized feature vector from photo if still missing
+        if (!descVal && photoVal) {
+          try {
+            const cvs = document.createElement('canvas');
+            cvs.width = 16; cvs.height = 8;
+            const cx = cvs.getContext('2d');
+            const pImg = new Image();
+            await new Promise((res) => {
+              pImg.onload = () => { cx.drawImage(pImg, 0, 0, 16, 8); res(); };
+              pImg.onerror = () => res();
+              pImg.src = photoVal;
+            });
+            const idata = cx.getImageData(0, 0, 16, 8).data;
+            const vec = [];
+            for (let k = 0; k < 128; k++) {
+              vec.push(Number(((idata[k * 3] || 128) / 255.0 - 0.5).toFixed(4)));
+            }
+            descVal = JSON.stringify(vec);
+            window._lastCapturedFaceDescriptor = vec;
+            console.log('[Guaranteed Encoding] ✅ 128D visual embedding generated!');
+          } catch(e) {}
+        }
+
+        const fd = new FormData();
+        fd.append('action', editId ? 'update_face' : 'register_face');
+        if (editId) fd.append('id', editId);
+        fd.append('name', nameVal);
+        fd.append('category', document.getElementById('face-input-category')?.value || 'employee');
+        fd.append('role_title', document.getElementById('face-input-role')?.value || 'Staff');
+        fd.append('photo', photoVal);
+        fd.append('notes', document.getElementById('face-input-notes')?.value || '');
+        if (descVal) fd.append('descriptor', descVal);
+
         const res = await fetch('../api/ai_analytics.php', { method: 'POST', body: fd });
-        const data = await res.json();
+        const text = await res.text();
+        let data;
+        try {
+          data = JSON.parse(text);
+        } catch(eJson) {
+          console.error('[Face Register] Raw API response:', text);
+          throw new Error('Respon server tidak valid');
+        }
+
         if (data.success) {
           stopFaceWebcam();
           closeModalHelper('modalRegisterFace');
 
           // Instant In-Memory Live Sync (0ms latency activation)
-          const newName = document.getElementById('face-input-name').value.trim();
           let parsedDesc = null;
           if (descVal) {
             try { parsedDesc = JSON.parse(descVal); } catch(e){}
@@ -14121,13 +14132,13 @@
 
           if (Array.isArray(parsedDesc) && parsedDesc.length === 128) {
             const fArr = new Float32Array(parsedDesc);
-            allRegisteredDescriptors = allRegisteredDescriptors.filter(ld => ld.label.toLowerCase() !== newName.toLowerCase());
-            allRegisteredDescriptors.push(new faceapi.LabeledFaceDescriptors(newName, [fArr]));
+            allRegisteredDescriptors = allRegisteredDescriptors.filter(ld => ld.label.toLowerCase() !== nameVal.toLowerCase());
+            allRegisteredDescriptors.push(new faceapi.LabeledFaceDescriptors(nameVal, [fArr]));
             window.allRegisteredDescriptors = allRegisteredDescriptors;
             window._registeredDescriptorsCount = allRegisteredDescriptors.length;
             faceAPIFaceMatcher = new faceapi.FaceMatcher(allRegisteredDescriptors, 0.62);
             window.faceAPIFaceMatcher = faceAPIFaceMatcher;
-            console.log(`[FaceAPI] 🚀 INSTANT BIOMETRIC ACTIVATION: "${newName}" is now active in live recognizer! Total DB: ${allRegisteredDescriptors.length}`);
+            console.log(`[FaceAPI] 🚀 INSTANT BIOMETRIC ACTIVATION: "${nameVal}" is now active in live recognizer! Total DB: ${allRegisteredDescriptors.length}`);
           }
 
           alert(data.message || (editId ? '✅ Data Wajah Berhasil Diperbarui & Di-rescan!' : '✅ Wajah Berhasil Terdaftar ke Database AI Face Recognition!'));
@@ -14137,7 +14148,7 @@
         }
       } catch (err) {
         console.error(err);
-        alert('Terjadi kesalahan saat menyimpan data wajah.');
+        alert('Terjadi kesalahan saat menyimpan data wajah: ' + err.message);
       } finally {
         if (btnSubmit) {
           btnSubmit.disabled = false;
