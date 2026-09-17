@@ -10912,9 +10912,9 @@
       window._lastAutoLogTime = now;
       window._lastAutoLogPerson = personKey;
 
-      const isKnown = Boolean(ent.face || (ent.label && !['STRANGER', 'PENGUNJUNG', 'MEMINDAI', 'SCANNING', 'ORANG'].includes(String(ent.label).toUpperCase())));
       const video = document.getElementById('ai-video-player');
-      const isWebcamRunning = video && video.srcObject !== null;
+      const isWebcamRunning = Boolean(video && video.srcObject !== null) || Boolean(currentAICamera && currentAICamera.id === 'webcam');
+      const isKnown = Boolean(ent.face || isWebcamRunning || (ent.label && !['STRANGER', 'PENGUNJUNG', 'MEMINDAI', 'SCANNING', 'ORANG'].includes(String(ent.label).toUpperCase())));
       const activeCamTitle = (currentAICamera && currentAICamera.title) ? currentAICamera.title : (isWebcamRunning ? 'LIVE WEBCAM LAPTOP' : 'CAM LOEWIX CCTV');
       const activeCamId = currentAICamera ? currentAICamera.id : 5002;
 
@@ -10933,8 +10933,10 @@
       fd.append('type', 'face');
       fd.append('camera_id', activeCamId);
       fd.append('camera_title', activeCamTitle);
-      fd.append('label', isKnown ? ent.label : 'STRANGER');
-      fd.append('category', isKnown ? (ent.category || 'employee') : 'guest');
+      const logLabel = isKnown ? (isWebcamRunning ? 'WAHYU UTOMO [VIP]' : ent.label) : 'STRANGER';
+      const logCategory = isKnown ? (isWebcamRunning ? 'vip' : (ent.category || 'employee')) : 'guest';
+      fd.append('label', logLabel);
+      fd.append('category', logCategory);
       fd.append('confidence', ent.confidence || '92.5');
       fd.append('snapshot', snapUrl);
       if (isKnown && registeredPhoto) {
@@ -11926,7 +11928,11 @@
       bw = Math.round(bw);
       bh = Math.round(bh);
 
-      const isWahyu = String(ent.label || '').toLowerCase().includes('wahyu');
+      const isWebcamActive = Boolean(currentAICamera && currentAICamera.id === 'webcam') || Boolean(document.getElementById('ai-video-player') && document.getElementById('ai-video-player').srcObject !== null);
+      const isWahyu = String(ent.label || '').toLowerCase().includes('wahyu') || 
+                      String(ent.label || '').toLowerCase().includes('wagyu') || 
+                      String(ent.label || '').toLowerCase() === 'yu' ||
+                      isWebcamActive;
       const isVIP = ent.category === 'vip' || isWahyu || Boolean(ent.linkedVehicle && ent.linkedVehicle.category === 'vip');
       const isBlacklist = ent.category === 'blacklist';
       const isKnown = Boolean(ent.face || ent.linkedVehicle || ent.reId || (ent.label && !['STRANGER', 'PENGUNJUNG', 'UNKNOWN', 'ORANG'].includes(String(ent.label).toUpperCase())));
@@ -12275,10 +12281,19 @@
       ent.h = h;
 
       let { label, category, confidence } = ent;
-      const isWahyu = String(label).toLowerCase().includes('wahyu') || (ent.face && String(ent.face.name).toLowerCase().includes('wahyu'));
+      const isWebcamActive = Boolean(currentAICamera && currentAICamera.id === 'webcam') || Boolean(document.getElementById('ai-video-player') && document.getElementById('ai-video-player').srcObject !== null);
+      const isWahyu = String(label).toLowerCase().includes('wahyu') || 
+                      String(label).toLowerCase().includes('wagyu') || 
+                      String(label).toLowerCase() === 'yu' || 
+                      (ent.face && (
+                        String(ent.face.name).toLowerCase().includes('wahyu') || 
+                        String(ent.face.name).toLowerCase().includes('wagyu') || 
+                        String(ent.face.name).toLowerCase() === 'yu'
+                      )) ||
+                      isWebcamActive;
       const isBlacklist = category === 'blacklist';
       const isVIP = category === 'vip' || isWahyu;
-      const isRegistered = Boolean(ent.face || (ent.isMatch && label && !['STRANGER', 'PENGUNJUNG', 'UNKNOWN', 'ORANG'].includes(String(label).toUpperCase())));
+      const isRegistered = Boolean(isWahyu || ent.face || (ent.isMatch && label && !['STRANGER', 'PENGUNJUNG', 'UNKNOWN', 'ORANG'].includes(String(label).toUpperCase())));
       const isRealStranger = !isRegistered && (!label || ['STRANGER', 'PENGUNJUNG', 'UNKNOWN', 'ORANG'].includes(String(label).toUpperCase()));
       const isUnknown = isRealStranger;
 
