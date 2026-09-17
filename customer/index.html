@@ -7548,18 +7548,20 @@
       _liveWebcamTrack.targetH = normBoxH;
       _liveWebcamTrack.lastSeen = Date.now();
 
-      // 2. Identity Resolution & VIP badge lock
+      // 2. Identity Resolution
       const prevFace = (lastFaceAPIResult && lastFaceAPIResult.faces && lastFaceAPIResult.faces.length > 0) ? lastFaceAPIResult.faces[0] : null;
-      let labelName = 'WAHYU UTOMO [VIP]';
-      let categoryType = 'vip';
-      let conf = '96.8';
-      let faceMeta = { name: 'Wahyu Utomo', category: 'vip' };
+      let labelName = 'STRANGER';
+      let categoryType = 'guest';
+      let conf = '95.0';
+      let faceMeta = null;
+      let isMatch = false;
 
-      if (prevFace && prevFace.name && !prevFace.name.includes('STRANGER') && !prevFace.name.includes('UNKNOWN')) {
+      if (prevFace && prevFace.name && !['STRANGER', 'PENGUNJUNG', 'UNKNOWN'].includes(prevFace.name.toUpperCase())) {
         labelName = prevFace.name;
-        categoryType = prevFace.category || 'vip';
-        conf = prevFace.confidence || '96.8';
+        categoryType = prevFace.category || 'employee';
+        conf = prevFace.confidence || '95.0';
         if (prevFace.face) faceMeta = prevFace.face;
+        isMatch = Boolean(prevFace.isMatch);
       }
 
       // 3. Normalized 468 Landmarks
@@ -7583,7 +7585,7 @@
           confidence: conf,
           recognitionEngine: 'MediaPipe FaceMesh 3D',
           snapshot: prevFace ? prevFace.snapshot : '',
-          isMatch: true
+          isMatch: isMatch
         }],
         timestamp: Date.now()
       };
@@ -8658,14 +8660,13 @@
               console.log(`[Face Matcher] Candidate: ${bestCandidateLabel} | Dist: ${bestCandidateDist.toFixed(3)} | Threshold: ${isWebcam ? 0.74 : 0.65}`);
             }
 
-            // Calibrated Euclidean Distance: <= 0.65 standard, <= 0.74 on webcam
+            // Calibrated Euclidean Distance: <= 0.58 standard, <= 0.62 with separation margin
             const isConfidentMatch = Boolean(
               bestCandidateLabel &&
               !['STRANGER', 'PENGUNJUNG', 'UNKNOWN'].includes(bestCandidateLabel.toUpperCase()) &&
               (
-                bestCandidateDist <= 0.65 ||
-                (isWebcam && bestCandidateDist <= 0.74) ||
-                (bestCandidateDist <= 0.72 && (secondCandidateDist - bestCandidateDist) >= 0.03)
+                bestCandidateDist <= 0.58 ||
+                (bestCandidateDist <= 0.62 && (secondCandidateDist - bestCandidateDist) >= 0.04)
               )
             );
 
@@ -9727,20 +9728,11 @@
               isMatch = true;
               bestCandidate = spatialTrack.lockedPerson.name;
               bestDist = spatialTrack.lockedDistance || 0.42;
-            } else if (!isNonFace && window._verifiedFaceLock && (Date.now() - window._verifiedFaceLock.timestamp < (window._verifiedFaceLock.ttl || 30000))) {
-              isMatch = true;
-              bestCandidate = window._verifiedFaceLock.fullName || window._verifiedFaceLock.name;
-              bestDist = window._verifiedFaceLock.distance || 0.40;
             } else if (!isNonFace) {
-              const isOwnerCand = Boolean(bestCandidate && (
-                bestCandidate.toLowerCase().includes('wahyu') ||
-                bestCandidate.toLowerCase().includes('wagyu') ||
-                bestCandidate.toLowerCase().includes('tess')
-              ));
+              // Calibrated biometric threshold for 128D ResNet face embeddings
               isMatch = bestCandidate !== null && !['STRANGER', 'PENGUNJUNG', 'UNKNOWN'].includes(bestCandidate.toUpperCase()) && (
-                bestDist <= 0.60 ||
-                (bestDist <= 0.70 && (secondDist - bestDist) >= 0.03) ||
-                (isWebcam && (isOwnerCand || bestDist <= 0.75))
+                bestDist <= 0.58 ||
+                (bestDist <= 0.62 && (secondDist - bestDist) >= 0.04)
               );
             }
 
@@ -10950,8 +10942,8 @@
       fd.append('type', 'face');
       fd.append('camera_id', activeCamId);
       fd.append('camera_title', activeCamTitle);
-      const logLabel = isKnown ? (isWebcamRunning ? 'WAHYU UTOMO [VIP]' : ent.label) : 'STRANGER';
-      const logCategory = isKnown ? (isWebcamRunning ? 'vip' : (ent.category || 'employee')) : 'guest';
+      const logLabel = isKnown ? (ent.label || 'TERDAFTAR') : 'STRANGER';
+      const logCategory = isKnown ? (ent.category || 'employee') : 'guest';
       fd.append('label', logLabel);
       fd.append('category', logCategory);
       fd.append('confidence', ent.confidence || '92.5');
@@ -11945,11 +11937,9 @@
       bw = Math.round(bw);
       bh = Math.round(bh);
 
-      const isWebcamActive = Boolean(currentAICamera && currentAICamera.id === 'webcam') || Boolean(document.getElementById('ai-video-player') && document.getElementById('ai-video-player').srcObject !== null);
       const isWahyu = String(ent.label || '').toLowerCase().includes('wahyu') || 
                       String(ent.label || '').toLowerCase().includes('wagyu') || 
-                      String(ent.label || '').toLowerCase() === 'yu' ||
-                      isWebcamActive;
+                      String(ent.label || '').toLowerCase() === 'yu';
       const isVIP = ent.category === 'vip' || isWahyu || Boolean(ent.linkedVehicle && ent.linkedVehicle.category === 'vip');
       const isBlacklist = ent.category === 'blacklist';
       const isKnown = Boolean(ent.face || ent.linkedVehicle || ent.reId || (ent.label && !['STRANGER', 'PENGUNJUNG', 'UNKNOWN', 'ORANG'].includes(String(ent.label).toUpperCase())));
