@@ -9018,6 +9018,7 @@
 
     lastFaceAPIResult = null;
     let faceAPIDetectionRunning = false;
+    let lastFaceAPIDetectionStartTime = 0;
 
     function isValidHumanFaceLandmarks(landmarks, box, isCCTV = false) {
       if (!isCCTV) return true; // Live webcam is ALWAYS a real human face! Never filter webcam!
@@ -9258,8 +9259,12 @@
     }
 
     async function runFaceAPIDetection(videoElem, providedCanvas = null) {
+      if (faceAPIDetectionRunning && (Date.now() - lastFaceAPIDetectionStartTime > 2000)) {
+        faceAPIDetectionRunning = false;
+      }
       if (faceAPIDetectionRunning) return;
       faceAPIDetectionRunning = true;
+      lastFaceAPIDetectionStartTime = Date.now();
 
       try {
         const video = videoElem || document.getElementById('ai-video-player');
@@ -9560,6 +9565,9 @@
           for (let i = 0; i < detections.length; i++) {
             const d = detections[i];
             const box = d.detection ? d.detection.box : d.box;
+            const isPerson = d.type === 'person';
+            const isVehicle = ['motorcycle', 'car', 'truck', 'bicycle'].includes(d.type);
+            const isNonFace = isPerson || isVehicle;
             let landmarks = null;
             if (d.landmarks) {
               if (Array.isArray(d.landmarks)) {
@@ -9608,9 +9616,6 @@
                 }
               } catch (eDesc) {}
             }
-            const isPerson = d.type === 'person';
-            const isVehicle = ['motorcycle', 'car', 'truck', 'bicycle'].includes(d.type);
-            const isNonFace = isPerson || isVehicle;
 
             // Link with closest TensorFlow.js MediaPipe 468 FaceMesh (only for human faces)
             if (!isNonFace && !d.mesh468 && tfjsFaces && tfjsFaces.length > 0) {
