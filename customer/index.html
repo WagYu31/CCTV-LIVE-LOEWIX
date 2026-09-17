@@ -17,15 +17,12 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
-  <!-- Face-API.js: Official Biometric Descriptors Engine (contains built-in verified TensorFlow.js) -->
-  <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
-  <script>
-    if (typeof faceapi !== 'undefined' && faceapi.tf) {
-      window.tf = faceapi.tf;
-    }
-  </script>
-  <!-- COCO-SSD Human/Pedestrian Surveillance Detector -->
+  <!-- TensorFlow.js Runtime (Required for COCO-SSD Long-Range Surveillance) -->
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.18.0/dist/tf.min.js"></script>
+  <!-- COCO-SSD Human & Vehicle Surveillance Detector (Long Range: Pedestrians, Cars, Motorcycles) -->
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.2.3/dist/coco-ssd.min.js"></script>
+  <!-- Face-API.js: Biometric Descriptors & Landmark Verification (Close Range: 3D Face Scan) -->
+  <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
   <!-- MediaPipe FaceMesh Engine (468 3D Biometric Facial Landmarks & Responsive 60 FPS Tracking) -->
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4.1633559619/face_mesh.js" crossorigin="anonymous"></script>
   <!-- Midtrans Snap Payment Gateway SDK (Sandbox) -->
@@ -9296,37 +9293,38 @@
         }
 
         // 4. CCTV SURVEILLANCE CLASSIFICATION (COCO-SSD Deep Neural Network)
-        // Accurately differentiates humans (pedestrians) vs motorcycles vs cars vs bicycles
-        if (isCCTVMode && (!detections || detections.length === 0)) {
-          if (cocoSSDModel) {
-            try {
-              const predictions = await cocoSSDModel.detect(frameCanvas, 15, 0.32);
-              if (predictions && predictions.length > 0) {
-                const detectedPersons = [];
-                const detectedVehicles = [];
+        // Accurately differentiates humans (pedestrians / seated / standing) vs motorcycles vs cars vs bicycles
+        const shouldRunCOCOSSD = (isCCTVMode || isWebcam) && (!detections || detections.length === 0);
+        if (shouldRunCOCOSSD && cocoSSDModel) {
+          try {
+            const predictions = await cocoSSDModel.detect(frameCanvas, 20, 0.25);
+            if (predictions && predictions.length > 0) {
+              const detectedPersons = [];
+              const detectedVehicles = [];
 
-                // Categorize raw predictions
-                for (const p of predictions) {
-                  const bx = Math.max(0, Math.round(p.bbox[0]));
-                  const by = Math.max(0, Math.round(p.bbox[1]));
-                  const bw = Math.min(frameW - bx, Math.round(p.bbox[2]));
-                  const bh = Math.min(frameH - by, Math.round(p.bbox[3]));
-                  if (bw < 16 || bh < 16) continue;
+              // Categorize raw predictions
+              for (const p of predictions) {
+                const bx = Math.max(0, Math.round(p.bbox[0]));
+                const by = Math.max(0, Math.round(p.bbox[1]));
+                const bw = Math.min(frameW - bx, Math.round(p.bbox[2]));
+                const bh = Math.min(frameH - by, Math.round(p.bbox[3]));
+                if (bw < 14 || bh < 14) continue;
 
-                  if (p.class === 'person' && p.score >= 0.35) {
-                    const aspect = bh / Math.max(1, bw);
-                    if (bh >= 25 && aspect >= 0.85 && aspect <= 4.2) {
-                      detectedPersons.push({ bx, by, bw, bh, score: p.score });
-                    }
-                  } else if (['motorcycle', 'car', 'truck', 'bicycle'].includes(p.class) && p.score >= 0.38) {
-                    detectedVehicles.push({
-                      bx, by, bw, bh,
-                      type: p.class,
-                      score: p.score,
-                      label: p.class === 'motorcycle' ? 'MOTOR' : (p.class === 'car' ? 'MOBIL' : (p.class === 'truck' ? 'TRUK' : 'SEPEDA'))
-                    });
+                if (p.class === 'person' && p.score >= 0.25) {
+                  const aspect = bh / Math.max(1, bw);
+                  // Allow seated people at desks, standing pedestrians, motorists (aspect 0.45 - 5.0)
+                  if (bh >= 18 && aspect >= 0.45 && aspect <= 5.0) {
+                    detectedPersons.push({ bx, by, bw, bh, score: p.score });
                   }
+                } else if (['motorcycle', 'car', 'truck', 'bus', 'bicycle'].includes(p.class) && p.score >= 0.28) {
+                  detectedVehicles.push({
+                    bx, by, bw, bh,
+                    type: p.class,
+                    score: p.score,
+                    label: p.class === 'motorcycle' ? 'MOTOR' : (p.class === 'car' ? 'MOBIL' : (p.class === 'truck' ? 'TRUK' : (p.class === 'bus' ? 'BUS' : 'SEPEDA')))
+                  });
                 }
+              }
 
                 // 1. Register Vehicle Detections
                 for (const v of detectedVehicles) {
@@ -9386,7 +9384,6 @@
               }
             } catch (eCoco) {}
           }
-        }
 
         // 5. Fallback to Optical Multi-Spectrum Head Tracker (ONLY for live webcam fallback)
         if (!isCCTVMode && (!detections || detections.length === 0) && frameCanvas) {
