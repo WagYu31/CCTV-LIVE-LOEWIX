@@ -672,7 +672,7 @@ if ($action === 'register_face' || $action === 'update_face') {
         exit;
     }
 
-    if (stripos($name, 'wahyu') !== false) {
+    if (stripos($name, 'wahyu') !== false || stripos($name, 'wagyu') !== false || strtolower($name) === 'yu') {
         $category = 'vip';
         $roleTitle = 'Super Admin & Owner';
     }
@@ -882,6 +882,19 @@ if ($action === 'delete_face') {
         }
     }
     echo json_encode(['success' => true, 'message' => 'Wajah terdaftar berhasil dihapus.']);
+    exit;
+}
+
+if ($action === 'reset_all_faces') {
+    $db['ai_faces'] = [];
+    save_db_data($db);
+    $encFile = __DIR__ . '/../data/encoding.json';
+    @file_put_contents($encFile, json_encode([
+        'description' => 'Loewix CCTV AI Vision Face Encodings Database',
+        'updated_at' => date('Y-m-d H:i:s'),
+        'faces' => []
+    ], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+    echo json_encode(['success' => true, 'message' => 'Semua data biometrik wajah berhasil direset total.']);
     exit;
 }
 
