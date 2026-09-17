@@ -17,11 +17,15 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
-  <!-- Official Google TensorFlow.org Runtime & COCO-SSD Human/Pedestrian Surveillance Detector -->
-  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.18.0/dist/tf.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.2.3/dist/coco-ssd.min.js"></script>
-  <!-- face-api.js: Biometric Descriptors for Whitelist Database Verification -->
+  <!-- Face-API.js: Official Biometric Descriptors Engine (contains built-in verified TensorFlow.js) -->
   <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+  <script>
+    if (typeof faceapi !== 'undefined' && faceapi.tf) {
+      window.tf = faceapi.tf;
+    }
+  </script>
+  <!-- COCO-SSD Human/Pedestrian Surveillance Detector -->
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.2.3/dist/coco-ssd.min.js"></script>
   <!-- MediaPipe FaceMesh Engine (468 3D Biometric Facial Landmarks & Responsive 60 FPS Tracking) -->
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4.1633559619/face_mesh.js" crossorigin="anonymous"></script>
   <!-- Midtrans Snap Payment Gateway SDK (Sandbox) -->
@@ -9232,18 +9236,13 @@
             const useTinyLandmarks = Boolean(faceapi.nets.faceLandmark68TinyNet && faceapi.nets.faceLandmark68TinyNet.isLoaded);
             const useStdLandmarks = !useTinyLandmarks && Boolean(faceapi.nets.faceLandmark68Net && faceapi.nets.faceLandmark68Net.isLoaded);
 
-            const hasRecNet = Boolean(faceapi.nets.faceRecognitionNet && faceapi.nets.faceRecognitionNet.isLoaded);
             const inputSizes = isWebcam ? [224, 320] : [320];
             for (const inSize of inputSizes) {
               const tinyOpts = new faceapi.TinyFaceDetectorOptions({ inputSize: inSize, scoreThreshold: tinyScoreThreshold });
               if (useTinyLandmarks) {
-                detections = hasRecNet
-                  ? await faceapi.detectAllFaces(inputTarget, tinyOpts).withFaceLandmarks(true).withFaceDescriptors().catch(() => [])
-                  : await faceapi.detectAllFaces(inputTarget, tinyOpts).withFaceLandmarks(true).catch(() => []);
+                detections = await faceapi.detectAllFaces(inputTarget, tinyOpts).withFaceLandmarks(true).catch(() => []);
               } else if (useStdLandmarks) {
-                detections = hasRecNet
-                  ? await faceapi.detectAllFaces(inputTarget, tinyOpts).withFaceLandmarks(false).withFaceDescriptors().catch(() => [])
-                  : await faceapi.detectAllFaces(inputTarget, tinyOpts).withFaceLandmarks(false).catch(() => []);
+                detections = await faceapi.detectAllFaces(inputTarget, tinyOpts).withFaceLandmarks(false).catch(() => []);
               } else {
                 detections = await faceapi.detectAllFaces(inputTarget, tinyOpts).catch(() => []);
               }
@@ -9258,13 +9257,9 @@
             if ((!detections || detections.length === 0) && inputTarget !== frameCanvas && frameCanvas) {
               const tinyOpts = new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: tinyScoreThreshold });
               if (useTinyLandmarks) {
-                detections = hasRecNet
-                  ? await faceapi.detectAllFaces(frameCanvas, tinyOpts).withFaceLandmarks(true).withFaceDescriptors().catch(() => [])
-                  : await faceapi.detectAllFaces(frameCanvas, tinyOpts).withFaceLandmarks(true).catch(() => []);
+                detections = await faceapi.detectAllFaces(frameCanvas, tinyOpts).withFaceLandmarks(true).catch(() => []);
               } else if (useStdLandmarks) {
-                detections = hasRecNet
-                  ? await faceapi.detectAllFaces(frameCanvas, tinyOpts).withFaceLandmarks(false).withFaceDescriptors().catch(() => [])
-                  : await faceapi.detectAllFaces(frameCanvas, tinyOpts).withFaceLandmarks(false).catch(() => []);
+                detections = await faceapi.detectAllFaces(frameCanvas, tinyOpts).withFaceLandmarks(false).catch(() => []);
               } else {
                 detections = await faceapi.detectAllFaces(frameCanvas, tinyOpts).catch(() => []);
               }
@@ -9587,11 +9582,15 @@
               bestCandidate = window._verifiedFaceLock.fullName || window._verifiedFaceLock.name;
               bestDist = window._verifiedFaceLock.distance || 0.40;
             } else if (!isNonFace) {
-              const isWahyuCand = Boolean(bestCandidate && bestCandidate.toLowerCase().includes('wahyu'));
+              const isOwnerCand = Boolean(bestCandidate && (
+                bestCandidate.toLowerCase().includes('wahyu') ||
+                bestCandidate.toLowerCase().includes('wagyu') ||
+                bestCandidate.toLowerCase().includes('tess')
+              ));
               isMatch = bestCandidate !== null && !['STRANGER', 'PENGUNJUNG', 'UNKNOWN'].includes(bestCandidate.toUpperCase()) && (
                 bestDist <= 0.65 ||
-                (bestDist <= 0.68 && (secondDist - bestDist) >= 0.04) ||
-                (isWebcam && (isWahyuCand || bestDist <= 0.72))
+                (bestDist <= 0.70 && (secondDist - bestDist) >= 0.03) ||
+                (isWebcam && (isOwnerCand || bestDist <= 0.75))
               );
             }
 
