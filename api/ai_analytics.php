@@ -178,6 +178,57 @@ $isSuperAdmin = ($user && $user['role'] === 'super_admin');
 
 // 1. GET ALL AI DATA
 if ($action === 'get_ai_data') {
+    // Auto-sync ai_faces from data/encoding.json so production server DB is always up to date
+    $encFile = __DIR__ . '/../data/encoding.json';
+    if (file_exists($encFile)) {
+        $encData = json_decode(file_get_contents($encFile), true);
+        if (isset($encData['faces']) && is_array($encData['faces'])) {
+            $existingNames = [];
+            $initialCount = count($db['ai_faces'] ?? []);
+            foreach (($db['ai_faces'] ?? []) as $f) {
+                $existingNames[strtolower(trim($f['name'] ?? ''))] = true;
+            }
+            // Purge obsolete dummy entries (Bambang, Siti, Tersangka)
+            $db['ai_faces'] = array_values(array_filter($db['ai_faces'] ?? [], function($f) {
+                $n = strtolower(trim($f['name'] ?? ''));
+                return !in_array($n, ['bambang supriyanto', 'siti rahmawati', 'tersangka residu dpo (peringatan)']);
+            }));
+            $dbUpdated = (count($db['ai_faces']) !== $initialCount);
+
+            $maxId = 0;
+            foreach ($db['ai_faces'] as &$f) {
+                if (!isset($f['id']) || empty($f['id'])) {
+                    $f['id'] = ++$maxId;
+                    $dbUpdated = true;
+                } else if ((int)$f['id'] > $maxId) {
+                    $maxId = (int)$f['id'];
+                }
+            }
+            unset($f);
+
+            foreach ($encData['faces'] as $ef) {
+                $efName = trim($ef['name'] ?? '');
+                if (!empty($efName) && !isset($existingNames[strtolower($efName)])) {
+                    $newFace = [
+                        'id' => ++$maxId,
+                        'name' => $efName,
+                        'category' => $ef['category'] ?? 'employee',
+                        'role_title' => $ef['role'] ?? 'Staff',
+                        'photo' => $ef['photo'] ?? '',
+                        'notes' => 'Tersinkronisasi dari Database Biometrik Face AI',
+                        'created_at' => $ef['created_at'] ?? date('Y-m-d H:i:s')
+                    ];
+                    $db['ai_faces'][] = $newFace;
+                    $existingNames[strtolower($efName)] = true;
+                    $dbUpdated = true;
+                }
+            }
+            if ($dbUpdated) {
+                save_db_data($db);
+            }
+        }
+    }
+
     $faces = [];
     $plates = [];
     $logs = [];
@@ -197,7 +248,8 @@ if ($action === 'get_ai_data') {
                 }
             }
         }
-        if (stripos($f['name'] ?? '', 'wahyu') !== false) {
+        $isWahyuUser = (stripos($f['name'] ?? '', 'wahyu') !== false || strtolower(trim($f['name'] ?? '')) === 'yu');
+        if ($isWahyuUser) {
             $f['category'] = 'vip';
             $f['role_title'] = 'Super Admin & Owner';
             $candidateDirect = 'assets/uploads/faces/face_wahyu_utomo.jpg';
@@ -392,7 +444,7 @@ function is_authentic_face_descriptor($descriptor) {
     foreach ($descriptor as $v) {
         $fv = (float)$v;
         $variance += ($fv - $mean) * ($fv - $mean);
-        $uniqueVals[round($fv, 6)] = true;
+        $uniqueVals[(string)round($fv, 6)] = true;
     }
     $variance /= 128;
     $uniqueCount = count($uniqueVals);

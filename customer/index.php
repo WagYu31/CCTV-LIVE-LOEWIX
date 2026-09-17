@@ -8659,7 +8659,7 @@
               const matchedFace = cachedAIFaces.find(f => f.name.toLowerCase() === bestCandidateLabel.toLowerCase()) ||
                                   cachedAIFaces.find(f => f.name.toLowerCase().includes(bestCandidateLabel.toLowerCase()) || bestCandidateLabel.toLowerCase().includes(f.name.toLowerCase()));
               if (matchedFace) {
-                const isWahyu = matchedFace.name.toLowerCase().includes('wahyu');
+                const isWahyu = matchedFace.name.toLowerCase().includes('wahyu') || matchedFace.name.toLowerCase() === 'yu';
                 const cat = isWahyu ? 'vip' : (matchedFace.category || 'employee');
                 const role = (matchedFace.role_title) ? matchedFace.role_title : (isWahyu ? 'Super Admin & Owner' : 'Staff');
                 if (sTrack) {
@@ -8836,7 +8836,7 @@
         } else if (hasMeasurement && currentDistance <= 0.65) {
           track.candidateVotes['mismatch'] = 0;
         }
-        const isWahyu = track.lockedPerson.name.toLowerCase().includes('wahyu');
+        const isWahyu = track.lockedPerson.name.toLowerCase().includes('wahyu') || track.lockedPerson.name.toLowerCase() === 'yu';
         return {
           name: track.lockedPerson.name,
           face: track.lockedPerson,
@@ -8848,6 +8848,7 @@
       // 3. Track not yet locked: Lock when genuine biometric match occurs (Distance <= 0.65 or DeepFace match)
       const isOwnerOrVIP = Boolean(candidateMatch && (
         candidateMatch.toLowerCase().includes('wahyu') ||
+        candidateMatch.toLowerCase() === 'yu' ||
         candidateMatch.toLowerCase().includes('wagyu') ||
         candidateMatch.toLowerCase().includes('tess')
       ));
@@ -8870,7 +8871,7 @@
             track.lockedPerson = resolvedFace;
             track.lockedDistance = currentDistance;
             track.isStranger = false;
-            const isWahyu = resolvedFace.name.toLowerCase().includes('wahyu') && !resolvedFace.name.toLowerCase().includes('wagyu');
+            const isWahyu = (resolvedFace.name.toLowerCase().includes('wahyu') || resolvedFace.name.toLowerCase() === 'yu') && !resolvedFace.name.toLowerCase().includes('wagyu');
             return {
               name: resolvedFace.name,
               face: resolvedFace,
@@ -9737,7 +9738,7 @@
                 conf = Math.min(99.6, Math.max(88.0, (88.0 + (ratio * 11.6)))).toFixed(1);
               }
               labelName = stab.name.toUpperCase();
-              const isWahyu = labelName.toLowerCase().includes('wahyu');
+              const isWahyu = labelName.toLowerCase().includes('wahyu') || labelName.toLowerCase() === 'yu';
               categoryType = isWahyu ? 'vip' : (stab.category || 'employee');
               if (isWahyu) {
                 conf = '96.8';
@@ -10107,11 +10108,13 @@
           badgeText = '🏠 PENGHUNI';
         }
 
+        const fName = f.name || 'Tanpa Nama';
+        const displayName = (fName.toLowerCase() === 'yu') ? 'Wahyu Utomo (YU)' : fName;
         const photoSrc = f.photo && f.photo !== '' && f.photo !== 'assets/image/avatar-default.png'
           ? (f.photo.startsWith('http') || f.photo.startsWith('data:') ? f.photo : `../${f.photo}`)
-          : `https://ui-avatars.com/api/?name=${encodeURIComponent(f.name)}&background=0284c7&color=fff&size=128`;
+          : `https://ui-avatars.com/api/?name=${encodeURIComponent(fName)}&background=0284c7&color=fff&size=128`;
 
-        const escName = f.name.replace(/'/g, "\\'");
+        const escName = fName.replace(/'/g, "\\'");
         const escRole = (f.role_title || 'Staff').replace(/'/g, "\\'");
         const cat = f.category || 'employee';
 
@@ -10120,10 +10123,10 @@
             <div class="ai-face-card" style="border-color: ${borderColor};">
               <div class="d-flex align-items-center gap-3 mb-3">
                 <div style="width: 48px; height: 48px; border-radius: 12px; background: rgba(56,189,248,0.15); display: flex; align-items: center; justify-content: center; overflow: hidden; border: 1.5px solid ${borderColor}; flex-shrink: 0;">
-                  <img src="${photoSrc}" alt="${f.name}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(f.name)}&background=0284c7&color=fff'">
+                  <img src="${photoSrc}" alt="${displayName}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(fName)}&background=0284c7&color=fff'">
                 </div>
                 <div style="flex: 1; min-width: 0;">
-                  <h6 class="text-white font-weight-bold mb-0 text-truncate" style="font-size: 14px;">${f.name}</h6>
+                  <h6 class="text-white font-weight-bold mb-0 text-truncate" style="font-size: 14px;">${displayName}</h6>
                   <small class="text-muted d-block text-truncate">${f.role_title || 'Tamu Terdaftar'}</small>
                 </div>
                 <span class="badge ${badgeColor} px-2 py-1" style="font-size: 10px; font-weight: 700;">${badgeText}</span>
@@ -12633,8 +12636,8 @@
         initFaceAPI();
         initAIHUDCanvas();
         // Automatically seed lock to registered owner Wahyu Utomo on webcam
-        const ownerFace = cachedAIFaces.find(f => f.name.toLowerCase().includes('wahyu')) || (cachedAIFaces ? cachedAIFaces[0] : null);
-        const ownerName = ownerFace ? ownerFace.name.toUpperCase() : 'WAHYU UTOMO';
+        const ownerFace = cachedAIFaces.find(f => (f.name || '').toLowerCase().includes('wahyu') || (f.name || '').toLowerCase() === 'yu') || (cachedAIFaces ? cachedAIFaces[0] : null);
+        const ownerName = ownerFace ? ((ownerFace.name.toLowerCase() === 'yu') ? 'WAHYU UTOMO' : ownerFace.name.toUpperCase()) : 'WAHYU UTOMO';
         window._verifiedFaceLock = {
           name: ownerName,
           face: ownerFace,
