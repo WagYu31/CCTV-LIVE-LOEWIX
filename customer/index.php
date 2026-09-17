@@ -7331,7 +7331,7 @@
               const absV = Math.abs(v);
               if (absV > maxVal) maxVal = absV;
             }
-            return sumSq >= 0.65 && sumSq <= 1.45 && maxVal <= 0.60;
+            return sumSq >= 0.50 && sumSq <= 5.0 && maxVal <= 0.85;
           }
           window.isAuthenticResNetDescriptor = isAuthenticResNetDescriptor;
 

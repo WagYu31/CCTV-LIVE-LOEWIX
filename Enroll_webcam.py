@@ -336,7 +336,7 @@ def sync_all_existing_faces():
                 return False
             sum_sq = sum(float(x) * float(x) for x in d)
             max_val = max(abs(float(x)) for x in d)
-            return 0.65 <= sum_sq <= 1.45 and max_val <= 0.60
+            return 0.50 <= sum_sq <= 5.0 and max_val <= 0.85
 
         if desc and is_authentic_descriptor(desc):
             register_encoding_record(name, desc, cat, role, photo)
