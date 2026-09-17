@@ -14216,7 +14216,7 @@
             allRegisteredDescriptors.push(new faceapi.LabeledFaceDescriptors(nameVal, [fArr]));
             window.allRegisteredDescriptors = allRegisteredDescriptors;
             window._registeredDescriptorsCount = allRegisteredDescriptors.length;
-            faceAPIFaceMatcher = new faceapi.FaceMatcher(allRegisteredDescriptors, 0.62);
+            faceAPIFaceMatcher = new faceapi.FaceMatcher(allRegisteredDescriptors, 0.65);
             window.faceAPIFaceMatcher = faceAPIFaceMatcher;
             console.log(`[FaceAPI] 🚀 INSTANT BIOMETRIC ACTIVATION: "${nameVal}" is now active in live recognizer! Total DB: ${allRegisteredDescriptors.length}`);
           }
