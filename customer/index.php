@@ -9435,7 +9435,7 @@
 
         // 4. CCTV SURVEILLANCE CLASSIFICATION (COCO-SSD Deep Neural Network)
         // Accurately differentiates humans (pedestrians / seated / standing) vs motorcycles vs cars vs bicycles
-        const shouldRunCOCOSSD = (isCCTVMode || isWebcam) && (!detections || detections.length === 0);
+        const shouldRunCOCOSSD = isCCTVMode && (!detections || detections.length === 0);
         if (shouldRunCOCOSSD && cocoSSDModel) {
           try {
             const predictions = await cocoSSDModel.detect(frameCanvas, 20, 0.25);
@@ -11030,18 +11030,20 @@
       let scanDirection = 1;
 
       function loop() {
-        const now = Date.now();
-        // Ensure size
-        if (canvas.parentElement && canvas.parentElement.clientWidth > 100 && (canvas.width !== canvas.parentElement.clientWidth || canvas.height !== canvas.parentElement.clientHeight)) {
-          canvas.width = canvas.parentElement.clientWidth;
-          canvas.height = canvas.parentElement.clientHeight || 460;
-        }
+        aiHUDAnimationId = requestAnimationFrame(loop);
+        try {
+          const now = Date.now();
+          // Ensure size
+          if (canvas.parentElement && canvas.parentElement.clientWidth > 100 && (canvas.width !== canvas.parentElement.clientWidth || canvas.height !== canvas.parentElement.clientHeight)) {
+            canvas.width = canvas.parentElement.clientWidth;
+            canvas.height = canvas.parentElement.clientHeight || 460;
+          }
 
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        const video = document.getElementById('ai-video-player');
-        const isWebcamRunning = video && video.srcObject !== null;
-        const isCCTVVideoPlaying = video && !video.paused && video.readyState >= 2 && video.videoWidth > 0;
+          const video = document.getElementById('ai-video-player');
+          const isWebcamRunning = video && video.srcObject !== null;
+          const isCCTVVideoPlaying = video && !video.paused && video.readyState >= 2 && video.videoWidth > 0;
 
         // If no active webcam and no CCTV video playing, render high-tech CCTV Surveillance Background
         if (!isWebcamRunning && !isCCTVVideoPlaying) {
@@ -11451,7 +11453,9 @@
         }
 
         ctx.restore();
-        aiHUDAnimationId = requestAnimationFrame(loop);
+        } catch (errLoop) {
+          console.warn('[AI HUD Loop Error]:', errLoop);
+        }
       }
 
       aiHUDAnimationId = requestAnimationFrame(loop);
@@ -12280,7 +12284,8 @@
 
     function drawEntityBracket(ctx, ent) {
       if (!ctx || !ent) return;
-      if (ent.type === 'person') {
+      const isWebcamActive = Boolean(currentAICamera && currentAICamera.id === 'webcam') || Boolean(document.getElementById('ai-video-player') && document.getElementById('ai-video-player').srcObject !== null);
+      if (ent.type === 'person' && !isWebcamActive) {
         drawSurveillancePedestrianReticle(ctx, ent.x, ent.y, ent.w, ent.h, ent);
         return;
       }

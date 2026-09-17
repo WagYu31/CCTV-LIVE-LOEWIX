@@ -36,48 +36,7 @@ if (!$user && !empty($_REQUEST['user_id'])) {
 
 // Initialize AI collections in db if not present
 if (!isset($db['ai_faces']) || !is_array($db['ai_faces'])) {
-    $db['ai_faces'] = [
-        [
-            'id' => 1,
-            'user_id' => 1,
-            'name' => 'Wahyu Utomo',
-            'category' => 'vip', // vip, employee, resident, blacklist, guest
-            'role_title' => 'Super Admin & Owner',
-            'photo' => 'assets/uploads/faces/face_wahyu_utomo.jpg',
-            'notes' => 'Akses penuh VIP Master & Owner Loewix 24/7',
-            'created_at' => '2026-08-20 10:00:00'
-        ],
-        [
-            'id' => 2,
-            'user_id' => 3,
-            'name' => 'Bambang Supriyanto',
-            'category' => 'vip',
-            'role_title' => 'Direktur Operasional',
-            'photo' => 'assets/image/avatar-default.png',
-            'notes' => 'Akses penuh VIP 24/7',
-            'created_at' => '2026-08-20 10:00:00'
-        ],
-        [
-            'id' => 3,
-            'user_id' => 3,
-            'name' => 'Siti Rahmawati',
-            'category' => 'employee',
-            'role_title' => 'Staff Administrasi',
-            'photo' => 'assets/image/avatar-default.png',
-            'notes' => 'Jam kerja 08:00 - 17:00 WIB',
-            'created_at' => '2026-08-21 11:30:00'
-        ],
-        [
-            'id' => 4,
-            'user_id' => 3,
-            'name' => 'Tersangka Residu DPO (Peringatan)',
-            'category' => 'blacklist',
-            'role_title' => 'DPO Pencurian Spion',
-            'photo' => 'assets/image/avatar-default.png',
-            'notes' => 'Segera amankan atau hubungi security jika terdeteksi!',
-            'created_at' => '2026-08-25 14:15:00'
-        ]
-    ];
+    $db['ai_faces'] = [];
 }
 
 if (!isset($db['ai_plates']) || !is_array($db['ai_plates'])) {
@@ -182,71 +141,80 @@ if ($action === 'get_ai_data') {
     $encFile = __DIR__ . '/../data/encoding.json';
     if (file_exists($encFile)) {
         $encData = json_decode(file_get_contents($encFile), true);
-        if (isset($encData['faces']) && is_array($encData['faces']) && !empty($encData['faces'])) {
-            $existingNames = [];
-            $initialCount = count($db['ai_faces'] ?? []);
-            foreach (($db['ai_faces'] ?? []) as $f) {
-                $existingNames[strtolower(trim($f['name'] ?? ''))] = true;
-            }
-            // Purge obsolete dummy entries (Bambang, Siti, Tersangka)
-            $db['ai_faces'] = array_values(array_filter($db['ai_faces'] ?? [], function($f) {
-                $n = strtolower(trim($f['name'] ?? ''));
-                return !in_array($n, ['bambang supriyanto', 'siti rahmawati', 'tersangka residu dpo (peringatan)']);
-            }));
-            $dbUpdated = (count($db['ai_faces']) !== $initialCount);
-
-            $maxId = 0;
-            foreach ($db['ai_faces'] as &$f) {
-                if (!isset($f['id']) || empty($f['id'])) {
-                    $f['id'] = ++$maxId;
-                    $dbUpdated = true;
-                } else if ((int)$f['id'] > $maxId) {
-                    $maxId = (int)$f['id'];
+        if (isset($encData['faces']) && is_array($encData['faces'])) {
+            if (empty($encData['faces'])) {
+                // encoding.json is explicitly empty (cleared). Purge database ai_faces as well.
+                if (!empty($db['ai_faces'])) {
+                    $db['ai_faces'] = [];
+                    save_db_data($db);
                 }
-            }
-            unset($f);
-
-            foreach ($db['ai_faces'] as &$efCheck) {
-                $curName = strtolower(trim($efCheck['name'] ?? ''));
-                if ($curName === 'wagyu' || $curName === 'yu' || str_contains($curName, 'wahyu')) {
-                    $efCheck['category'] = 'vip';
-                    $efCheck['role_title'] = 'Super Admin & Owner';
-                    $dbUpdated = true;
+            } else {
+                $existingNames = [];
+                $initialCount = count($db['ai_faces'] ?? []);
+                foreach (($db['ai_faces'] ?? []) as $f) {
+                    $existingNames[strtolower(trim($f['name'] ?? ''))] = true;
                 }
-            }
-            unset($efCheck);
+                // Purge obsolete dummy entries (Bambang, Siti, Tersangka)
+                $db['ai_faces'] = array_values(array_filter($db['ai_faces'] ?? [], function($f) {
+                    $n = strtolower(trim($f['name'] ?? ''));
+                    return !in_array($n, ['bambang supriyanto', 'siti rahmawati', 'tersangka residu dpo (peringatan)']);
+                }));
+                $dbUpdated = (count($db['ai_faces']) !== $initialCount);
 
-            foreach ($encData['faces'] as $ef) {
-                $efName = trim($ef['name'] ?? '');
-                if (!empty($efName) && !isset($existingNames[strtolower($efName)])) {
-                    $isOwnerSync = (
-                        stripos($efName, 'wahyu') !== false || 
-                        stripos($efName, 'wagyu') !== false || 
-                        strtolower($efName) === 'yu'
-                    );
-                    $newFace = [
-                        'id' => ++$maxId,
-                        'name' => $efName,
-                        'category' => $isOwnerSync ? 'vip' : ($ef['category'] ?? 'employee'),
-                        'role_title' => $isOwnerSync ? 'Super Admin & Owner' : ($ef['role'] ?? 'Staff'),
-                        'photo' => $ef['photo'] ?? '',
-                        'descriptor' => $ef['encoding'] ?? null,
-                        'notes' => $isOwnerSync ? 'Super Admin Master & Owner Loewix 24/7' : 'Tersinkronisasi dari Database Biometrik Face AI',
-                        'created_at' => $ef['created_at'] ?? date('Y-m-d H:i:s')
-                    ];
-                    $db['ai_faces'][] = $newFace;
-                    $existingNames[strtolower($efName)] = true;
-                    $dbUpdated = true;
+                $maxId = 0;
+                foreach ($db['ai_faces'] as &$f) {
+                    if (!isset($f['id']) || empty($f['id'])) {
+                        $f['id'] = ++$maxId;
+                        $dbUpdated = true;
+                    } else if ((int)$f['id'] > $maxId) {
+                        $maxId = (int)$f['id'];
+                    }
                 }
-            }
-            if ($dbUpdated) {
-                save_db_data($db);
+                unset($f);
+
+                foreach ($db['ai_faces'] as &$efCheck) {
+                    $curName = strtolower(trim($efCheck['name'] ?? ''));
+                    if ($curName === 'wagyu' || $curName === 'yu' || str_contains($curName, 'wahyu')) {
+                        $efCheck['category'] = 'vip';
+                        $efCheck['role_title'] = 'Super Admin & Owner';
+                        $dbUpdated = true;
+                    }
+                }
+                unset($efCheck);
+
+                foreach ($encData['faces'] as $ef) {
+                    $efName = trim($ef['name'] ?? '');
+                    if (!empty($efName) && !isset($existingNames[strtolower($efName)])) {
+                        $isOwnerSync = (
+                            stripos($efName, 'wahyu') !== false || 
+                            stripos($efName, 'wagyu') !== false || 
+                            strtolower($efName) === 'yu'
+                        );
+                        $newFace = [
+                            'id' => ++$maxId,
+                            'name' => $efName,
+                            'category' => $isOwnerSync ? 'vip' : ($ef['category'] ?? 'employee'),
+                            'role_title' => $isOwnerSync ? 'Super Admin & Owner' : ($ef['role'] ?? 'Staff'),
+                            'photo' => $ef['photo'] ?? '',
+                            'descriptor' => $ef['encoding'] ?? null,
+                            'notes' => $isOwnerSync ? 'Super Admin Master & Owner Loewix 24/7' : 'Tersinkronisasi dari Database Biometrik Face AI',
+                            'created_at' => $ef['created_at'] ?? date('Y-m-d H:i:s')
+                        ];
+                        $db['ai_faces'][] = $newFace;
+                        $existingNames[strtolower($efName)] = true;
+                        $dbUpdated = true;
+                    }
+                }
+                if ($dbUpdated) {
+                    save_db_data($db);
+                }
             }
         }
     }
 
     // Bidirectional sync: if $db['ai_faces'] has faces with descriptors, also ensure encoding.json has them
-    if (!empty($db['ai_faces'])) {
+    // But do not run if encoding.json was intentionally emptied!
+    if (!empty($db['ai_faces']) && (!isset($encData['faces']) || !empty($encData['faces']))) {
         $encUpdated = false;
         if (!isset($encData) || !is_array($encData)) {
             $encData = ['description' => 'Loewix CCTV AI Vision Face Encodings Database', 'faces' => []];
