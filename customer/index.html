@@ -8215,16 +8215,15 @@
     let allRegisteredDescriptors = [];
     const faceFeatureCache = new Map();
 
-    function resolveFacePhotoUrl(photo) {
+    function resolveFacePhotoUrl(photo, faceId = 0) {
       if (!photo) return '';
       if (photo.startsWith('data:') || photo.startsWith('blob:')) {
         return photo;
       }
-      let url = photo;
-      if (!url.startsWith('http://') && !url.startsWith('https://') && !url.startsWith('../')) {
-        url = '../' + url.replace(/^\//, '');
+      if (faceId > 0) {
+        return `../api/ai_analytics.php?action=get_face_image&id=${faceId}`;
       }
-      return encodeURI(decodeURI(url));
+      return `../api/ai_analytics.php?action=get_face_image&path=${encodeURIComponent(photo.replace(/^\.\.\//, '').replace(/^\//, ''))}`;
     }
 
     // Initialize face-api.js models (Multi-Source Local-First Engine)
@@ -8318,7 +8317,7 @@
       const currentHash = cachedAIFaces.map(f => `${f.id}_${f.name}_${(f.descriptor && f.descriptor.length) ? 'desc' : (f.photo_b64 || f.photo || '').length}`).join('|');
 
       // 1. FAST PATH: Instant Restore from LocalStorage Cache (< 2ms, zero neural network compute, ZERO freeze)
-      const storageKey = `loewix_face_desc_v9_${currentHash}`;
+      const storageKey = `loewix_face_desc_v12_${currentHash}`;
       if (!force) {
         try {
           const cachedJson = localStorage.getItem(storageKey);
@@ -8328,19 +8327,24 @@
               const labeled = [];
               rawParsed.forEach(item => {
                 if (item && item.label && Array.isArray(item.descriptors) && item.descriptors.length > 0) {
-                  const floatArrays = item.descriptors.map(arr => new Float32Array(arr));
-                  labeled.push(new faceapi.LabeledFaceDescriptors(item.label, floatArrays));
+                  const floatArrays = item.descriptors.filter(d => isAuthenticResNetDescriptor(d)).map(arr => new Float32Array(arr));
+                  if (floatArrays.length > 0) {
+                    labeled.push(new faceapi.LabeledFaceDescriptors(item.label, floatArrays));
+                  }
                 }
               });
 
-              if (labeled.length > 0) {
-                allRegisteredDescriptors = labeled;
+              if (labeled.length >= cachedAIFaces.length) {
+                for (const ld of labeled) {
+                  allRegisteredDescriptors = allRegisteredDescriptors.filter(x => x.label.toLowerCase() !== ld.label.toLowerCase());
+                  allRegisteredDescriptors.push(ld);
+                }
                 window.allRegisteredDescriptors = allRegisteredDescriptors;
-                window._registeredDescriptorsCount = labeled.length;
-                faceAPIFaceMatcher = new faceapi.FaceMatcher(labeled, 0.62);
+                window._registeredDescriptorsCount = allRegisteredDescriptors.length;
+                faceAPIFaceMatcher = new faceapi.FaceMatcher(allRegisteredDescriptors, 0.65);
                 window.faceAPIFaceMatcher = faceAPIFaceMatcher;
                 _faceDescriptorsBuiltHash = currentHash;
-                console.log(`[FaceAPI] ⚡ INSTANT RESTORE: ${labeled.length} biometric descriptors loaded from local storage cache in 1ms!`);
+                console.log(`[FaceAPI] ⚡ INSTANT RESTORE: ${labeled.length} biometric descriptors restored! Total DB: ${allRegisteredDescriptors.length}`);
                 return;
               }
             }
@@ -8355,12 +8359,15 @@
           _buildDescriptorsTimer = setTimeout(() => {
             _buildDescriptorsTimer = null;
             buildFaceDescriptors(force);
-          }, 800);
+          }, 600);
         }
         return;
       }
 
-      if (!force && _faceDescriptorsBuiltHash === currentHash && allRegisteredDescriptors.some(ld => ld.descriptors && ld.descriptors.length > 0)) {
+      const allActive = cachedAIFaces.every(f =>
+        allRegisteredDescriptors.some(ld => ld.label.toLowerCase() === f.name.toLowerCase() && ld.descriptors && ld.descriptors.length > 0)
+      );
+      if (!force && _faceDescriptorsBuiltHash === currentHash && allActive) {
         return;
       }
 
@@ -8473,13 +8480,16 @@
           }
         }
 
-        allRegisteredDescriptors = labeledDescriptors;
+        for (const ld of labeledDescriptors) {
+          allRegisteredDescriptors = allRegisteredDescriptors.filter(x => x.label.toLowerCase() !== ld.label.toLowerCase());
+          allRegisteredDescriptors.push(ld);
+        }
         window.allRegisteredDescriptors = allRegisteredDescriptors;
-        window._registeredDescriptorsCount = labeledDescriptors.length;
-        if (labeledDescriptors.length > 0) {
-          faceAPIFaceMatcher = new faceapi.FaceMatcher(labeledDescriptors, 0.62);
+        window._registeredDescriptorsCount = allRegisteredDescriptors.length;
+        if (allRegisteredDescriptors.length > 0) {
+          faceAPIFaceMatcher = new faceapi.FaceMatcher(allRegisteredDescriptors, 0.65);
           window.faceAPIFaceMatcher = faceAPIFaceMatcher;
-          console.log(`[FaceAPI] ✅ FaceMatcher ready with ${labeledDescriptors.length} registered entries`);
+          console.log(`[FaceAPI] ✅ FaceMatcher ready with ${allRegisteredDescriptors.length} registered entries active!`);
           try {
             localStorage.setItem(storageKey, JSON.stringify(toCache));
           } catch (eSave) {}
@@ -8933,27 +8943,26 @@
       }
 
       // Retry: Heavy faceRecognitionNet (6MB) may not be loaded yet when loadAIData finishes.
-      // Poll every 2s until descriptors are successfully built (max 30 attempts = 60s).
+      // Poll until ALL faces in cachedAIFaces have active descriptors
       let retryCount = 0;
-      const maxRetries = 30;
+      const maxRetries = 40;
       const retryInterval = setInterval(() => {
         retryCount++;
-        if (allRegisteredDescriptors.length > 0 || retryCount >= maxRetries) {
+        const allPresent = cachedAIFaces.length > 0 && cachedAIFaces.every(f =>
+          allRegisteredDescriptors.some(ld => ld.label.toLowerCase() === f.name.toLowerCase() && ld.descriptors && ld.descriptors.length > 0)
+        );
+        if (allPresent || retryCount >= maxRetries) {
           clearInterval(retryInterval);
           if (allRegisteredDescriptors.length > 0) {
-            console.log(`[FaceAPI] ✅ Descriptors verified: ${allRegisteredDescriptors.length} identities active`);
-          } else {
-            console.warn('[FaceAPI] ⚠️ Descriptor build timeout — faceRecognitionNet may have failed to load');
+            console.log(`[FaceAPI] ✅ Descriptors fully active: ${allRegisteredDescriptors.length} identities in memory`);
           }
           return;
         }
         if (faceAPIReady && typeof faceapi !== 'undefined' && faceapi.nets.faceRecognitionNet && faceapi.nets.faceRecognitionNet.isLoaded) {
-          if (cachedAIFaces.length > 0 && allRegisteredDescriptors.length === 0) {
-            console.log(`[FaceAPI] 🔄 Retry #${retryCount}: faceRecognitionNet loaded, building descriptors...`);
-            buildFaceDescriptors(true);
-          }
+          console.log(`[FaceAPI] 🔄 Building missing identities from DB (attempt #${retryCount})...`);
+          buildFaceDescriptors(true);
         }
-      }, 2000);
+      }, 1200);
     }
 
     lastFaceAPIResult = null;

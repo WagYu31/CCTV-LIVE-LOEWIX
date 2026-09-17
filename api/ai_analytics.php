@@ -222,13 +222,20 @@ if ($action === 'get_ai_data') {
         // Provide base64 data URIs for zero-latency, zero-CORS face descriptor building
         $projectRoot = realpath(__DIR__ . '/..');
         $photoRel = $f['photo'] ?? '';
-        $photoAbs = $projectRoot . '/' . ltrim($photoRel, '/');
-        if (file_exists($photoAbs) && !is_dir($photoAbs) && filesize($photoAbs) < 600000) {
-            $ext = strtolower(pathinfo($photoAbs, PATHINFO_EXTENSION));
-            $mime = ($ext === 'png') ? 'image/png' : (($ext === 'webp') ? 'image/webp' : 'image/jpeg');
-            $f['photo_b64'] = 'data:' . $mime . ';base64,' . base64_encode(file_get_contents($photoAbs));
+        if (str_starts_with($photoRel, 'data:image')) {
+            $f['photo_b64'] = $photoRel;
         } else {
-            $f['photo_b64'] = '';
+            $photoAbs = $projectRoot . '/' . ltrim($photoRel, '/');
+            if (!file_exists($photoAbs)) {
+                $photoAbs = __DIR__ . '/../' . ltrim($photoRel, '/');
+            }
+            if (file_exists($photoAbs) && !is_dir($photoAbs) && filesize($photoAbs) < 6000000) {
+                $ext = strtolower(pathinfo($photoAbs, PATHINFO_EXTENSION));
+                $mime = ($ext === 'png') ? 'image/png' : (($ext === 'webp') ? 'image/webp' : 'image/jpeg');
+                $f['photo_b64'] = 'data:' . $mime . ';base64,' . base64_encode(file_get_contents($photoAbs));
+            } else {
+                $f['photo_b64'] = '';
+            }
         }
 
         $extraB64 = [];
@@ -517,6 +524,51 @@ if ($action === 'sync_face_db') {
         'errors' => $errors,
         'details' => $details
     ]);
+    exit;
+}
+
+// PROXY FACE IMAGE WITH FULL CORS HEADERS
+if ($action === 'get_face_image') {
+    $faceId = (int)($_GET['id'] ?? 0);
+    $path = trim($_GET['path'] ?? '');
+    $targetPath = '';
+    $projectRoot = realpath(__DIR__ . '/..');
+
+    if ($faceId > 0 && !empty($db['ai_faces'])) {
+        foreach ($db['ai_faces'] as $f) {
+            if ((int)$f['id'] === $faceId) {
+                $targetPath = $f['photo'] ?? '';
+                break;
+            }
+        }
+    } elseif (!empty($path)) {
+        $targetPath = $path;
+    }
+
+    if (!empty($targetPath)) {
+        if (str_starts_with($targetPath, 'data:image')) {
+            $parts = explode(',', $targetPath);
+            if (count($parts) === 2) {
+                header('Access-Control-Allow-Origin: *');
+                header('Content-Type: image/jpeg');
+                echo base64_decode($parts[1]);
+                exit;
+            }
+        }
+        $abs = $projectRoot . '/' . ltrim($targetPath, '/');
+        if (!file_exists($abs)) {
+            $abs = __DIR__ . '/../' . ltrim($targetPath, '/');
+        }
+        if (file_exists($abs) && !is_dir($abs)) {
+            $ext = strtolower(pathinfo($abs, PATHINFO_EXTENSION));
+            $mime = ($ext === 'png') ? 'image/png' : (($ext === 'webp') ? 'image/webp' : 'image/jpeg');
+            header('Access-Control-Allow-Origin: *');
+            header('Content-Type: ' . $mime);
+            readfile($abs);
+            exit;
+        }
+    }
+    header('HTTP/1.1 404 Not Found');
     exit;
 }
 
