@@ -3203,6 +3203,7 @@
               <!-- Active Live Scanner Viewfinder -->
               <div id="face-scanner-viewfinder" style="position: relative; width: 100%; max-width: 360px; height: 230px; margin: 0 auto; border-radius: 12px; overflow: hidden; background: #000; border: 2px solid #00f0ff; box-shadow: 0 0 20px rgba(0, 240, 255, 0.3);">
                 <video id="face-webcam-video" autoplay playsinline style="width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1);"></video>
+                <canvas id="enroll-hud-canvas" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 10;"></canvas>
                 
                 <!-- Biometric Oval Target Guide Overlay -->
                 <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 140px; height: 180px; border: 2px dashed #00f0ff; border-radius: 50%; box-shadow: 0 0 15px rgba(0, 240, 255, 0.3); pointer-events: none;">
@@ -13173,9 +13174,160 @@
     let faceWebcamStream = null;
     let faceEnrollmentInterval = null;
     let _lastEnrollmentDetection = null;
+    let _enrollmentHudRafId = null;
+    let _enrollmentLerpBox = null;
+
+    function startEnrollmentHUDLoop() {
+      if (_enrollmentHudRafId) return;
+      const canvas = document.getElementById('enroll-hud-canvas');
+      const viewFinder = document.getElementById('face-scanner-viewfinder');
+      const video = document.getElementById('face-webcam-video');
+      if (!canvas || !viewFinder) return;
+
+      function renderFrame() {
+        _enrollmentHudRafId = requestAnimationFrame(renderFrame);
+        if (!canvas || !viewFinder || !video || video.paused || video.ended || !video.videoWidth) return;
+
+        const cw = viewFinder.clientWidth || 360;
+        const ch = viewFinder.clientHeight || 230;
+        if (canvas.width !== cw || canvas.height !== ch) {
+          canvas.width = cw;
+          canvas.height = ch;
+        }
+
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, cw, ch);
+
+        // 1. Moving Cyan Biometric Laser Beam
+        const laserY = ((Math.sin(Date.now() * 0.0035) + 1) * 0.5) * ch;
+        ctx.save();
+        ctx.strokeStyle = 'rgba(0, 240, 255, 0.7)';
+        ctx.lineWidth = 1.8;
+        ctx.shadowColor = '#00f0ff';
+        ctx.shadowBlur = 12;
+        ctx.beginPath();
+        ctx.moveTo(0, laserY);
+        ctx.lineTo(cw, laserY);
+        ctx.stroke();
+        ctx.restore();
+
+        // 2. Render 3D Biometric Mesh if face detected
+        if (_lastEnrollmentDetection && _lastEnrollmentDetection.box) {
+          const vw = video.videoWidth || 640;
+          const vh = video.videoHeight || 480;
+          const dBox = _lastEnrollmentDetection.detection ? _lastEnrollmentDetection.detection.box : _lastEnrollmentDetection.box;
+
+          // Invert horizontally to match mirrored video (scaleX(-1))
+          const targetW = (dBox.width / vw) * cw;
+          const targetH = (dBox.height / vh) * ch;
+          const targetX = cw - ((dBox.x + dBox.width) / vw) * cw;
+          const targetY = (dBox.y / vh) * ch;
+
+          if (!_enrollmentLerpBox) {
+            _enrollmentLerpBox = { x: targetX, y: targetY, w: targetW, h: targetH };
+          } else {
+            _enrollmentLerpBox.x += (targetX - _enrollmentLerpBox.x) * 0.45;
+            _enrollmentLerpBox.y += (targetY - _enrollmentLerpBox.y) * 0.45;
+            _enrollmentLerpBox.w += (targetW - _enrollmentLerpBox.w) * 0.45;
+            _enrollmentLerpBox.h += (targetH - _enrollmentLerpBox.h) * 0.45;
+          }
+
+          const bx = _enrollmentLerpBox.x;
+          const by = _enrollmentLerpBox.y;
+          const bw = _enrollmentLerpBox.w;
+          const bh = _enrollmentLerpBox.h;
+
+          let mirroredLms = null;
+          if (_lastEnrollmentDetection.landmarks) {
+            const rawLms = _lastEnrollmentDetection.landmarks.positions || _lastEnrollmentDetection.landmarks;
+            if (Array.isArray(rawLms)) {
+              mirroredLms = rawLms.map(p => ({
+                x: cw - ((p.x || p._x) / vw) * cw,
+                y: ((p.y || p._y) / vh) * ch
+              }));
+            }
+          }
+
+          const rawMesh = resolveBiometricMeshNodes(mirroredLms, null, bx, by, bw, bh);
+          const ent = {
+            currentMeshNodes: rawMesh,
+            landmarks: mirroredLms,
+            mesh468: null,
+            label: 'ENROLLMENT SCAN',
+            confidence: '98.5%'
+          };
+
+          // Render identical 3D biometric wireframe mesh & glowing jewel nodes
+          drawBiometricFacialMesh(ctx, bx, by, bw, bh, ent, false, true, false);
+
+          // Draw Snug Reticle Corner Brackets
+          ctx.save();
+          const bracketColor = '#ccff00';
+          ctx.strokeStyle = bracketColor;
+          ctx.lineWidth = 3.2;
+          ctx.shadowColor = bracketColor;
+          ctx.shadowBlur = 10;
+          ctx.lineCap = 'round';
+          const arm = Math.min(18, bw * 0.22);
+
+          // Top-Left
+          ctx.beginPath();
+          ctx.moveTo(bx, by + arm);
+          ctx.lineTo(bx, by);
+          ctx.lineTo(bx + arm, by);
+          ctx.stroke();
+
+          // Top-Right
+          ctx.beginPath();
+          ctx.moveTo(bx + bw - arm, by);
+          ctx.lineTo(bx + bw, by);
+          ctx.lineTo(bx + bw, by + arm);
+          ctx.stroke();
+
+          // Bottom-Left
+          ctx.beginPath();
+          ctx.moveTo(bx, by + bh - arm);
+          ctx.lineTo(bx, by + bh);
+          ctx.lineTo(bx + arm, by + bh);
+          ctx.stroke();
+
+          // Bottom-Right
+          ctx.beginPath();
+          ctx.moveTo(bx + bw - arm, by + bh);
+          ctx.lineTo(bx + bw, by + bh);
+          ctx.lineTo(bx + bw, by + bh - arm);
+          ctx.stroke();
+
+          // Floating Biometric Verification Pill
+          const pillW = 185;
+          const pillH = 20;
+          const pillX = bx + (bw - pillW) / 2;
+          const pillY = Math.max(6, by - 24);
+          ctx.fillStyle = 'rgba(7, 13, 34, 0.92)';
+          ctx.strokeStyle = bracketColor;
+          ctx.lineWidth = 1.2;
+          ctx.beginPath();
+          if (typeof ctx.roundRect === 'function') {
+            ctx.roundRect(pillX, pillY, pillW, pillH, 6);
+          } else {
+            ctx.rect(pillX, pillY, pillW, pillH);
+          }
+          ctx.fill();
+          ctx.stroke();
+
+          ctx.fillStyle = bracketColor;
+          ctx.font = 'bold 10px monospace';
+          ctx.textAlign = 'center';
+          ctx.fillText('BIOMETRIK 3D: SIAP DI-SCAN', pillX + pillW / 2, pillY + 14);
+          ctx.restore();
+        }
+      }
+      _enrollmentHudRafId = requestAnimationFrame(renderFrame);
+    }
 
     async function startFaceEnrollmentCamera() {
       _lastEnrollmentDetection = null;
+      _enrollmentLerpBox = null;
       const video = document.getElementById('face-webcam-video');
       const viewFinder = document.getElementById('face-scanner-viewfinder');
       const previewBox = document.getElementById('face-scanned-preview-box');
@@ -13208,22 +13360,27 @@
           statusBadge.innerHTML = '<span class="pulse-dot" style="background: #10b981; margin-right: 4px;"></span> Kamera Aktif • Posisikan Wajah di Lingkaran';
         }
 
-        // Real-time background face detector so capture has pre-computed coordinates (0ms latency!)
+        // Start 60 FPS Biometric HUD Canvas in modal
+        startEnrollmentHUDLoop();
+
+        // Real-time background face & landmark detector (with 68 landmarks for 3D mesh)
         if (typeof faceapi !== 'undefined' && faceAPIReady) {
           faceEnrollmentInterval = setInterval(async () => {
             if (!video || video.paused || video.ended || !video.videoWidth) return;
             try {
-              const detection = await faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.25 }));
+              const detection = await faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.20 }))
+                .withFaceLandmarks(true);
               if (detection && detection.box && statusBadge) {
                 _lastEnrollmentDetection = detection;
-                statusBadge.innerHTML = '<span class="text-success font-weight-bold"><i class="fas fa-check-circle mr-1"></i> Wajah Terdeteksi Jelas (Siap Di-scan)</span>';
+                statusBadge.innerHTML = '<span class="text-success font-weight-bold"><i class="fas fa-check-circle mr-1"></i> Biometrik 3D Terkunci (Siap Di-scan)</span>';
                 statusBadge.style.borderColor = '#10b981';
               } else if (statusBadge) {
+                _lastEnrollmentDetection = null;
                 statusBadge.innerHTML = '<span style="color: #38bdf8;"><i class="fas fa-expand mr-1"></i> Arahkan Wajah ke Dalam Lingkaran</span>';
                 statusBadge.style.borderColor = 'rgba(0, 240, 255, 0.5)';
               }
             } catch (e) {}
-          }, 500);
+          }, 160);
         }
 
       } catch (err) {
@@ -13346,6 +13503,17 @@
     }
 
     function stopFaceWebcam() {
+      if (_enrollmentHudRafId) {
+        cancelAnimationFrame(_enrollmentHudRafId);
+        _enrollmentHudRafId = null;
+      }
+      _enrollmentLerpBox = null;
+      _lastEnrollmentDetection = null;
+      const canvas = document.getElementById('enroll-hud-canvas');
+      if (canvas) {
+        const ctx = canvas.getContext('2d');
+        if (ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
+      }
       if (faceEnrollmentInterval) {
         clearInterval(faceEnrollmentInterval);
         faceEnrollmentInterval = null;
