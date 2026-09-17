@@ -14142,48 +14142,40 @@
       try {
         let descVal = document.getElementById('face-input-descriptor')?.value || (window._lastCapturedFaceDescriptor ? JSON.stringify(window._lastCapturedFaceDescriptor) : '');
 
-        // AUTO-EXTRACT DESCRIPTOR FROM PREVIEW IF NOT ALREADY GENERATED
-        if (!descVal && photoVal && typeof faceapi !== 'undefined' && faceapi.nets.faceRecognitionNet && faceapi.nets.faceRecognitionNet.isLoaded) {
-          const previewImg = document.getElementById('face-preview-img');
-          if (previewImg && previewImg.complete && previewImg.naturalWidth > 10) {
-            try {
-              let det = await faceapi.detectSingleFace(previewImg, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.03 }))
-                .withFaceLandmarks(Boolean(faceapi.nets.faceLandmark68TinyNet && faceapi.nets.faceLandmark68TinyNet.isLoaded))
+        // AUTO-EXTRACT AUTHENTIC BIOMETRIC RESNET-34 ENCODING FROM PHOTO
+        if (photoVal && typeof faceapi !== 'undefined' && faceapi.nets.faceRecognitionNet && faceapi.nets.faceRecognitionNet.isLoaded) {
+          try {
+            const pImg = new Image();
+            pImg.crossOrigin = 'anonymous';
+            const loadP = new Promise(r => { pImg.onload = () => r(pImg); pImg.onerror = () => r(null); });
+            pImg.src = photoVal.startsWith('data:') ? photoVal : resolveFacePhotoUrl(photoVal);
+            const loadedImg = await loadP;
+            if (loadedImg && loadedImg.naturalWidth > 10) {
+              const useTiny = Boolean(faceapi.nets.faceLandmark68TinyNet && faceapi.nets.faceLandmark68TinyNet.isLoaded);
+              let det = await faceapi.detectSingleFace(loadedImg, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.02 }))
+                .withFaceLandmarks(useTiny)
                 .withFaceDescriptor().catch(() => null);
-              if (!det || !det.descriptor) {
-                det = await faceapi.detectSingleFace(previewImg, new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.02 }))
-                  .withFaceLandmarks(Boolean(faceapi.nets.faceLandmark68TinyNet && faceapi.nets.faceLandmark68TinyNet.isLoaded))
+              if (!det && faceapi.nets.ssdMobilenetv1 && faceapi.nets.ssdMobilenetv1.isLoaded) {
+                det = await faceapi.detectSingleFace(loadedImg, new faceapi.SsdMobilenetv1Options({ minConfidence: 0.05 }))
+                  .withFaceLandmarks(useTiny)
                   .withFaceDescriptor().catch(() => null);
               }
-              if (det && det.descriptor && det.descriptor.length === 128) {
-                descVal = JSON.stringify(Array.from(det.descriptor));
-                window._lastCapturedFaceDescriptor = Array.from(det.descriptor);
+              let d = det ? det.descriptor : null;
+              if (!d && typeof faceapi.computeFaceDescriptor === 'function') {
+                const cv = document.createElement('canvas');
+                cv.width = 150; cv.height = 150;
+                cv.getContext('2d').drawImage(loadedImg, 0, 0, 150, 150);
+                d = await faceapi.computeFaceDescriptor(cv).catch(() => null);
               }
-            } catch(eAuto) {}
-          }
-        }
-
-        // Guaranteed 128D normalized feature vector from photo if still missing
-        if (!descVal && photoVal) {
-          try {
-            const cvs = document.createElement('canvas');
-            cvs.width = 16; cvs.height = 8;
-            const cx = cvs.getContext('2d');
-            const pImg = new Image();
-            await new Promise((res) => {
-              pImg.onload = () => { cx.drawImage(pImg, 0, 0, 16, 8); res(); };
-              pImg.onerror = () => res();
-              pImg.src = photoVal;
-            });
-            const idata = cx.getImageData(0, 0, 16, 8).data;
-            const vec = [];
-            for (let k = 0; k < 128; k++) {
-              vec.push(Number(((idata[k * 3] || 128) / 255.0 - 0.5).toFixed(4)));
+              if (d && isAuthenticResNetDescriptor(d)) {
+                descVal = JSON.stringify(Array.from(d));
+                window._lastCapturedFaceDescriptor = Array.from(d);
+                console.log(`[Face Register] ✅ Authentic 128D ResNet Biometric Encoding extracted for "${nameVal}"!`);
+              }
             }
-            descVal = JSON.stringify(vec);
-            window._lastCapturedFaceDescriptor = vec;
-            console.log('[Guaranteed Encoding] ✅ 128D visual embedding generated!');
-          } catch(e) {}
+          } catch(eAuto) {
+            console.warn('[Face Register] Auto-encoding error:', eAuto);
+          }
         }
 
         const fd = new FormData();

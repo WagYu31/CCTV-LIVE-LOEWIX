@@ -387,7 +387,7 @@ function is_authentic_face_descriptor($descriptor) {
     return ($sumSq >= 0.50 && $sumSq <= 5.0 && $maxVal <= 0.85);
 }
 
-function syncEncodingJSON($name, $descriptor, $category = 'employee', $role = 'Staff', $photo = '') {
+function syncEncodingJSON($name, $descriptor, $category = 'employee', $role = 'Staff', $photo = '', $oldName = '') {
     if (!is_authentic_face_descriptor($descriptor)) return;
     $encFile = __DIR__ . '/../data/encoding.json';
     $data = file_exists($encFile) ? json_decode(file_get_contents($encFile), true) : null;
@@ -399,7 +399,9 @@ function syncEncodingJSON($name, $descriptor, $category = 'employee', $role = 'S
     }
     $updated = false;
     foreach ($data['faces'] as &$ef) {
-        if (strtolower($ef['name'] ?? '') === strtolower($name)) {
+        $curName = strtolower($ef['name'] ?? '');
+        if ($curName === strtolower($name) || (!empty($oldName) && $curName === strtolower($oldName))) {
+            $ef['name'] = $name;
             $ef['encoding'] = array_map('floatval', $descriptor);
             $ef['category'] = $category;
             $ef['role'] = $role;
@@ -603,6 +605,7 @@ if ($action === 'register_face' || $action === 'update_face') {
         $found = false;
         foreach ($db['ai_faces'] as &$f) {
             if ((int)$f['id'] === $editId) {
+                $oldName = $f['name'] ?? '';
                 $f['name'] = $name;
                 $f['category'] = $category;
                 $f['role_title'] = $roleTitle;
@@ -613,7 +616,10 @@ if ($action === 'register_face' || $action === 'update_face') {
                 }
                 if ($descriptor !== null) {
                     $f['descriptor'] = $descriptor;
-                    syncEncodingJSON($name, $descriptor, $category, $f['role_title'] ?? 'Staff', $f['photo'] ?? '');
+                }
+                $effectiveDesc = $descriptor ?: ($f['descriptor'] ?? null);
+                if ($effectiveDesc) {
+                    syncEncodingJSON($name, $effectiveDesc, $category, $f['role_title'] ?? 'Staff', $f['photo'] ?? '', $oldName);
                 }
                 $f['notes'] = $notes;
                 $f['updated_at'] = date('Y-m-d H:i:s');
@@ -771,8 +777,26 @@ if ($action === 'log_detection') {
 // 5. DELETE ENTITY
 if ($action === 'delete_face') {
     $faceId = (int)($_POST['id'] ?? 0);
+    $deletedName = '';
+    foreach ($db['ai_faces'] as $f) {
+        if ((int)$f['id'] === $faceId) {
+            $deletedName = $f['name'] ?? '';
+            break;
+        }
+    }
     $db['ai_faces'] = array_values(array_filter($db['ai_faces'], fn($f) => (int)$f['id'] !== $faceId));
     save_db_data($db);
+
+    if (!empty($deletedName)) {
+        $encFile = __DIR__ . '/../data/encoding.json';
+        if (file_exists($encFile)) {
+            $encData = json_decode(file_get_contents($encFile), true);
+            if (isset($encData['faces']) && is_array($encData['faces'])) {
+                $encData['faces'] = array_values(array_filter($encData['faces'], fn($ef) => strtolower($ef['name'] ?? '') !== strtolower($deletedName)));
+                @file_put_contents($encFile, json_encode($encData, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+            }
+        }
+    }
     echo json_encode(['success' => true, 'message' => 'Wajah terdaftar berhasil dihapus.']);
     exit;
 }
