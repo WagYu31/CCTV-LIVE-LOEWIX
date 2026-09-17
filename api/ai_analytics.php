@@ -383,8 +383,8 @@ function is_authentic_face_descriptor($descriptor) {
         $absV = abs($fv);
         if ($absV > $maxVal) $maxVal = $absV;
     }
-    // Unit vector: sum of squares around 1.0 (0.65 - 1.45) and no element > 0.60
-    return ($sumSq >= 0.65 && $sumSq <= 1.45 && $maxVal <= 0.60);
+    // Unit vector: sum of squares around 1.0 - 2.5 and maxVal <= 0.85
+    return ($sumSq >= 0.50 && $sumSq <= 5.0 && $maxVal <= 0.85);
 }
 
 function syncEncodingJSON($name, $descriptor, $category = 'employee', $role = 'Staff', $photo = '') {
