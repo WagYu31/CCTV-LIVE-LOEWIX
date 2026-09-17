@@ -7513,7 +7513,7 @@
       _lastMediaPipeFaceTime = Date.now();
 
       const video = document.getElementById('ai-video-player');
-      const canvas = document.getElementById('ai-overlay-canvas');
+      const canvas = document.getElementById('ai-hud-canvas');
       if (!video || !canvas) return;
 
       const isWebcam = Boolean(video.srcObject !== null || (currentAICamera && currentAICamera.id === 'webcam'));
@@ -7619,6 +7619,27 @@
         ent.label = labelName;
         ent.category = categoryType;
         ent.confidence = conf;
+      } else {
+        activeAIEntities = [{
+          x: targetX,
+          y: targetY,
+          w: targetW,
+          h: targetH,
+          targetX, targetY, targetW, targetH,
+          targetMeshNodes, targetLandmarks17,
+          currentMeshNodes: targetMeshNodes,
+          currentLandmarks17: targetLandmarks17,
+          mesh468: scaledMesh468,
+          landmarks: scaledMesh468,
+          normBox: { x: normBoxX, y: normBoxY, width: normBoxW, height: normBoxH },
+          type: 'face',
+          label: labelName,
+          category: categoryType,
+          confidence: conf,
+          createdAt: Date.now(),
+          firstSeen: Date.now(),
+          scanProgress: 100
+        }];
       }
     }
 
@@ -9870,13 +9891,14 @@
 
           if (results.length > 0) {
             const isMediaPipeFresh = isWebcam && (Date.now() - _lastMediaPipeFaceTime < 1200);
-            const has468 = results.some(r => r.mesh468 && r.mesh468.length >= 468);
-            if (!isMediaPipeFresh || has468) {
-              lastFaceAPIResult = {
-                faces: results,
-                timestamp: Date.now()
-              };
+            if (isMediaPipeFresh && lastFaceAPIResult && lastFaceAPIResult.faces && lastFaceAPIResult.faces.length > 0 && lastFaceAPIResult.faces[0].mesh468) {
+              results[0].mesh468 = lastFaceAPIResult.faces[0].mesh468;
+              results[0].normLandmarks = lastFaceAPIResult.faces[0].normLandmarks;
             }
+            lastFaceAPIResult = {
+              faces: results,
+              timestamp: Date.now()
+            };
             // Continuously renew identity lock timestamp when face is actively verified as a registered match
             if (window._verifiedFaceLock && results.some(r => r.face && r.isMatch && !r.name.includes('STRANGER'))) {
               window._verifiedFaceLock.timestamp = Date.now();
