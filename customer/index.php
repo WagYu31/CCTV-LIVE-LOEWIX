@@ -7339,16 +7339,24 @@
           if (Array.isArray(data.encodings) && data.encodings.length > 0) {
             window._cachedEncodings = data.encodings;
             for (const ef of data.encodings) {
+              const descs = [];
+              if (Array.isArray(ef.encodings) && ef.encodings.length > 0) {
+                for (const enc of ef.encodings) {
+                  if (isAuthenticResNetDescriptor(enc)) descs.push(new Float32Array(enc));
+                }
+              }
               if (isAuthenticResNetDescriptor(ef.encoding)) {
-                const fArr = new Float32Array(ef.encoding);
+                descs.push(new Float32Array(ef.encoding));
+              }
+              if (descs.length > 0) {
                 allRegisteredDescriptors = allRegisteredDescriptors.filter(ld => ld.label.toLowerCase() !== ef.name.toLowerCase());
-                allRegisteredDescriptors.push(new faceapi.LabeledFaceDescriptors(ef.name, [fArr]));
+                allRegisteredDescriptors.push(new faceapi.LabeledFaceDescriptors(ef.name, descs));
               }
             }
             window.allRegisteredDescriptors = allRegisteredDescriptors;
             window._registeredDescriptorsCount = allRegisteredDescriptors.length;
             if (allRegisteredDescriptors.length > 0) {
-              faceAPIFaceMatcher = new faceapi.FaceMatcher(allRegisteredDescriptors, 0.65);
+              faceAPIFaceMatcher = new faceapi.FaceMatcher(allRegisteredDescriptors, 0.68);
               window.faceAPIFaceMatcher = faceAPIFaceMatcher;
               console.log(`[FaceAPI] 🚀 ${allRegisteredDescriptors.length} verified unit encodings active from encoding.json!`);
             }
