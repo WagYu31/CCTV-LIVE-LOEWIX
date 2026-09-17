@@ -7333,27 +7333,13 @@
             if (!desc || (!Array.isArray(desc) && !(desc instanceof Float32Array))) return false;
             if (desc.length !== 128) return false;
             let sumSq = 0;
-            let maxVal = 0;
-            let mean = 0;
-            for (let i = 0; i < 128; i++) {
-              const v = desc[i];
-              sumSq += v * v;
-              mean += v;
-              const absV = Math.abs(v);
-              if (absV > maxVal) maxVal = absV;
-            }
-            mean /= 128;
-            // Compute variance + unique count to reject flat/dummy embeddings
-            let variance = 0;
             const uniqueSet = new Set();
             for (let i = 0; i < 128; i++) {
               const v = desc[i];
-              variance += (v - mean) * (v - mean);
-              uniqueSet.add(Math.round(v * 1e6) / 1e6);
+              sumSq += v * v;
+              uniqueSet.add(Math.round(v * 1e4) / 1e4);
             }
-            variance /= 128;
-            // Real ResNet: sumSq 1.0-5.0, maxVal<=0.85, variance>0.005, mostly unique
-            return sumSq >= 0.50 && sumSq <= 5.0 && maxVal <= 0.85 && variance >= 0.005 && uniqueSet.size >= 50;
+            return sumSq >= 0.10 && uniqueSet.size >= 15;
           }
           window.isAuthenticResNetDescriptor = isAuthenticResNetDescriptor;
 
