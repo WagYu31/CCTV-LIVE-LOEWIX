@@ -7390,6 +7390,8 @@
     let _isMediaPipeInFlight = false;
     let _lastMediaPipeFaceTime = 0;
     let _mpRafId = null;
+    let _mpLastFrameTime = 0;
+    let _mpInFlightStartTime = 0;
 
     async function initTFJSFaceMesh() {
       if (isTFJSFaceMeshReady || isTFJSFaceMeshLoading) return;
@@ -7474,16 +7476,28 @@
      */
     function startMediaPipeCameraPump() {
       if (_mpRafId) return;
-      async function pump() {
+      async function pump(timestamp) {
         _mpRafId = requestAnimationFrame(pump);
         const video = document.getElementById('ai-video-player');
-        if (!directMediaPipeFaceMesh || _isMediaPipeInFlight || !isAutoTrackingActive || !video) return;
+        if (!directMediaPipeFaceMesh || !isAutoTrackingActive || !video) return;
+
+        // Watchdog: reset stuck in-flight flag after 1.5s
+        if (_isMediaPipeInFlight && (Date.now() - _mpInFlightStartTime > 1500)) {
+          _isMediaPipeInFlight = false;
+        }
+        if (_isMediaPipeInFlight) return;
+
+        // Throttle to ~30 FPS (33ms) so Face-API and main thread run silky smooth
+        if (timestamp && (timestamp - _mpLastFrameTime < 33)) return;
+        _mpLastFrameTime = timestamp || Date.now();
+
         const isWebcam = Boolean(video.srcObject !== null || (currentAICamera && currentAICamera.id === 'webcam'));
         if (!isWebcam) return;
         if (video.readyState < 2 || video.paused || video.ended || video.videoWidth === 0) return;
 
         try {
           _isMediaPipeInFlight = true;
+          _mpInFlightStartTime = Date.now();
           await directMediaPipeFaceMesh.send({ image: video });
         } catch (e) {
           try {
@@ -8816,15 +8830,13 @@
 
       const isWebcam = Boolean(currentAICamera && currentAICamera.id === 'webcam');
 
-      // 1B. Persistent Verified Identity Lock (from Genuine Biometric Match on THIS track or webcam)
-      if (window._verifiedFaceLock && (Date.now() - window._verifiedFaceLock.timestamp < (window._verifiedFaceLock.ttl || 60000))) {
+      // 1B. Persistent Verified Identity Lock (from Genuine Biometric Match on THIS track)
+      if (window._verifiedFaceLock && (Date.now() - window._verifiedFaceLock.timestamp < (window._verifiedFaceLock.ttl || 30000))) {
         const lock = window._verifiedFaceLock;
-        if (isWebcam || (track && track.id === lock.trackId)) {
-          if (track) {
-            track.lockedPerson = lock.face;
-            track.lockedDistance = lock.distance || 0.35;
-            track.isStranger = false;
-          }
+        if (track && track.id === lock.trackId) {
+          track.lockedPerson = lock.face;
+          track.lockedDistance = lock.distance || 0.35;
+          track.isStranger = false;
           return {
             name: lock.name,
             face: lock.face,
@@ -12288,19 +12300,18 @@
       ent.h = h;
 
       let { label, category, confidence } = ent;
-      const isWebcamActive = Boolean(currentAICamera && currentAICamera.id === 'webcam') || Boolean(document.getElementById('ai-video-player') && document.getElementById('ai-video-player').srcObject !== null);
-      const isWahyu = String(label).toLowerCase().includes('wahyu') || 
-                      String(label).toLowerCase().includes('wagyu') || 
-                      String(label).toLowerCase() === 'yu' || 
-                      (ent.face && (
-                        String(ent.face.name).toLowerCase().includes('wahyu') || 
-                        String(ent.face.name).toLowerCase().includes('wagyu') || 
-                        String(ent.face.name).toLowerCase() === 'yu'
-                      )) ||
-                      isWebcamActive;
+      const isOwnerAlias = String(label || '').toLowerCase().includes('wahyu') || 
+                           String(label || '').toLowerCase().includes('wagyu') || 
+                           String(label || '').toLowerCase() === 'yu' ||
+                           (ent.face && (
+                             String(ent.face.name || '').toLowerCase().includes('wahyu') || 
+                             String(ent.face.name || '').toLowerCase().includes('wagyu') || 
+                             String(ent.face.name || '').toLowerCase() === 'yu'
+                           ));
+      const isWahyu = isOwnerAlias && Boolean(ent.isMatch);
       const isBlacklist = category === 'blacklist';
       const isVIP = category === 'vip' || isWahyu;
-      const isRegistered = Boolean(isWahyu || ent.face || (ent.isMatch && label && !['STRANGER', 'PENGUNJUNG', 'UNKNOWN', 'ORANG'].includes(String(label).toUpperCase())));
+      const isRegistered = Boolean(ent.face || (ent.isMatch && label && !['STRANGER', 'PENGUNJUNG', 'UNKNOWN', 'ORANG'].includes(String(label).toUpperCase())));
       const isRealStranger = !isRegistered && (!label || ['STRANGER', 'PENGUNJUNG', 'UNKNOWN', 'ORANG'].includes(String(label).toUpperCase()));
       const isUnknown = isRealStranger;
 
@@ -12402,7 +12413,7 @@
           roleTag = ' [TERDAFTAR]';
         }
         fullTagText = isWahyu ? 'WAHYU UTOMO [VIP]' : `${displayLabel}${roleTag}`;
-        confStr = isWahyu ? '96.8%' : ((confidence && String(confidence).includes('%')) ? confidence : `${confidence || 98.4}%`);
+        confStr = (confidence && String(confidence).includes('%')) ? confidence : `${confidence || 95.0}%`;
         pillColor = isStranger ? '#ffd700' : (isBlacklist ? '#ef4444' : (isVIP ? '#ccff00' : '#00f0ff'));
       }
 
@@ -12694,68 +12705,10 @@
         initTFJSFaceMesh();
         initFaceAPI();
         initAIHUDCanvas();
-        // Automatically seed lock to registered owner Wahyu Utomo on webcam
-        const ownerFace = cachedAIFaces.find(f => (f.name || '').toLowerCase().includes('wahyu') || (f.name || '').toLowerCase() === 'yu' || (f.name || '').toLowerCase().includes('wagyu')) || (cachedAIFaces ? cachedAIFaces[0] : null);
-        const ownerName = ownerFace ? ((['yu', 'wagyu'].includes((ownerFace.name || '').toLowerCase())) ? 'WAHYU UTOMO' : ownerFace.name.toUpperCase()) : 'WAHYU UTOMO';
-        window._verifiedFaceLock = {
-          name: ownerName,
-          face: ownerFace,
-          category: (ownerFace && ownerFace.category) || 'vip',
-          confidence: '96.8',
-          gender: (ownerFace && ownerFace.gender) || 'Pria',
-          timestamp: Date.now(),
-          ttl: 300000
-        };
-
-        const canvas = document.getElementById('ai-hud-canvas');
-        const cW = (canvas && canvas.width > 100) ? canvas.width : 640;
-        const cH = (canvas && canvas.height > 100) ? canvas.height : 380;
-        const seedW = Math.round(cW * (_liveWebcamTrack.targetW || 0.32));
-        const seedH = Math.round(seedW * 1.25);
-        const seedX = Math.round(cW * (_liveWebcamTrack.targetX || 0.34));
-        const seedY = Math.round(cH * (_liveWebcamTrack.targetY || 0.20));
-        const seedLm17 = extract17BiometricLandmarks(null, seedX, seedY, seedW, seedH);
-
-        lastFaceAPIResult = {
-          faces: [{
-            name: `${ownerName} [VIP]`,
-            face: ownerFace,
-            category: 'vip',
-            type: 'face',
-            normBox: { x: _liveWebcamTrack.targetX || 0.34, y: _liveWebcamTrack.targetY || 0.20, width: _liveWebcamTrack.targetW || 0.32, height: _liveWebcamTrack.targetH || 0.44 },
-            normLandmarks: seedLm17.map(p => ({ x: p.x / cW, y: p.y / cH })),
-            confidence: '96.8',
-            gender: (ownerFace && ownerFace.gender) || 'Pria',
-            snapshot: (ownerFace && ownerFace.photo) ? resolveFacePhotoUrl(ownerFace.photo) : '',
-            isMatch: true
-          }],
-          timestamp: Date.now()
-        };
-
-        activeAIEntities = [{
-          x: seedX,
-          y: seedY,
-          w: seedW,
-          h: seedH,
-          targetX: seedX,
-          targetY: seedY,
-          targetW: seedW,
-          targetH: seedH,
-          currentMeshNodes: resolveBiometricMeshNodes(null, null, seedX, seedY, seedW, seedH),
-          targetMeshNodes: resolveBiometricMeshNodes(null, null, seedX, seedY, seedW, seedH),
-          currentLandmarks17: seedLm17.map(p => ({ ...p })),
-          targetLandmarks17: seedLm17,
-          type: 'face',
-          label: `${ownerName} [VIP]`,
-          category: 'vip',
-          confidence: '96.8',
-          face: ownerFace,
-          gender: (ownerFace && ownerFace.gender) || 'Pria',
-          scanProgress: 100,
-          hasLogged: true,
-          firstSeen: Date.now(),
-          createdAt: Date.now()
-        }];
+        // Clean scanner state: wait for genuine biometric detection on camera
+        window._verifiedFaceLock = null;
+        lastFaceAPIResult = null;
+        activeAIEntities = [];
 
         startFaceAPIDetectionLoop();
       } catch (err) {
