@@ -8556,8 +8556,8 @@
       _bgDescriptorInFlight = true;
       _lastBgDescriptorTime = now;
 
-      const isWebcam = Boolean(currentAICamera && currentAICamera.id === 'webcam') || isWebcamRunning;
-      const videoEl = document.getElementById('webcam-video') || document.getElementById('face-webcam-video') || document.querySelector('video');
+      const videoEl = document.getElementById('ai-video-player') || document.getElementById('webcam-video') || document.getElementById('face-webcam-video') || document.querySelector('video');
+      const isWebcam = Boolean(currentAICamera && currentAICamera.id === 'webcam') || Boolean(videoEl && videoEl.srcObject !== null);
       const srcEl = (isWebcam && videoEl && videoEl.readyState >= 2 && videoEl.videoWidth > 0) ? videoEl : frameCanvas;
 
       // Extract high-resolution 224x224 face patch with 30% margin
@@ -8659,7 +8659,7 @@
               const matchedFace = cachedAIFaces.find(f => f.name.toLowerCase() === bestCandidateLabel.toLowerCase()) ||
                                   cachedAIFaces.find(f => f.name.toLowerCase().includes(bestCandidateLabel.toLowerCase()) || bestCandidateLabel.toLowerCase().includes(f.name.toLowerCase()));
               if (matchedFace) {
-                const isWahyu = matchedFace.name.toLowerCase().includes('wahyu') || matchedFace.name.toLowerCase() === 'yu';
+                const isWahyu = matchedFace.name.toLowerCase().includes('wahyu') || matchedFace.name.toLowerCase() === 'yu' || matchedFace.name.toLowerCase().includes('wagyu');
                 const cat = isWahyu ? 'vip' : (matchedFace.category || 'employee');
                 const role = (matchedFace.role_title) ? matchedFace.role_title : (isWahyu ? 'Super Admin & Owner' : 'Staff');
                 if (sTrack) {
@@ -8671,7 +8671,7 @@
                 const confVal = (Math.min(99.6, Math.max(88.0, 100 - bestCandidateDist * 18))).toFixed(1);
                 window._verifiedFaceLock = {
                   trackId: trackId,
-                  name: matchedFace.name.toUpperCase(),
+                  name: isWahyu ? 'WAHYU UTOMO [VIP]' : matchedFace.name.toUpperCase(),
                   fullName: matchedFace.name,
                   face: matchedFace,
                   distance: bestCandidateDist,
@@ -8836,7 +8836,7 @@
         } else if (hasMeasurement && currentDistance <= 0.65) {
           track.candidateVotes['mismatch'] = 0;
         }
-        const isWahyu = track.lockedPerson.name.toLowerCase().includes('wahyu') || track.lockedPerson.name.toLowerCase() === 'yu';
+        const isWahyu = track.lockedPerson.name.toLowerCase().includes('wahyu') || track.lockedPerson.name.toLowerCase() === 'yu' || track.lockedPerson.name.toLowerCase().includes('wagyu');
         return {
           name: track.lockedPerson.name,
           face: track.lockedPerson,
@@ -8871,7 +8871,7 @@
             track.lockedPerson = resolvedFace;
             track.lockedDistance = currentDistance;
             track.isStranger = false;
-            const isWahyu = (resolvedFace.name.toLowerCase().includes('wahyu') || resolvedFace.name.toLowerCase() === 'yu') && !resolvedFace.name.toLowerCase().includes('wagyu');
+            const isWahyu = resolvedFace.name.toLowerCase().includes('wahyu') || resolvedFace.name.toLowerCase() === 'yu' || resolvedFace.name.toLowerCase().includes('wagyu');
             return {
               name: resolvedFace.name,
               face: resolvedFace,
@@ -9547,7 +9547,38 @@
                 landmarks = d.landmarks.relativePositions;
               }
             }
-            const desc = d.descriptor || null;
+            let desc = d.descriptor || null;
+            if (!isNonFace && !desc && frameCanvas && box && box.width >= 20 && box.height >= 20 && typeof faceapi !== 'undefined' && faceapi.nets && faceapi.nets.faceRecognitionNet && faceapi.nets.faceRecognitionNet.isLoaded) {
+              try {
+                const fCanvas = document.createElement('canvas');
+                fCanvas.width = 160;
+                fCanvas.height = 160;
+                const fCtx = fCanvas.getContext('2d');
+                const padW = Math.round(box.width * 0.18);
+                const padH = Math.round(box.height * 0.18);
+                const sx = Math.max(0, Math.round(box.x - padW));
+                const sy = Math.max(0, Math.round(box.y - padH));
+                const sw = Math.min(frameW - sx, Math.round(box.width + padW * 2));
+                const sh = Math.min(frameH - sy, Math.round(box.height + padH * 2));
+                if (sw > 10 && sh > 10) {
+                  fCtx.drawImage(frameCanvas, sx, sy, sw, sh, 0, 0, 160, 160);
+                  let liveDesc = null;
+                  if (typeof faceapi.computeFaceDescriptor === 'function') {
+                    liveDesc = await faceapi.computeFaceDescriptor(fCanvas);
+                  }
+                  if (!liveDesc && faceapi.nets.tinyFaceDetector && faceapi.nets.tinyFaceDetector.isLoaded) {
+                    const det = await faceapi.detectSingleFace(fCanvas, new faceapi.TinyFaceDetectorOptions({ inputSize: 160, scoreThreshold: 0.02 }))
+                      .withFaceLandmarks(true)
+                      .withFaceDescriptor();
+                    if (det && det.descriptor) liveDesc = det.descriptor;
+                  }
+                  if (liveDesc && liveDesc.length === 128) {
+                    desc = liveDesc;
+                    d.descriptor = liveDesc;
+                  }
+                }
+              } catch (eDesc) {}
+            }
             const isPerson = d.type === 'person';
             const isVehicle = ['motorcycle', 'car', 'truck', 'bicycle'].includes(d.type);
             const isNonFace = isPerson || isVehicle;
@@ -9738,7 +9769,7 @@
                 conf = Math.min(99.6, Math.max(88.0, (88.0 + (ratio * 11.6)))).toFixed(1);
               }
               labelName = stab.name.toUpperCase();
-              const isWahyu = labelName.toLowerCase().includes('wahyu') || labelName.toLowerCase() === 'yu';
+              const isWahyu = labelName.toLowerCase().includes('wahyu') || labelName.toLowerCase() === 'yu' || labelName.toLowerCase().includes('wagyu');
               categoryType = isWahyu ? 'vip' : (stab.category || 'employee');
               if (isWahyu) {
                 conf = '96.8';
@@ -10109,7 +10140,13 @@
         }
 
         const fName = f.name || 'Tanpa Nama';
-        const displayName = (fName.toLowerCase() === 'yu') ? 'Wahyu Utomo (YU)' : fName;
+        const isOwnerCard = ['yu', 'wagyu'].includes(fName.toLowerCase()) || fName.toLowerCase().includes('wahyu');
+        const displayName = isOwnerCard ? 'Wahyu Utomo (WagYu)' : fName;
+        if (isOwnerCard) {
+          badgeColor = 'badge-success';
+          badgeText = '⭐ VIP ACCESS';
+          borderColor = 'rgba(16, 185, 129, 0.5)';
+        }
         const photoSrc = f.photo && f.photo !== '' && f.photo !== 'assets/image/avatar-default.png'
           ? (f.photo.startsWith('http') || f.photo.startsWith('data:') ? f.photo : `../${f.photo}`)
           : `https://ui-avatars.com/api/?name=${encodeURIComponent(fName)}&background=0284c7&color=fff&size=128`;
@@ -12636,8 +12673,8 @@
         initFaceAPI();
         initAIHUDCanvas();
         // Automatically seed lock to registered owner Wahyu Utomo on webcam
-        const ownerFace = cachedAIFaces.find(f => (f.name || '').toLowerCase().includes('wahyu') || (f.name || '').toLowerCase() === 'yu') || (cachedAIFaces ? cachedAIFaces[0] : null);
-        const ownerName = ownerFace ? ((ownerFace.name.toLowerCase() === 'yu') ? 'WAHYU UTOMO' : ownerFace.name.toUpperCase()) : 'WAHYU UTOMO';
+        const ownerFace = cachedAIFaces.find(f => (f.name || '').toLowerCase().includes('wahyu') || (f.name || '').toLowerCase() === 'yu' || (f.name || '').toLowerCase().includes('wagyu')) || (cachedAIFaces ? cachedAIFaces[0] : null);
+        const ownerName = ownerFace ? ((['yu', 'wagyu'].includes((ownerFace.name || '').toLowerCase())) ? 'WAHYU UTOMO' : ownerFace.name.toUpperCase()) : 'WAHYU UTOMO';
         window._verifiedFaceLock = {
           name: ownerName,
           face: ownerFace,

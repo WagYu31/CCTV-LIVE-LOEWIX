@@ -206,16 +206,31 @@ if ($action === 'get_ai_data') {
             }
             unset($f);
 
+            foreach ($db['ai_faces'] as &$efCheck) {
+                $curName = strtolower(trim($efCheck['name'] ?? ''));
+                if ($curName === 'wagyu' || $curName === 'yu' || str_contains($curName, 'wahyu')) {
+                    $efCheck['category'] = 'vip';
+                    $efCheck['role_title'] = 'Super Admin & Owner';
+                    $dbUpdated = true;
+                }
+            }
+            unset($efCheck);
+
             foreach ($encData['faces'] as $ef) {
                 $efName = trim($ef['name'] ?? '');
                 if (!empty($efName) && !isset($existingNames[strtolower($efName)])) {
+                    $isOwnerSync = (
+                        stripos($efName, 'wahyu') !== false || 
+                        stripos($efName, 'wagyu') !== false || 
+                        strtolower($efName) === 'yu'
+                    );
                     $newFace = [
                         'id' => ++$maxId,
                         'name' => $efName,
-                        'category' => $ef['category'] ?? 'employee',
-                        'role_title' => $ef['role'] ?? 'Staff',
+                        'category' => $isOwnerSync ? 'vip' : ($ef['category'] ?? 'employee'),
+                        'role_title' => $isOwnerSync ? 'Super Admin & Owner' : ($ef['role'] ?? 'Staff'),
                         'photo' => $ef['photo'] ?? '',
-                        'notes' => 'Tersinkronisasi dari Database Biometrik Face AI',
+                        'notes' => $isOwnerSync ? 'Super Admin Master & Owner Loewix 24/7' : 'Tersinkronisasi dari Database Biometrik Face AI',
                         'created_at' => $ef['created_at'] ?? date('Y-m-d H:i:s')
                     ];
                     $db['ai_faces'][] = $newFace;
@@ -248,7 +263,11 @@ if ($action === 'get_ai_data') {
                 }
             }
         }
-        $isWahyuUser = (stripos($f['name'] ?? '', 'wahyu') !== false || strtolower(trim($f['name'] ?? '')) === 'yu');
+        $isWahyuUser = (
+            stripos($f['name'] ?? '', 'wahyu') !== false || 
+            stripos($f['name'] ?? '', 'wagyu') !== false || 
+            strtolower(trim($f['name'] ?? '')) === 'yu'
+        );
         if ($isWahyuUser) {
             $f['category'] = 'vip';
             $f['role_title'] = 'Super Admin & Owner';
