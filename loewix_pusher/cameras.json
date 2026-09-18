@@ -1,12 +1,17 @@
 [
   {
-    "title": "RTSP LOCAL (192.168.11.182)",
-    "rtsp_url": "rtsp://admin:@192.168.11.182:554/user=admin&password=&channel=1&stream=0.sdp",
-    "stream_name": "cam_live_5018"
+    "title": "Kamera L8 (192.168.11.209)",
+    "rtsp_url": "rtsp://admin:GitiWix209@192.168.11.209:554/0",
+    "stream_name": "cam_live_5032"
   },
   {
-    "title": "Kamera L8 (192.168.11.209)",
-    "rtsp_url": "rtsp://admin:GitiWix209@192.168.11.209:554/user=admin&password=GitiWix209&channel=1&stream=0.sdp",
-    "stream_name": "cam_live_5032"
+    "title": "Kamera 178 (192.168.11.178)",
+    "rtsp_url": "rtsp://admin:GitiWix178@192.168.11.178:554/0",
+    "stream_name": "cam_live_5034"
+  },
+  {
+    "title": "Kamera PRODUKSI (192.168.11.181)",
+    "rtsp_url": "rtsp://admin:GitiWix181@192.168.11.181:554/0",
+    "stream_name": "cam_live_5033"
   }
 ]

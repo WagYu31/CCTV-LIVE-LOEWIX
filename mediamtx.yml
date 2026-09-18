@@ -112,9 +112,23 @@ paths:
     runOnDemand: ffmpeg -nostdin -loglevel error -rtsp_transport tcp -timeout 8000000 -i "rtsp://admin:admin1234@125.161.254.128:554/user=admin&password=admin1234&channel=1&stream=0.sdp" -vf "scale='min(1920,iw)':-2" -c:v libx264 -preset ultrafast -tune zerolatency -pix_fmt yuv420p -r 20 -fps_mode cfr -g 40 -keyint_min 40 -sc_threshold 0 -b:v 2500k -maxrate 3000k -bufsize 6000k -an -f rtsp -pkt_size 1316 -rtsp_transport tcp rtsp://127.0.0.1:8554/cam_live_5031_hd
     runOnDemandRestart: yes
 
+  # ==========================================
+  # OFFICE CAMERAS (L8, 178, PRODUKSI)
+  # ==========================================
   cam_live_5032:
-    runOnInit: ffmpeg -nostdin -loglevel error -rtsp_transport tcp -timeout 8000000 -i "rtsp://admin:admin1234@125.161.254.128:554/user=admin&password=admin1234&channel=1&stream=1.sdp" -c:v libx264 -preset ultrafast -tune zerolatency -pix_fmt yuv420p -r 20 -fps_mode cfr -g 40 -keyint_min 40 -sc_threshold 0 -b:v 800k -maxrate 1000k -bufsize 2000k -an -f rtsp -pkt_size 1316 -rtsp_transport tcp rtsp://127.0.0.1:8554/cam_live_5032
-    runOnInitRestart: yes
+    source: rtsp://admin:GitiWix209@192.168.11.209:554/0
+    rtspTransport: tcp
+    sourceOnDemand: yes
+
+  cam_live_5034:
+    source: rtsp://admin:GitiWix178@192.168.11.178:554/0
+    rtspTransport: tcp
+    sourceOnDemand: yes
+
+  cam_live_5033:
+    source: rtsp://admin:GitiWix181@192.168.11.181:554/0
+    rtspTransport: tcp
+    sourceOnDemand: yes
 
 
   # ==========================================
