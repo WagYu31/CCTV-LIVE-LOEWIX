@@ -4754,7 +4754,7 @@
       let streamConnectTimeout = setTimeout(() => {
         if (!activeInlinePlayers.has(camId) || (video && video.style.display === 'block')) return;
         showInlineError('Kamera Sedang Offline / Tidak Merespon', 'Stream belum masuk ke MediaMTX. Periksa daya kamera, IP RTSP, atau jalankan bridge.');
-      }, 12000);
+      }, 25000);
 
       function revealVideo() {
         if (streamConnectTimeout) clearTimeout(streamConnectTimeout);
