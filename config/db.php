@@ -623,36 +623,30 @@ function get_db_data() {
         $dbUpdated = true;
     }
 
-    foreach ($coreCameras as $coreCam) {
-        $found = false;
-        foreach ($data['cameras'] as &$existingCam) {
-            $isSameStream = (!empty($coreCam['streamPath']) && ($existingCam['streamPath'] ?? '') === $coreCam['streamPath']);
-            $isSameSN = (!empty($coreCam['serial_number']) && ($existingCam['serial_number'] ?? '') === $coreCam['serial_number'] && (int)($existingCam['channel'] ?? 1) === (int)($coreCam['channel'] ?? 1));
-            $isSameId = ((int)($existingCam['id'] ?? 0) === (int)$coreCam['id']);
-
-            if ($isSameStream || $isSameSN || $isSameId) {
-                $found = true;
-                $existingCam['id'] = $coreCam['id'];
-                $existingCam['title'] = $coreCam['title'];
-                $existingCam['city'] = $coreCam['city'];
-                $existingCam['connection_type'] = $coreCam['connection_type'];
-                if (!empty($coreCam['serial_number'])) $existingCam['serial_number'] = $coreCam['serial_number'];
-                if (!empty($coreCam['channel'])) $existingCam['channel'] = $coreCam['channel'];
-                if (!empty($coreCam['device_user'])) $existingCam['device_user'] = $coreCam['device_user'];
-                if (!empty($coreCam['device_pass'])) $existingCam['device_pass'] = $coreCam['device_pass'];
-                if (!empty($coreCam['stream_quality'])) $existingCam['stream_quality'] = $coreCam['stream_quality'];
-                if (!empty($coreCam['rtsp_url'])) $existingCam['rtsp_url'] = $coreCam['rtsp_url'];
-                if (!empty($coreCam['streamPath'])) $existingCam['streamPath'] = $coreCam['streamPath'];
-                if (empty($existingCam['hls_url']) || strpos($existingCam['hls_url'], 'http://') === 0) {
-                    $existingCam['hls_url'] = $coreCam['hls_url'];
-                    $dbUpdated = true;
-                }
-                break;
+    // Seed initial cameras only if camera list is completely empty and no cameras have been deleted
+    if (empty($data['cameras']) && empty($data['deleted_cameras'])) {
+        $data['cameras'] = $coreCameras;
+        $dbUpdated = true;
+    } else {
+        // Ensure essential fields exist without overwriting user changes or re-adding deleted cameras
+        $deletedMap = $data['deleted_cameras'] ?? [];
+        foreach ($coreCameras as $coreCam) {
+            $camId = (int)$coreCam['id'];
+            if (!empty($deletedMap[$camId])) {
+                continue; // User has deleted this camera, never resurrect it!
             }
-        }
-        if (!$found) {
-            $data['cameras'][] = $coreCam;
-            $dbUpdated = true;
+            $found = false;
+            foreach ($data['cameras'] as &$existingCam) {
+                if ((int)($existingCam['id'] ?? 0) === $camId) {
+                    $found = true;
+                    // Only backfill missing fields, NEVER overwrite user's edited title/city/rtsp/status
+                    if (empty($existingCam['connection_type'])) $existingCam['connection_type'] = $coreCam['connection_type'];
+                    if (empty($existingCam['streamPath'])) $existingCam['streamPath'] = $coreCam['streamPath'];
+                    if (empty($existingCam['hls_url'])) $existingCam['hls_url'] = $coreCam['hls_url'];
+                    break;
+                }
+            }
+            unset($existingCam);
         }
     }
 

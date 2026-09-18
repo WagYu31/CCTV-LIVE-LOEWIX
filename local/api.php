@@ -329,6 +329,11 @@ if ($action === 'delete_camera') {
     $db = get_db_data();
     $initialCount = count($db['cameras'] ?? []);
 
+    if (!isset($db['deleted_cameras']) || !is_array($db['deleted_cameras'])) {
+        $db['deleted_cameras'] = [];
+    }
+    $db['deleted_cameras'][$camId] = true;
+
     $db['cameras'] = array_values(array_filter($db['cameras'] ?? [], function($c) use ($camId) {
         return (int)$c['id'] !== $camId;
     }));

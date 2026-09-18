@@ -1311,8 +1311,18 @@ $userRole = $_SESSION['user_role'] ?? 'super_admin';
       document.getElementById('cust-cam-rtsp').value = cam.rtsp_url || '';
       document.getElementById('cust-cam-hls').value = cam.hls_url || '';
       document.getElementById('cust-cam-sn').value = cam.serial_number || '';
-      document.getElementById('cust-cam-channel').value = cam.channel || '1';
+      
+      const ch = cam.channel || '1';
+      document.getElementById('cust-cam-channel').value = ch;
+      if (document.getElementById('cust-cam-rtsp-ch')) {
+        document.getElementById('cust-cam-rtsp-ch').value = ch;
+      }
+
       document.getElementById('cust-cam-status').value = cam.status || 'online';
+
+      if (cam.rtsp_url) {
+        autoParseRtspInput();
+      }
 
       const statusEl = document.getElementById('rtsp-detect-status');
       if (statusEl) statusEl.style.display = 'none';
@@ -1338,6 +1348,9 @@ $userRole = $_SESSION['user_role'] ?? 'super_admin';
       const rtspPass = document.getElementById('cust-cam-rtsp-pass').value.trim();
       const rtspPort = document.getElementById('cust-cam-rtsp-port').value.trim() || '554';
       const rtspCh = document.getElementById('cust-cam-rtsp-ch').value.trim() || '1';
+      const channelVal = (connType === 'rtsp' && document.getElementById('cust-cam-rtsp-ch'))
+        ? rtspCh
+        : document.getElementById('cust-cam-channel').value.trim();
 
       if (connType === 'rtsp') {
         if (!rtspVal && !hlsVal) {
@@ -1371,7 +1384,7 @@ $userRole = $_SESSION['user_role'] ?? 'super_admin';
       fd.append('rtsp_url', rtspVal);
       fd.append('hls_url', hlsVal);
       fd.append('serial_number', snVal);
-      fd.append('channel', document.getElementById('cust-cam-channel').value);
+      fd.append('channel', channelVal);
       fd.append('status', document.getElementById('cust-cam-status').value);
 
       try {
@@ -1379,7 +1392,8 @@ $userRole = $_SESSION['user_role'] ?? 'super_admin';
         const data = await res.json();
         if (data.success) {
           closeModal('modalCameraForm');
-          loadCameras();
+          await loadCameras();
+          alert(data.message || 'Kamera CCTV berhasil disimpan!');
         } else {
           alert(data.message || 'Gagal menyimpan kamera.');
         }
@@ -1393,7 +1407,9 @@ $userRole = $_SESSION['user_role'] ?? 'super_admin';
 
     // Delete Camera
     async function deleteCamera(camId) {
-      if (!confirm('Apakah Anda yakin ingin menghapus kamera ini dari daftar sistem?')) return;
+      const cam = localCameras.find(c => c.id == camId);
+      const camName = cam ? cam.title : `ID ${camId}`;
+      if (!confirm(`Apakah Anda yakin ingin menghapus kamera "${camName}" dari sistem?`)) return;
       const fd = new FormData();
       fd.append('action', 'delete_camera');
       fd.append('id', camId);
@@ -1402,7 +1418,8 @@ $userRole = $_SESSION['user_role'] ?? 'super_admin';
         const res = await fetch('api.php', { method: 'POST', body: fd });
         const data = await res.json();
         if (data.success) {
-          loadCameras();
+          await loadCameras();
+          alert(data.message || 'Kamera berhasil dihapus.');
         } else {
           alert(data.message || 'Gagal menghapus kamera.');
         }
@@ -1414,13 +1431,15 @@ $userRole = $_SESSION['user_role'] ?? 'super_admin';
     // Load Cameras List
     async function loadCameras() {
       try {
-        const res = await fetch('api.php?action=get_cameras');
+        const res = await fetch('api.php?action=get_cameras&_t=' + Date.now());
         const data = await res.json();
         if (data.success) {
           localCameras = data.cameras || [];
           renderCameraGrid();
         }
-      } catch (e) {}
+      } catch (e) {
+        console.error('loadCameras error:', e);
+      }
     }
 
     // Render Camera Grid
