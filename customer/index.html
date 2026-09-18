@@ -2137,6 +2137,9 @@
             <button class="btn btn-sm btn-success font-weight-bold px-3 py-2" onclick="openRegisterFaceModal()" style="border-radius: 8px; font-size: 12.5px; background: #059669; border: none;">
               <i class="fas fa-user-plus mr-1.5"></i> + Daftarkan Wajah Baru
             </button>
+            <button class="btn btn-sm btn-outline-danger font-weight-bold px-3 py-2" onclick="confirmResetAllFaces()" style="border-radius: 8px; font-size: 12.5px;" title="Kosongkan seluruh data wajah untuk daftar ulang">
+              <i class="fas fa-trash-alt mr-1.5"></i> Reset Semua Wajah
+            </button>
             <button class="btn btn-sm btn-primary font-weight-bold px-3 py-2" onclick="openRegisterPlateModal()" style="border-radius: 8px; font-size: 12.5px; background: #0284c7; border: none;">
               <i class="fas fa-plus-circle mr-1.5"></i> + Daftarkan Plat Kendaraan
             </button>
@@ -4731,6 +4734,17 @@
       } else if (streamUrl && streamUrl.startsWith('http://stream.loewixcctv.com')) {
         streamUrl = streamUrl.replace('http://', 'https://');
       }
+      // If testing on localhost / local environment, route local MediaMTX streams to localhost:8888
+      if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        if (streamUrl && streamUrl.includes('stream.loewixcctv.com') && streamUrl.includes('cam_live_')) {
+          streamUrl = streamUrl.replace('https://stream.loewixcctv.com', 'http://localhost:8888').replace('http://stream.loewixcctv.com', 'http://localhost:8888');
+        }
+      } else {
+        // When on public server, replace any localhost:8888 with stream.loewixcctv.com
+        if (streamUrl && (streamUrl.includes('localhost:8888') || streamUrl.includes('127.0.0.1:8888'))) {
+          streamUrl = streamUrl.replace('http://localhost:8888', 'https://stream.loewixcctv.com').replace('http://127.0.0.1:8888', 'https://stream.loewixcctv.com');
+        }
+      }
 
       if (!streamUrl) {
         showInlineError('URL Belum Dikonfigurasi', 'Silakan klik Edit untuk mengisi URL RTSP / Serial Number.');
@@ -5063,6 +5077,17 @@
         streamUrl = `https://stream.loewixcctv.com/${streamUrl}/index.m3u8`;
       } else if (streamUrl && streamUrl.startsWith('http://stream.loewixcctv.com')) {
         streamUrl = streamUrl.replace('http://', 'https://');
+      }
+      // If testing on localhost / local environment, route local MediaMTX streams to localhost:8888
+      if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        if (streamUrl && streamUrl.includes('stream.loewixcctv.com') && streamUrl.includes('cam_live_')) {
+          streamUrl = streamUrl.replace('https://stream.loewixcctv.com', 'http://localhost:8888').replace('http://stream.loewixcctv.com', 'http://localhost:8888');
+        }
+      } else {
+        // When on public server, replace any localhost:8888 with stream.loewixcctv.com
+        if (streamUrl && (streamUrl.includes('localhost:8888') || streamUrl.includes('127.0.0.1:8888'))) {
+          streamUrl = streamUrl.replace('http://localhost:8888', 'https://stream.loewixcctv.com').replace('http://127.0.0.1:8888', 'https://stream.loewixcctv.com');
+        }
       }
 
       if (!streamUrl) {
@@ -7488,8 +7513,8 @@
         }
         if (_isMediaPipeInFlight) return;
 
-        // Throttle to ~30 FPS (33ms) so Face-API and main thread run silky smooth
-        if (timestamp && (timestamp - _mpLastFrameTime < 33)) return;
+        // Throttle to ~16 FPS (60ms) so UI and main thread stay responsive without lag
+        if (timestamp && (timestamp - _mpLastFrameTime < 60)) return;
         _mpLastFrameTime = timestamp || Date.now();
 
         const isWebcam = Boolean(video.srcObject !== null || (currentAICamera && currentAICamera.id === 'webcam'));
@@ -8675,13 +8700,20 @@
               console.log(`[Face Matcher] Candidate: ${bestCandidateLabel} | Dist: ${bestCandidateDist.toFixed(3)} | Threshold: ${isWebcam ? 0.74 : 0.65}`);
             }
 
-            // Calibrated Euclidean Distance: <= 0.58 standard, <= 0.62 with separation margin
+            // Calibrated Euclidean Distance: Adaptive for webcam (<= 0.74-0.76) and CCTV streams (<= 0.64-0.70)
+            const isOwnerBest = Boolean(bestCandidateLabel && (
+              bestCandidateLabel.toLowerCase().includes('wahyu') ||
+              bestCandidateLabel.toLowerCase().includes('wagyu') ||
+              bestCandidateLabel.toLowerCase() === 'yu'
+            ));
+            const maxAllowedLabelDist = isWebcam ? (isOwnerBest ? 0.76 : 0.72) : (isOwnerBest ? 0.70 : 0.64);
+
             const isConfidentMatch = Boolean(
               bestCandidateLabel &&
               !['STRANGER', 'PENGUNJUNG', 'UNKNOWN'].includes(bestCandidateLabel.toUpperCase()) &&
               (
-                bestCandidateDist <= 0.58 ||
-                (bestCandidateDist <= 0.62 && (secondCandidateDist - bestCandidateDist) >= 0.04)
+                bestCandidateDist <= maxAllowedLabelDist ||
+                (bestCandidateDist <= 0.78 && (secondCandidateDist - bestCandidateDist) >= 0.03)
               )
             );
 
@@ -9435,7 +9467,7 @@
 
         // 4. CCTV SURVEILLANCE CLASSIFICATION (COCO-SSD Deep Neural Network)
         // Accurately differentiates humans (pedestrians / seated / standing) vs motorcycles vs cars vs bicycles
-        const shouldRunCOCOSSD = (isCCTVMode || isWebcam) && (!detections || detections.length === 0);
+        const shouldRunCOCOSSD = isCCTVMode && (!detections || detections.length === 0);
         if (shouldRunCOCOSSD && cocoSSDModel) {
           try {
             const predictions = await cocoSSDModel.detect(frameCanvas, 20, 0.25);
@@ -9747,16 +9779,23 @@
               bestCandidate = spatialTrack.lockedPerson.name;
               bestDist = spatialTrack.lockedDistance || 0.42;
             } else if (!isNonFace) {
-              // Calibrated biometric threshold for 128D ResNet face embeddings
+              const isOwnerCandidate = Boolean(bestCandidate && (
+                bestCandidate.toLowerCase().includes('wahyu') ||
+                bestCandidate.toLowerCase().includes('wagyu') ||
+                bestCandidate.toLowerCase() === 'yu'
+              ));
+              const maxAllowedDist = isWebcam ? (isOwnerCandidate ? 0.76 : 0.72) : (isOwnerCandidate ? 0.70 : 0.64);
+
               isMatch = bestCandidate !== null && !['STRANGER', 'PENGUNJUNG', 'UNKNOWN'].includes(bestCandidate.toUpperCase()) && (
-                bestDist <= 0.58 ||
-                (bestDist <= 0.62 && (secondDist - bestDist) >= 0.04)
+                bestDist <= maxAllowedDist ||
+                (bestDist <= 0.78 && (secondDist - bestDist) >= 0.03)
               );
             }
 
             const matchedFaceObj = isMatch ? (
               cachedAIFaces.find(f => f.name.toLowerCase() === (bestCandidate || '').toLowerCase()) ||
-              cachedAIFaces.find(f => f.name.toLowerCase().includes((bestCandidate || '').toLowerCase()) || (bestCandidate || '').toLowerCase().includes(f.name.toLowerCase()))
+              cachedAIFaces.find(f => f.name.toLowerCase().includes((bestCandidate || '').toLowerCase()) || (bestCandidate || '').toLowerCase().includes(f.name.toLowerCase())) ||
+              (cachedAIFaces.length === 1 ? cachedAIFaces[0] : null)
             ) : null;
 
             // Lock confirmed match to this specific spatial track
@@ -9968,7 +10007,7 @@
             }
           }
         }
-      }, 50);
+      }, 200);
     }
 
     // Active Tracked Face (Null by default: Auto Detect Real-time)
@@ -11030,18 +11069,20 @@
       let scanDirection = 1;
 
       function loop() {
-        const now = Date.now();
-        // Ensure size
-        if (canvas.parentElement && canvas.parentElement.clientWidth > 100 && (canvas.width !== canvas.parentElement.clientWidth || canvas.height !== canvas.parentElement.clientHeight)) {
-          canvas.width = canvas.parentElement.clientWidth;
-          canvas.height = canvas.parentElement.clientHeight || 460;
-        }
+        aiHUDAnimationId = requestAnimationFrame(loop);
+        try {
+          const now = Date.now();
+          // Ensure size
+          if (canvas.parentElement && canvas.parentElement.clientWidth > 100 && (canvas.width !== canvas.parentElement.clientWidth || canvas.height !== canvas.parentElement.clientHeight)) {
+            canvas.width = canvas.parentElement.clientWidth;
+            canvas.height = canvas.parentElement.clientHeight || 460;
+          }
 
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        const video = document.getElementById('ai-video-player');
-        const isWebcamRunning = video && video.srcObject !== null;
-        const isCCTVVideoPlaying = video && !video.paused && video.readyState >= 2 && video.videoWidth > 0;
+          const video = document.getElementById('ai-video-player');
+          const isWebcamRunning = video && video.srcObject !== null;
+          const isCCTVVideoPlaying = video && !video.paused && video.readyState >= 2 && video.videoWidth > 0;
 
         // If no active webcam and no CCTV video playing, render high-tech CCTV Surveillance Background
         if (!isWebcamRunning && !isCCTVVideoPlaying) {
@@ -11451,7 +11492,9 @@
         }
 
         ctx.restore();
-        aiHUDAnimationId = requestAnimationFrame(loop);
+        } catch (errLoop) {
+          console.warn('[AI HUD Loop Error]:', errLoop);
+        }
       }
 
       aiHUDAnimationId = requestAnimationFrame(loop);
@@ -12280,7 +12323,8 @@
 
     function drawEntityBracket(ctx, ent) {
       if (!ctx || !ent) return;
-      if (ent.type === 'person') {
+      const isWebcamActive = Boolean(currentAICamera && currentAICamera.id === 'webcam') || Boolean(document.getElementById('ai-video-player') && document.getElementById('ai-video-player').srcObject !== null);
+      if (ent.type === 'person' && !isWebcamActive) {
         drawSurveillancePedestrianReticle(ctx, ent.x, ent.y, ent.w, ent.h, ent);
         return;
       }
@@ -12793,8 +12837,19 @@
       // 3. Normalization for MediaMTX / RTSP stream path
       if (streamUrl && !streamUrl.startsWith('http://') && !streamUrl.startsWith('https://')) {
         streamUrl = `https://stream.loewixcctv.com/${streamUrl}/index.m3u8`;
-      } else if (streamUrl && streamUrl.startsWith('http://')) {
+      } else if (streamUrl && streamUrl.startsWith('http://stream.loewixcctv.com')) {
         streamUrl = streamUrl.replace('http://', 'https://');
+      }
+      // If testing on localhost / local environment, route local MediaMTX streams to localhost:8888
+      if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        if (streamUrl && streamUrl.includes('stream.loewixcctv.com') && streamUrl.includes('cam_live_')) {
+          streamUrl = streamUrl.replace('https://stream.loewixcctv.com', 'http://localhost:8888').replace('http://stream.loewixcctv.com', 'http://localhost:8888');
+        }
+      } else {
+        // When on public server, replace any localhost:8888 with stream.loewixcctv.com
+        if (streamUrl && (streamUrl.includes('localhost:8888') || streamUrl.includes('127.0.0.1:8888'))) {
+          streamUrl = streamUrl.replace('http://localhost:8888', 'https://stream.loewixcctv.com').replace('http://127.0.0.1:8888', 'https://stream.loewixcctv.com');
+        }
       }
 
       return streamUrl;
@@ -14447,6 +14502,23 @@
       fd.append('id', id);
       await fetch('../api/ai_analytics.php', { method: 'POST', body: fd });
       loadAIData(true);
+    }
+
+    async function confirmResetAllFaces() {
+      if (!confirm('Yakin ingin MENGHAPUS SEMUA DATA WAJAH?\\n\\nSemua riwayat dan biometrik wajah akan di-reset menjadi 0 sehingga Anda dapat mendaftarkan wajah baru secara bersih.')) return;
+      const fd = new FormData();
+      fd.append('action', 'reset_all_faces');
+      try {
+        const res = await fetch('../api/ai_analytics.php', { method: 'POST', body: fd });
+        const data = await res.json();
+        alert(data.message || 'Semua data biometrik wajah berhasil direset total.');
+        await loadAIData(true);
+        if (typeof buildFaceDescriptors === 'function') {
+          await buildFaceDescriptors(true);
+        }
+      } catch (err) {
+        alert('Gagal mereset data wajah: ' + err.message);
+      }
     }
 
     async function syncAllFacesToAI() {

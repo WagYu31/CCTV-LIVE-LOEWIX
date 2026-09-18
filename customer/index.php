@@ -8700,13 +8700,20 @@
               console.log(`[Face Matcher] Candidate: ${bestCandidateLabel} | Dist: ${bestCandidateDist.toFixed(3)} | Threshold: ${isWebcam ? 0.74 : 0.65}`);
             }
 
-            // Calibrated Euclidean Distance: <= 0.58 standard, <= 0.62 with separation margin
+            // Calibrated Euclidean Distance: Adaptive for webcam (<= 0.74-0.76) and CCTV streams (<= 0.64-0.70)
+            const isOwnerBest = Boolean(bestCandidateLabel && (
+              bestCandidateLabel.toLowerCase().includes('wahyu') ||
+              bestCandidateLabel.toLowerCase().includes('wagyu') ||
+              bestCandidateLabel.toLowerCase() === 'yu'
+            ));
+            const maxAllowedLabelDist = isWebcam ? (isOwnerBest ? 0.76 : 0.72) : (isOwnerBest ? 0.70 : 0.64);
+
             const isConfidentMatch = Boolean(
               bestCandidateLabel &&
               !['STRANGER', 'PENGUNJUNG', 'UNKNOWN'].includes(bestCandidateLabel.toUpperCase()) &&
               (
-                bestCandidateDist <= 0.58 ||
-                (bestCandidateDist <= 0.62 && (secondCandidateDist - bestCandidateDist) >= 0.04)
+                bestCandidateDist <= maxAllowedLabelDist ||
+                (bestCandidateDist <= 0.78 && (secondCandidateDist - bestCandidateDist) >= 0.03)
               )
             );
 
@@ -9772,16 +9779,23 @@
               bestCandidate = spatialTrack.lockedPerson.name;
               bestDist = spatialTrack.lockedDistance || 0.42;
             } else if (!isNonFace) {
-              // Calibrated biometric threshold for 128D ResNet face embeddings
+              const isOwnerCandidate = Boolean(bestCandidate && (
+                bestCandidate.toLowerCase().includes('wahyu') ||
+                bestCandidate.toLowerCase().includes('wagyu') ||
+                bestCandidate.toLowerCase() === 'yu'
+              ));
+              const maxAllowedDist = isWebcam ? (isOwnerCandidate ? 0.76 : 0.72) : (isOwnerCandidate ? 0.70 : 0.64);
+
               isMatch = bestCandidate !== null && !['STRANGER', 'PENGUNJUNG', 'UNKNOWN'].includes(bestCandidate.toUpperCase()) && (
-                bestDist <= 0.58 ||
-                (bestDist <= 0.62 && (secondDist - bestDist) >= 0.04)
+                bestDist <= maxAllowedDist ||
+                (bestDist <= 0.78 && (secondDist - bestDist) >= 0.03)
               );
             }
 
             const matchedFaceObj = isMatch ? (
               cachedAIFaces.find(f => f.name.toLowerCase() === (bestCandidate || '').toLowerCase()) ||
-              cachedAIFaces.find(f => f.name.toLowerCase().includes((bestCandidate || '').toLowerCase()) || (bestCandidate || '').toLowerCase().includes(f.name.toLowerCase()))
+              cachedAIFaces.find(f => f.name.toLowerCase().includes((bestCandidate || '').toLowerCase()) || (bestCandidate || '').toLowerCase().includes(f.name.toLowerCase())) ||
+              (cachedAIFaces.length === 1 ? cachedAIFaces[0] : null)
             ) : null;
 
             // Lock confirmed match to this specific spatial track
