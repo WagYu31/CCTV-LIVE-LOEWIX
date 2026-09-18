@@ -2137,6 +2137,9 @@
             <button class="btn btn-sm btn-success font-weight-bold px-3 py-2" onclick="openRegisterFaceModal()" style="border-radius: 8px; font-size: 12.5px; background: #059669; border: none;">
               <i class="fas fa-user-plus mr-1.5"></i> + Daftarkan Wajah Baru
             </button>
+            <button class="btn btn-sm btn-outline-danger font-weight-bold px-3 py-2" onclick="confirmResetAllFaces()" style="border-radius: 8px; font-size: 12.5px;" title="Kosongkan seluruh data wajah untuk daftar ulang">
+              <i class="fas fa-trash-alt mr-1.5"></i> Reset Semua Wajah
+            </button>
             <button class="btn btn-sm btn-primary font-weight-bold px-3 py-2" onclick="openRegisterPlateModal()" style="border-radius: 8px; font-size: 12.5px; background: #0284c7; border: none;">
               <i class="fas fa-plus-circle mr-1.5"></i> + Daftarkan Plat Kendaraan
             </button>
@@ -4731,9 +4734,16 @@
       } else if (streamUrl && streamUrl.startsWith('http://stream.loewixcctv.com')) {
         streamUrl = streamUrl.replace('http://', 'https://');
       }
-      // Always convert stale localhost:8888 to official cloud stream server
-      if (streamUrl && (streamUrl.includes('localhost:8888') || streamUrl.includes('127.0.0.1:8888'))) {
-        streamUrl = streamUrl.replace('http://localhost:8888', 'https://stream.loewixcctv.com').replace('http://127.0.0.1:8888', 'https://stream.loewixcctv.com');
+      // If testing on localhost / local environment, route local MediaMTX streams to localhost:8888
+      if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        if (streamUrl && streamUrl.includes('stream.loewixcctv.com') && streamUrl.includes('cam_live_')) {
+          streamUrl = streamUrl.replace('https://stream.loewixcctv.com', 'http://localhost:8888').replace('http://stream.loewixcctv.com', 'http://localhost:8888');
+        }
+      } else {
+        // When on public server, replace any localhost:8888 with stream.loewixcctv.com
+        if (streamUrl && (streamUrl.includes('localhost:8888') || streamUrl.includes('127.0.0.1:8888'))) {
+          streamUrl = streamUrl.replace('http://localhost:8888', 'https://stream.loewixcctv.com').replace('http://127.0.0.1:8888', 'https://stream.loewixcctv.com');
+        }
       }
 
       if (!streamUrl) {
@@ -5068,9 +5078,16 @@
       } else if (streamUrl && streamUrl.startsWith('http://stream.loewixcctv.com')) {
         streamUrl = streamUrl.replace('http://', 'https://');
       }
-      // Always convert stale localhost:8888 to official cloud stream server
-      if (streamUrl && (streamUrl.includes('localhost:8888') || streamUrl.includes('127.0.0.1:8888'))) {
-        streamUrl = streamUrl.replace('http://localhost:8888', 'https://stream.loewixcctv.com').replace('http://127.0.0.1:8888', 'https://stream.loewixcctv.com');
+      // If testing on localhost / local environment, route local MediaMTX streams to localhost:8888
+      if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        if (streamUrl && streamUrl.includes('stream.loewixcctv.com') && streamUrl.includes('cam_live_')) {
+          streamUrl = streamUrl.replace('https://stream.loewixcctv.com', 'http://localhost:8888').replace('http://stream.loewixcctv.com', 'http://localhost:8888');
+        }
+      } else {
+        // When on public server, replace any localhost:8888 with stream.loewixcctv.com
+        if (streamUrl && (streamUrl.includes('localhost:8888') || streamUrl.includes('127.0.0.1:8888'))) {
+          streamUrl = streamUrl.replace('http://localhost:8888', 'https://stream.loewixcctv.com').replace('http://127.0.0.1:8888', 'https://stream.loewixcctv.com');
+        }
       }
 
       if (!streamUrl) {
@@ -12809,9 +12826,16 @@
       } else if (streamUrl && streamUrl.startsWith('http://stream.loewixcctv.com')) {
         streamUrl = streamUrl.replace('http://', 'https://');
       }
-      // Always convert stale localhost:8888 to official cloud stream server
-      if (streamUrl && (streamUrl.includes('localhost:8888') || streamUrl.includes('127.0.0.1:8888'))) {
-        streamUrl = streamUrl.replace('http://localhost:8888', 'https://stream.loewixcctv.com').replace('http://127.0.0.1:8888', 'https://stream.loewixcctv.com');
+      // If testing on localhost / local environment, route local MediaMTX streams to localhost:8888
+      if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        if (streamUrl && streamUrl.includes('stream.loewixcctv.com') && streamUrl.includes('cam_live_')) {
+          streamUrl = streamUrl.replace('https://stream.loewixcctv.com', 'http://localhost:8888').replace('http://stream.loewixcctv.com', 'http://localhost:8888');
+        }
+      } else {
+        // When on public server, replace any localhost:8888 with stream.loewixcctv.com
+        if (streamUrl && (streamUrl.includes('localhost:8888') || streamUrl.includes('127.0.0.1:8888'))) {
+          streamUrl = streamUrl.replace('http://localhost:8888', 'https://stream.loewixcctv.com').replace('http://127.0.0.1:8888', 'https://stream.loewixcctv.com');
+        }
       }
 
       return streamUrl;
@@ -14462,6 +14486,23 @@
       fd.append('id', id);
       await fetch('../api/ai_analytics.php', { method: 'POST', body: fd });
       loadAIData(true);
+    }
+
+    async function confirmResetAllFaces() {
+      if (!confirm('Yakin ingin MENGHAPUS SEMUA DATA WAJAH?\\n\\nSemua riwayat dan biometrik wajah akan di-reset menjadi 0 sehingga Anda dapat mendaftarkan wajah baru secara bersih.')) return;
+      const fd = new FormData();
+      fd.append('action', 'reset_all_faces');
+      try {
+        const res = await fetch('../api/ai_analytics.php', { method: 'POST', body: fd });
+        const data = await res.json();
+        alert(data.message || 'Semua data biometrik wajah berhasil direset total.');
+        await loadAIData(true);
+        if (typeof buildFaceDescriptors === 'function') {
+          await buildFaceDescriptors(true);
+        }
+      } catch (err) {
+        alert('Gagal mereset data wajah: ' + err.message);
+      }
     }
 
     async function syncAllFacesToAI() {
