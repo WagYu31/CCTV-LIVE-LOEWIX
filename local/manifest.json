@@ -1,0 +1,21 @@
+{
+  "name": "Loewix Local VMS",
+  "short_name": "Loewix VMS",
+  "description": "Loewix CCTV Local Surveillance & Camera Manager",
+  "start_url": "index.php",
+  "display": "standalone",
+  "background_color": "#080c14",
+  "theme_color": "#0284c7",
+  "icons": [
+    {
+      "src": "../assets/image/icon.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "../assets/image/icon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
