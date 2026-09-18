@@ -2097,6 +2097,9 @@ $userRole = $_SESSION['user_role'] ?? 'super_admin';
                 <button class="btn btn-primary btn-sm" onclick="playLiveStream(${cam.id})" style="flex: 1;">
                   <i class="fas fa-play"></i> Live Preview
                 </button>
+                <button class="btn btn-outline btn-sm" onclick="startAICameraScan(${cam.id})" title="Pindai & Deteksi Wajah AI di Kamera Ini" style="background: rgba(56, 189, 248, 0.12); border: 1px solid rgba(56, 189, 248, 0.45); color: #38bdf8; font-weight: 600;">
+                  <i class="fas fa-brain mr-1"></i> Scan AI
+                </button>
                 <button class="btn btn-outline btn-sm" onclick="openEditCameraModal(${cam.id})" title="Edit Konfigurasi Kamera">
                   <i class="fas fa-cog"></i>
                 </button>
@@ -2191,6 +2194,9 @@ $userRole = $_SESSION['user_role'] ?? 'super_admin';
         if (cctvBtn) cctvBtn.classList.remove('active');
         if (aiBtn) aiBtn.classList.add('active');
         initAIFaceSuite();
+        if (typeof updateAICameraLists === 'function') {
+          updateAICameraLists();
+        }
       } else {
         if (aiPane) aiPane.style.display = 'none';
         if (cctvPane) cctvPane.style.display = 'block';
@@ -2201,6 +2207,18 @@ $userRole = $_SESSION['user_role'] ?? 'super_admin';
           aiLiveVideo.pause();
         }
       }
+    }
+
+    // Direct AI scanner trigger from CCTV Management card
+    function startAICameraScan(camId) {
+      const cam = (localCameras || []).find(c => String(c.id) === String(camId));
+      currentAICamera = cam || { id: camId, title: 'Kamera ' + camId };
+      switchMainTab('ai');
+      setTimeout(() => {
+        changeAICamera(camId);
+        const box = document.getElementById('ai-screen-box');
+        if (box) box.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 300);
     }
 
     // =========================================================================
@@ -2703,8 +2721,10 @@ $userRole = $_SESSION['user_role'] ?? 'super_admin';
       await initFaceAPI();
       await loadAIFaceData();
 
-      // Start webcam live by default
-      if (aiLiveVideo && !aiWebcamStream) {
+      // Start stream: if a specific CCTV camera is selected, connect to it; otherwise default to webcam
+      if (currentAICamera && currentAICamera.id && currentAICamera.id !== 'webcam') {
+        changeAICamera(currentAICamera.id);
+      } else if (aiLiveVideo && !aiWebcamStream) {
         startAIWebcamLive();
       }
     }
