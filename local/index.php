@@ -926,6 +926,64 @@ $userRole = $_SESSION['user_role'] ?? 'super_admin';
       box-shadow: 0 0 16px rgba(56, 189, 248, 0.35);
       background: #000;
     }
+    /* Camera Channel Pills & Quick Switcher */
+    .ai-cam-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: #94a3b8;
+      padding: 0.35rem 0.75rem;
+      border-radius: 20px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s ease;
+    }
+    .ai-cam-pill:hover {
+      border-color: rgba(56, 189, 248, 0.5);
+      color: #fff;
+      background: rgba(56, 189, 248, 0.12);
+    }
+    .ai-cam-pill.active {
+      background: linear-gradient(135deg, rgba(2, 132, 199, 0.35), rgba(56, 189, 248, 0.2));
+      border-color: #38bdf8;
+      color: #38bdf8;
+      box-shadow: 0 0 12px rgba(56, 189, 248, 0.35);
+    }
+    .ai-cctv-card {
+      background: rgba(15, 23, 42, 0.75);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      padding: 0.95rem;
+      transition: all 0.2s ease;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+    }
+    .ai-cctv-card:hover {
+      border-color: rgba(56, 189, 248, 0.4);
+      transform: translateY(-2px);
+      background: rgba(15, 23, 42, 0.95);
+    }
+    .ai-cctv-card.active {
+      border-color: #38bdf8;
+      box-shadow: 0 0 16px rgba(56, 189, 248, 0.3);
+      background: rgba(2, 132, 199, 0.12);
+    }
+    .btn-outline-info {
+      background: transparent;
+      border: 1px solid rgba(56, 189, 248, 0.5);
+      color: #38bdf8;
+    }
+    .btn-outline-info:hover {
+      background: rgba(56, 189, 248, 0.15);
+      color: #fff;
+      border-color: #38bdf8;
+    }
 
     /* Footer */
     .app-footer {
@@ -1200,6 +1258,21 @@ $userRole = $_SESSION['user_role'] ?? 'super_admin';
             </div>
           </div>
 
+          <!-- Quick Camera Channel Switcher Pills (Webcam + All 9 CCTV Channels) -->
+          <div style="margin-bottom: 0.75rem;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.35rem;">
+              <span style="font-size: 0.72rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px;">
+                <i class="fas fa-video text-info mr-1"></i> Pilih Feed Kamera CCTV untuk AI Scan:
+              </span>
+              <span id="ai-active-cam-title" style="font-size: 0.75rem; color: #38bdf8; font-weight: 700;">
+                Live Webcam Laptop
+              </span>
+            </div>
+            <div class="ai-channel-bar" id="ai-channel-quick-pills" style="display: flex; align-items: center; gap: 0.45rem; overflow-x: auto; padding-bottom: 0.4rem; scrollbar-width: thin;">
+              <!-- Dynamically populated with Webcam & all 9 CCTV channels -->
+            </div>
+          </div>
+
           <!-- Video & Canvas Screen -->
           <div class="ai-screen-container" id="ai-screen-box">
             <video id="ai-video-player" playsinline muted autoplay></video>
@@ -1259,6 +1332,38 @@ $userRole = $_SESSION['user_role'] ?? 'super_admin';
               <div>Menunggu deteksi wajah di kamera...</div>
             </div>
           </div>
+        </div>
+      </div>
+
+      <!-- Section: Grid Channel CCTV Lokal untuk AI Face Recognition -->
+      <div class="ai-cctv-grid-section" style="margin-top: 0.5rem; margin-bottom: 1.75rem; background: #090e1a; border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 16px; padding: 1.25rem 1.5rem; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.6rem; margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 1px solid rgba(255,255,255,0.08);">
+          <div style="display: flex; align-items: center; gap: 0.65rem;">
+            <div style="width: 36px; height: 36px; border-radius: 9px; background: rgba(56, 189, 248, 0.15); display: flex; align-items: center; justify-content: center; color: #38bdf8; font-size: 1rem;">
+              <i class="fas fa-th-large"></i>
+            </div>
+            <div>
+              <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <h3 style="font-size: 1rem; font-weight: 700; color: #fff; margin: 0;">Pilih Channel CCTV untuk AI Face Recognition</h3>
+                <span class="badge" style="background: rgba(56,189,248,0.15); color: #38bdf8; font-size: 0.72rem; padding: 0.15rem 0.5rem; border-radius: 6px;" id="ai-cctv-count-badge">0 Kamera</span>
+              </div>
+              <small style="color: #94a3b8; font-size: 0.76rem;">Pilih feed kamera CCTV di bawah untuk memindai dan mengenali wajah VIP / Karyawan secara real-time pada CCTV tersebut.</small>
+            </div>
+          </div>
+
+          <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <button type="button" class="btn btn-secondary btn-sm" onclick="startAIWebcamLive()" style="font-size: 0.78rem;">
+              <i class="fas fa-camera text-info mr-1"></i> Mode Webcam Laptop
+            </button>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="loadAIFaceData(true)" style="font-size: 0.78rem;">
+              <i class="fas fa-sync-alt mr-1"></i> Segarkan Channel
+            </button>
+          </div>
+        </div>
+
+        <!-- Grid of Camera Cards -->
+        <div id="ai-cctv-channels-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 0.9rem;">
+          <!-- Injected via JavaScript -->
         </div>
       </div>
 
@@ -1929,6 +2034,9 @@ $userRole = $_SESSION['user_role'] ?? 'super_admin';
         if (data.success) {
           localCameras = data.cameras || [];
           renderCameraGrid();
+          if (typeof updateAICameraLists === 'function') {
+            updateAICameraLists();
+          }
         }
       } catch (e) {
         console.error('loadCameras error:', e);
@@ -2224,9 +2332,12 @@ $userRole = $_SESSION['user_role'] ?? 'super_admin';
         const res = await fetch('api.php?action=get_ai_data');
         const data = await res.json();
 
-        if (data && data.faces) {
-          cachedAIFaces = data.faces || [];
-          cachedAILogs = data.logs || [];
+        if (data) {
+          if (data.faces) cachedAIFaces = data.faces || [];
+          if (data.logs) cachedAILogs = data.logs || [];
+          if (data.cameras && Array.isArray(data.cameras) && data.cameras.length > 0) {
+            localCameras = data.cameras;
+          }
 
           // Update Stats Metrics
           const facesEl = document.getElementById('ai-stat-faces');
@@ -2250,14 +2361,14 @@ $userRole = $_SESSION['user_role'] ?? 'super_admin';
           // Render Activity Log Stream
           renderAIActivityLogs(cachedAILogs);
 
-          // Update dropdown camera list
-          populateAICameraSelector();
+          // Update all Camera Selectors & Visual Channel Grids
+          updateAICameraLists();
 
           // Build/refresh biometric face matcher
           buildFaceDescriptors();
 
           if (showToast) {
-            alert('✅ Data AI Face Recognition berhasil disinkronkan!');
+            alert('✅ Data AI Face Recognition & Channel CCTV berhasil disinkronkan!');
           }
         }
       } catch (e) {
@@ -2265,19 +2376,121 @@ $userRole = $_SESSION['user_role'] ?? 'super_admin';
       }
     }
 
+    function updateAICameraLists() {
+      populateAICameraSelector();
+      renderAICameraPills();
+      renderAICameraGridCards();
+    }
+
     function populateAICameraSelector() {
       const select = document.getElementById('ai-camera-selector');
       if (!select) return;
-      const currentVal = select.value || 'webcam';
+      const currentVal = (currentAICamera && currentAICamera.id) ? String(currentAICamera.id) : (select.value || 'webcam');
 
-      let opts = '<option value="webcam">📸 Live Webcam Laptop (Uji Scan Wajah Anda)</option>';
+      let opts = `<option value="webcam" ${currentVal === 'webcam' ? 'selected' : ''}>📸 Live Webcam Laptop (Uji Scan Wajah Anda)</option>`;
       if (Array.isArray(localCameras) && localCameras.length > 0) {
-        localCameras.forEach(cam => {
-          opts += `<option value="${cam.id}">📹 ${cam.title || 'Kamera ' + cam.id} (${(cam.city || 'Lokal').toUpperCase()})</option>`;
+        localCameras.forEach((cam, idx) => {
+          const isSelected = String(cam.id) === currentVal ? 'selected' : '';
+          const cityUpper = (cam.city || 'Lokal').toUpperCase();
+          const isOnline = cam.status !== 'offline';
+          const statusIcon = isOnline ? '🟢' : '🔴';
+          opts += `<option value="${cam.id}" ${isSelected}>📹 ${statusIcon} [CH ${idx + 1}] ${escapeHtml(cam.title || 'Kamera ' + cam.id)} (${cityUpper})</option>`;
         });
       }
       select.innerHTML = opts;
       select.value = currentVal;
+    }
+
+    function renderAICameraPills() {
+      const bar = document.getElementById('ai-channel-quick-pills');
+      if (!bar) return;
+
+      const activeId = (currentAICamera && currentAICamera.id) ? String(currentAICamera.id) : 'webcam';
+      
+      let html = `
+        <button type="button" class="ai-cam-pill ${activeId === 'webcam' ? 'active' : ''}" onclick="startAIWebcamLive()">
+          <i class="fas fa-camera text-info"></i> Webcam Laptop
+        </button>
+      `;
+
+      if (Array.isArray(localCameras) && localCameras.length > 0) {
+        localCameras.forEach((cam, idx) => {
+          const isActive = String(cam.id) === activeId;
+          const isOnline = cam.status !== 'offline';
+          const statusDot = isOnline ? '#10b981' : '#ef4444';
+          html += `
+            <button type="button" class="ai-cam-pill ${isActive ? 'active' : ''}" onclick="changeAICamera(${cam.id})" title="${escapeHtml(cam.title || '')}">
+              <span class="status-indicator" style="background: ${statusDot};"></span>
+              [CH ${idx + 1}] ${escapeHtml(cam.title || 'Kamera ' + cam.id)}
+            </button>
+          `;
+        });
+      }
+
+      bar.innerHTML = html;
+
+      const titleEl = document.getElementById('ai-active-cam-title');
+      if (titleEl) {
+        titleEl.textContent = (currentAICamera && currentAICamera.title) ? currentAICamera.title : 'Live Webcam Laptop';
+      }
+    }
+
+    function renderAICameraGridCards() {
+      const grid = document.getElementById('ai-cctv-channels-grid');
+      const badge = document.getElementById('ai-cctv-count-badge');
+      if (!grid) return;
+
+      if (badge) badge.textContent = `${(localCameras || []).length} Kamera Terhubung`;
+
+      if (!localCameras || localCameras.length === 0) {
+        grid.innerHTML = `
+          <div style="grid-column: 1 / -1; text-align: center; padding: 2.5rem 1rem; color: #64748b;">
+            <i class="fas fa-video-slash mb-2" style="font-size: 1.8rem; color: #475569;"></i>
+            <div>Belum ada kamera CCTV lokal terdaftar.</div>
+          </div>
+        `;
+        return;
+      }
+
+      const activeId = (currentAICamera && currentAICamera.id) ? String(currentAICamera.id) : 'webcam';
+
+      grid.innerHTML = localCameras.map((cam, idx) => {
+        const isActive = String(cam.id) === activeId;
+        const isOnline = cam.status !== 'offline';
+        const cityUpper = (cam.city || 'Lokal').toUpperCase();
+        const connType = (cam.connection_type || 'rtsp').toUpperCase();
+
+        return `
+          <div class="ai-cctv-card ${isActive ? 'active' : ''}">
+            <div>
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.45rem;">
+                <span style="font-size: 0.7rem; font-weight: 700; color: #94a3b8; background: rgba(255,255,255,0.06); padding: 0.15rem 0.45rem; border-radius: 4px;">
+                  CH ${idx + 1} &bull; ${connType}
+                </span>
+                <span class="badge ${isOnline ? 'badge-success' : 'badge-danger'}" style="font-size: 0.65rem; padding: 0.15rem 0.45rem;">
+                  <span class="status-indicator ${isOnline ? 'online' : 'offline'}"></span>
+                  ${isOnline ? 'ONLINE' : 'OFFLINE'}
+                </span>
+              </div>
+
+              <div style="font-weight: 700; color: #fff; font-size: 0.88rem; margin-bottom: 0.25rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${escapeHtml(cam.title || '')}">
+                ${escapeHtml(cam.title || 'Kamera ' + cam.id)}
+              </div>
+
+              <div style="font-size: 0.74rem; color: #94a3b8; margin-bottom: 0.8rem; display: flex; align-items: center; gap: 0.4rem;">
+                <i class="fas fa-map-marker-alt text-danger" style="font-size: 0.7rem;"></i>
+                <span>${cityUpper}</span>
+                ${cam.channel ? `<span>&bull; CH ${cam.channel}</span>` : ''}
+              </div>
+            </div>
+
+            <button type="button" class="btn ${isActive ? 'btn-primary' : 'btn-outline-info'} btn-sm" onclick="changeAICamera(${cam.id}); document.getElementById('ai-screen-box').scrollIntoView({behavior: 'smooth', block: 'center'});" style="width: 100%; font-size: 0.78rem; justify-content: center;">
+              <i class="fas ${isActive ? 'fa-check-circle' : 'fa-crosshairs'} mr-1"></i>
+              ${isActive ? 'Sedang Di-Scan AI' : 'Scan AI Kamera Ini'}
+            </button>
+          </div>
+        `;
+      }).join('');
     }
 
     function renderAIFacesGrid(faces) {
@@ -2507,6 +2720,7 @@ $userRole = $_SESSION['user_role'] ?? 'super_admin';
       if (select) select.value = 'webcam';
       if (statusLabel) statusLabel.innerHTML = '<span style="color: #34d399;">Webcam Laptop Aktif</span>';
       if (loader) loader.style.display = 'none';
+      if (typeof updateAICameraLists === 'function') updateAICameraLists();
 
       if (aiHlsInstance) {
         aiHlsInstance.destroy();
@@ -2539,6 +2753,7 @@ $userRole = $_SESSION['user_role'] ?? 'super_admin';
       const video = document.getElementById('ai-video-player');
       const loader = document.getElementById('ai-video-loader');
       const statusLabel = document.getElementById('ai-active-status-label');
+      const select = document.getElementById('ai-camera-selector');
       if (!video) return;
 
       // Stop webcam if active
@@ -2550,6 +2765,9 @@ $userRole = $_SESSION['user_role'] ?? 'super_admin';
 
       const cam = (localCameras || []).find(c => String(c.id) === String(camId));
       currentAICamera = cam || { id: camId, title: 'Kamera CCTV ' + camId };
+
+      if (select) select.value = String(camId);
+      if (typeof updateAICameraLists === 'function') updateAICameraLists();
 
       if (statusLabel) statusLabel.innerHTML = `<span style="color: #38bdf8;">${escapeHtml(currentAICamera.title)}</span>`;
       if (loader) {
