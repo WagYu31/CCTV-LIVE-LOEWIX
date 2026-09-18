@@ -9,6 +9,12 @@ let phpProcess = null;
 let mediaMtxProcess = null;
 const PHP_PORT = 28080;
 
+// Ensure brew and local bins are in PATH for spawned processes on macOS
+if (process.platform === 'darwin') {
+  const extraPaths = ['/opt/homebrew/bin', '/usr/local/bin', '/usr/bin', '/bin'];
+  process.env.PATH = extraPaths.concat(process.env.PATH ? process.env.PATH.split(':') : []).filter((v, i, a) => a.indexOf(v) === i).join(':');
+}
+
 // Determine project backend root directory
 const isPackaged = app.isPackaged;
 const backendRoot = isPackaged
@@ -48,6 +54,7 @@ function getMediaMtxExecutable() {
   const candidates = [
     path.join(__dirname, 'bin', `mediamtx${ext}`),
     path.join(backendRoot, `mediamtx${ext}`),
+    `/opt/homebrew/bin/mediamtx`,
     `/usr/local/bin/mediamtx`,
     `/home/loewix/mediamtx`
   ];
