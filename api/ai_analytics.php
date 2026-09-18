@@ -5,6 +5,9 @@
  * PT. LOEWIX INDONESIA
  */
 
+error_reporting(E_ALL & ~E_DEPRECATED & ~E_NOTICE & ~E_WARNING);
+ini_set('display_errors', '0');
+
 header('Content-Type: application/json; charset=utf-8');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
@@ -437,7 +440,7 @@ function syncFaceToDeepFaceDB($name, &$photoPath, $category = 'employee', $notes
         ]);
         $res = curl_exec($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        curl_close($ch);
+        @curl_close($ch);
         return ($httpCode === 200);
     }
 
@@ -540,7 +543,7 @@ if ($action === 'deepface_status') {
     $response = curl_exec($ch);
     $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     $curlError = curl_error($ch);
-    curl_close($ch);
+    @curl_close($ch);
 
     if ($httpCode === 200 && $response) {
         $data = json_decode($response, true);

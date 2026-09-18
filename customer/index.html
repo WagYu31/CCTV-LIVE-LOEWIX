@@ -14393,7 +14393,9 @@
         const text = await res.text();
         let data;
         try {
-          data = JSON.parse(text);
+          const firstBrace = text.indexOf('{');
+          const cleanText = firstBrace !== -1 ? text.substring(firstBrace) : text;
+          data = JSON.parse(cleanText);
         } catch(eJson) {
           console.error('[Face Register] Raw API response:', text);
           throw new Error('Respon server tidak valid');
