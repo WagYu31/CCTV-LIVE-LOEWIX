@@ -1795,6 +1795,8 @@ $userRole = $_SESSION['user_role'] ?? 'super_admin';
         <button type="button" class="btn btn-secondary btn-sm" onclick="closeLivePlayer()">Tutup Player</button>
       </div>
     </div>
+  </div>
+
   <!-- Modal Daftarkan Wajah Baru (Face Enrollment) -->
   <div class="modal-backdrop" id="modalRegisterFace">
     <div class="modal-dialog" style="max-width: 500px;">
@@ -3430,13 +3432,20 @@ $userRole = $_SESSION['user_role'] ?? 'super_admin';
     // =========================================================================
     function openEnrollFaceModal() {
       openModal('modalRegisterFace');
-      document.getElementById('formRegisterFace').reset();
-      document.getElementById('face-input-photo').value = '';
-      document.getElementById('face-input-descriptor').value = '';
-      document.getElementById('face-scanner-viewfinder').style.display = 'block';
-      document.getElementById('face-scanned-preview-box').style.display = 'none';
-      document.getElementById('btn-capture-face').style.display = 'inline-flex';
-      document.getElementById('btn-rescan-face').style.display = 'none';
+      const form = document.getElementById('formRegisterFace');
+      if (form) form.reset();
+      const photo = document.getElementById('face-input-photo');
+      if (photo) photo.value = '';
+      const desc = document.getElementById('face-input-descriptor');
+      if (desc) desc.value = '';
+      const vf = document.getElementById('face-scanner-viewfinder');
+      if (vf) vf.style.display = 'block';
+      const prev = document.getElementById('face-scanned-preview-box');
+      if (prev) prev.style.display = 'none';
+      const btnCap = document.getElementById('btn-capture-face');
+      if (btnCap) btnCap.style.display = 'inline-flex';
+      const btnRescan = document.getElementById('btn-rescan-face');
+      if (btnRescan) btnRescan.style.display = 'none';
 
       startEnrollWebcam();
     }
@@ -3451,10 +3460,14 @@ $userRole = $_SESSION['user_role'] ?? 'super_admin';
 
     async function startEnrollWebcam() {
       const video = document.getElementById('face-enroll-video');
-      document.getElementById('face-scanner-viewfinder').style.display = 'block';
-      document.getElementById('face-scanned-preview-box').style.display = 'none';
-      document.getElementById('btn-capture-face').style.display = 'inline-flex';
-      document.getElementById('btn-rescan-face').style.display = 'none';
+      const vf = document.getElementById('face-scanner-viewfinder');
+      if (vf) vf.style.display = 'block';
+      const prev = document.getElementById('face-scanned-preview-box');
+      if (prev) prev.style.display = 'none';
+      const btnCap = document.getElementById('btn-capture-face');
+      if (btnCap) btnCap.style.display = 'inline-flex';
+      const btnRescan = document.getElementById('btn-rescan-face');
+      if (btnRescan) btnRescan.style.display = 'none';
 
       if (!video) return;
       try {
