@@ -827,15 +827,17 @@ $userRole = $_SESSION['user_role'] ?? 'super_admin';
       position: relative;
       width: 100%;
       aspect-ratio: 16/9;
-      background: #000;
+      background: #020617;
       border-radius: 12px;
       overflow: hidden;
       border: 1.5px solid rgba(56, 189, 248, 0.25);
+      box-shadow: 0 0 25px rgba(2, 132, 199, 0.12) inset, 0 10px 30px rgba(0, 0, 0, 0.6);
     }
     .ai-screen-container video {
       width: 100%;
       height: 100%;
-      object-fit: cover;
+      object-fit: contain;
+      background: #020617;
       display: block;
     }
     .ai-screen-container canvas {
@@ -845,6 +847,42 @@ $userRole = $_SESSION['user_role'] ?? 'super_admin';
       width: 100%;
       height: 100%;
       pointer-events: none;
+    }
+    .ai-screen-hud-tl {
+      position: absolute;
+      top: 10px;
+      left: 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(6px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 6px;
+      padding: 0.25rem 0.6rem;
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: #fff;
+      z-index: 5;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+    }
+    .ai-screen-hud-tr {
+      position: absolute;
+      top: 10px;
+      right: 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(6px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 6px;
+      padding: 0.25rem 0.6rem;
+      font-size: 0.7rem;
+      font-family: monospace;
+      color: #38bdf8;
+      z-index: 5;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.5);
     }
     .ai-activity-card {
       background: #090e1a;
@@ -926,32 +964,230 @@ $userRole = $_SESSION['user_role'] ?? 'super_admin';
       box-shadow: 0 0 16px rgba(56, 189, 248, 0.35);
       background: #000;
     }
-    /* Camera Channel Pills & Quick Switcher */
-    .ai-cam-pill {
+    /* AI Video Player Modern Toolbar & Controls */
+    .ai-video-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      margin-bottom: 0.65rem;
+      padding-bottom: 0.65rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .ai-vh-left {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+    .ai-vh-right {
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+      flex-wrap: wrap;
+    }
+    .ai-live-badge {
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      background: rgba(15, 23, 42, 0.9);
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      color: #94a3b8;
-      padding: 0.35rem 0.75rem;
-      border-radius: 20px;
-      font-size: 0.78rem;
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      color: #ef4444;
+      font-size: 0.72rem;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      padding: 0.28rem 0.55rem;
+      border-radius: 6px;
+    }
+    .ai-live-badge .live-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #ef4444;
+      box-shadow: 0 0 8px #ef4444;
+      animation: pulseLiveDot 1.5s infinite;
+    }
+    @keyframes pulseLiveDot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.85); }
+    }
+    .ai-cam-dropdown-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(15, 23, 42, 0.95);
+      border: 1px solid rgba(56, 189, 248, 0.35);
+      border-radius: 8px;
+      padding: 0 0.65rem;
+      height: 32px;
+      min-width: 210px;
+    }
+    .ai-cam-dropdown-wrapper:hover {
+      border-color: #38bdf8;
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.25);
+    }
+    .ai-cam-select {
+      background: transparent;
+      border: none;
+      color: #fff;
+      font-size: 0.8rem;
       font-weight: 600;
+      outline: none;
+      width: 100%;
+      appearance: none;
+      cursor: pointer;
+      padding-right: 1.2rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .ai-cam-select option {
+      background: #0f172a;
+      color: #fff;
+    }
+    .ai-dropdown-arrow {
+      position: absolute;
+      right: 0.65rem;
+      pointer-events: none;
+      font-size: 0.7rem;
+      color: #94a3b8;
+    }
+    .ai-btn-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      height: 32px;
+      padding: 0 0.65rem;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: #cbd5e1;
+      font-size: 0.76rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .ai-btn-pill:hover {
+      background: rgba(56, 189, 248, 0.15);
+      border-color: rgba(56, 189, 248, 0.4);
+      color: #38bdf8;
+    }
+    .ai-btn-pill.active {
+      background: rgba(16, 185, 129, 0.2);
+      border-color: rgba(16, 185, 129, 0.5);
+      color: #34d399;
+    }
+    .ai-btn-pill.active-cyan {
+      background: rgba(56, 189, 248, 0.2);
+      border-color: rgba(56, 189, 248, 0.5);
+      color: #38bdf8;
+    }
+    .ai-tag-chip {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 0.2rem 0.5rem;
+      border-radius: 6px;
+    }
+
+    /* Channel Selector Strip (Enterprise NVR Matrix) */
+    .ai-nvr-strip-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 0.55rem;
+      margin-bottom: 0.65rem;
+      padding: 0.35rem 0.55rem;
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      border-radius: 10px;
+    }
+    .ai-strip-label {
+      font-size: 0.7rem;
+      font-weight: 800;
+      color: #94a3b8;
+      letter-spacing: 0.5px;
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+    }
+    .ai-channel-strip {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      overflow-x: auto;
+      scrollbar-width: none;
+      flex: 1;
+    }
+    .ai-channel-strip::-webkit-scrollbar {
+      display: none;
+    }
+    .ai-nvr-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      min-width: 48px;
+      height: 28px;
+      padding: 0 0.55rem;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #94a3b8;
+      font-size: 0.74rem;
+      font-weight: 700;
       cursor: pointer;
       white-space: nowrap;
       transition: all 0.2s ease;
     }
-    .ai-cam-pill:hover {
+    .ai-nvr-btn:hover {
+      background: rgba(56, 189, 248, 0.15);
       border-color: rgba(56, 189, 248, 0.5);
-      color: #fff;
-      background: rgba(56, 189, 248, 0.12);
-    }
-    .ai-cam-pill.active {
-      background: linear-gradient(135deg, rgba(2, 132, 199, 0.35), rgba(56, 189, 248, 0.2));
-      border-color: #38bdf8;
       color: #38bdf8;
-      box-shadow: 0 0 12px rgba(56, 189, 248, 0.35);
+    }
+    .ai-nvr-btn.active {
+      background: linear-gradient(135deg, rgba(2, 132, 199, 0.45), rgba(56, 189, 248, 0.3));
+      border: 1.5px solid #38bdf8;
+      color: #ffffff;
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.35);
+    }
+    .ai-nvr-btn .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    /* Video Footer */
+    .ai-video-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 0.65rem;
+      font-size: 0.76rem;
+      color: #94a3b8;
+    }
+    .ai-footer-info {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .ai-footer-dot {
+      color: #475569;
+    }
+    .ai-footer-engine {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-family: monospace;
+      font-size: 0.72rem;
+      color: #38bdf8;
     }
     .ai-cctv-card {
       background: rgba(15, 23, 42, 0.75);
@@ -1231,50 +1467,65 @@ $userRole = $_SESSION['user_role'] ?? 'super_admin';
       <!-- Main Live AI Vision Workspace (Video + Canvas Overlay + Controls) -->
       <div class="ai-workspace">
         
-        <!-- Left: Live AI Scanner Stream with HUD Overlay -->
+        <!-- Left: Live AI Scanner Stream with Clean Controls & HUD Overlay -->
         <div class="ai-video-card">
-          <!-- Toolbar -->
-          <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.6rem; margin-bottom: 0.85rem; padding-bottom: 0.65rem; border-bottom: 1px solid rgba(255,255,255,0.08);">
-            <div style="display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap;">
-              <span class="badge" style="background: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.4); font-size: 0.75rem; padding: 0.35rem 0.65rem; border-radius: 8px; font-weight: 800;">
-                <span class="status-indicator" style="background: #ef4444; display: inline-block; margin-right: 4px;"></span> AI LIVE SCAN
+          <!-- Unified Header Toolbar -->
+          <div class="ai-video-header">
+            <div class="ai-vh-left">
+              <div class="ai-live-badge">
+                <span class="live-dot"></span>
+                <span>AI LIVE</span>
+              </div>
+              <div class="ai-cam-dropdown-wrapper">
+                <i class="fas fa-video text-info" style="font-size: 0.75rem;"></i>
+                <select id="ai-camera-selector" class="ai-cam-select" onchange="changeAICamera(this.value)">
+                  <option value="webcam">Live Webcam Laptop</option>
+                </select>
+                <i class="fas fa-chevron-down ai-dropdown-arrow"></i>
+              </div>
+              <span id="ai-feed-resolution" class="ai-tag-chip">
+                <i class="fas fa-signal text-success mr-1"></i> RTSP 1080p
               </span>
-              <select id="ai-camera-selector" class="form-control" onchange="changeAICamera(this.value)" style="width: auto; min-width: 220px; font-size: 0.82rem; padding: 0.35rem 0.75rem; border-color: rgba(56, 189, 248, 0.4);">
-                <option value="webcam">📸 Live Webcam Laptop (Uji Scan Wajah Anda)</option>
-              </select>
-              <button class="btn btn-secondary btn-sm" onclick="startAIWebcamLive()" style="font-size: 0.78rem;">
-                <i class="fas fa-camera text-info mr-1"></i> Webcam
-              </button>
-              <button id="btn-toggle-autoscan" class="btn btn-success btn-sm" onclick="toggleAIAutoScan()" style="font-size: 0.78rem; background: #059669; border-color: #059669;">
+            </div>
+
+            <div class="ai-vh-right">
+              <button id="btn-toggle-autoscan" class="ai-btn-pill active" onclick="toggleAIAutoScan()" title="Auto Scan Wajah Otomatis">
                 <i class="fas fa-bolt mr-1"></i> Auto-Scan: AKTIF
               </button>
-            </div>
-
-            <div style="display: flex; align-items: center; gap: 0.5rem;">
-              <button class="btn btn-secondary btn-sm" onclick="toggleAIFullscreen()" style="font-size: 0.78rem;" title="Layar Penuh">
-                <i class="fas fa-expand text-warning"></i> Layar Penuh
+              <button id="btn-toggle-sound" class="ai-btn-pill active" onclick="toggleAISoundAlertManual()" title="Bunyi Suara Notifikasi">
+                <i class="fas fa-volume-up mr-1 text-info" id="ai-sound-icon"></i> Suara
               </button>
-              <span style="font-size: 0.78rem; color: #94a3b8;">Status: <strong id="ai-active-status-label" style="color: #34d399;">Aktif</strong></span>
+              <button class="ai-btn-pill" onclick="scanCurrentFrameManual()" title="Pindai Frame Ini">
+                <i class="fas fa-crosshairs mr-1"></i> Scan Frame
+              </button>
+              <button class="ai-btn-pill" onclick="toggleAIFullscreen()" title="Tampilan Layar Penuh">
+                <i class="fas fa-expand text-warning"></i>
+              </button>
             </div>
           </div>
 
-          <!-- Quick Camera Channel Switcher Pills (Webcam + All 9 CCTV Channels) -->
-          <div style="margin-bottom: 0.75rem;">
-            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.35rem;">
-              <span style="font-size: 0.72rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px;">
-                <i class="fas fa-video text-info mr-1"></i> Pilih Feed Kamera CCTV untuk AI Scan:
-              </span>
-              <span id="ai-active-cam-title" style="font-size: 0.75rem; color: #38bdf8; font-weight: 700;">
-                Live Webcam Laptop
-              </span>
-            </div>
-            <div class="ai-channel-bar" id="ai-channel-quick-pills" style="display: flex; align-items: center; gap: 0.45rem; overflow-x: auto; padding-bottom: 0.4rem; scrollbar-width: thin;">
-              <!-- Dynamically populated with Webcam & all 9 CCTV channels -->
+          <!-- Channel Selector Strip (Enterprise NVR Matrix) -->
+          <div class="ai-nvr-strip-wrapper">
+            <span class="ai-strip-label">
+              <i class="fas fa-th-large text-info mr-1"></i> CHANNEL:
+            </span>
+            <div class="ai-channel-strip" id="ai-channel-quick-pills">
+              <!-- Dynamically populated: [Webcam] [CH 1] [CH 2] ... [CH 9] -->
             </div>
           </div>
 
-          <!-- Video & Canvas Screen -->
+          <!-- Video & Canvas Screen with HUD Overlay -->
           <div class="ai-screen-container" id="ai-screen-box">
+            <!-- HUD Overlays -->
+            <div class="ai-screen-hud-tl" id="ai-screen-hud-cam-title">
+              <i class="fas fa-video text-info"></i>
+              <span id="ai-hud-cam-name">[CH 2] RTSP LOCAL STG</span>
+            </div>
+            <div class="ai-screen-hud-tr">
+              <span class="status-indicator online" style="margin-right: 4px;"></span>
+              <span>128D RESNET • 30 FPS</span>
+            </div>
+
             <video id="ai-video-player" playsinline muted autoplay></video>
             <canvas id="ai-canvas-overlay"></canvas>
             
@@ -1284,7 +1535,7 @@ $userRole = $_SESSION['user_role'] ?? 'super_admin';
             </div>
 
             <!-- Recognition Banner Popup Overlay -->
-            <div id="ai-hud-banner" style="display: none; position: absolute; top: 14px; left: 14px; background: rgba(15, 23, 42, 0.94); border: 1.5px solid #38bdf8; border-radius: 12px; padding: 0.65rem 1rem; align-items: center; gap: 0.75rem; box-shadow: 0 8px 30px rgba(0,0,0,0.8); z-index: 10;">
+            <div id="ai-hud-banner" style="display: none; position: absolute; top: 48px; left: 14px; background: rgba(15, 23, 42, 0.95); border: 1.5px solid #38bdf8; border-radius: 12px; padding: 0.65rem 1rem; align-items: center; gap: 0.75rem; box-shadow: 0 8px 30px rgba(0,0,0,0.8); z-index: 10;">
               <div id="ai-hud-icon" style="width: 38px; height: 38px; border-radius: 50%; background: rgba(56, 189, 248, 0.2); display: flex; align-items: center; justify-content: center; color: #38bdf8; font-size: 1.1rem;">
                 <i class="fas fa-user-check"></i>
               </div>
@@ -1298,19 +1549,18 @@ $userRole = $_SESSION['user_role'] ?? 'super_admin';
             </div>
           </div>
 
-          <!-- Scanner Bottom Toolbar -->
-          <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.6rem; margin-top: 0.75rem; font-size: 0.8rem; color: #94a3b8;">
-            <div style="display: flex; align-items: center; gap: 1rem;">
-              <label style="display: flex; align-items: center; gap: 0.4rem; cursor: pointer; margin: 0; color: #cbd5e1;">
-                <input type="checkbox" id="ai-sound-alert-toggle" checked onchange="toggleAISoundAlert(this.checked)">
-                <span><i class="fas fa-volume-up text-info"></i> Suara Alert Aktif</span>
-              </label>
-              <button class="btn btn-outline btn-sm" onclick="scanCurrentFrameManual()" style="font-size: 0.75rem; padding: 0.25rem 0.6rem;">
-                <i class="fas fa-search mr-1"></i> Scan Frame Ini
-              </button>
+          <!-- Video Clean Footer Info -->
+          <div class="ai-video-footer">
+            <div class="ai-footer-info">
+              <span id="ai-footer-cam-name" style="color: #38bdf8; font-weight: 600;">
+                <i class="fas fa-shield-alt mr-1"></i> Aktif: [CH 2] RTSP LOCAL STG
+              </span>
+              <span class="ai-footer-dot">&bull;</span>
+              <span id="ai-footer-latency" style="color: #94a3b8;">Latency ~180ms</span>
             </div>
-            <div id="ai-engine-indicator" style="font-family: monospace; font-size: 0.74rem; color: #38bdf8;">
-              Model: Face-API.js + MediaPipe 3D Mesh
+            <div class="ai-footer-engine" id="ai-engine-indicator">
+              <span class="status-indicator online"></span>
+              Neural Vision: Face-API.js 128D ResNet
             </div>
           </div>
         </div>
@@ -2428,14 +2678,14 @@ $userRole = $_SESSION['user_role'] ?? 'super_admin';
       if (!select) return;
       const currentVal = (currentAICamera && currentAICamera.id) ? String(currentAICamera.id) : (select.value || 'webcam');
 
-      let opts = `<option value="webcam" ${currentVal === 'webcam' ? 'selected' : ''}>📸 Live Webcam Laptop (Uji Scan Wajah Anda)</option>`;
+      let opts = `<option value="webcam" ${currentVal === 'webcam' ? 'selected' : ''}>📸 Live Webcam Laptop</option>`;
       if (Array.isArray(localCameras) && localCameras.length > 0) {
         localCameras.forEach((cam, idx) => {
           const isSelected = String(cam.id) === currentVal ? 'selected' : '';
           const cityUpper = (cam.city || 'Lokal').toUpperCase();
           const isOnline = cam.status !== 'offline';
           const statusIcon = isOnline ? '🟢' : '🔴';
-          opts += `<option value="${cam.id}" ${isSelected}>📹 ${statusIcon} [CH ${idx + 1}] ${escapeHtml(cam.title || 'Kamera ' + cam.id)} (${cityUpper})</option>`;
+          opts += `<option value="${cam.id}" ${isSelected}>${statusIcon} [CH ${idx + 1}] ${escapeHtml(cam.title || 'Kamera ' + cam.id)} (${cityUpper})</option>`;
         });
       }
       select.innerHTML = opts;
@@ -2449,8 +2699,8 @@ $userRole = $_SESSION['user_role'] ?? 'super_admin';
       const activeId = (currentAICamera && currentAICamera.id) ? String(currentAICamera.id) : 'webcam';
       
       let html = `
-        <button type="button" class="ai-cam-pill ${activeId === 'webcam' ? 'active' : ''}" onclick="startAIWebcamLive()">
-          <i class="fas fa-camera text-info"></i> Webcam Laptop
+        <button type="button" class="ai-nvr-btn ${activeId === 'webcam' ? 'active' : ''}" onclick="startAIWebcamLive()" title="Live Webcam Laptop">
+          <i class="fas fa-camera text-info" style="font-size: 0.7rem;"></i> Webcam
         </button>
       `;
 
@@ -2460,20 +2710,15 @@ $userRole = $_SESSION['user_role'] ?? 'super_admin';
           const isOnline = cam.status !== 'offline';
           const statusDot = isOnline ? '#10b981' : '#ef4444';
           html += `
-            <button type="button" class="ai-cam-pill ${isActive ? 'active' : ''}" onclick="changeAICamera(${cam.id})" title="${escapeHtml(cam.title || '')}">
-              <span class="status-indicator" style="background: ${statusDot};"></span>
-              [CH ${idx + 1}] ${escapeHtml(cam.title || 'Kamera ' + cam.id)}
+            <button type="button" class="ai-nvr-btn ${isActive ? 'active' : ''}" onclick="changeAICamera(${cam.id})" title="${escapeHtml(cam.title || '')}">
+              <span class="status-dot" style="background: ${statusDot};"></span>
+              CH ${idx + 1}
             </button>
           `;
         });
       }
 
       bar.innerHTML = html;
-
-      const titleEl = document.getElementById('ai-active-cam-title');
-      if (titleEl) {
-        titleEl.textContent = (currentAICamera && currentAICamera.title) ? currentAICamera.title : 'Live Webcam Laptop';
-      }
     }
 
     function renderAICameraGridCards() {
@@ -2694,6 +2939,20 @@ $userRole = $_SESSION['user_role'] ?? 'super_admin';
       }, 4000);
     }
 
+    function toggleAISoundAlertManual() {
+      isAISoundEnabled = !isAISoundEnabled;
+      const btn = document.getElementById('btn-toggle-sound');
+      if (btn) {
+        if (isAISoundEnabled) {
+          btn.classList.add('active');
+          btn.innerHTML = '<i class="fas fa-volume-up mr-1 text-info" id="ai-sound-icon"></i> Suara';
+        } else {
+          btn.classList.remove('active');
+          btn.innerHTML = '<i class="fas fa-volume-mute mr-1" style="color: #94a3b8;" id="ai-sound-icon"></i> Mute';
+        }
+      }
+    }
+
     function toggleAISoundAlert(checked) {
       isAISoundEnabled = Boolean(checked);
     }
@@ -2703,15 +2962,11 @@ $userRole = $_SESSION['user_role'] ?? 'super_admin';
       const btn = document.getElementById('btn-toggle-autoscan');
       if (btn) {
         if (isAutoScanActive) {
-          btn.className = 'btn btn-success btn-sm';
-          btn.style.background = '#059669';
-          btn.style.borderColor = '#059669';
+          btn.classList.add('active');
           btn.innerHTML = '<i class="fas fa-bolt mr-1"></i> Auto-Scan: AKTIF';
         } else {
-          btn.className = 'btn btn-secondary btn-sm';
-          btn.style.background = '#334155';
-          btn.style.borderColor = '#475569';
-          btn.innerHTML = '<i class="fas fa-pause mr-1"></i> Auto-Scan: NONAKTIF';
+          btn.classList.remove('active');
+          btn.innerHTML = '<i class="fas fa-pause mr-1"></i> Auto-Scan: JEDA';
         }
       }
     }
@@ -2763,6 +3018,15 @@ $userRole = $_SESSION['user_role'] ?? 'super_admin';
       if (select) select.value = 'webcam';
       if (statusLabel) statusLabel.innerHTML = '<span style="color: #34d399;">Webcam Laptop Aktif</span>';
       if (loader) loader.style.display = 'none';
+
+      // Update HUD Overlay & Footer
+      const hudCam = document.getElementById('ai-hud-cam-name');
+      if (hudCam) hudCam.textContent = 'WEBCAM LAPTOP';
+      const footerCam = document.getElementById('ai-footer-cam-name');
+      if (footerCam) footerCam.innerHTML = '<i class="fas fa-camera text-info mr-1"></i> Aktif: Webcam Laptop';
+      const resTag = document.getElementById('ai-feed-resolution');
+      if (resTag) resTag.innerHTML = '<i class="fas fa-check-circle text-success mr-1"></i> WEBCAM 720p';
+
       if (typeof updateAICameraLists === 'function') updateAICameraLists();
 
       if (aiHlsInstance) {
@@ -2806,10 +3070,21 @@ $userRole = $_SESSION['user_role'] ?? 'super_admin';
         video.srcObject = null;
       }
 
-      const cam = (localCameras || []).find(c => String(c.id) === String(camId));
+      const camIdx = (localCameras || []).findIndex(c => String(c.id) === String(camId));
+      const cam = (localCameras || [])[camIdx] || (localCameras || []).find(c => String(c.id) === String(camId));
       currentAICamera = cam || { id: camId, title: 'Kamera CCTV ' + camId };
 
       if (select) select.value = String(camId);
+
+      // Update HUD Overlay & Footer
+      const chNum = camIdx >= 0 ? (camIdx + 1) : camId;
+      const hudCam = document.getElementById('ai-hud-cam-name');
+      if (hudCam) hudCam.textContent = `[CH ${chNum}] ${(currentAICamera.title || '').toUpperCase()}`;
+      const footerCam = document.getElementById('ai-footer-cam-name');
+      if (footerCam) footerCam.innerHTML = `<i class="fas fa-video text-info mr-1"></i> Aktif: [CH ${chNum}] ${escapeHtml(currentAICamera.title || '')}`;
+      const resTag = document.getElementById('ai-feed-resolution');
+      if (resTag) resTag.innerHTML = '<i class="fas fa-signal text-success mr-1"></i> RTSP 1080p';
+
       if (typeof updateAICameraLists === 'function') updateAICameraLists();
 
       if (statusLabel) statusLabel.innerHTML = `<span style="color: #38bdf8;">${escapeHtml(currentAICamera.title)}</span>`;
