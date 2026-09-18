@@ -1,6 +1,6 @@
 #!/bin/bash
 # ================================================================
-# Loewix Local VMS - Desktop Launcher (macOS)
+# LOEWIX Face Detection - Desktop Launcher (macOS)
 # PT. LOEWIX INDONESIA
 # ================================================================
 
@@ -8,7 +8,7 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd "$DIR"
 
 echo "================================================================"
-echo "          LOEWIX LOCAL VMS - DESKTOP & LAN EDITION (MAC)"
+echo "        LOEWIX FACE DETECTION - DESKTOP & LAN EDITION (MAC)"
 echo "                   PT. LOEWIX INDONESIA"
 echo "================================================================"
 echo ""

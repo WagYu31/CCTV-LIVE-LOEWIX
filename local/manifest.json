@@ -1,7 +1,7 @@
 {
-  "name": "Loewix Local VMS",
-  "short_name": "Loewix VMS",
-  "description": "Loewix CCTV Local Surveillance & Camera Manager",
+  "name": "LOEWIX Face Detection",
+  "short_name": "LOEWIX Face Detection",
+  "description": "Loewix CCTV Local Surveillance & Face Detection Suite",
   "start_url": "index.php",
   "display": "standalone",
   "background_color": "#080c14",

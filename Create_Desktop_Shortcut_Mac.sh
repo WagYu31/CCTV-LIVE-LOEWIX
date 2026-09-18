@@ -1,12 +1,12 @@
 #!/bin/bash
 # ================================================================
-# Buat Shortcut Desktop Mac - Loewix Local VMS
+# Buat Shortcut Desktop Mac - LOEWIX Face Detection
 # ================================================================
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 chmod +x "$DIR/Start_Loewix_Local.command"
 
-DESKTOP_SHORTCUT="$HOME/Desktop/Loewix Local VMS.command"
+DESKTOP_SHORTCUT="$HOME/Desktop/LOEWIX Face Detection.command"
 ln -sf "$DIR/Start_Loewix_Local.command" "$DESKTOP_SHORTCUT"
 chmod +x "$DESKTOP_SHORTCUT"
 

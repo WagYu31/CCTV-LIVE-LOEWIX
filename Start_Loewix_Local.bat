@@ -1,10 +1,10 @@
 @echo off
-title Loewix Local VMS - Desktop Launcher (Windows)
+title LOEWIX Face Detection - Desktop Launcher (Windows)
 color 0b
 cls
 
 echo ================================================================
-echo           LOEWIX LOCAL VMS - DESKTOP & LAN EDITION
+echo         LOEWIX FACE DETECTION - DESKTOP & LAN EDITION
 echo                    PT. LOEWIX INDONESIA
 echo ================================================================
 echo.

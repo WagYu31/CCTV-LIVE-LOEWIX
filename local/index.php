@@ -15,14 +15,14 @@ $userRole = $_SESSION['user_role'] ?? 'super_admin';
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Loewix Local VMS - Desktop & LAN Edition</title>
+  <title>Loewix Face Detection - Desktop & LAN Edition</title>
   
   <!-- PWA Meta Tags -->
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#0284c7">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="Loewix VMS">
+  <meta name="apple-mobile-web-app-title" content="Loewix Face Detection">
   <link rel="icon" type="image/png" href="../assets/image/icon.png">
 
   <!-- Google Fonts: Inter -->
@@ -763,7 +763,7 @@ $userRole = $_SESSION['user_role'] ?? 'super_admin';
       </div>
       <div>
         <div class="brand-title">
-          LOEWIX VMS
+          LOEWIX Face Detection
           <span class="brand-tag">Local Desktop Edition</span>
         </div>
       </div>
@@ -796,7 +796,7 @@ $userRole = $_SESSION['user_role'] ?? 'super_admin';
       <div class="login-logo">
         <i class="fas fa-shield-halved"></i>
       </div>
-      <h2 class="login-title">Masuk ke Loewix VMS</h2>
+      <h2 class="login-title">Masuk ke LOEWIX Face Detection</h2>
       <p class="login-subtitle">Akses Pengawasan Kamera CCTV Jaringan Lokal</p>
 
       <div id="login-alert" class="alert-box danger"></div>
@@ -1045,7 +1045,7 @@ $userRole = $_SESSION['user_role'] ?? 'super_admin';
 
   <!-- App Footer -->
   <footer class="app-footer">
-    Loewix Local VMS &bull; PT. Loewix Indonesia &bull; Versi Desktop & Jaringan Lokal (Port 8088)
+    Loewix Face Detection &bull; PT. Loewix Indonesia &bull; Versi Desktop & Jaringan Lokal (Port 8088)
   </footer>
 
   <!-- Application Logic JavaScript -->
