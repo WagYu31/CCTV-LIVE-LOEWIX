@@ -144,16 +144,9 @@ if ($action === 'get_ai_data') {
     $encFile = __DIR__ . '/../data/encoding.json';
     if (file_exists($encFile)) {
         $encData = json_decode(file_get_contents($encFile), true);
-        if (isset($encData['faces']) && is_array($encData['faces'])) {
-            if (empty($encData['faces'])) {
-                // encoding.json is explicitly empty (cleared). Purge database ai_faces as well.
-                if (!empty($db['ai_faces'])) {
-                    $db['ai_faces'] = [];
-                    save_db_data($db);
-                }
-            } else {
-                $existingNames = [];
-                $initialCount = count($db['ai_faces'] ?? []);
+        if (!empty($encData['faces']) && is_array($encData['faces'])) {
+            $existingNames = [];
+            $initialCount = count($db['ai_faces'] ?? []);
                 foreach (($db['ai_faces'] ?? []) as $f) {
                     $existingNames[strtolower(trim($f['name'] ?? ''))] = true;
                 }
@@ -212,7 +205,6 @@ if ($action === 'get_ai_data') {
                     save_db_data($db);
                 }
             }
-        }
     }
 
     // Bidirectional sync: if $db['ai_faces'] has faces with descriptors, also ensure encoding.json has them

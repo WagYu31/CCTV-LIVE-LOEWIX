@@ -1,3 +1,12 @@
 {
-    "faces": []
+    "description": "Loewix CCTV AI Vision Face Encodings Database",
+    "faces": [
+        {
+            "name": "WAGYU",
+            "category": "vip",
+            "role": "Super Admin & Owner",
+            "photo": "assets/uploads/faces/WAGYU/face_20260918_112025_8723.jpg",
+            "created_at": "2026-09-18 11:20:25"
+        }
+    ]
 }
