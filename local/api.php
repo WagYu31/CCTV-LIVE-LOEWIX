@@ -20,6 +20,17 @@ require_once __DIR__ . '/../config/db.php';
 
 $action = $_GET['action'] ?? $_POST['action'] ?? '';
 
+// Forward AI Face Recognition actions to the AI Analytics engine
+$aiActions = [
+    'get_ai_data', 'register_face', 'update_face', 'delete_face', 
+    'reset_all_faces', 'log_detection', 'clear_logs', 'sync_descriptors_batch', 
+    'sync_face_db', 'get_face_image', 'deepface_status'
+];
+if (in_array($action, $aiActions)) {
+    require __DIR__ . '/../api/ai_analytics.php';
+    exit;
+}
+
 // Helper to get client IP
 function get_client_ip() {
     return $_SERVER['HTTP_X_FORWARDED_FOR'] ?? $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1';

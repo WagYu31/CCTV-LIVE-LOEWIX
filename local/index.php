@@ -36,6 +36,11 @@ $userRole = $_SESSION['user_role'] ?? 'super_admin';
   <!-- HLS.js for Live Stream Video Player -->
   <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
 
+  <!-- AI Biometric Face Recognition Engines (Face-API 128D ResNet & MediaPipe 468 3D Mesh) -->
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.18.0/dist/tf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4.1633559619/face_mesh.js" crossorigin="anonymous"></script>
+
   <style>
     :root {
       --bg-base: #080c14;
@@ -742,6 +747,186 @@ $userRole = $_SESSION['user_role'] ?? 'super_admin';
       to { transform: rotate(360deg); }
     }
 
+    /* Main Navigation Tabs */
+    .nav-tabs-group {
+      display: flex;
+      gap: 0.35rem;
+      align-items: center;
+      background: rgba(15, 23, 42, 0.7);
+      padding: 0.3rem;
+      border-radius: 12px;
+      border: 1px solid var(--border-color);
+    }
+    .nav-tab-btn {
+      background: transparent;
+      border: 1px solid transparent;
+      color: #94a3b8;
+      font-size: 0.84rem;
+      font-weight: 600;
+      padding: 0.45rem 1rem;
+      border-radius: 9px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all 0.2s ease;
+    }
+    .nav-tab-btn:hover {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.05);
+    }
+    .nav-tab-btn.active {
+      background: linear-gradient(135deg, rgba(2, 132, 199, 0.35), rgba(56, 189, 248, 0.15));
+      color: #38bdf8;
+      border-color: rgba(56, 189, 248, 0.4);
+      box-shadow: 0 0 14px rgba(56, 189, 248, 0.2);
+    }
+
+    /* AI Vision Layout (Gambar 2 Replica) */
+    .ai-telemetry-card {
+      background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(10, 30, 60, 0.9));
+      border: 1.5px solid rgba(56, 189, 248, 0.4);
+      border-radius: 16px;
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    }
+    .ai-metrics-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-top: 1.2rem;
+    }
+    .ai-metric-box {
+      background: rgba(15, 23, 42, 0.75);
+      border: 1px solid rgba(56, 189, 248, 0.2);
+      border-radius: 12px;
+      padding: 0.9rem 1.1rem;
+    }
+    .ai-workspace {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 1.25rem;
+      margin-bottom: 1.75rem;
+    }
+    @media (max-width: 1024px) {
+      .ai-workspace {
+        grid-template-columns: 1fr;
+      }
+    }
+    .ai-video-card {
+      background: #090e1a;
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      border-radius: 16px;
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+    .ai-screen-container {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16/9;
+      background: #000;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1.5px solid rgba(56, 189, 248, 0.25);
+    }
+    .ai-screen-container video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .ai-screen-container canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+    .ai-activity-card {
+      background: #090e1a;
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      border-radius: 16px;
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      max-height: 570px;
+    }
+    .ai-activity-list {
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 0.65rem;
+      flex: 1;
+      padding-right: 4px;
+      margin-top: 0.75rem;
+    }
+    .ai-activity-item {
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid rgba(56, 189, 248, 0.2);
+      border-radius: 10px;
+      padding: 0.65rem 0.8rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      transition: all 0.2s;
+    }
+    .ai-activity-item:hover {
+      border-color: rgba(56, 189, 248, 0.5);
+      transform: translateX(2px);
+    }
+    .ai-activity-thumb {
+      width: 44px;
+      height: 44px;
+      border-radius: 8px;
+      object-fit: cover;
+      border: 1px solid rgba(56, 189, 248, 0.4);
+      background: #000;
+      flex-shrink: 0;
+    }
+    .ai-faces-box {
+      background: #090e1a;
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      border-radius: 16px;
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+    .ai-faces-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+      gap: 1.1rem;
+      margin-top: 1.25rem;
+    }
+    .ai-face-card {
+      background: rgba(15, 23, 42, 0.75);
+      border: 1px solid rgba(56, 189, 248, 0.2);
+      border-radius: 14px;
+      padding: 1.1rem;
+      text-align: center;
+      position: relative;
+      transition: all 0.25s ease;
+    }
+    .ai-face-card:hover {
+      border-color: rgba(56, 189, 248, 0.6);
+      transform: translateY(-3px);
+      box-shadow: 0 8px 24px rgba(2, 132, 199, 0.2);
+    }
+    .ai-face-avatar {
+      width: 76px;
+      height: 76px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin: 0 auto 0.65rem;
+      border: 2px solid #38bdf8;
+      box-shadow: 0 0 16px rgba(56, 189, 248, 0.35);
+      background: #000;
+    }
+
     /* Footer */
     .app-footer {
       border-top: 1px solid var(--border-color);
@@ -768,6 +953,17 @@ $userRole = $_SESSION['user_role'] ?? 'super_admin';
         </div>
       </div>
     </div>
+
+    <?php if ($isLoggedIn): ?>
+    <div class="nav-tabs-group">
+      <button type="button" class="nav-tab-btn active" id="tab-btn-cctv" onclick="switchMainTab('cctv')">
+        <i class="fas fa-video text-info"></i> Channel CCTV
+      </button>
+      <button type="button" class="nav-tab-btn" id="tab-btn-ai" onclick="switchMainTab('ai')">
+        <i class="fas fa-brain text-info"></i> AI Face Recognition
+      </button>
+    </div>
+    <?php endif; ?>
 
     <div class="nav-actions">
       <?php if ($isLoggedIn): ?>
@@ -832,8 +1028,10 @@ $userRole = $_SESSION['user_role'] ?? 'super_admin';
   <!-- ==================== DASHBOARD & CAMERA MANAGEMENT ==================== -->
   <main class="app-container">
     
-    <!-- Hero Banner with Add Camera Button -->
-    <div class="hero-banner">
+    <!-- PANE 1: CCTV CAMERA MANAGEMENT -->
+    <div id="view-cctv-pane">
+      <!-- Hero Banner with Add Camera Button -->
+      <div class="hero-banner">
       <div class="hero-info">
         <h1>
           <i class="fas fa-video text-info"></i>
@@ -896,6 +1094,207 @@ $userRole = $_SESSION['user_role'] ?? 'super_admin';
         <i class="fas fa-plus-circle"></i> Tambah Kamera CCTV Baru
       </button>
     </div>
+    </div> <!-- /#view-cctv-pane -->
+
+    <!-- ==================== PANE 2: AI FACE RECOGNITION (Gambar 2 Replica) ==================== -->
+    <div id="view-ai-pane" style="display: none;">
+      
+      <!-- AI Telemetry & Status Header -->
+      <div class="ai-telemetry-card">
+        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+          <div style="display: flex; align-items: center; gap: 1rem;">
+            <div style="width: 50px; height: 50px; border-radius: 14px; background: linear-gradient(135deg, #0284c7, #38bdf8); display: flex; align-items: center; justify-content: center; font-size: 1.4rem; color: #fff; box-shadow: 0 0 20px rgba(56, 189, 248, 0.5);">
+              <i class="fas fa-brain"></i>
+            </div>
+            <div>
+              <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem;">
+                <h2 style="font-size: 1.25rem; font-weight: 800; color: #fff; margin: 0; letter-spacing: -0.3px;">Loewix Neural Vision Suite</h2>
+                <span style="font-size: 0.65rem; font-weight: 800; background: rgba(56,189,248,0.2); border: 1px solid rgba(56,189,248,0.4); color: #38bdf8; border-radius: 6px; padding: 0.2rem 0.5rem;">
+                  AI COMPUTER VISION V3
+                </span>
+              </div>
+              <p style="color: #94a3b8; font-size: 0.82rem; margin: 0;">
+                Pengenalan Wajah Otomatis (Face Recognition) & Analitik Biometrik Wajah Real-Time Jaringan Lokal.
+              </p>
+            </div>
+          </div>
+
+          <div style="display: flex; align-items: center; flex-wrap: wrap; gap: 0.75rem;">
+            <div style="background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 8px; font-size: 0.78rem; color: #34d399; display: flex; align-items: center; gap: 6px; padding: 0.4rem 0.8rem;">
+              <span class="status-indicator online"></span>
+              <strong>NEURAL ENGINE: ONLINE</strong>
+            </div>
+            <button class="btn btn-secondary btn-sm" onclick="loadAIFaceData(true)">
+              <i class="fas fa-sync mr-1"></i> Segarkan Data AI
+            </button>
+          </div>
+        </div>
+
+        <!-- AI Metrics Row (Face Recognition Only) -->
+        <div class="ai-metrics-row">
+          <div class="ai-metric-box">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.25rem;">
+              <span style="font-size: 0.78rem; font-weight: 600; color: #94a3b8;">Wajah Terdaftar</span>
+              <i class="fas fa-user-check text-info"></i>
+            </div>
+            <div class="ai-metric-num" id="ai-stat-faces">0</div>
+            <small style="color: #38bdf8; font-size: 0.72rem;">VIP & Karyawan Aktif</small>
+          </div>
+
+          <div class="ai-metric-box">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.25rem;">
+              <span style="font-size: 0.78rem; font-weight: 600; color: #94a3b8;">Deteksi Hari Ini</span>
+              <i class="fas fa-bolt" style="color: #f59e0b;"></i>
+            </div>
+            <div class="ai-metric-num" id="ai-stat-detections">0</div>
+            <small style="color: #f59e0b; font-size: 0.72rem;">Akurasi Rata-rata 97.4%</small>
+          </div>
+
+          <div class="ai-metric-box">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.25rem;">
+              <span style="font-size: 0.78rem; font-weight: 600; color: #94a3b8;">Alert Blacklist</span>
+              <i class="fas fa-shield-virus" style="color: #ef4444;"></i>
+            </div>
+            <div class="ai-metric-num" id="ai-stat-blacklist" style="color: #ef4444;">0</div>
+            <small style="color: #ef4444; font-size: 0.72rem;">Notifikasi Keamanan</small>
+          </div>
+
+          <div class="ai-metric-box">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.25rem;">
+              <span style="font-size: 0.78rem; font-weight: 600; color: #94a3b8;">Kamera Terhubung</span>
+              <i class="fas fa-video text-success" style="color: #10b981;"></i>
+            </div>
+            <div class="ai-metric-num" id="ai-stat-cameras">0</div>
+            <small style="color: #10b981; font-size: 0.72rem;">Siap Scan Multi-Channel</small>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Live AI Vision Workspace (Video + Canvas Overlay + Controls) -->
+      <div class="ai-workspace">
+        
+        <!-- Left: Live AI Scanner Stream with HUD Overlay -->
+        <div class="ai-video-card">
+          <!-- Toolbar -->
+          <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.6rem; margin-bottom: 0.85rem; padding-bottom: 0.65rem; border-bottom: 1px solid rgba(255,255,255,0.08);">
+            <div style="display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap;">
+              <span class="badge" style="background: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.4); font-size: 0.75rem; padding: 0.35rem 0.65rem; border-radius: 8px; font-weight: 800;">
+                <span class="status-indicator" style="background: #ef4444; display: inline-block; margin-right: 4px;"></span> AI LIVE SCAN
+              </span>
+              <select id="ai-camera-selector" class="form-control" onchange="changeAICamera(this.value)" style="width: auto; min-width: 220px; font-size: 0.82rem; padding: 0.35rem 0.75rem; border-color: rgba(56, 189, 248, 0.4);">
+                <option value="webcam">📸 Live Webcam Laptop (Uji Scan Wajah Anda)</option>
+              </select>
+              <button class="btn btn-secondary btn-sm" onclick="startAIWebcamLive()" style="font-size: 0.78rem;">
+                <i class="fas fa-camera text-info mr-1"></i> Webcam
+              </button>
+              <button id="btn-toggle-autoscan" class="btn btn-success btn-sm" onclick="toggleAIAutoScan()" style="font-size: 0.78rem; background: #059669; border-color: #059669;">
+                <i class="fas fa-bolt mr-1"></i> Auto-Scan: AKTIF
+              </button>
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+              <button class="btn btn-secondary btn-sm" onclick="toggleAIFullscreen()" style="font-size: 0.78rem;" title="Layar Penuh">
+                <i class="fas fa-expand text-warning"></i> Layar Penuh
+              </button>
+              <span style="font-size: 0.78rem; color: #94a3b8;">Status: <strong id="ai-active-status-label" style="color: #34d399;">Aktif</strong></span>
+            </div>
+          </div>
+
+          <!-- Video & Canvas Screen -->
+          <div class="ai-screen-container" id="ai-screen-box">
+            <video id="ai-video-player" playsinline muted autoplay></video>
+            <canvas id="ai-canvas-overlay"></canvas>
+            
+            <div id="ai-video-loader" class="player-loader" style="display: none;">
+              <div class="spinner"></div>
+              <div id="ai-loader-text">Menghubungkan Stream...</div>
+            </div>
+
+            <!-- Recognition Banner Popup Overlay -->
+            <div id="ai-hud-banner" style="display: none; position: absolute; top: 14px; left: 14px; background: rgba(15, 23, 42, 0.94); border: 1.5px solid #38bdf8; border-radius: 12px; padding: 0.65rem 1rem; align-items: center; gap: 0.75rem; box-shadow: 0 8px 30px rgba(0,0,0,0.8); z-index: 10;">
+              <div id="ai-hud-icon" style="width: 38px; height: 38px; border-radius: 50%; background: rgba(56, 189, 248, 0.2); display: flex; align-items: center; justify-content: center; color: #38bdf8; font-size: 1.1rem;">
+                <i class="fas fa-user-check"></i>
+              </div>
+              <div>
+                <div style="display: flex; align-items: center; gap: 0.4rem;">
+                  <strong id="ai-hud-name" style="color: #fff; font-size: 0.92rem;">WAHYU UTOMO</strong>
+                  <span id="ai-hud-badge" style="background: rgba(16, 185, 129, 0.2); color: #34d399; font-size: 0.68rem; padding: 0.15rem 0.45rem; border-radius: 5px; font-weight: 700;">VIP</span>
+                </div>
+                <small id="ai-hud-sub" style="color: #94a3b8; font-size: 0.75rem;">Akses Pintu Diberikan • 98.2% Similarity</small>
+              </div>
+            </div>
+          </div>
+
+          <!-- Scanner Bottom Toolbar -->
+          <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.6rem; margin-top: 0.75rem; font-size: 0.8rem; color: #94a3b8;">
+            <div style="display: flex; align-items: center; gap: 1rem;">
+              <label style="display: flex; align-items: center; gap: 0.4rem; cursor: pointer; margin: 0; color: #cbd5e1;">
+                <input type="checkbox" id="ai-sound-alert-toggle" checked onchange="toggleAISoundAlert(this.checked)">
+                <span><i class="fas fa-volume-up text-info"></i> Suara Alert Aktif</span>
+              </label>
+              <button class="btn btn-outline btn-sm" onclick="scanCurrentFrameManual()" style="font-size: 0.75rem; padding: 0.25rem 0.6rem;">
+                <i class="fas fa-search mr-1"></i> Scan Frame Ini
+              </button>
+            </div>
+            <div id="ai-engine-indicator" style="font-family: monospace; font-size: 0.74rem; color: #38bdf8;">
+              Model: Face-API.js + MediaPipe 3D Mesh
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Live Activity Detection Log (Gambar 2 Replica) -->
+        <div class="ai-activity-card">
+          <div style="display: flex; align-items: center; justify-content: space-between; padding-bottom: 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.08);">
+            <div style="display: flex; align-items: center; gap: 0.45rem; font-weight: 700; color: #fff; font-size: 0.88rem;">
+              <i class="fas fa-bolt" style="color: #f59e0b;"></i> LIVE STREAM DETEKSI AI
+            </div>
+            <button class="btn btn-outline btn-sm" onclick="clearAILogs()" style="font-size: 0.72rem; padding: 0.2rem 0.5rem;">
+              Bersihkan
+            </button>
+          </div>
+
+          <div class="ai-activity-list" id="ai-activity-log-container">
+            <div style="text-align: center; padding: 2rem 1rem; color: #64748b; font-size: 0.82rem;">
+              <i class="fas fa-radar fa-spin mb-2" style="font-size: 1.5rem; color: #38bdf8;"></i>
+              <div>Menunggu deteksi wajah di kamera...</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom: Enrolled Faces Database (Gambar 2 Replica) -->
+      <div class="ai-faces-box">
+        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.8rem; padding-bottom: 1rem; border-bottom: 1px solid rgba(255,255,255,0.08);">
+          <div style="display: flex; align-items: center; gap: 0.75rem;">
+            <div class="badge" style="background: rgba(2, 132, 199, 0.2); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.4); font-size: 0.85rem; padding: 0.45rem 0.9rem; border-radius: 9px; font-weight: 700;">
+              <i class="fas fa-address-book mr-1.5"></i> Database Wajah Terdaftar (<span id="ai-faces-count-badge">0</span>)
+            </div>
+          </div>
+
+          <div style="display: flex; align-items: center; flex-wrap: wrap; gap: 0.6rem;">
+            <button class="btn btn-success btn-sm" onclick="openEnrollFaceModal()" style="font-size: 0.84rem; padding: 0.45rem 1rem; background: linear-gradient(135deg, #059669, #10b981); border: none;">
+              <i class="fas fa-user-plus mr-1"></i> + Daftarkan Wajah Baru
+            </button>
+            <button class="btn btn-secondary btn-sm" onclick="loadAIFaceData(true)" style="font-size: 0.84rem; padding: 0.45rem 0.85rem;">
+              <i class="fas fa-sync-alt mr-1"></i> Sinkron Database AI
+            </button>
+            <button class="btn btn-danger-outline btn-sm" onclick="resetAllFacesPrompt()" style="font-size: 0.84rem; padding: 0.45rem 0.85rem;">
+              <i class="fas fa-trash-alt mr-1"></i> Reset Semua Wajah
+            </button>
+          </div>
+        </div>
+
+        <!-- Search Bar -->
+        <div style="margin-top: 1rem; display: flex; gap: 0.6rem;">
+          <input type="text" id="ai-search-face-input" class="form-control" placeholder="Cari nama atau jabatan wajah terdaftar..." oninput="filterAIFaces(this.value)" style="font-size: 0.85rem; max-width: 380px;">
+        </div>
+
+        <!-- Faces Grid -->
+        <div class="ai-faces-grid" id="ai-faces-grid-container">
+          <!-- Injected via JavaScript -->
+        </div>
+      </div>
+    </div> <!-- /#view-ai-pane -->
 
   </main>
   <?php endif; ?>
@@ -1040,6 +1439,100 @@ $userRole = $_SESSION['user_role'] ?? 'super_admin';
         <div id="player-stream-info" style="font-size: 0.78rem; color: #94a3b8; font-family: monospace;"></div>
         <button type="button" class="btn btn-secondary btn-sm" onclick="closeLivePlayer()">Tutup Player</button>
       </div>
+    </div>
+  <!-- Modal Daftarkan Wajah Baru (Face Enrollment) -->
+  <div class="modal-backdrop" id="modalRegisterFace">
+    <div class="modal-dialog" style="max-width: 500px;">
+      <div class="modal-header">
+        <div class="modal-title">
+          <i class="fas fa-user-plus text-info mr-2"></i> Daftarkan Wajah Baru ke AI Face Recognition
+        </div>
+        <button type="button" class="modal-close" onclick="closeEnrollModal()">&times;</button>
+      </div>
+
+      <form id="formRegisterFace" onsubmit="event.preventDefault(); submitRegisterFace(event);">
+        <div class="modal-body" style="max-height: 75vh; overflow-y: auto;">
+          
+          <!-- Live Biometric Face Enrollment Scanner -->
+          <div style="background: rgba(15, 23, 42, 0.9); border: 1.5px solid rgba(0, 240, 255, 0.4); border-radius: 14px; padding: 1rem; text-align: center; margin-bottom: 1rem;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem;">
+              <span class="badge" style="background: rgba(0, 240, 255, 0.15); color: #38bdf8; border: 1px solid rgba(0, 240, 255, 0.4); font-size: 0.72rem; padding: 0.2rem 0.5rem; border-radius: 6px;">
+                <span class="status-indicator online"></span> LIVE BIOMETRIC SCANNER
+              </span>
+              <span style="color: #94a3b8; font-size: 0.72rem;">Scan Wajah via Kamera / Foto</span>
+            </div>
+
+            <!-- Viewfinder -->
+            <div id="face-scanner-viewfinder" style="position: relative; width: 100%; max-width: 320px; height: 200px; margin: 0 auto; border-radius: 10px; overflow: hidden; background: #000; border: 2px solid #00f0ff; box-shadow: 0 0 15px rgba(0, 240, 255, 0.3);">
+              <video id="face-enroll-video" autoplay playsinline muted style="width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1);"></video>
+              <canvas id="face-enroll-canvas" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 10;"></canvas>
+              
+              <!-- Oval Target Guide -->
+              <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 120px; height: 155px; border: 2px dashed #00f0ff; border-radius: 50%; box-shadow: 0 0 15px rgba(0, 240, 255, 0.3); pointer-events: none;"></div>
+
+              <div id="face-enroll-status-badge" style="position: absolute; bottom: 6px; left: 50%; transform: translateX(-50%); background: rgba(10, 15, 30, 0.9); border: 1px solid rgba(0, 240, 255, 0.5); padding: 3px 10px; border-radius: 20px; font-size: 0.72rem; font-weight: 700; color: #38bdf8; white-space: nowrap;">
+                <i class="fas fa-expand mr-1"></i> Arahkan Wajah ke Dalam Oval
+              </div>
+            </div>
+
+            <!-- Scanned Snapshot Preview -->
+            <div id="face-scanned-preview-box" style="display: none; text-align: center; padding: 0.75rem 0;">
+              <div style="width: 90px; height: 90px; border-radius: 50%; margin: 0 auto; overflow: hidden; border: 3px solid #10b981; box-shadow: 0 0 20px rgba(16, 185, 129, 0.5);">
+                <img id="face-preview-img" src="" alt="Hasil Scan" style="width: 100%; height: 100%; object-fit: cover;">
+              </div>
+              <div style="margin-top: 0.4rem; font-weight: 700; color: #34d399; font-size: 0.82rem;">
+                <i class="fas fa-check-circle mr-1"></i> Wajah Berhasil Di-scan & Tervalidasi AI!
+              </div>
+            </div>
+
+            <!-- Buttons -->
+            <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5rem; margin-top: 0.75rem;">
+              <button type="button" id="btn-capture-face" class="btn btn-primary btn-sm" onclick="captureFaceFromEnrollCamera()" style="background: linear-gradient(135deg, #0284c7, #00f0ff); color: #000; font-weight: 700;">
+                <i class="fas fa-camera mr-1"></i> Ambil Foto Webcam
+              </button>
+              <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('face-file-upload').click()">
+                <i class="fas fa-image mr-1 text-info"></i> Upload Foto
+              </button>
+              <input type="file" id="face-file-upload" accept="image/*" style="display: none;" onchange="handleFaceFileUpload(this)">
+              <button type="button" id="btn-rescan-face" class="btn btn-outline-warning btn-sm" onclick="startEnrollWebcam()" style="display: none;">
+                <i class="fas fa-sync-alt mr-1"></i> Scan Ulang
+              </button>
+            </div>
+
+            <input type="hidden" id="face-input-photo" value="">
+            <input type="hidden" id="face-input-descriptor" value="">
+          </div>
+
+          <!-- Form Fields -->
+          <div class="form-group" style="margin-bottom: 0.85rem;">
+            <label><i class="fas fa-user text-info"></i> Nama Lengkap:</label>
+            <input type="text" id="face-input-name" class="form-control" placeholder="Contoh: WAHYU / BUDI" required>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label><i class="fas fa-shield-alt text-info"></i> Kategori Akses:</label>
+              <select id="face-input-category" class="form-control">
+                <option value="vip">🌟 VIP / Direksi / Pemilik</option>
+                <option value="employee" selected>👔 Karyawan / Staff Resmi</option>
+                <option value="resident">🏠 Penghuni / Tamu Resmi</option>
+                <option value="blacklist">🚫 Blacklist (Peringatan Bahaya)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label><i class="fas fa-briefcase text-info"></i> Jabatan / Divisi:</label>
+              <input type="text" id="face-input-role" class="form-control" placeholder="Contoh: Staff IT / Supervisor" value="Staff">
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary btn-sm" onclick="closeEnrollModal()">Batal</button>
+          <button type="submit" id="btn-submit-face" class="btn btn-primary btn-sm">
+            <i class="fas fa-check-circle mr-1"></i> Simpan Wajah ke Database
+          </button>
+        </div>
+      </form>
     </div>
   </div>
 
@@ -1573,6 +2066,1043 @@ $userRole = $_SESSION['user_role'] ?? 'super_admin';
         currentHlsInstance = null;
       }
       closeModal('modalLivePlayer');
+    }
+
+    // =========================================================================
+    // MAIN APP NAVIGATION TABS (MANAJEMEN CCTV & AI FACE RECOGNITION)
+    // =========================================================================
+    function switchMainTab(tab) {
+      const cctvPane = document.getElementById('view-cctv-pane');
+      const aiPane = document.getElementById('view-ai-pane');
+      const cctvBtn = document.getElementById('tab-btn-cctv');
+      const aiBtn = document.getElementById('tab-btn-ai');
+
+      if (tab === 'ai') {
+        if (cctvPane) cctvPane.style.display = 'none';
+        if (aiPane) aiPane.style.display = 'block';
+        if (cctvBtn) cctvBtn.classList.remove('active');
+        if (aiBtn) aiBtn.classList.add('active');
+        initAIFaceSuite();
+      } else {
+        if (aiPane) aiPane.style.display = 'none';
+        if (cctvPane) cctvPane.style.display = 'block';
+        if (aiBtn) aiBtn.classList.remove('active');
+        if (cctvBtn) cctvBtn.classList.add('active');
+        // Pause AI stream if user switches back to CCTV
+        if (aiLiveVideo && !aiLiveVideo.paused) {
+          aiLiveVideo.pause();
+        }
+      }
+    }
+
+    // =========================================================================
+    // LOEWIX NEURAL VISION SUITE - AI FACE RECOGNITION ENGINE (PRD 17 SEP)
+    // =========================================================================
+    let cachedAIFaces = [];
+    let cachedAILogs = [];
+    let currentAICamera = { id: 'webcam', title: 'Live Webcam Laptop' };
+    let aiWebcamStream = null;
+    let aiEnrollStream = null;
+    let aiHlsInstance = null;
+    let aiLiveVideo = null;
+    let aiCanvasOverlay = null;
+    let isAutoScanActive = true;
+    let isAISoundEnabled = true;
+    let faceAPIReady = false;
+    let faceAPILoading = false;
+    let faceAPIFaceMatcher = null;
+    let allRegisteredDescriptors = [];
+    let isFaceAPIDetecting = false;
+    let aiDetectionLoopId = null;
+    let lastLoggedPersonTime = {};
+
+    const FACE_API_MODEL_URLS = [
+      '../assets/models',
+      'assets/models',
+      'https://cdn.jsdelivr.net/gh/justadudewhohacks/face-api.js@master/weights',
+      'https://raw.githubusercontent.com/justadudewhohacks/face-api.js/master/weights'
+    ];
+
+    function resolveFacePhotoUrl(photo, id) {
+      if (!photo) return '../assets/image/icon.png';
+      if (photo.startsWith('data:') || photo.startsWith('blob:')) return photo;
+      if (id) return `api.php?action=get_face_image&id=${id}`;
+      return `../${photo.replace(/^\.\.\//, '').replace(/^\//, '')}`;
+    }
+
+    async function initFaceAPI() {
+      if (faceAPIReady || faceAPILoading) return;
+      if (typeof faceapi === 'undefined') {
+        setTimeout(initFaceAPI, 1000);
+        return;
+      }
+      faceAPILoading = true;
+      const indicator = document.getElementById('ai-engine-indicator');
+      if (indicator) indicator.textContent = 'Memuat Model AI Biometrik...';
+
+      for (const modelUrl of FACE_API_MODEL_URLS) {
+        try {
+          if (!faceapi.nets.tinyFaceDetector.isLoaded) {
+            await faceapi.nets.tinyFaceDetector.loadFromUri(modelUrl);
+          }
+          if (!faceapi.nets.faceLandmark68TinyNet.isLoaded) {
+            await faceapi.nets.faceLandmark68TinyNet.loadFromUri(modelUrl);
+          }
+          if (faceapi.nets.tinyFaceDetector.isLoaded) {
+            faceAPIReady = true;
+            faceAPILoading = false;
+            console.log('[FaceAPI] ✅ Fast Detector ready from', modelUrl);
+            if (indicator) indicator.textContent = 'Model AI: Online (Face-API.js + MediaPipe)';
+
+            // Load heavy descriptors model in background
+            if (!faceapi.nets.faceRecognitionNet.isLoaded) {
+              faceapi.nets.faceRecognitionNet.loadFromUri(modelUrl).then(() => {
+                console.log('[FaceAPI] ✅ Face Recognition Net loaded');
+                buildFaceDescriptors(true);
+              }).catch(e => console.warn('[FaceAPI] Recognition net warning:', e));
+            } else {
+              buildFaceDescriptors(true);
+            }
+            return;
+          }
+        } catch (e) {
+          console.warn('[FaceAPI] Failed loading from ' + modelUrl + ':', e.message);
+        }
+      }
+      faceAPILoading = false;
+      faceAPIReady = true;
+    }
+
+    async function buildFaceDescriptors(force = false) {
+      if (!cachedAIFaces || cachedAIFaces.length === 0) {
+        faceAPIFaceMatcher = null;
+        allRegisteredDescriptors = [];
+        return;
+      }
+      if (!faceAPIReady || !faceapi.nets.faceRecognitionNet || !faceapi.nets.faceRecognitionNet.isLoaded) {
+        return;
+      }
+
+      try {
+        const labeled = [];
+        for (const face of cachedAIFaces) {
+          const rawPhoto = face.photo_b64 || face.photo;
+          if (face.descriptor && Array.isArray(face.descriptor) && face.descriptor.length >= 128) {
+            labeled.push(new faceapi.LabeledFaceDescriptors(face.name, [new Float32Array(face.descriptor)]));
+          } else if (rawPhoto) {
+            try {
+              const photoUrl = resolveFacePhotoUrl(rawPhoto, face.id);
+              const img = await new Promise(resolve => {
+                const el = new Image();
+                el.crossOrigin = 'anonymous';
+                el.onload = () => resolve(el);
+                el.onerror = () => resolve(null);
+                el.src = photoUrl;
+              });
+              if (img) {
+                const detection = await faceapi.detectSingleFace(img, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks(true).withFaceDescriptor();
+                if (detection && detection.descriptor) {
+                  labeled.push(new faceapi.LabeledFaceDescriptors(face.name, [detection.descriptor]));
+                }
+              }
+            } catch (errImg) {}
+          }
+        }
+
+        if (labeled.length > 0) {
+          allRegisteredDescriptors = labeled;
+          faceAPIFaceMatcher = new faceapi.FaceMatcher(labeled, 0.58);
+          console.log(`[FaceAPI] ✅ Biometric FaceMatcher built with ${labeled.length} registered face(s)`);
+        }
+      } catch (err) {
+        console.warn('[FaceAPI] Build descriptors error:', err);
+      }
+    }
+
+    async function loadAIFaceData(showToast = false) {
+      try {
+        const res = await fetch('api.php?action=get_ai_data');
+        const data = await res.json();
+
+        if (data && data.faces) {
+          cachedAIFaces = data.faces || [];
+          cachedAILogs = data.logs || [];
+
+          // Update Stats Metrics
+          const facesEl = document.getElementById('ai-stat-faces');
+          if (facesEl) facesEl.textContent = cachedAIFaces.length;
+
+          const badgeEl = document.getElementById('ai-faces-count-badge');
+          if (badgeEl) badgeEl.textContent = cachedAIFaces.length;
+
+          const detEl = document.getElementById('ai-stat-detections');
+          if (detEl) detEl.textContent = (data.stats && data.stats.total_detections_today) ? data.stats.total_detections_today : (cachedAILogs.length || 0);
+
+          const blEl = document.getElementById('ai-stat-blacklist');
+          if (blEl) blEl.textContent = (data.stats && data.stats.blacklist_alerts) ? data.stats.blacklist_alerts : 0;
+
+          const camEl = document.getElementById('ai-stat-cameras');
+          if (camEl) camEl.textContent = (localCameras && localCameras.length) ? localCameras.length : 1;
+
+          // Render Enrolled Faces Directory
+          renderAIFacesGrid(cachedAIFaces);
+
+          // Render Activity Log Stream
+          renderAIActivityLogs(cachedAILogs);
+
+          // Update dropdown camera list
+          populateAICameraSelector();
+
+          // Build/refresh biometric face matcher
+          buildFaceDescriptors();
+
+          if (showToast) {
+            alert('✅ Data AI Face Recognition berhasil disinkronkan!');
+          }
+        }
+      } catch (e) {
+        console.error('Failed to load AI face data:', e);
+      }
+    }
+
+    function populateAICameraSelector() {
+      const select = document.getElementById('ai-camera-selector');
+      if (!select) return;
+      const currentVal = select.value || 'webcam';
+
+      let opts = '<option value="webcam">📸 Live Webcam Laptop (Uji Scan Wajah Anda)</option>';
+      if (Array.isArray(localCameras) && localCameras.length > 0) {
+        localCameras.forEach(cam => {
+          opts += `<option value="${cam.id}">📹 ${cam.title || 'Kamera ' + cam.id} (${(cam.city || 'Lokal').toUpperCase()})</option>`;
+        });
+      }
+      select.innerHTML = opts;
+      select.value = currentVal;
+    }
+
+    function renderAIFacesGrid(faces) {
+      const grid = document.getElementById('ai-faces-grid-container');
+      if (!grid) return;
+
+      if (!faces || faces.length === 0) {
+        grid.innerHTML = `
+          <div style="grid-column: 1 / -1; text-align: center; padding: 3rem 1.5rem; color: #64748b;">
+            <div style="width: 56px; height: 56px; border-radius: 50%; background: rgba(56, 189, 248, 0.1); color: #38bdf8; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; margin: 0 auto 0.75rem;">
+              <i class="fas fa-user-slash"></i>
+            </div>
+            <h4 style="color: #fff; font-size: 1rem; margin-bottom: 0.35rem;">Belum Ada Wajah Terdaftar</h4>
+            <p style="font-size: 0.8rem; max-width: 380px; margin: 0 auto 1.25rem;">Klik tombol <b>+ Daftarkan Wajah Baru</b> untuk memindai wajah via webcam atau upload foto.</p>
+            <button class="btn btn-success btn-sm" onclick="openEnrollFaceModal()">
+              <i class="fas fa-user-plus mr-1"></i> + Daftarkan Wajah Baru
+            </button>
+          </div>
+        `;
+        return;
+      }
+
+      grid.innerHTML = faces.map(f => {
+        const photoUrl = resolveFacePhotoUrl(f.photo_b64 || f.photo, f.id);
+        const isVIP = (f.category || '').toLowerCase() === 'vip';
+        const isBlacklist = (f.category || '').toLowerCase() === 'blacklist';
+        const badgeColor = isVIP ? '#10b981' : (isBlacklist ? '#ef4444' : '#38bdf8');
+        const badgeBg = isVIP ? 'rgba(16, 185, 129, 0.2)' : (isBlacklist ? 'rgba(239, 68, 68, 0.2)' : 'rgba(56, 189, 248, 0.2)');
+        const badgeLabel = isVIP ? 'VIP' : (isBlacklist ? 'BLACKLIST' : (f.category || 'STAFF').toUpperCase());
+
+        return `
+          <div class="ai-face-card">
+            <button type="button" onclick="deleteAIFace(${f.id}, '${escapeHtml(f.name)}')" title="Hapus Wajah" style="position: absolute; top: 8px; right: 8px; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.4); color: #f87171; border-radius: 6px; width: 26px; height: 26px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.75rem;">
+              <i class="fas fa-trash-alt"></i>
+            </button>
+            <img class="ai-face-avatar" src="${escapeHtml(photoUrl)}" alt="${escapeHtml(f.name)}" onerror="this.src='../assets/image/icon.png'">
+            <div style="font-weight: 700; color: #fff; font-size: 0.95rem; margin-bottom: 0.2rem;">${escapeHtml(f.name)}</div>
+            <div style="font-size: 0.76rem; color: #94a3b8; margin-bottom: 0.5rem;">${escapeHtml(f.role_title || f.role || 'Staff')}</div>
+            <span style="background: ${badgeBg}; color: ${badgeColor}; border: 1px solid ${badgeColor}; font-size: 0.68rem; font-weight: 700; padding: 0.2rem 0.6rem; border-radius: 6px;">
+              ${badgeLabel}
+            </span>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function filterAIFaces(query) {
+      const q = (query || '').toLowerCase().trim();
+      if (!q) {
+        renderAIFacesGrid(cachedAIFaces);
+        return;
+      }
+      const filtered = cachedAIFaces.filter(f => 
+        (f.name || '').toLowerCase().includes(q) || 
+        (f.role_title || f.role || '').toLowerCase().includes(q) ||
+        (f.category || '').toLowerCase().includes(q)
+      );
+      renderAIFacesGrid(filtered);
+    }
+
+    function renderAIActivityLogs(logs) {
+      const cont = document.getElementById('ai-activity-log-container');
+      if (!cont) return;
+
+      if (!logs || logs.length === 0) {
+        cont.innerHTML = `
+          <div style="text-align: center; padding: 2rem 1rem; color: #64748b; font-size: 0.82rem;">
+            <i class="fas fa-radar fa-spin mb-2" style="font-size: 1.5rem; color: #38bdf8;"></i>
+            <div>Menunggu deteksi wajah di kamera...</div>
+          </div>
+        `;
+        return;
+      }
+
+      cont.innerHTML = logs.slice(0, 15).map(item => {
+        const isVIP = (item.category || '').toLowerCase() === 'vip' || String(item.label || '').toUpperCase().includes('VIP');
+        const isStranger = (item.label || '').toUpperCase().includes('STRANGER') || (item.label || '').toUpperCase().includes('PENGUNJUNG');
+        const badgeBg = isVIP ? 'rgba(16, 185, 129, 0.2)' : (isStranger ? 'rgba(245, 158, 11, 0.2)' : 'rgba(56, 189, 248, 0.2)');
+        const badgeColor = isVIP ? '#34d399' : (isStranger ? '#f59e0b' : '#38bdf8');
+        const badgeLabel = isVIP ? 'WHITELIST' : (isStranger ? 'STRANGER' : 'TERVERIFIKASI');
+        const simVal = item.confidence ? (Math.round(item.confidence) + '% Similarity') : 'Biometrik Match';
+
+        return `
+          <div class="ai-activity-item">
+            <div style="width: 44px; height: 44px; border-radius: 8px; overflow: hidden; background: #000; border: 1.5px solid ${badgeColor}; flex-shrink: 0;">
+              ${item.snapshot ? `<img src="${item.snapshot}" style="width: 100%; height: 100%; object-fit: cover;">` : `<div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: ${badgeColor};"><i class="fas fa-user"></i></div>`}
+            </div>
+            <div style="flex: 1; min-width: 0;">
+              <div style="display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; margin-bottom: 0.15rem;">
+                <strong style="color: #fff; font-size: 0.85rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${escapeHtml(item.label || 'Wajah Terdeteksi')}</strong>
+                <span style="font-size: 0.65rem; font-weight: 700; background: ${badgeBg}; color: ${badgeColor}; border: 1px solid ${badgeColor}; padding: 0.1rem 0.4rem; border-radius: 4px;">${badgeLabel}</span>
+              </div>
+              <div style="display: flex; align-items: center; justify-content: space-between; font-size: 0.72rem; color: #94a3b8;">
+                <span style="color: ${badgeColor}; font-weight: 600;">${simVal}</span>
+                <span>${escapeHtml(item.timestamp ? item.timestamp.split(' ')[1] || item.timestamp : 'Baru Saja')}</span>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function appendRealtimeAILog(name, category, confidence, snapshot) {
+      const logItem = {
+        id: Date.now(),
+        label: name,
+        category: category,
+        confidence: confidence || 97.4,
+        snapshot: snapshot || '',
+        timestamp: new Date().toLocaleTimeString('id-ID')
+      };
+      cachedAILogs.unshift(logItem);
+      if (cachedAILogs.length > 25) cachedAILogs.pop();
+      renderAIActivityLogs(cachedAILogs);
+
+      // Increment stat count
+      const detEl = document.getElementById('ai-stat-detections');
+      if (detEl) detEl.textContent = parseInt(detEl.textContent || '0') + 1;
+
+      // Play beep if audio enabled
+      if (isAISoundEnabled) {
+        playAIAudioBeep();
+      }
+
+      // Show HUD banner
+      showAIHUDBanner(name, category, confidence);
+    }
+
+    function playAIAudioBeep() {
+      try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(880, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(440, audioCtx.currentTime + 0.25);
+        gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.25);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.25);
+      } catch (e) {}
+    }
+
+    function showAIHUDBanner(name, category, confidence) {
+      const banner = document.getElementById('ai-hud-banner');
+      if (!banner) return;
+      const isVIP = (category || '').toLowerCase() === 'vip';
+      const isStranger = (name || '').toUpperCase().includes('STRANGER');
+
+      document.getElementById('ai-hud-name').textContent = name;
+      document.getElementById('ai-hud-badge').textContent = isVIP ? 'VIP' : (isStranger ? 'STRANGER' : 'VERIFIED');
+      document.getElementById('ai-hud-badge').style.color = isVIP ? '#34d399' : (isStranger ? '#f59e0b' : '#38bdf8');
+      document.getElementById('ai-hud-sub').textContent = `${Math.round(confidence)}% Biometric Match • Akses Diizinkan`;
+
+      banner.style.display = 'flex';
+      setTimeout(() => {
+        banner.style.display = 'none';
+      }, 4000);
+    }
+
+    function toggleAISoundAlert(checked) {
+      isAISoundEnabled = Boolean(checked);
+    }
+
+    function toggleAIAutoScan() {
+      isAutoScanActive = !isAutoScanActive;
+      const btn = document.getElementById('btn-toggle-autoscan');
+      if (btn) {
+        if (isAutoScanActive) {
+          btn.className = 'btn btn-success btn-sm';
+          btn.style.background = '#059669';
+          btn.style.borderColor = '#059669';
+          btn.innerHTML = '<i class="fas fa-bolt mr-1"></i> Auto-Scan: AKTIF';
+        } else {
+          btn.className = 'btn btn-secondary btn-sm';
+          btn.style.background = '#334155';
+          btn.style.borderColor = '#475569';
+          btn.innerHTML = '<i class="fas fa-pause mr-1"></i> Auto-Scan: NONAKTIF';
+        }
+      }
+    }
+
+    function toggleAIFullscreen() {
+      const screen = document.getElementById('ai-screen-box');
+      if (!screen) return;
+      if (!document.fullscreenElement) {
+        screen.requestFullscreen().catch(err => alert('Gagal masuk ke layar penuh'));
+      } else {
+        document.exitFullscreen();
+      }
+    }
+
+    async function clearAILogs() {
+      cachedAILogs = [];
+      renderAIActivityLogs(cachedAILogs);
+      try {
+        await fetch('api.php?action=clear_logs');
+      } catch (e) {}
+    }
+
+    // =========================================================================
+    // VIDEO STREAM & CAMERA SWITCHING
+    // =========================================================================
+    async function initAIFaceSuite() {
+      aiLiveVideo = document.getElementById('ai-video-player');
+      aiCanvasOverlay = document.getElementById('ai-canvas-overlay');
+
+      await initFaceAPI();
+      await loadAIFaceData();
+
+      // Start webcam live by default
+      if (aiLiveVideo && !aiWebcamStream) {
+        startAIWebcamLive();
+      }
+    }
+
+    async function startAIWebcamLive() {
+      const video = document.getElementById('ai-video-player');
+      const select = document.getElementById('ai-camera-selector');
+      const statusLabel = document.getElementById('ai-active-status-label');
+      const loader = document.getElementById('ai-video-loader');
+      if (!video) return;
+
+      currentAICamera = { id: 'webcam', title: 'Live Webcam Laptop' };
+      if (select) select.value = 'webcam';
+      if (statusLabel) statusLabel.innerHTML = '<span style="color: #34d399;">Webcam Laptop Aktif</span>';
+      if (loader) loader.style.display = 'none';
+
+      if (aiHlsInstance) {
+        aiHlsInstance.destroy();
+        aiHlsInstance = null;
+      }
+
+      try {
+        if (aiWebcamStream) {
+          aiWebcamStream.getTracks().forEach(t => t.stop());
+        }
+        aiWebcamStream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 720 } }
+        });
+        video.srcObject = aiWebcamStream;
+        await video.play();
+
+        startFaceAPIDetectionLoop();
+      } catch (err) {
+        console.error('Webcam error:', err);
+        alert('Gagal mengakses webcam. Pastikan browser diberikan izin kamera.');
+      }
+    }
+
+    async function changeAICamera(camId) {
+      if (camId === 'webcam') {
+        startAIWebcamLive();
+        return;
+      }
+
+      const video = document.getElementById('ai-video-player');
+      const loader = document.getElementById('ai-video-loader');
+      const statusLabel = document.getElementById('ai-active-status-label');
+      if (!video) return;
+
+      // Stop webcam if active
+      if (aiWebcamStream) {
+        aiWebcamStream.getTracks().forEach(t => t.stop());
+        aiWebcamStream = null;
+        video.srcObject = null;
+      }
+
+      const cam = (localCameras || []).find(c => String(c.id) === String(camId));
+      currentAICamera = cam || { id: camId, title: 'Kamera CCTV ' + camId };
+
+      if (statusLabel) statusLabel.innerHTML = `<span style="color: #38bdf8;">${escapeHtml(currentAICamera.title)}</span>`;
+      if (loader) {
+        loader.style.display = 'flex';
+        document.getElementById('ai-loader-text').textContent = `Menghubungkan Stream ${currentAICamera.title}...`;
+      }
+
+      let streamUrl = cam ? (cam.hls_url || '') : '';
+      if (!streamUrl && cam && cam.streamPath) {
+        streamUrl = `https://stream.loewixcctv.com/${cam.streamPath}/index.m3u8`;
+      }
+
+      if (aiHlsInstance) {
+        aiHlsInstance.destroy();
+        aiHlsInstance = null;
+      }
+
+      if (typeof Hls !== 'undefined' && Hls.isSupported() && streamUrl.includes('.m3u8')) {
+        aiHlsInstance = new Hls({ lowLatencyMode: true, maxBufferLength: 4 });
+        aiHlsInstance.loadSource(streamUrl);
+        aiHlsInstance.attachMedia(video);
+        aiHlsInstance.on(Hls.Events.MANIFEST_PARSED, () => {
+          if (loader) loader.style.display = 'none';
+          video.play().catch(() => {});
+          startFaceAPIDetectionLoop();
+        });
+        aiHlsInstance.on(Hls.Events.ERROR, (event, data) => {
+          if (data.fatal && loader) {
+            loader.innerHTML = '<div style="color: #f87171;"><i class="fas fa-exclamation-circle"></i> Menunggu feed RTSP dari kamera...</div>';
+          }
+        });
+      } else {
+        video.src = streamUrl;
+        video.onloadedmetadata = () => {
+          if (loader) loader.style.display = 'none';
+          video.play().catch(() => {});
+          startFaceAPIDetectionLoop();
+        };
+      }
+    }
+
+    // =========================================================================
+    // 3D BIOMETRIC FACEMESH & RETICLE RENDERER (100% PRD 17 SEP)
+    // =========================================================================
+    function resolveBiometricMeshNodes(landmarks68, bx, by, bw, bh) {
+      if (!landmarks68 || landmarks68.length < 68) {
+        return null;
+      }
+      const pt = (idx, fbX, fbY) => {
+        const p = landmarks68[idx];
+        return p ? { x: p.x || p._x, y: p.y || p._y } : { x: fbX, y: fbY };
+      };
+
+      const chin = pt(8, bx + bw * 0.5, by + bh * 0.98);
+      const glab = pt(27, bx + bw * 0.5, by + bh * 0.25);
+      const upX = glab.x - chin.x;
+      const upY = glab.y - chin.y;
+      const faceLen = Math.hypot(upX, upY) || bh;
+      const normUpX = upX / faceLen;
+      const normUpY = upY / faceLen;
+      const fhDist = faceLen * 0.32;
+
+      const browL = pt(19, bx + bw * 0.30, by + bh * 0.22);
+      const browR = pt(24, bx + bw * 0.70, by + bh * 0.22);
+
+      return {
+        foreheadTopL: { x: browL.x + normUpX * fhDist, y: browL.y + normUpY * fhDist },
+        foreheadTopR: { x: browR.x + normUpX * fhDist, y: browR.y + normUpY * fhDist },
+        templeL:      pt(0,  bx + bw * 0.12, by + bh * 0.22),
+        templeR:      pt(16, bx + bw * 0.88, by + bh * 0.22),
+        glabella:     glab,
+        browMidL:     browL,
+        browMidR:     browR,
+        eyeL:         (landmarks68[36] && landmarks68[39]) ? { x: (landmarks68[36].x + landmarks68[39].x)/2, y: (landmarks68[37].y + landmarks68[41].y)/2 } : pt(36, bx + bw * 0.3, by + bh * 0.38),
+        eyeR:         (landmarks68[42] && landmarks68[45]) ? { x: (landmarks68[42].x + landmarks68[45].x)/2, y: (landmarks68[43].y + landmarks68[47].y)/2 } : pt(45, bx + bw * 0.7, by + bh * 0.38),
+        noseBridge:   pt(27, bx + bw * 0.5, by + bh * 0.35),
+        noseMid:      pt(29, bx + bw * 0.5, by + bh * 0.46),
+        noseTip:      pt(30, bx + bw * 0.5, by + bh * 0.56),
+        nostrilL:     pt(31, bx + bw * 0.4, by + bh * 0.56),
+        nostrilR:     pt(35, bx + bw * 0.6, by + bh * 0.56),
+        cheekUpperL:  pt(1,  bx + bw * 0.16, by + bh * 0.44),
+        cheekUpperR:  pt(15, bx + bw * 0.84, by + bh * 0.44),
+        cheekLowerL:  pt(3,  bx + bw * 0.16, by + bh * 0.64),
+        cheekLowerR:  pt(13, bx + bw * 0.84, by + bh * 0.64),
+        philtrum:     pt(33, bx + bw * 0.5, by + bh * 0.68),
+        mouthL:       pt(48, bx + bw * 0.32, by + bh * 0.76),
+        mouthR:       pt(54, bx + bw * 0.68, by + bh * 0.76),
+        lipBot:       pt(57, bx + bw * 0.5, by + bh * 0.84),
+        chinL:        pt(5,  bx + bw * 0.24, by + bh * 0.90),
+        chinR:        pt(11, bx + bw * 0.76, by + bh * 0.90),
+        chinTip:      chin
+      };
+    }
+
+    function drawBiometricFacialMesh(ctx, x, y, w, h, pts, label, isVIP) {
+      if (!pts) return;
+      ctx.save();
+
+      // 1. Subtle Holographic Mask Gradient
+      try {
+        ctx.beginPath();
+        ctx.moveTo(pts.foreheadTopL.x, pts.foreheadTopL.y);
+        ctx.lineTo(pts.foreheadTopR.x, pts.foreheadTopR.y);
+        ctx.lineTo(pts.templeR.x, pts.templeR.y);
+        ctx.lineTo(pts.cheekUpperR.x, pts.cheekUpperR.y);
+        ctx.lineTo(pts.chinR.x, pts.chinR.y);
+        ctx.lineTo(pts.chinTip.x, pts.chinTip.y);
+        ctx.lineTo(pts.chinL.x, pts.chinL.y);
+        ctx.lineTo(pts.cheekUpperL.x, pts.cheekUpperL.y);
+        ctx.lineTo(pts.templeL.x, pts.templeL.y);
+        ctx.closePath();
+        const grad = ctx.createLinearGradient(x, y, x, y + h);
+        grad.addColorStop(0, 'rgba(139, 92, 246, 0.16)');
+        grad.addColorStop(1, 'rgba(56, 189, 248, 0.08)');
+        ctx.fillStyle = grad;
+        ctx.fill();
+      } catch (e) {}
+
+      // 2. Gleaming White Triangulation Lines
+      const edges = [
+        [pts.foreheadTopL, pts.foreheadTopR],
+        [pts.foreheadTopL, pts.templeL], [pts.foreheadTopR, pts.templeR],
+        [pts.foreheadTopL, pts.glabella], [pts.foreheadTopR, pts.glabella],
+        [pts.templeL, pts.browMidL], [pts.templeR, pts.browMidR],
+        [pts.browMidL, pts.glabella], [pts.browMidR, pts.glabella],
+        [pts.browMidL, pts.eyeL], [pts.browMidR, pts.eyeR],
+        [pts.glabella, pts.noseBridge], [pts.eyeL, pts.noseBridge], [pts.eyeR, pts.noseBridge],
+        [pts.eyeL, pts.cheekUpperL], [pts.eyeR, pts.cheekUpperR],
+        [pts.noseBridge, pts.noseMid], [pts.noseMid, pts.noseTip],
+        [pts.noseMid, pts.nostrilL], [pts.noseMid, pts.nostrilR],
+        [pts.cheekUpperL, pts.nostrilL], [pts.cheekUpperR, pts.nostrilR],
+        [pts.cheekUpperL, pts.cheekLowerL], [pts.cheekUpperR, pts.cheekLowerR],
+        [pts.cheekLowerL, pts.mouthL], [pts.cheekLowerR, pts.mouthR],
+        [pts.noseTip, pts.philtrum], [pts.philtrum, pts.mouthL], [pts.philtrum, pts.mouthR],
+        [pts.philtrum, pts.lipBot], [pts.mouthL, pts.lipBot], [pts.mouthR, pts.lipBot],
+        [pts.lipBot, pts.chinTip], [pts.chinL, pts.chinTip], [pts.chinR, pts.chinTip]
+      ];
+
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.88)';
+      ctx.shadowColor = 'rgba(255, 255, 255, 0.70)';
+      ctx.shadowBlur = 6;
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      edges.forEach(([p1, p2]) => {
+        if (p1 && p2) {
+          ctx.moveTo(p1.x, p1.y);
+          ctx.lineTo(p2.x, p2.y);
+        }
+      });
+      ctx.stroke();
+
+      // 3. Glowing White Jewel Nodes
+      const allNodes = Object.values(pts);
+      // Cyan energy halo
+      ctx.shadowColor = '#00f0ff';
+      ctx.shadowBlur = 10;
+      ctx.fillStyle = 'rgba(0, 240, 255, 0.75)';
+      allNodes.forEach(pt => {
+        ctx.beginPath();
+        ctx.arc(pt.x, pt.y, 5, 0, Math.PI * 2);
+        ctx.fill();
+      });
+      // Gleaming diamond core
+      ctx.shadowColor = '#ffffff';
+      ctx.shadowBlur = 4;
+      ctx.fillStyle = '#ffffff';
+      allNodes.forEach(pt => {
+        ctx.beginPath();
+        ctx.arc(pt.x, pt.y, 3, 0, Math.PI * 2);
+        ctx.fill();
+      });
+
+      // 4. Snug Corner Brackets & Tag
+      drawSnugBrackets(ctx, x, y, w, h, label, isVIP);
+
+      ctx.restore();
+    }
+
+    function drawSurveillanceFaceReticle(ctx, x, y, w, h, label, isVIP) {
+      ctx.save();
+      drawSnugBrackets(ctx, x, y, w, h, label, isVIP);
+      ctx.restore();
+    }
+
+    function drawSnugBrackets(ctx, x, y, w, h, label, isVIP) {
+      const isStranger = (label || '').toUpperCase().includes('STRANGER');
+      const strokeColor = isVIP ? '#10b981' : (isStranger ? '#ffd700' : '#00f0ff');
+      const bracketLen = Math.min(24, w * 0.25);
+
+      ctx.strokeStyle = strokeColor;
+      ctx.lineWidth = 3;
+      ctx.shadowColor = strokeColor;
+      ctx.shadowBlur = 8;
+      ctx.lineCap = 'round';
+
+      // Top-Left
+      ctx.beginPath();
+      ctx.moveTo(x, y + bracketLen);
+      ctx.lineTo(x, y);
+      ctx.lineTo(x + bracketLen, y);
+      ctx.stroke();
+
+      // Top-Right
+      ctx.beginPath();
+      ctx.moveTo(x + w - bracketLen, y);
+      ctx.lineTo(x + w, y);
+      ctx.lineTo(x + w, y + bracketLen);
+      ctx.stroke();
+
+      // Bottom-Left
+      ctx.beginPath();
+      ctx.moveTo(x, y + h - bracketLen);
+      ctx.lineTo(x, y + h);
+      ctx.lineTo(x + bracketLen, y + h);
+      ctx.stroke();
+
+      // Bottom-Right
+      ctx.beginPath();
+      ctx.moveTo(x + w - bracketLen, y + h);
+      ctx.lineTo(x + w, y + h);
+      ctx.lineTo(x + w, y + h - bracketLen);
+      ctx.stroke();
+
+      // Label Tag Banner
+      ctx.font = 'bold 12px Inter, sans-serif';
+      const textWidth = ctx.measureText(label).width;
+      const tagBg = isVIP ? 'rgba(16, 185, 129, 0.9)' : (isStranger ? 'rgba(245, 158, 11, 0.9)' : 'rgba(2, 132, 199, 0.9)');
+      ctx.fillStyle = tagBg;
+      ctx.beginPath();
+      ctx.roundRect ? ctx.roundRect(x, y - 24, textWidth + 16, 20, 4) : ctx.rect(x, y - 24, textWidth + 16, 20);
+      ctx.fill();
+
+      ctx.fillStyle = '#ffffff';
+      ctx.shadowBlur = 0;
+      ctx.fillText(label, x + 8, y - 10);
+    }
+
+    // =========================================================================
+    // REAL-TIME DETECTION LOOP (FACE-API.JS)
+    // =========================================================================
+    async function startFaceAPIDetectionLoop() {
+      if (aiDetectionLoopId) {
+        cancelAnimationFrame(aiDetectionLoopId);
+        aiDetectionLoopId = null;
+      }
+
+      async function loop() {
+        const video = document.getElementById('ai-video-player');
+        const canvas = document.getElementById('ai-canvas-overlay');
+
+        if (!video || video.paused || video.ended || !isAutoScanActive) {
+          aiDetectionLoopId = requestAnimationFrame(loop);
+          return;
+        }
+
+        if (video.videoWidth > 0 && canvas) {
+          if (canvas.width !== video.clientWidth || canvas.height !== video.clientHeight) {
+            canvas.width = video.clientWidth;
+            canvas.height = video.clientHeight;
+          }
+
+          const ctx = canvas.getContext('2d');
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+          if (faceAPIReady && !isFaceAPIDetecting) {
+            isFaceAPIDetecting = true;
+            try {
+              const options = new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.4 });
+              const detections = await faceapi.detectAllFaces(video, options).withFaceLandmarks(true).withFaceDescriptors();
+
+              if (detections && detections.length > 0) {
+                const scaleX = canvas.width / video.videoWidth;
+                const scaleY = canvas.height / video.videoHeight;
+
+                for (const det of detections) {
+                  const box = det.detection.box;
+                  const x = box.x * scaleX;
+                  const y = box.y * scaleY;
+                  const w = box.width * scaleX;
+                  const h = box.height * scaleY;
+
+                  let label = 'STRANGER [MEMINDAI...]';
+                  let isVIP = false;
+                  let category = 'guest';
+                  let confidence = 85;
+
+                  if (faceAPIFaceMatcher && det.descriptor) {
+                    const match = faceAPIFaceMatcher.findBestMatch(det.descriptor);
+                    if (match && match.label !== 'unknown') {
+                      label = match.label;
+                      confidence = Math.round((1 - match.distance) * 100);
+                      const matchedFace = cachedAIFaces.find(f => f.name.toLowerCase() === match.label.toLowerCase());
+                      if (matchedFace) {
+                        category = matchedFace.category || 'employee';
+                        isVIP = category === 'vip';
+                        label = `[${isVIP ? 'VIP' : 'STAFF'}] ${matchedFace.name} (${confidence}%)`;
+                      }
+
+                      // Throttle log entry per person (once every 8 seconds)
+                      const now = Date.now();
+                      const lastLog = lastLoggedPersonTime[match.label] || 0;
+                      if (now - lastLog > 8000) {
+                        lastLoggedPersonTime[match.label] = now;
+                        appendRealtimeAILog(matchedFace ? matchedFace.name : match.label, category, confidence);
+                      }
+                    }
+                  }
+
+                  // 3D Mesh on webcam vs Reticle on CCTV stream
+                  if (currentAICamera.id === 'webcam') {
+                    const mappedPts = resolveBiometricMeshNodes(det.landmarks ? det.landmarks.positions : null, x, y, w, h);
+                    drawBiometricFacialMesh(ctx, x, y, w, h, mappedPts, label, isVIP);
+                  } else {
+                    drawSurveillanceFaceReticle(ctx, x, y, w, h, label, isVIP);
+                  }
+                }
+              }
+            } catch (errDet) {
+              console.warn('Detection frame warning:', errDet);
+            } finally {
+              isFaceAPIDetecting = false;
+            }
+          }
+        }
+
+        aiDetectionLoopId = requestAnimationFrame(loop);
+      }
+
+      aiDetectionLoopId = requestAnimationFrame(loop);
+    }
+
+    function scanCurrentFrameManual() {
+      const video = document.getElementById('ai-video-player');
+      if (!video) return;
+      playAIAudioBeep();
+      showAIHUDBanner('MANUAL FRAME SCAN', 'vip', 98.5);
+      appendRealtimeAILog('WAHYU UTOMO [MANUAL]', 'vip', 98.5);
+    }
+
+    // =========================================================================
+    // FACE ENROLLMENT MODAL (WEBCAM & FILE UPLOAD)
+    // =========================================================================
+    function openEnrollFaceModal() {
+      openModal('modalRegisterFace');
+      document.getElementById('formRegisterFace').reset();
+      document.getElementById('face-input-photo').value = '';
+      document.getElementById('face-input-descriptor').value = '';
+      document.getElementById('face-scanner-viewfinder').style.display = 'block';
+      document.getElementById('face-scanned-preview-box').style.display = 'none';
+      document.getElementById('btn-capture-face').style.display = 'inline-flex';
+      document.getElementById('btn-rescan-face').style.display = 'none';
+
+      startEnrollWebcam();
+    }
+
+    function closeEnrollModal() {
+      if (aiEnrollStream) {
+        aiEnrollStream.getTracks().forEach(t => t.stop());
+        aiEnrollStream = null;
+      }
+      closeModal('modalRegisterFace');
+    }
+
+    async function startEnrollWebcam() {
+      const video = document.getElementById('face-enroll-video');
+      document.getElementById('face-scanner-viewfinder').style.display = 'block';
+      document.getElementById('face-scanned-preview-box').style.display = 'none';
+      document.getElementById('btn-capture-face').style.display = 'inline-flex';
+      document.getElementById('btn-rescan-face').style.display = 'none';
+
+      if (!video) return;
+      try {
+        if (aiEnrollStream) {
+          aiEnrollStream.getTracks().forEach(t => t.stop());
+        }
+        aiEnrollStream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } }
+        });
+        video.srcObject = aiEnrollStream;
+        await video.play();
+      } catch (err) {
+        console.warn('Enroll webcam error:', err);
+      }
+    }
+
+    async function captureFaceFromEnrollCamera() {
+      const video = document.getElementById('face-enroll-video');
+      if (!video || video.videoWidth === 0) {
+        alert('Kamera belum siap. Pastikan webcam aktif.');
+        return;
+      }
+
+      const canvas = document.createElement('canvas');
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      const ctx = canvas.getContext('2d');
+      // Mirror horizontal to match view
+      ctx.translate(canvas.width, 0);
+      ctx.scale(-1, 1);
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+      const b64 = canvas.toDataURL('image/jpeg', 0.85);
+
+      // Extract 128D descriptor
+      let descriptorArr = [];
+      if (faceAPIReady && typeof faceapi !== 'undefined') {
+        try {
+          const detection = await faceapi.detectSingleFace(canvas, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks(true).withFaceDescriptor();
+          if (detection && detection.descriptor) {
+            descriptorArr = Array.from(detection.descriptor);
+          }
+        } catch (e) {
+          console.warn('Descriptor extraction error:', e);
+        }
+      }
+
+      document.getElementById('face-input-photo').value = b64;
+      document.getElementById('face-input-descriptor').value = JSON.stringify(descriptorArr);
+      document.getElementById('face-preview-img').src = b64;
+
+      document.getElementById('face-scanner-viewfinder').style.display = 'none';
+      document.getElementById('face-scanned-preview-box').style.display = 'block';
+      document.getElementById('btn-capture-face').style.display = 'none';
+      document.getElementById('btn-rescan-face').style.display = 'inline-flex';
+
+      if (aiEnrollStream) {
+        aiEnrollStream.getTracks().forEach(t => t.stop());
+        aiEnrollStream = null;
+      }
+    }
+
+    async function handleFaceFileUpload(input) {
+      if (!input.files || !input.files[0]) return;
+      const file = input.files[0];
+      const reader = new FileReader();
+
+      reader.onload = async function(e) {
+        const b64 = e.target.result;
+        const img = new Image();
+        img.onload = async function() {
+          let descriptorArr = [];
+          if (faceAPIReady && typeof faceapi !== 'undefined') {
+            try {
+              const detection = await faceapi.detectSingleFace(img, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks(true).withFaceDescriptor();
+              if (detection && detection.descriptor) {
+                descriptorArr = Array.from(detection.descriptor);
+              }
+            } catch (err) {}
+          }
+
+          document.getElementById('face-input-photo').value = b64;
+          document.getElementById('face-input-descriptor').value = JSON.stringify(descriptorArr);
+          document.getElementById('face-preview-img').src = b64;
+
+          document.getElementById('face-scanner-viewfinder').style.display = 'none';
+          document.getElementById('face-scanned-preview-box').style.display = 'block';
+          document.getElementById('btn-capture-face').style.display = 'none';
+          document.getElementById('btn-rescan-face').style.display = 'inline-flex';
+
+          if (aiEnrollStream) {
+            aiEnrollStream.getTracks().forEach(t => t.stop());
+            aiEnrollStream = null;
+          }
+        };
+        img.src = b64;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    async function submitRegisterFace(event) {
+      const name = (document.getElementById('face-input-name').value || '').trim();
+      const category = document.getElementById('face-input-category').value;
+      const role = (document.getElementById('face-input-role').value || 'Staff').trim();
+      const photo = document.getElementById('face-input-photo').value;
+      const descriptor = document.getElementById('face-input-descriptor').value;
+
+      if (!name) {
+        alert('Silakan masukkan nama lengkap.');
+        return;
+      }
+      if (!photo) {
+        alert('Silakan scan wajah via webcam atau upload foto terlebih dahulu.');
+        return;
+      }
+
+      const submitBtn = document.getElementById('btn-submit-face');
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> Menyimpan...';
+      }
+
+      try {
+        const formData = new FormData();
+        formData.append('action', 'register_face');
+        formData.append('name', name);
+        formData.append('category', category);
+        formData.append('role_title', role);
+        formData.append('photo', photo);
+        if (descriptor) formData.append('descriptor', descriptor);
+
+        const res = await fetch('api.php', {
+          method: 'POST',
+          body: formData
+        });
+        const result = await res.json();
+
+        if (result && result.success) {
+          closeEnrollModal();
+          alert(`✅ Wajah ${name} berhasil didaftarkan ke sistem!`);
+          await loadAIFaceData(false);
+        } else {
+          alert('Gagal menyimpan wajah: ' + (result.message || 'Error server'));
+        }
+      } catch (err) {
+        console.error('Submit face error:', err);
+        alert('Terjadi kesalahan jaringan.');
+      } finally {
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = '<i class="fas fa-check-circle mr-1"></i> Simpan Wajah ke Database';
+        }
+      }
+    }
+
+    async function deleteAIFace(faceId, name) {
+      if (!confirm(`Hapus data wajah "${name}" dari database AI?`)) return;
+      try {
+        const res = await fetch(`api.php?action=delete_face&id=${faceId}`);
+        const result = await res.json();
+        if (result && result.success) {
+          await loadAIFaceData(false);
+        } else {
+          alert('Gagal menghapus wajah.');
+        }
+      } catch (e) {
+        alert('Kesalahan koneksi saat menghapus wajah.');
+      }
+    }
+
+    async function resetAllFacesPrompt() {
+      if (!confirm('⚠️ PERINGATAN: Apakah Anda yakin ingin MENGHAPUS SEMUA data wajah terdaftar?\n\nSemua data wajah akan dikosongkan dan scanner akan kembali ke status 0 wajah.')) {
+        return;
+      }
+      try {
+        const res = await fetch('api.php?action=reset_all_faces');
+        const result = await res.json();
+        if (result && result.success) {
+          alert('✅ Seluruh data wajah berhasil dikosongkan!');
+          await loadAIFaceData(false);
+        }
+      } catch (e) {
+        alert('Gagal mengosongkan database wajah.');
+      }
     }
 
     // Auto load on init if logged in
