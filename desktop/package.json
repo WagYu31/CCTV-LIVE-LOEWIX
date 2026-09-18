@@ -1,0 +1,76 @@
+{
+  "name": "loewix-cctv-desktop",
+  "version": "1.0.0",
+  "description": "Aplikasi Desktop Offline CCTV Loewix Live & AI Face Recognition (Windows & macOS)",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron .",
+    "build:mac": "electron-builder --mac",
+    "build:win": "electron-builder --win",
+    "build:all": "electron-builder -mw"
+  },
+  "keywords": [
+    "cctv",
+    "loewix",
+    "ai-face-recognition",
+    "electron",
+    "offline-desktop"
+  ],
+  "author": "PT. Loewix Indonesia",
+  "license": "ISC",
+  "devDependencies": {
+    "electron": "^29.3.1",
+    "electron-builder": "^24.13.3"
+  },
+  "build": {
+    "appId": "com.loewix.cctv.desktop",
+    "productName": "Loewix CCTV Live",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "assets/**/*",
+      "bin/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "../",
+        "to": "app_backend",
+        "filter": [
+          "**/*",
+          "!node_modules/**",
+          "!desktop/**",
+          "!venv_ai/**",
+          "!.git/**",
+          "!*.pt",
+          "!dist/**"
+        ]
+      }
+    ],
+    "mac": {
+      "category": "public.app-category.utilities",
+      "target": [
+        "dmg",
+        "zip"
+      ],
+      "icon": "assets/icon.png"
+    },
+    "win": {
+      "target": [
+        "nsis",
+        "portable"
+      ],
+      "icon": "assets/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Loewix CCTV Live"
+    }
+  }
+}

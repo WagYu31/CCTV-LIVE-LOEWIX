@@ -26,3 +26,8 @@ assets/uploads/faces/Wahyu/
 
 # Scratch/temp
 scratch/
+
+# Desktop App builds & dependencies
+desktop/node_modules/
+desktop/dist/
+desktop/bin/php/
