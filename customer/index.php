@@ -8735,7 +8735,7 @@
                 const confVal = (Math.min(99.6, Math.max(88.0, 100 - bestCandidateDist * 18))).toFixed(1);
                 window._verifiedFaceLock = {
                   trackId: trackId,
-                  name: isWahyu ? 'WAHYU UTOMO [VIP]' : matchedFace.name.toUpperCase(),
+                  name: isWahyu ? 'WAHYU UTOMO' : matchedFace.name.toUpperCase(),
                   fullName: matchedFace.name,
                   face: matchedFace,
                   distance: bestCandidateDist,
@@ -8874,10 +8874,10 @@
         (cachedAIFaces[0].role_title || '').toLowerCase().includes('admin')
       ));
 
-      // 1B. Persistent Verified Identity Lock (from Genuine Biometric Match or Webcam Active Session)
+      // 1B. Persistent Verified Identity Lock (from Genuine Biometric Match on THIS track)
       if (window._verifiedFaceLock && (Date.now() - window._verifiedFaceLock.timestamp < (window._verifiedFaceLock.ttl || 30000))) {
         const lock = window._verifiedFaceLock;
-        if (track && (track.id === lock.trackId || isWebcam)) {
+        if (track && track.id === lock.trackId) {
           track.lockedPerson = lock.face;
           track.lockedDistance = lock.distance || 0.35;
           track.isStranger = false;
@@ -8890,7 +8890,7 @@
         }
       }
 
-      // 1C. Direct Webcam Owner Lock: Single Registered Identity
+      // 1C. Direct Webcam Owner Lock: Single Registered Identity Only
       if (isWebcam && isSingleOwnerDB) {
         const soleFace = cachedAIFaces[0];
         track.lockedPerson = soleFace;
@@ -8898,7 +8898,7 @@
         track.isStranger = false;
         const isWahyu = soleFace.name.toLowerCase().includes('wahyu') || soleFace.name.toLowerCase() === 'yu' || soleFace.name.toLowerCase().includes('wagyu');
         return {
-          name: soleFace.name,
+          name: isWahyu ? 'WAHYU UTOMO' : soleFace.name.toUpperCase(),
           face: soleFace,
           category: isWahyu ? 'vip' : (soleFace.category || 'employee'),
           isMatch: true
@@ -8917,7 +8917,7 @@
             track.lockedPerson = null;
             track.isStranger = true;
             track.candidateVotes = {};
-            if (window._verifiedFaceLock && (window._verifiedFaceLock.trackId === track.id || isWebcam)) {
+            if (window._verifiedFaceLock && window._verifiedFaceLock.trackId === track.id) {
               window._verifiedFaceLock = null;
             }
           }
@@ -8926,7 +8926,7 @@
         }
         const isWahyu = track.lockedPerson.name.toLowerCase().includes('wahyu') || track.lockedPerson.name.toLowerCase() === 'yu' || track.lockedPerson.name.toLowerCase().includes('wagyu');
         return {
-          name: track.lockedPerson.name,
+          name: isWahyu ? 'WAHYU UTOMO' : track.lockedPerson.name.toUpperCase(),
           face: track.lockedPerson,
           category: isWahyu ? 'vip' : (track.lockedPerson.category || 'employee'),
           isMatch: true
