@@ -7513,8 +7513,8 @@
         }
         if (_isMediaPipeInFlight) return;
 
-        // Throttle to ~30 FPS (33ms) so Face-API and main thread run silky smooth
-        if (timestamp && (timestamp - _mpLastFrameTime < 33)) return;
+        // Throttle to ~16 FPS (60ms) so UI and main thread stay responsive without lag
+        if (timestamp && (timestamp - _mpLastFrameTime < 60)) return;
         _mpLastFrameTime = timestamp || Date.now();
 
         const isWebcam = Boolean(video.srcObject !== null || (currentAICamera && currentAICamera.id === 'webcam'));
@@ -9993,7 +9993,7 @@
             }
           }
         }
-      }, 50);
+      }, 200);
     }
 
     // Active Tracked Face (Null by default: Auto Detect Real-time)

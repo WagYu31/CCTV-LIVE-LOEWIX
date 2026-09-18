@@ -50,8 +50,8 @@ paths:
   # RTSP LOCAL (Office LAN 192.168.11.182)
   # ==========================================
   cam_live_5018:
-    runOnInit: ffmpeg -nostdin -loglevel error -rtsp_transport tcp -timeout 8000000 -i "rtsp://192.168.11.182:554/user=admin&password=&channel=1&stream=1.sdp" -c:v libx264 -preset ultrafast -tune zerolatency -pix_fmt yuv420p -r 20 -fps_mode cfr -g 40 -keyint_min 40 -sc_threshold 0 -b:v 800k -maxrate 1000k -bufsize 2000k -an -f rtsp -pkt_size 1316 -rtsp_transport tcp rtsp://127.0.0.1:8554/cam_live_5018
-    runOnInitRestart: yes
+    runOnDemand: ffmpeg -nostdin -loglevel error -rtsp_transport tcp -timeout 8000000 -i "rtsp://192.168.11.182:554/user=admin&password=&channel=1&stream=1.sdp" -c:v libx264 -preset ultrafast -tune zerolatency -pix_fmt yuv420p -r 20 -fps_mode cfr -g 40 -keyint_min 40 -sc_threshold 0 -b:v 800k -maxrate 1000k -bufsize 2000k -an -f rtsp -pkt_size 1316 -rtsp_transport tcp rtsp://127.0.0.1:8554/cam_live_5018
+    runOnDemandRestart: yes
 
   cam_live_5018_hd:
     runOnDemand: ffmpeg -nostdin -loglevel error -rtsp_transport tcp -timeout 8000000 -i "rtsp://192.168.11.182:554/user=admin&password=&channel=1&stream=0.sdp" -c:v libx264 -preset ultrafast -tune zerolatency -pix_fmt yuv420p -r 20 -fps_mode cfr -g 40 -keyint_min 40 -sc_threshold 0 -b:v 2500k -maxrate 3000k -bufsize 6000k -an -f rtsp -pkt_size 1316 -rtsp_transport tcp rtsp://127.0.0.1:8554/cam_live_5018_hd
@@ -61,8 +61,8 @@ paths:
   # TEST DDNS 1 (Office LAN 192.168.11.201)
   # ==========================================
   cam_live_5016:
-    runOnInit: ffmpeg -nostdin -loglevel error -rtsp_transport tcp -timeout 8000000 -i "rtsp://192.168.11.201:554/user=admin&password=&channel=1&stream=1.sdp" -c:v libx264 -preset ultrafast -tune zerolatency -pix_fmt yuv420p -r 20 -fps_mode cfr -g 40 -keyint_min 40 -sc_threshold 0 -b:v 800k -maxrate 1000k -bufsize 2000k -an -f rtsp -pkt_size 1316 -rtsp_transport tcp rtsp://127.0.0.1:8554/cam_live_5016
-    runOnInitRestart: yes
+    runOnDemand: ffmpeg -nostdin -loglevel error -rtsp_transport tcp -timeout 8000000 -i "rtsp://192.168.11.201:554/user=admin&password=&channel=1&stream=1.sdp" -c:v libx264 -preset ultrafast -tune zerolatency -pix_fmt yuv420p -r 20 -fps_mode cfr -g 40 -keyint_min 40 -sc_threshold 0 -b:v 800k -maxrate 1000k -bufsize 2000k -an -f rtsp -pkt_size 1316 -rtsp_transport tcp rtsp://127.0.0.1:8554/cam_live_5016
+    runOnDemandRestart: yes
 
   cam_live_5016_hd:
     runOnDemand: ffmpeg -nostdin -loglevel error -rtsp_transport tcp -timeout 8000000 -i "rtsp://192.168.11.201:554/user=admin&password=&channel=1&stream=0.sdp" -c:v libx264 -preset ultrafast -tune zerolatency -pix_fmt yuv420p -r 20 -fps_mode cfr -g 40 -keyint_min 40 -sc_threshold 0 -b:v 2500k -maxrate 3000k -bufsize 6000k -an -f rtsp -pkt_size 1316 -rtsp_transport tcp rtsp://127.0.0.1:8554/cam_live_5016_hd
@@ -72,8 +72,8 @@ paths:
   # RTSP LOCAL L8 Arah wihara (Office LAN 192.168.11.200)
   # ==========================================
   cam_live_5019:
-    runOnInit: ffmpeg -nostdin -loglevel error -rtsp_transport tcp -timeout 8000000 -i "rtsp://192.168.11.200:554/user=admin&password=&channel=1&stream=1.sdp" -c:v libx264 -preset ultrafast -tune zerolatency -pix_fmt yuv420p -r 20 -fps_mode cfr -g 40 -keyint_min 40 -sc_threshold 0 -b:v 800k -maxrate 1000k -bufsize 2000k -an -f rtsp -pkt_size 1316 -rtsp_transport tcp rtsp://127.0.0.1:8554/cam_live_5019
-    runOnInitRestart: yes
+    runOnDemand: ffmpeg -nostdin -loglevel error -rtsp_transport tcp -timeout 8000000 -i "rtsp://192.168.11.200:554/user=admin&password=&channel=1&stream=1.sdp" -c:v libx264 -preset ultrafast -tune zerolatency -pix_fmt yuv420p -r 20 -fps_mode cfr -g 40 -keyint_min 40 -sc_threshold 0 -b:v 800k -maxrate 1000k -bufsize 2000k -an -f rtsp -pkt_size 1316 -rtsp_transport tcp rtsp://127.0.0.1:8554/cam_live_5019
+    runOnDemandRestart: yes
 
   cam_live_5019_hd:
     runOnDemand: ffmpeg -nostdin -loglevel error -rtsp_transport tcp -timeout 8000000 -i "rtsp://192.168.11.200:554/user=admin&password=&channel=1&stream=0.sdp" -c:v libx264 -preset ultrafast -tune zerolatency -pix_fmt yuv420p -r 20 -fps_mode cfr -g 40 -keyint_min 40 -sc_threshold 0 -b:v 2500k -maxrate 3000k -bufsize 6000k -an -f rtsp -pkt_size 1316 -rtsp_transport tcp rtsp://127.0.0.1:8554/cam_live_5019_hd
@@ -83,8 +83,8 @@ paths:
   # RTSP LOCAL STG (Office LAN 192.168.11.160)
   # ==========================================
   cam_live_5020:
-    runOnInit: ffmpeg -nostdin -loglevel error -rtsp_transport tcp -timeout 8000000 -i "rtsp://admin:123456@192.168.11.160:554/mpeg4" -vf "scale='min(1280,iw)':-2" -c:v libx264 -preset ultrafast -tune zerolatency -pix_fmt yuv420p -r 20 -fps_mode cfr -g 40 -keyint_min 40 -sc_threshold 0 -b:v 1200k -maxrate 1500k -bufsize 3000k -an -f rtsp -pkt_size 1316 -rtsp_transport tcp rtsp://127.0.0.1:8554/cam_live_5020
-    runOnInitRestart: yes
+    runOnDemand: ffmpeg -nostdin -loglevel error -rtsp_transport tcp -timeout 8000000 -i "rtsp://admin:123456@192.168.11.160:554/mpeg4" -vf "scale='min(1280,iw)':-2" -c:v libx264 -preset ultrafast -tune zerolatency -pix_fmt yuv420p -r 20 -fps_mode cfr -g 40 -keyint_min 40 -sc_threshold 0 -b:v 1200k -maxrate 1500k -bufsize 3000k -an -f rtsp -pkt_size 1316 -rtsp_transport tcp rtsp://127.0.0.1:8554/cam_live_5020
+    runOnDemandRestart: yes
 
   cam_live_5020_hd:
     runOnDemand: ffmpeg -nostdin -loglevel error -rtsp_transport tcp -timeout 8000000 -i "rtsp://admin:123456@192.168.11.160:554/mpeg4" -c:v libx264 -preset ultrafast -tune zerolatency -pix_fmt yuv420p -r 20 -fps_mode cfr -g 40 -keyint_min 40 -sc_threshold 0 -b:v 2500k -maxrate 3000k -bufsize 6000k -an -f rtsp -pkt_size 1316 -rtsp_transport tcp rtsp://127.0.0.1:8554/cam_live_5020_hd
@@ -94,8 +94,8 @@ paths:
   # RTSP 162 (Office LAN 192.168.11.162) - 1080p FULL HD
   # ==========================================
   cam_live_5021:
-    runOnInit: ffmpeg -nostdin -loglevel error -rtsp_transport tcp -timeout 8000000 -i "rtsp://admin:123456@192.168.11.162:554/stream1" -vf "scale='min(1920,iw)':-2" -c:v libx264 -preset ultrafast -tune zerolatency -pix_fmt yuv420p -r 20 -fps_mode cfr -g 40 -keyint_min 40 -sc_threshold 0 -b:v 2500k -maxrate 3000k -bufsize 6000k -an -f rtsp -pkt_size 1316 -rtsp_transport tcp rtsp://127.0.0.1:8554/cam_live_5021
-    runOnInitRestart: yes
+    runOnDemand: ffmpeg -nostdin -loglevel error -rtsp_transport tcp -timeout 8000000 -i "rtsp://admin:123456@192.168.11.162:554/stream1" -vf "scale='min(1920,iw)':-2" -c:v libx264 -preset ultrafast -tune zerolatency -pix_fmt yuv420p -r 20 -fps_mode cfr -g 40 -keyint_min 40 -sc_threshold 0 -b:v 2500k -maxrate 3000k -bufsize 6000k -an -f rtsp -pkt_size 1316 -rtsp_transport tcp rtsp://127.0.0.1:8554/cam_live_5021
+    runOnDemandRestart: yes
 
   cam_live_5021_hd:
     runOnDemand: ffmpeg -nostdin -loglevel error -rtsp_transport tcp -timeout 8000000 -i "rtsp://admin:123456@192.168.11.162:554/stream1" -vf "scale='min(1920,iw)':-2" -c:v libx264 -preset ultrafast -tune zerolatency -pix_fmt yuv420p -r 20 -fps_mode cfr -g 40 -keyint_min 40 -sc_threshold 0 -b:v 2500k -maxrate 3000k -bufsize 6000k -an -f rtsp -pkt_size 1316 -rtsp_transport tcp rtsp://127.0.0.1:8554/cam_live_5021_hd
@@ -105,8 +105,8 @@ paths:
   # LOEWIX DDNS OFFICE (Loewixtest.ddns.net / 125.161.254.128:554)
   # ==========================================
   cam_live_5031:
-    runOnInit: ffmpeg -nostdin -loglevel error -rtsp_transport tcp -timeout 8000000 -i "rtsp://admin:admin1234@125.161.254.128:554/user=admin&password=admin1234&channel=1&stream=1.sdp" -c:v libx264 -preset ultrafast -tune zerolatency -pix_fmt yuv420p -r 20 -fps_mode cfr -g 40 -keyint_min 40 -sc_threshold 0 -b:v 800k -maxrate 1000k -bufsize 2000k -an -f rtsp -pkt_size 1316 -rtsp_transport tcp rtsp://127.0.0.1:8554/cam_live_5031
-    runOnInitRestart: yes
+    runOnDemand: ffmpeg -nostdin -loglevel error -rtsp_transport tcp -timeout 8000000 -i "rtsp://admin:admin1234@125.161.254.128:554/user=admin&password=admin1234&channel=1&stream=1.sdp" -c:v libx264 -preset ultrafast -tune zerolatency -pix_fmt yuv420p -r 20 -fps_mode cfr -g 40 -keyint_min 40 -sc_threshold 0 -b:v 800k -maxrate 1000k -bufsize 2000k -an -f rtsp -pkt_size 1316 -rtsp_transport tcp rtsp://127.0.0.1:8554/cam_live_5031
+    runOnDemandRestart: yes
 
   cam_live_5031_hd:
     runOnDemand: ffmpeg -nostdin -loglevel error -rtsp_transport tcp -timeout 8000000 -i "rtsp://admin:admin1234@125.161.254.128:554/user=admin&password=admin1234&channel=1&stream=0.sdp" -vf "scale='min(1920,iw)':-2" -c:v libx264 -preset ultrafast -tune zerolatency -pix_fmt yuv420p -r 20 -fps_mode cfr -g 40 -keyint_min 40 -sc_threshold 0 -b:v 2500k -maxrate 3000k -bufsize 6000k -an -f rtsp -pkt_size 1316 -rtsp_transport tcp rtsp://127.0.0.1:8554/cam_live_5031_hd
@@ -116,16 +116,16 @@ paths:
   # OFFICE CAMERAS (L8, 178, PRODUKSI)
   # ==========================================
   cam_live_5032:
-    runOnInit: ffmpeg -nostdin -loglevel error -rtsp_transport tcp -timeout 8000000 -i "rtsp://admin:GitiWix209@192.168.11.209:554/0" -c:v libx264 -preset ultrafast -tune zerolatency -pix_fmt yuv420p -r 20 -fps_mode cfr -g 40 -keyint_min 40 -sc_threshold 0 -b:v 1200k -maxrate 1500k -bufsize 3000k -an -f rtsp -pkt_size 1316 -rtsp_transport tcp rtsp://127.0.0.1:8554/cam_live_5032
-    runOnInitRestart: yes
+    runOnDemand: ffmpeg -nostdin -loglevel error -rtsp_transport tcp -timeout 8000000 -i "rtsp://admin:GitiWix209@192.168.11.209:554/0" -c:v libx264 -preset ultrafast -tune zerolatency -pix_fmt yuv420p -r 20 -fps_mode cfr -g 40 -keyint_min 40 -sc_threshold 0 -b:v 1200k -maxrate 1500k -bufsize 3000k -an -f rtsp -pkt_size 1316 -rtsp_transport tcp rtsp://127.0.0.1:8554/cam_live_5032
+    runOnDemandRestart: yes
 
   cam_live_5034:
-    runOnInit: ffmpeg -nostdin -loglevel error -rtsp_transport tcp -timeout 8000000 -i "rtsp://admin:GitiWix178@192.168.11.178:554/0" -vf "scale='min(1280,iw)':-2" -c:v libx264 -preset ultrafast -tune zerolatency -pix_fmt yuv420p -r 20 -fps_mode cfr -g 40 -keyint_min 40 -sc_threshold 0 -b:v 1200k -maxrate 1500k -bufsize 3000k -an -f rtsp -pkt_size 1316 -rtsp_transport tcp rtsp://127.0.0.1:8554/cam_live_5034
-    runOnInitRestart: yes
+    runOnDemand: ffmpeg -nostdin -loglevel error -rtsp_transport tcp -timeout 8000000 -i "rtsp://admin:GitiWix178@192.168.11.178:554/0" -vf "scale='min(1280,iw)':-2" -c:v libx264 -preset ultrafast -tune zerolatency -pix_fmt yuv420p -r 20 -fps_mode cfr -g 40 -keyint_min 40 -sc_threshold 0 -b:v 1200k -maxrate 1500k -bufsize 3000k -an -f rtsp -pkt_size 1316 -rtsp_transport tcp rtsp://127.0.0.1:8554/cam_live_5034
+    runOnDemandRestart: yes
 
   cam_live_5033:
-    runOnInit: ffmpeg -nostdin -loglevel error -rtsp_transport tcp -timeout 8000000 -i "rtsp://admin:GitiWix181@192.168.11.181:554/0" -c:v libx264 -preset ultrafast -tune zerolatency -pix_fmt yuv420p -r 20 -fps_mode cfr -g 40 -keyint_min 40 -sc_threshold 0 -b:v 1200k -maxrate 1500k -bufsize 3000k -an -f rtsp -pkt_size 1316 -rtsp_transport tcp rtsp://127.0.0.1:8554/cam_live_5033
-    runOnInitRestart: yes
+    runOnDemand: ffmpeg -nostdin -loglevel error -rtsp_transport tcp -timeout 8000000 -i "rtsp://admin:GitiWix181@192.168.11.181:554/0" -c:v libx264 -preset ultrafast -tune zerolatency -pix_fmt yuv420p -r 20 -fps_mode cfr -g 40 -keyint_min 40 -sc_threshold 0 -b:v 1200k -maxrate 1500k -bufsize 3000k -an -f rtsp -pkt_size 1316 -rtsp_transport tcp rtsp://127.0.0.1:8554/cam_live_5033
+    runOnDemandRestart: yes
 
 
   # ==========================================
