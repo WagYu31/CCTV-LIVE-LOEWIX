@@ -1648,6 +1648,17 @@ $userRole = $_SESSION['user_role'] ?? 'super_admin';
 
   <!-- Application Logic JavaScript -->
   <script>
+    // Global Safe HTML escaping helper
+    function escapeHtml(str) {
+      if (str === null || str === undefined) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
     let localCameras = [];
     let currentHlsInstance = null;
     let deferredPrompt = null;
@@ -2395,9 +2406,21 @@ $userRole = $_SESSION['user_role'] ?? 'super_admin';
     }
 
     function updateAICameraLists() {
-      populateAICameraSelector();
-      renderAICameraPills();
-      renderAICameraGridCards();
+      try {
+        populateAICameraSelector();
+      } catch (e) {
+        console.error('populateAICameraSelector error:', e);
+      }
+      try {
+        renderAICameraPills();
+      } catch (e) {
+        console.error('renderAICameraPills error:', e);
+      }
+      try {
+        renderAICameraGridCards();
+      } catch (e) {
+        console.error('renderAICameraGridCards error:', e);
+      }
     }
 
     function populateAICameraSelector() {
