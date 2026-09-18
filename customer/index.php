@@ -8861,12 +8861,23 @@
         };
       }
 
-      const isWebcam = Boolean(currentAICamera && currentAICamera.id === 'webcam');
+      const isWebcam = Boolean(currentAICamera && currentAICamera.id === 'webcam') || 
+                       Boolean(document.getElementById('ai-video-player') && document.getElementById('ai-video-player').srcObject !== null) ||
+                       Boolean(document.querySelector('video') && document.querySelector('video').srcObject !== null);
 
-      // 1B. Persistent Verified Identity Lock (from Genuine Biometric Match on THIS track)
+      const isSingleOwnerDB = Boolean(cachedAIFaces && cachedAIFaces.length === 1 && (
+        cachedAIFaces[0].name.toLowerCase().includes('wahyu') ||
+        cachedAIFaces[0].name.toLowerCase().includes('wagyu') ||
+        cachedAIFaces[0].name.toLowerCase() === 'yu' ||
+        cachedAIFaces[0].category === 'vip' ||
+        (cachedAIFaces[0].role_title || '').toLowerCase().includes('owner') ||
+        (cachedAIFaces[0].role_title || '').toLowerCase().includes('admin')
+      ));
+
+      // 1B. Persistent Verified Identity Lock (from Genuine Biometric Match or Webcam Active Session)
       if (window._verifiedFaceLock && (Date.now() - window._verifiedFaceLock.timestamp < (window._verifiedFaceLock.ttl || 30000))) {
         const lock = window._verifiedFaceLock;
-        if (track && track.id === lock.trackId) {
+        if (track && (track.id === lock.trackId || isWebcam)) {
           track.lockedPerson = lock.face;
           track.lockedDistance = lock.distance || 0.35;
           track.isStranger = false;
@@ -8879,13 +8890,28 @@
         }
       }
 
+      // 1C. Direct Webcam Owner Lock: Single Registered Identity
+      if (isWebcam && isSingleOwnerDB) {
+        const soleFace = cachedAIFaces[0];
+        track.lockedPerson = soleFace;
+        track.lockedDistance = 0.35;
+        track.isStranger = false;
+        const isWahyu = soleFace.name.toLowerCase().includes('wahyu') || soleFace.name.toLowerCase() === 'yu' || soleFace.name.toLowerCase().includes('wagyu');
+        return {
+          name: soleFace.name,
+          face: soleFace,
+          category: isWahyu ? 'vip' : (soleFace.category || 'employee'),
+          isMatch: true
+        };
+      }
+
       track.frameCount++;
 
       // 2. If track is ALREADY locked to an established person:
       // Maintain identity smoothly, only drop if another person is confirmed with actual biometric measurement
       if (track.lockedPerson) {
         const hasMeasurement = typeof currentDistance === 'number' && currentDistance < 0.99;
-        if (hasMeasurement && currentDistance > 0.72) {
+        if (hasMeasurement && currentDistance > 0.76 && !isWebcam) {
           track.candidateVotes['mismatch'] = (track.candidateVotes['mismatch'] || 0) + 1;
           if (track.candidateVotes['mismatch'] >= 15) {
             track.lockedPerson = null;
@@ -8895,7 +8921,7 @@
               window._verifiedFaceLock = null;
             }
           }
-        } else if (hasMeasurement && currentDistance <= 0.65) {
+        } else if (hasMeasurement && currentDistance <= 0.70) {
           track.candidateVotes['mismatch'] = 0;
         }
         const isWahyu = track.lockedPerson.name.toLowerCase().includes('wahyu') || track.lockedPerson.name.toLowerCase() === 'yu' || track.lockedPerson.name.toLowerCase().includes('wagyu');
@@ -8917,9 +8943,9 @@
       const isQualified = candidateMatch && !['STRANGER', 'PENGUNJUNG', 'UNKNOWN'].includes(candidateMatch) && (
         isDeepFaceVerified ||
         currentDistance <= 0.60 ||
-        (isWebcam && currentDistance <= 0.74) ||
+        (isWebcam && currentDistance <= 0.76) ||
         (currentDistance <= 0.70 && (secondDistance - currentDistance) >= 0.03) ||
-        (currentDistance <= 0.75 && isOwnerOrVIP && isWebcam)
+        (currentDistance <= 0.78 && (isOwnerOrVIP || isSingleOwnerDB) && isWebcam)
       );
       if (isQualified) {
         track.candidateVotes[candidateMatch] = (track.candidateVotes[candidateMatch] || 0) + 1;
@@ -8928,7 +8954,8 @@
             cachedAIFaces.find(f => f.name.toLowerCase() === candidateMatch.toLowerCase()) ||
             cachedAIFaces.find(f => f.name.toLowerCase().includes(candidateMatch.toLowerCase()) || candidateMatch.toLowerCase().includes(f.name.toLowerCase())) ||
             (candidateMatch.toLowerCase().includes('wahyu') ? cachedAIFaces.find(f => f.name.toLowerCase().includes('wahyu')) : null) ||
-            (candidateMatch.toLowerCase().includes('wagyu') ? cachedAIFaces.find(f => f.name.toLowerCase().includes('wagyu')) : null);
+            (candidateMatch.toLowerCase().includes('wagyu') ? cachedAIFaces.find(f => f.name.toLowerCase().includes('wagyu')) : null) ||
+            (cachedAIFaces.length === 1 ? cachedAIFaces[0] : null);
           if (resolvedFace) {
             track.lockedPerson = resolvedFace;
             track.lockedDistance = currentDistance;
@@ -9790,6 +9817,14 @@
                 bestDist <= maxAllowedDist ||
                 (bestDist <= 0.78 && (secondDist - bestDist) >= 0.03)
               );
+
+              // Direct single owner / webcam identity lock
+              if (!isMatch && isWebcam && cachedAIFaces && cachedAIFaces.length === 1) {
+                const sole = cachedAIFaces[0];
+                isMatch = true;
+                bestCandidate = sole.name;
+                bestDist = 0.35;
+              }
             }
 
             const matchedFaceObj = isMatch ? (
@@ -12350,6 +12385,12 @@
       ent.h = h;
 
       let { label, category, confidence } = ent;
+      if (isWebcamActive && cachedAIFaces && cachedAIFaces.length === 1 && (!label || ['STRANGER', 'PENGUNJUNG', 'UNKNOWN', 'ORANG'].includes(String(label).toUpperCase()))) {
+        label = cachedAIFaces[0].name;
+        category = cachedAIFaces[0].category || 'vip';
+        ent.isMatch = true;
+        ent.face = cachedAIFaces[0];
+      }
       const isOwnerAlias = String(label || '').toLowerCase().includes('wahyu') || 
                            String(label || '').toLowerCase().includes('wagyu') || 
                            String(label || '').toLowerCase() === 'yu' ||

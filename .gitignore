@@ -18,8 +18,8 @@ venv_ai/
 __pycache__/
 data/loewix_ai.db
 assets/uploads/snapshots/
-assets/uploads/faces/registered_wahyu_new.jpg
-assets/uploads/faces/Wahyu/
+assets/uploads/faces/
+!assets/uploads/faces/.gitkeep
 
 # Backup files
 *.bak
