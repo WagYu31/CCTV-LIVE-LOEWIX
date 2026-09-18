@@ -4731,12 +4731,9 @@
       } else if (streamUrl && streamUrl.startsWith('http://stream.loewixcctv.com')) {
         streamUrl = streamUrl.replace('http://', 'https://');
       }
-      if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
-        if (streamUrl && (streamUrl.includes('localhost:8888') || streamUrl.includes('127.0.0.1:8888'))) {
-          streamUrl = streamUrl.replace('http://localhost:8888', 'https://stream.loewixcctv.com').replace('http://127.0.0.1:8888', 'https://stream.loewixcctv.com');
-        }
-      } else if (streamUrl && streamUrl.includes('stream.loewixcctv.com')) {
-        streamUrl = streamUrl.replace('https://stream.loewixcctv.com', 'http://localhost:8888').replace('http://stream.loewixcctv.com', 'http://localhost:8888');
+      // Always convert stale localhost:8888 to official cloud stream server
+      if (streamUrl && (streamUrl.includes('localhost:8888') || streamUrl.includes('127.0.0.1:8888'))) {
+        streamUrl = streamUrl.replace('http://localhost:8888', 'https://stream.loewixcctv.com').replace('http://127.0.0.1:8888', 'https://stream.loewixcctv.com');
       }
 
       if (!streamUrl) {
@@ -5071,12 +5068,9 @@
       } else if (streamUrl && streamUrl.startsWith('http://stream.loewixcctv.com')) {
         streamUrl = streamUrl.replace('http://', 'https://');
       }
-      if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
-        if (streamUrl && (streamUrl.includes('localhost:8888') || streamUrl.includes('127.0.0.1:8888'))) {
-          streamUrl = streamUrl.replace('http://localhost:8888', 'https://stream.loewixcctv.com').replace('http://127.0.0.1:8888', 'https://stream.loewixcctv.com');
-        }
-      } else if (streamUrl && streamUrl.includes('stream.loewixcctv.com')) {
-        streamUrl = streamUrl.replace('https://stream.loewixcctv.com', 'http://localhost:8888').replace('http://stream.loewixcctv.com', 'http://localhost:8888');
+      // Always convert stale localhost:8888 to official cloud stream server
+      if (streamUrl && (streamUrl.includes('localhost:8888') || streamUrl.includes('127.0.0.1:8888'))) {
+        streamUrl = streamUrl.replace('http://localhost:8888', 'https://stream.loewixcctv.com').replace('http://127.0.0.1:8888', 'https://stream.loewixcctv.com');
       }
 
       if (!streamUrl) {
@@ -12815,12 +12809,9 @@
       } else if (streamUrl && streamUrl.startsWith('http://stream.loewixcctv.com')) {
         streamUrl = streamUrl.replace('http://', 'https://');
       }
-      if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
-        if (streamUrl && (streamUrl.includes('localhost:8888') || streamUrl.includes('127.0.0.1:8888'))) {
-          streamUrl = streamUrl.replace('http://localhost:8888', 'https://stream.loewixcctv.com').replace('http://127.0.0.1:8888', 'https://stream.loewixcctv.com');
-        }
-      } else if (streamUrl && streamUrl.includes('stream.loewixcctv.com')) {
-        streamUrl = streamUrl.replace('https://stream.loewixcctv.com', 'http://localhost:8888').replace('http://stream.loewixcctv.com', 'http://localhost:8888');
+      // Always convert stale localhost:8888 to official cloud stream server
+      if (streamUrl && (streamUrl.includes('localhost:8888') || streamUrl.includes('127.0.0.1:8888'))) {
+        streamUrl = streamUrl.replace('http://localhost:8888', 'https://stream.loewixcctv.com').replace('http://127.0.0.1:8888', 'https://stream.loewixcctv.com');
       }
 
       return streamUrl;
