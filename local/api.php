@@ -216,6 +216,17 @@ if ($action === 'get_cameras') {
     $db = get_db_data();
     $cameras = $db['cameras'] ?? [];
 
+    // Auto-seed from package if server database currently has 0 cameras
+    if (empty($cameras)) {
+        $pkg = __DIR__ . '/../data_sync_package.tar.gz';
+        if (file_exists($pkg)) {
+            @exec("tar -xzf " . escapeshellarg($pkg) . " -C " . escapeshellarg(__DIR__ . '/..'));
+            clearstatcache();
+            $db = get_db_data();
+            $cameras = $db['cameras'] ?? [];
+        }
+    }
+
     // Filter cameras for customer if not super_admin
     $result = [];
     foreach ($cameras as $c) {
