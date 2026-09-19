@@ -10,8 +10,17 @@ $isLoggedIn = !empty($_SESSION['user_id']);
 $userName = $_SESSION['user_name'] ?? 'Administrator';
 $userRole = $_SESSION['user_role'] ?? 'super_admin';
 
-// Deteksi otomatis apakah berjalan di subdomain mandiri (facedetection.loewixcctv.com)
+// Deteksi otomatis lingkungan
 $httpHost = $_SERVER['HTTP_HOST'] ?? '';
+$reqUri = $_SERVER['REQUEST_URI'] ?? '';
+$isLocalhost = in_array($httpHost, ['localhost', '127.0.0.1']) || (strpos($httpHost, 'localhost:') === 0);
+
+// Blokir akses publik ke /local pada domain loewixcctv.com (alihkan permanen ke /facedetection)
+if (!$isLocalhost && (strpos($reqUri, '/local') !== false)) {
+    header('Location: /facedetection/', true, 301);
+    exit;
+}
+
 $isSubdomain = (strpos($httpHost, 'facedetection.') !== false) || (basename($_SERVER['DOCUMENT_ROOT'] ?? '') === 'local');
 $assetsBase = $isSubdomain ? 'https://loewixcctv.com/assets' : '../assets';
 ?>

@@ -16,6 +16,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit;
 }
 
+$reqUri = $_SERVER['REQUEST_URI'] ?? '';
+$httpHost = $_SERVER['HTTP_HOST'] ?? '';
+$isLocalhost = in_array($httpHost, ['localhost', '127.0.0.1']) || (strpos($httpHost, 'localhost:') === 0);
+
+// Blokir pemanggilan langsung /local/api.php dari domain publik
+if (!$isLocalhost && (strpos($reqUri, '/local/') !== false)) {
+    http_response_code(403);
+    echo json_encode(['success' => false, 'message' => 'Akses langsung ke /local diblokir. Gunakan /facedetection/']);
+    exit;
+}
+
 require_once __DIR__ . '/../config/db.php';
 
 $action = $_GET['action'] ?? $_POST['action'] ?? '';
