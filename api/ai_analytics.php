@@ -337,7 +337,12 @@ if ($action === 'get_ai_data') {
     $cameras = [];
     if (isset($db['cameras']) && is_array($db['cameras'])) {
         foreach ($db['cameras'] as $cam) {
-            if (!empty($cam['hls_url']) && strpos($cam['hls_url'], 'http://stream.loewixcctv.com') === 0) {
+            if (empty($cam['streamPath'])) {
+                $cam['streamPath'] = 'cam_live_' . $cam['id'];
+            }
+            if (empty($cam['hls_url'])) {
+                $cam['hls_url'] = "https://stream.loewixcctv.com/{$cam['streamPath']}/index.m3u8";
+            } else if (strpos($cam['hls_url'], 'http://stream.loewixcctv.com') === 0) {
                 $cam['hls_url'] = str_replace('http://', 'https://', $cam['hls_url']);
             }
             $cameras[] = $cam;
