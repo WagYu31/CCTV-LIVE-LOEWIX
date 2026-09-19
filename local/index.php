@@ -2277,7 +2277,7 @@ $assetsBase = $isSubdomain ? 'https://loewixcctv.com/assets' : '../assets';
 
   <!-- App Footer -->
   <footer class="app-footer">
-    Loewix Face Detection &bull; PT. Loewix Indonesia &bull; Versi Desktop & Jaringan Lokal (Port 8088)
+    Loewix Face Detection &bull; PT. Loewix Indonesia &bull; <?= (strpos($httpHost, 'loewixcctv.com') !== false) ? 'Online & Cloud Edition' : 'Versi Desktop & Jaringan Lokal (Port 8088)' ?>
   </footer>
 
   <!-- Application Logic JavaScript -->
