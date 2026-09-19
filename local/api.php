@@ -18,7 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 
 $reqUri = $_SERVER['REQUEST_URI'] ?? '';
 $httpHost = $_SERVER['HTTP_HOST'] ?? '';
-$isLocalhost = in_array($httpHost, ['localhost', '127.0.0.1']) || (strpos($httpHost, 'localhost:') === 0);
+$isLocalhost = in_array($httpHost, ['localhost', '127.0.0.1']) || (strpos($httpHost, 'localhost:') === 0) || (strpos($httpHost, '127.0.0.1:') === 0);
 
 // Blokir pemanggilan langsung /local/api.php dari domain publik
 if (!$isLocalhost && (strpos($reqUri, '/local/') !== false)) {

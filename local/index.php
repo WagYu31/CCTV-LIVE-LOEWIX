@@ -13,10 +13,16 @@ $userRole = $_SESSION['user_role'] ?? 'super_admin';
 // Deteksi otomatis lingkungan
 $httpHost = $_SERVER['HTTP_HOST'] ?? '';
 $reqUri = $_SERVER['REQUEST_URI'] ?? '';
-$isLocalhost = in_array($httpHost, ['localhost', '127.0.0.1']) || (strpos($httpHost, 'localhost:') === 0);
+$isLocalhost = in_array($httpHost, ['localhost', '127.0.0.1']) || (strpos($httpHost, 'localhost:') === 0) || (strpos($httpHost, '127.0.0.1:') === 0);
 
 // Blokir akses publik ke /local pada domain loewixcctv.com (alihkan permanen ke /facedetection)
 if (!$isLocalhost && (strpos($reqUri, '/local') !== false)) {
+    header('Location: /facedetection/', true, 301);
+    exit;
+}
+
+// Pastikan selalu ada trailing slash pada /facedetection/ agar pemanggilan relative 'api.php' tepat sasaran
+if (!$isLocalhost && (rtrim(explode('?', $reqUri)[0], '/') === '/facedetection') && (substr(explode('?', $reqUri)[0], -1) !== '/')) {
     header('Location: /facedetection/', true, 301);
     exit;
 }
