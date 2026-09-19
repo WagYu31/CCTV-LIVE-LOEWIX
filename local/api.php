@@ -4,8 +4,8 @@
  * PT. LOEWIX INDONESIA
  */
 
-error_reporting(E_ALL);
-ini_set('display_errors', '1');
+error_reporting(0);
+ini_set('display_errors', '0');
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
