@@ -31,11 +31,13 @@ require_once __DIR__ . '/../config/db.php';
 
 $action = $_GET['action'] ?? $_POST['action'] ?? '';
 
-// Forward AI Face Recognition actions to the AI Analytics engine
+// Forward AI Face Recognition & Visitor Analytics actions to the AI Analytics engine
 $aiActions = [
     'get_ai_data', 'register_face', 'update_face', 'delete_face', 
     'reset_all_faces', 'log_detection', 'clear_logs', 'sync_descriptors_batch', 
-    'sync_face_db', 'get_face_image', 'deepface_status'
+    'sync_face_db', 'get_face_image', 'deepface_status',
+    'log_visitor_event', 'get_visitor_analytics', 'search_visitors', 
+    'get_visitor_detail', 'update_visitor_profile'
 ];
 if (in_array($action, $aiActions)) {
     require __DIR__ . '/../api/ai_analytics.php';

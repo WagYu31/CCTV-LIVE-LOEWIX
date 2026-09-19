@@ -926,5 +926,483 @@ if ($action === 'update_ai_settings') {
     exit;
 }
 
+// =========================================================================
+// VISITOR & PERSONNEL INTELLIGENCE, FREQUENCY ANALYTICS & STRANGER RE-ID
+// =========================================================================
+
+function calc_face_descriptor_distance($desc1, $desc2) {
+    if (!is_array($desc1) || !is_array($desc2) || count($desc1) !== 128 || count($desc2) !== 128) {
+        return 999.0;
+    }
+    $sum = 0.0;
+    for ($i = 0; $i < 128; $i++) {
+        $diff = ((float)$desc1[$i]) - ((float)$desc2[$i]);
+        $sum += ($diff * $diff);
+    }
+    return sqrt($sum);
+}
+
+// 7. LOG VISITOR / STRANGER DETECTION EVENT
+if ($action === 'log_visitor_event') {
+    $now = date('Y-m-d H:i:s');
+    $today = date('Y-m-d');
+    $time = date('H:i:s');
+
+    $label = trim($_POST['label'] ?? 'Stranger');
+    $category = trim($_POST['category'] ?? 'stranger'); // employee | vip | stranger | guest | blacklist
+    $cameraId = (int)($_POST['camera_id'] ?? 5001);
+    $cameraTitle = trim($_POST['camera_title'] ?? 'CCTV Camera');
+    $direction = trim($_POST['direction'] ?? 'melintas'); // masuk | keluar | melintas
+    $confidence = (float)($_POST['confidence'] ?? 95.0);
+    $personId = trim($_POST['person_id'] ?? '');
+    $snapshotRaw = trim($_POST['snapshot'] ?? '');
+    $rawDescriptor = $_POST['descriptor'] ?? null;
+    $descriptor = null;
+    if (is_string($rawDescriptor)) {
+        $descriptor = json_decode($rawDescriptor, true);
+    } else if (is_array($rawDescriptor)) {
+        $descriptor = $rawDescriptor;
+    }
+
+    // Save base64 snapshot to disk for permanent evidence storage
+    $snapshotPath = '';
+    if (!empty($snapshotRaw) && str_starts_with($snapshotRaw, 'data:image')) {
+        $uploadDir = __DIR__ . '/../assets/uploads/snapshots/';
+        if (!is_dir($uploadDir)) {
+            @mkdir($uploadDir, 0777, true);
+        }
+        $parts = explode(',', $snapshotRaw);
+        if (count($parts) === 2) {
+            $bin = base64_decode($parts[1]);
+            if ($bin !== false) {
+                $filename = 'snap_vis_' . date('Ymd_His') . '_' . rand(100, 999) . '.jpg';
+                if (@file_put_contents($uploadDir . $filename, $bin)) {
+                    $snapshotPath = 'assets/uploads/snapshots/' . $filename;
+                }
+            }
+        }
+    } else if (!empty($snapshotRaw)) {
+        $snapshotPath = $snapshotRaw;
+    }
+
+    if (!isset($db['visitor_profiles']) || !is_array($db['visitor_profiles'])) {
+        $db['visitor_profiles'] = [];
+    }
+
+    $matchedProfile = null;
+    $matchedIndex = -1;
+
+    if ($category !== 'stranger') {
+        // Employee / VIP / Registered match
+        foreach ($db['visitor_profiles'] as $idx => $vp) {
+            if ((!empty($personId) && ($vp['id'] == $personId)) || (strtolower(trim($vp['name'])) === strtolower($label))) {
+                $matchedProfile = &$db['visitor_profiles'][$idx];
+                $matchedIndex = $idx;
+                break;
+            }
+        }
+    } else {
+        // Stranger re-identification via 128D Face Descriptor
+        if (is_array($descriptor) && count($descriptor) === 128) {
+            $bestDistance = 999.0;
+            $bestIdx = -1;
+            foreach ($db['visitor_profiles'] as $idx => $vp) {
+                if (($vp['category'] ?? '') === 'stranger' && isset($vp['descriptor']) && is_array($vp['descriptor'])) {
+                    $dist = calc_face_descriptor_distance($descriptor, $vp['descriptor']);
+                    if ($dist < $bestDistance) {
+                        $bestDistance = $dist;
+                        $bestIdx = $idx;
+                    }
+                }
+            }
+            // Threshold for Face-API.js euclidean distance (0.55 is strict match)
+            if ($bestDistance < 0.55 && $bestIdx >= 0) {
+                $matchedProfile = &$db['visitor_profiles'][$bestIdx];
+                $matchedIndex = $bestIdx;
+            }
+        }
+    }
+
+    // Update existing profile or create new one
+    if ($matchedProfile) {
+        $matchedProfile['total_visits'] = ($matchedProfile['total_visits'] ?? 0) + 1;
+        if (!isset($matchedProfile['daily_visits']) || !is_array($matchedProfile['daily_visits'])) {
+            $matchedProfile['daily_visits'] = [];
+        }
+        $matchedProfile['daily_visits'][$today] = ($matchedProfile['daily_visits'][$today] ?? 0) + 1;
+        $matchedProfile['last_seen'] = $now;
+        $matchedProfile['last_camera_id'] = $cameraId;
+        $matchedProfile['last_camera_title'] = $cameraTitle;
+        $matchedProfile['last_direction'] = $direction;
+        if (!empty($snapshotPath)) {
+            $matchedProfile['last_snapshot'] = $snapshotPath;
+            if (empty($matchedProfile['photo'])) {
+                $matchedProfile['photo'] = $snapshotPath;
+            }
+        }
+        if (is_array($descriptor) && count($descriptor) === 128) {
+            $matchedProfile['descriptor'] = $descriptor;
+        }
+    } else {
+        // Create new visitor profile
+        $isStranger = ($category === 'stranger');
+        $prefix = $isStranger ? 'STR' : 'EMP';
+        $num = count($db['visitor_profiles']) + 1;
+        $newId = $prefix . '-' . date('Ymd') . '-' . sprintf('%03d', $num);
+
+        $newProfile = [
+            'id' => $newId,
+            'name' => $isStranger ? ('Stranger #' . sprintf('%02d', $num)) : $label,
+            'category' => $category,
+            'role_title' => $isStranger ? 'Pengunjung Tidak Dikenal' : 'Personil Terdaftar',
+            'photo' => $snapshotPath,
+            'last_snapshot' => $snapshotPath,
+            'first_seen' => $now,
+            'last_seen' => $now,
+            'total_visits' => 1,
+            'daily_visits' => [
+                $today => 1
+            ],
+            'last_camera_id' => $cameraId,
+            'last_camera_title' => $cameraTitle,
+            'last_direction' => $direction,
+            'notes' => $isStranger ? 'Terdeteksi otomatis oleh AI Camera' : 'Profil terdaftar resmi',
+            'descriptor' => (is_array($descriptor) && count($descriptor) === 128) ? $descriptor : null
+        ];
+        $db['visitor_profiles'][] = $newProfile;
+        $matchedProfile = $newProfile;
+    }
+
+    // Record persistent detection event in ai_logs
+    if (!isset($db['ai_logs']) || !is_array($db['ai_logs'])) {
+        $db['ai_logs'] = [];
+    }
+    $logId = count($db['ai_logs']) > 0 ? (max(array_column($db['ai_logs'], 'id')) + 1) : 1;
+
+    $newLog = [
+        'id' => $logId,
+        'user_id' => $userId,
+        'visitor_id' => $matchedProfile['id'],
+        'label' => $matchedProfile['name'],
+        'category' => $matchedProfile['category'],
+        'confidence' => $confidence,
+        'camera_id' => $cameraId,
+        'camera_title' => $cameraTitle,
+        'direction' => $direction,
+        'snapshot' => $snapshotPath ?: ($matchedProfile['photo'] ?? ''),
+        'timestamp' => $now,
+        'date' => $today,
+        'time' => $time,
+        'details' => "[{$direction}] {$matchedProfile['name']} di {$cameraTitle} (Total kunjungan: {$matchedProfile['total_visits']}x)"
+    ];
+
+    array_unshift($db['ai_logs'], $newLog);
+    // Keep last 1000 logs for rich historical investigation
+    if (count($db['ai_logs']) > 1000) {
+        $db['ai_logs'] = array_slice($db['ai_logs'], 0, 1000);
+    }
+
+    save_db_data($db);
+
+    echo json_encode([
+        'success' => true,
+        'visitor' => $matchedProfile,
+        'log' => $newLog
+    ]);
+    exit;
+}
+
+// 8. GET VISITOR INTELLIGENCE & FREQUENCY ANALYTICS
+if ($action === 'get_visitor_analytics') {
+    $today = date('Y-m-d');
+    if (!isset($db['visitor_profiles'])) $db['visitor_profiles'] = [];
+    if (!isset($db['ai_logs'])) $db['ai_logs'] = [];
+
+    // Calculate Today's KPI metrics
+    $totalVisitsToday = 0;
+    $karyawanToday = 0;
+    $strangerToday = 0;
+    $blacklistToday = 0;
+    $todayPeopleMap = [];
+
+    // 24 Hour Traffic distribution for today
+    $hourlyTraffic = array_fill(0, 24, 0);
+
+    foreach ($db['ai_logs'] as $l) {
+        $logDate = $l['date'] ?? substr($l['timestamp'] ?? '', 0, 10);
+        if ($logDate === $today) {
+            $totalVisitsToday++;
+            $cat = strtolower($l['category'] ?? '');
+            if ($cat === 'stranger') {
+                $strangerToday++;
+            } else if ($cat === 'blacklist') {
+                $blacklistToday++;
+            } else {
+                $karyawanToday++;
+            }
+
+            $vId = $l['visitor_id'] ?? ($l['label'] ?? '');
+            if ($vId) $todayPeopleMap[$vId] = true;
+
+            $hour = (int)date('H', strtotime($l['timestamp']));
+            if ($hour >= 0 && $hour < 24) {
+                $hourlyTraffic[$hour]++;
+            }
+        }
+    }
+
+    // Sort visitor profiles by today's visits, then total visits
+    $profiles = $db['visitor_profiles'];
+    usort($profiles, function($a, $b) use ($today) {
+        $aToday = $a['daily_visits'][$today] ?? 0;
+        $bToday = $b['daily_visits'][$today] ?? 0;
+        if ($aToday !== $bToday) {
+            return $bToday <=> $aToday;
+        }
+        return ($b['total_visits'] ?? 0) <=> ($a['total_visits'] ?? 0);
+    });
+
+    // Strip bulky descriptors from analytics overview list for fast loading
+    $lightProfiles = array_map(function($p) {
+        unset($p['descriptor']);
+        return $p;
+    }, array_slice($profiles, 0, 50));
+
+    $recentLogs = array_slice($db['ai_logs'], 0, 50);
+
+    echo json_encode([
+        'success' => true,
+        'today' => $today,
+        'summary' => [
+            'total_visits_today' => $totalVisitsToday,
+            'unique_people_today' => count($todayPeopleMap),
+            'karyawan_today' => $karyawanToday,
+            'stranger_today' => $strangerToday,
+            'blacklist_today' => $blacklistToday,
+            'total_registered_profiles' => count($db['visitor_profiles'])
+        ],
+        'hourly_traffic' => $hourlyTraffic,
+        'top_visitors' => $lightProfiles,
+        'recent_logs' => $recentLogs
+    ]);
+    exit;
+}
+
+// 9. SEARCH & INVESTIGATION ENGINE
+if ($action === 'search_visitors') {
+    $keyword = strtolower(trim($_POST['keyword'] ?? $_GET['keyword'] ?? ''));
+    $catFilter = strtolower(trim($_POST['category'] ?? $_GET['category'] ?? 'all'));
+    $dateFilter = trim($_POST['date_filter'] ?? $_GET['date_filter'] ?? 'all');
+    $camFilter = (int)($_POST['camera_id'] ?? $_GET['camera_id'] ?? 0);
+
+    if (!isset($db['visitor_profiles'])) $db['visitor_profiles'] = [];
+    if (!isset($db['ai_logs'])) $db['ai_logs'] = [];
+
+    $today = date('Y-m-d');
+    $startDate = '';
+    if ($dateFilter === 'today') {
+        $startDate = $today;
+    } else if ($dateFilter === 'yesterday') {
+        $startDate = date('Y-m-d', strtotime('-1 day'));
+    } else if ($dateFilter === 'last_7_days') {
+        $startDate = date('Y-m-d', strtotime('-7 days'));
+    } else if ($dateFilter === 'last_30_days') {
+        $startDate = date('Y-m-d', strtotime('-30 days'));
+    } else if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $dateFilter)) {
+        $startDate = $dateFilter;
+    }
+
+    // Filter matching logs
+    $matchingLogs = [];
+    $matchedVisitorIds = [];
+
+    foreach ($db['ai_logs'] as $l) {
+        $logDate = $l['date'] ?? substr($l['timestamp'] ?? '', 0, 10);
+        $lCat = strtolower($l['category'] ?? '');
+        $lCam = (int)($l['camera_id'] ?? 0);
+        $lName = strtolower($l['label'] ?? '');
+        $lVisId = strtolower($l['visitor_id'] ?? '');
+
+        // Date check
+        if (!empty($startDate)) {
+            if ($dateFilter === 'yesterday' || preg_match('/^\d{4}-\d{2}-\d{2}$/', $dateFilter)) {
+                if ($logDate !== $startDate) continue;
+            } else if ($dateFilter === 'today') {
+                if ($logDate !== $today) continue;
+            } else {
+                if ($logDate < $startDate) continue;
+            }
+        }
+
+        // Category check
+        if ($catFilter !== 'all' && $lCat !== $catFilter) {
+            continue;
+        }
+
+        // Camera check
+        if ($camFilter > 0 && $lCam !== $camFilter) {
+            continue;
+        }
+
+        // Keyword check
+        if (!empty($keyword)) {
+            $matchKey = (str_contains($lName, $keyword) || str_contains($lVisId, $keyword) || str_contains(strtolower($l['camera_title'] ?? ''), $keyword));
+            if (!$matchKey) continue;
+        }
+
+        $matchingLogs[] = $l;
+        if (!empty($l['visitor_id'])) {
+            $matchedVisitorIds[$l['visitor_id']] = true;
+        }
+    }
+
+    // Filter matching visitor profiles
+    $matchingProfiles = [];
+    foreach ($db['visitor_profiles'] as $vp) {
+        $vId = $vp['id'] ?? '';
+        $vName = strtolower($vp['name'] ?? '');
+        $vCat = strtolower($vp['category'] ?? '');
+
+        $hasLogMatch = isset($matchedVisitorIds[$vId]);
+        $directKeywordMatch = empty($keyword) || str_contains($vName, $keyword) || str_contains(strtolower($vId), $keyword);
+        $catMatch = ($catFilter === 'all' || $vCat === $catFilter);
+
+        if (($hasLogMatch || $directKeywordMatch) && $catMatch) {
+            $p = $vp;
+            unset($p['descriptor']);
+            $matchingProfiles[] = $p;
+        }
+    }
+
+    echo json_encode([
+        'success' => true,
+        'count_visitors' => count($matchingProfiles),
+        'count_logs' => count($matchingLogs),
+        'visitors' => array_slice($matchingProfiles, 0, 50),
+        'logs' => array_slice($matchingLogs, 0, 100)
+    ]);
+    exit;
+}
+
+// 10. GET INDIVIDUAL VISITOR INVESTIGATION PROFILE & DOSSIER
+if ($action === 'get_visitor_detail') {
+    $visitorId = trim($_POST['visitor_id'] ?? $_GET['visitor_id'] ?? '');
+    if (empty($visitorId)) {
+        echo json_encode(['success' => false, 'message' => 'visitor_id wajib diisi.']);
+        exit;
+    }
+
+    if (!isset($db['visitor_profiles'])) $db['visitor_profiles'] = [];
+    if (!isset($db['ai_logs'])) $db['ai_logs'] = [];
+
+    $profile = null;
+    foreach ($db['visitor_profiles'] as $vp) {
+        if (($vp['id'] ?? '') === $visitorId || strtolower(trim($vp['name'] ?? '')) === strtolower($visitorId)) {
+            $profile = $vp;
+            break;
+        }
+    }
+
+    if (!$profile) {
+        echo json_encode(['success' => false, 'message' => 'Profil pengunjung tidak ditemukan.']);
+        exit;
+    }
+
+    // Gather all logs for this visitor
+    $logs = [];
+    $dailyBreakdown = [];
+
+    foreach ($db['ai_logs'] as $l) {
+        if (($l['visitor_id'] ?? '') === $profile['id'] || strtolower(trim($l['label'] ?? '')) === strtolower($profile['name'])) {
+            $logs[] = $l;
+            $d = $l['date'] ?? substr($l['timestamp'] ?? '', 0, 10);
+            if (!isset($dailyBreakdown[$d])) {
+                $dailyBreakdown[$d] = [
+                    'date' => $d,
+                    'count' => 0,
+                    'first_time' => $l['timestamp'],
+                    'last_time' => $l['timestamp'],
+                    'cameras' => []
+                ];
+            }
+            $dailyBreakdown[$d]['count']++;
+            if ($l['timestamp'] < $dailyBreakdown[$d]['first_time']) {
+                $dailyBreakdown[$d]['first_time'] = $l['timestamp'];
+            }
+            if ($l['timestamp'] > $dailyBreakdown[$d]['last_time']) {
+                $dailyBreakdown[$d]['last_time'] = $l['timestamp'];
+            }
+            if (!empty($l['camera_title']) && !in_array($l['camera_title'], $dailyBreakdown[$d]['cameras'])) {
+                $dailyBreakdown[$d]['cameras'][] = $l['camera_title'];
+            }
+        }
+    }
+
+    // Sort daily breakdown by date desc
+    krsort($dailyBreakdown);
+    unset($profile['descriptor']);
+
+    echo json_encode([
+        'success' => true,
+        'profile' => $profile,
+        'daily_breakdown' => array_values($dailyBreakdown),
+        'timeline' => array_slice($logs, 0, 100)
+    ]);
+    exit;
+}
+
+// 11. UPDATE VISITOR PROFILE (RENAME / RECLASSIFY / ADD INVESTIGATION NOTES)
+if ($action === 'update_visitor_profile') {
+    $visitorId = trim($_POST['visitor_id'] ?? '');
+    $newName = trim($_POST['name'] ?? '');
+    $newCategory = trim($_POST['category'] ?? '');
+    $notes = trim($_POST['notes'] ?? '');
+
+    if (empty($visitorId) || empty($newName)) {
+        echo json_encode(['success' => false, 'message' => 'ID Pengunjung dan Nama wajib diisi.']);
+        exit;
+    }
+
+    if (!isset($db['visitor_profiles'])) $db['visitor_profiles'] = [];
+
+    $found = false;
+    $updatedProfile = null;
+    foreach ($db['visitor_profiles'] as &$vp) {
+        if (($vp['id'] ?? '') === $visitorId) {
+            $oldName = $vp['name'];
+            $vp['name'] = $newName;
+            if (!empty($newCategory)) $vp['category'] = $newCategory;
+            if ($notes !== '') $vp['notes'] = $notes;
+            $found = true;
+            $updatedProfile = $vp;
+
+            // Also update matching entries in ai_logs
+            if (isset($db['ai_logs']) && is_array($db['ai_logs'])) {
+                foreach ($db['ai_logs'] as &$l) {
+                    if (($l['visitor_id'] ?? '') === $visitorId || ($l['label'] ?? '') === $oldName) {
+                        $l['label'] = $newName;
+                        if (!empty($newCategory)) $l['category'] = $newCategory;
+                    }
+                }
+                unset($l);
+            }
+            break;
+        }
+    }
+    unset($vp);
+
+    if ($found) {
+        save_db_data($db);
+        echo json_encode([
+            'success' => true,
+            'message' => "Profil {$newName} berhasil diperbarui!",
+            'profile' => $updatedProfile
+        ]);
+    } else {
+        echo json_encode(['success' => false, 'message' => 'Profil pengunjung tidak ditemukan.']);
+    }
+    exit;
+}
+
 echo json_encode(['success' => false, 'message' => 'Action tidak dikenali.']);
 exit;

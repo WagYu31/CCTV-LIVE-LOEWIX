@@ -1350,6 +1350,280 @@ $assetsBase = $isSubdomain ? 'https://loewixcctv.com/assets' : '../assets';
       border-color: #38bdf8;
     }
 
+    /* ==========================================================================
+       VISITOR INTELLIGENCE & FREQUENCY ANALYTICS STYLES
+       ========================================================================== */
+    .analytics-container {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      padding-bottom: 3rem;
+    }
+    .analytics-hero-card {
+      background: linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.8) 100%);
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      border-radius: 1rem;
+      padding: 1.5rem 1.75rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 0 15px rgba(56, 189, 248, 0.08);
+    }
+    .analytics-kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1rem;
+    }
+    .kpi-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: 0.85rem;
+      padding: 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      transition: all 0.25s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    .kpi-card:hover {
+      transform: translateY(-2px);
+      border-color: rgba(56, 189, 248, 0.4);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+    }
+    .kpi-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 0.75rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3rem;
+      flex-shrink: 0;
+    }
+    .kpi-val {
+      font-size: 1.65rem;
+      font-weight: 800;
+      color: #fff;
+      line-height: 1.2;
+    }
+    .kpi-label {
+      font-size: 0.78rem;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-weight: 600;
+    }
+    .kpi-sub {
+      font-size: 0.74rem;
+      color: #64748b;
+      margin-top: 2px;
+    }
+
+    /* Peak Hours Traffic Chart */
+    .traffic-chart-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: 0.85rem;
+      padding: 1.5rem;
+    }
+    .traffic-chart-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.25rem;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+    .traffic-chart-bars {
+      display: flex;
+      align-items: flex-end;
+      gap: 6px;
+      height: 140px;
+      padding-top: 25px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .traffic-bar-col {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      height: 100%;
+      justify-content: flex-end;
+      position: relative;
+      cursor: pointer;
+    }
+    .traffic-bar {
+      width: 100%;
+      max-width: 24px;
+      background: linear-gradient(180deg, #38bdf8 0%, #0284c7 100%);
+      border-radius: 4px 4px 0 0;
+      min-height: 4px;
+      transition: height 0.6s cubic-bezier(0.4, 0, 0.2, 1), filter 0.2s;
+    }
+    .traffic-bar-col:hover .traffic-bar {
+      filter: brightness(1.3);
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.6);
+    }
+    .traffic-bar.peak {
+      background: linear-gradient(180deg, #f59e0b 0%, #d97706 100%);
+      box-shadow: 0 0 10px rgba(245, 158, 11, 0.5);
+    }
+    .traffic-bar-label {
+      font-size: 0.68rem;
+      color: #64748b;
+      margin-top: 6px;
+      white-space: nowrap;
+    }
+    .traffic-bar-tooltip {
+      position: absolute;
+      top: -22px;
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: #38bdf8;
+      opacity: 0;
+      transition: opacity 0.2s;
+      pointer-events: none;
+      background: rgba(15, 23, 42, 0.9);
+      padding: 2px 6px;
+      border-radius: 4px;
+      border: 1px solid rgba(56, 189, 248, 0.4);
+    }
+    .traffic-bar-col:hover .traffic-bar-tooltip {
+      opacity: 1;
+    }
+
+    /* Search & Filter Toolbar */
+    .investigation-toolbar {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: 0.85rem;
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    .toolbar-title-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+    .toolbar-inputs-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr auto;
+      gap: 0.75rem;
+      align-items: center;
+    }
+    @media (max-width: 992px) {
+      .toolbar-inputs-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+    @media (max-width: 600px) {
+      .toolbar-inputs-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Visitor Cards Grid */
+    .visitor-cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 1rem;
+    }
+    .visitor-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: 0.85rem;
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.85rem;
+      transition: all 0.2s ease;
+      position: relative;
+    }
+    .visitor-card:hover {
+      border-color: rgba(56, 189, 248, 0.4);
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.35);
+    }
+    .visitor-card-top {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+    }
+    .visitor-avatar {
+      width: 56px;
+      height: 56px;
+      border-radius: 0.75rem;
+      object-fit: cover;
+      background: var(--bg-surface-elevated);
+      border: 2px solid rgba(255, 255, 255, 0.1);
+      flex-shrink: 0;
+    }
+    .visitor-info {
+      flex: 1;
+      min-width: 0;
+    }
+    .visitor-name {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #fff;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .visitor-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 8px;
+      border-radius: 9999px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      margin-top: 3px;
+    }
+    .badge-karyawan { background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); }
+    .badge-vip { background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); }
+    .badge-stranger { background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3); }
+    .badge-blacklist { background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); }
+
+    .visitor-meta-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.76rem;
+      color: #94a3b8;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+      padding-top: 0.65rem;
+    }
+    .visitor-actions {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 0.25rem;
+    }
+
+    /* Timeline and Dossier */
+    .dossier-timeline-item {
+      display: flex;
+      gap: 1rem;
+      padding: 0.75rem 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      align-items: center;
+    }
+    .dossier-snap-thumb {
+      width: 48px;
+      height: 48px;
+      border-radius: 6px;
+      object-fit: cover;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      flex-shrink: 0;
+    }
+
     /* Footer */
     .app-footer {
       border-top: 1px solid var(--border-color);
@@ -1384,6 +1658,9 @@ $assetsBase = $isSubdomain ? 'https://loewixcctv.com/assets' : '../assets';
       </button>
       <button type="button" class="nav-tab-btn" id="tab-btn-ai" onclick="switchMainTab('ai')">
         <i class="fas fa-brain text-info"></i> AI Face Recognition
+      </button>
+      <button type="button" class="nav-tab-btn" id="tab-btn-analytics" onclick="switchMainTab('analytics')">
+        <i class="fas fa-chart-line text-info"></i> Data & Analitik Kunjungan
       </button>
     </div>
     <?php endif; ?>
@@ -1827,8 +2104,304 @@ $assetsBase = $isSubdomain ? 'https://loewixcctv.com/assets' : '../assets';
       </div>
     </div> <!-- /#view-ai-pane -->
 
+    <!-- ==================== VIEW 3: DATA & ANALITIK KUNJUNGAN ==================== -->
+    <div id="view-analytics-pane" style="display: none;">
+      <div class="analytics-container">
+        
+        <!-- Hero Header -->
+        <div class="analytics-hero-card">
+          <div>
+            <h2 style="font-size: 1.35rem; font-weight: 800; color: #fff; margin: 0 0 0.35rem 0; display: flex; align-items: center; gap: 0.6rem;">
+              <i class="fas fa-chart-line text-info"></i> Loewix Daily Visitor Intelligence & Analytics
+            </h2>
+            <p style="font-size: 0.84rem; color: #94a3b8; margin: 0;">
+              Pelacakan Kunjungan Harian (Karyawan & Stranger), Frekuensi Kehadiran, dan Rekam Jejak Investigasi Presisi Waktu Detik.
+            </p>
+          </div>
+          <div style="display: flex; gap: 0.6rem; align-items: center;">
+            <button class="btn btn-outline btn-sm" onclick="loadVisitorAnalytics()" title="Segarkan Data Terkini">
+              <i class="fas fa-sync-alt mr-1"></i> Segarkan Data
+            </button>
+            <button class="btn btn-primary btn-sm" onclick="window.print()" title="Cetak Laporan Investigasi">
+              <i class="fas fa-print mr-1"></i> Cetak Laporan
+            </button>
+          </div>
+        </div>
+
+        <!-- KPI Stat Cards -->
+        <div class="analytics-kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-icon" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8;">
+              <i class="fas fa-users"></i>
+            </div>
+            <div>
+              <div class="kpi-val" id="analytics-stat-total">0</div>
+              <div class="kpi-label">Total Kunjungan Hari Ini</div>
+              <div class="kpi-sub" id="analytics-sub-unique">0 orang terdeteksi</div>
+            </div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-icon" style="background: rgba(16, 185, 129, 0.15); color: #10b981;">
+              <i class="fas fa-id-badge"></i>
+            </div>
+            <div>
+              <div class="kpi-val" id="analytics-stat-karyawan">0</div>
+              <div class="kpi-label">Karyawan / Personil</div>
+              <div class="kpi-sub">Terverifikasi Biometrik</div>
+            </div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-icon" style="background: rgba(245, 158, 11, 0.15); color: #f59e0b;">
+              <i class="fas fa-user-secret"></i>
+            </div>
+            <div>
+              <div class="kpi-val" id="analytics-stat-stranger">0</div>
+              <div class="kpi-label">Stranger / Tamu Baru</div>
+              <div class="kpi-sub">Wajah Tak Dikenal Terpantau</div>
+            </div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-icon" style="background: rgba(239, 68, 68, 0.15); color: #ef4444;">
+              <i class="fas fa-shield-alt"></i>
+            </div>
+            <div>
+              <div class="kpi-val" id="analytics-stat-blacklist">0</div>
+              <div class="kpi-label">Waspada / Alert</div>
+              <div class="kpi-sub">Notifikasi Keamanan</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Peak Hours Traffic Distribution Chart -->
+        <div class="traffic-chart-card">
+          <div class="traffic-chart-header">
+            <div>
+              <h3 style="font-size: 1rem; font-weight: 700; color: #fff; margin: 0 0 0.25rem 0;">
+                <i class="fas fa-chart-bar text-info mr-1"></i> Tren Jam Ramai Kunjungan Hari Ini (Peak Traffic Hours)
+              </h3>
+              <p style="font-size: 0.78rem; color: #94a3b8; margin: 0;">
+                Distribusi frekuensi orang lewat dan berkunjung per jam (00:00 - 23:00 WIB).
+              </p>
+            </div>
+            <div id="analytics-peak-hour-badge" style="background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); padding: 4px 10px; border-radius: 9999px; font-size: 0.74rem; font-weight: 700;">
+              <i class="fas fa-fire mr-1"></i> Jam Paling Ramai: Menghitung...
+            </div>
+          </div>
+          
+          <div class="traffic-chart-bars" id="analytics-traffic-bars-container">
+            <!-- Injected via JavaScript (24 Hour Bars) -->
+          </div>
+        </div>
+
+        <!-- Search & Incident Investigation Filter Toolbar -->
+        <div class="investigation-toolbar">
+          <div class="toolbar-title-row">
+            <div>
+              <h3 style="font-size: 1rem; font-weight: 700; color: #fff; margin: 0 0 0.25rem 0;">
+                <i class="fas fa-search-location text-info mr-1"></i> Pusat Investigasi & Pencarian Rekam Jejak Pelintas
+              </h3>
+              <p style="font-size: 0.78rem; color: #94a3b8; margin: 0;">
+                Cari data orang berdasarkan nama, ID Stranger, tanggal, jam, atau kamera saat ada masalah/insiden.
+              </p>
+            </div>
+            <button class="btn btn-outline btn-sm" onclick="resetVisitorFilters()" style="font-size: 0.78rem;">
+              <i class="fas fa-undo mr-1"></i> Reset Filter
+            </button>
+          </div>
+
+          <div class="toolbar-inputs-grid">
+            <div>
+              <input type="text" id="investigation-keyword-input" class="form-control" placeholder="Cari Nama Orang, ID Stranger (STR-...), atau Catatan..." onkeydown="if(event.key==='Enter') executeVisitorSearch()">
+            </div>
+            <div>
+              <select id="investigation-category-select" class="form-control" onchange="executeVisitorSearch()">
+                <option value="all">Semua Kategori</option>
+                <option value="employee">Karyawan / Staff</option>
+                <option value="vip">VIP / Direksi</option>
+                <option value="stranger">Stranger (Orang Tak Dikenal)</option>
+                <option value="blacklist">Blacklist / Waspada</option>
+              </select>
+            </div>
+            <div>
+              <select id="investigation-date-select" class="form-control" onchange="executeVisitorSearch()">
+                <option value="all">Semua Riwayat Waktu</option>
+                <option value="today" selected>Hari Ini</option>
+                <option value="yesterday">Kemarin</option>
+                <option value="last_7_days">7 Hari Terakhir</option>
+                <option value="last_30_days">30 Hari Terakhir</option>
+              </select>
+            </div>
+            <div>
+              <select id="investigation-camera-select" class="form-control" onchange="executeVisitorSearch()">
+                <option value="0">Semua Kamera CCTV</option>
+                <!-- Injected via JavaScript -->
+              </select>
+            </div>
+            <div>
+              <button class="btn btn-primary" onclick="executeVisitorSearch()" style="width: 100%; white-space: nowrap;">
+                <i class="fas fa-search mr-1"></i> Cari Data
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section: Daftar Orang & Frekuensi Kunjungan -->
+        <div>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.85rem;">
+            <h3 style="font-size: 1rem; font-weight: 700; color: #fff; margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+              <i class="fas fa-user-clock text-info"></i> Daftar Pelintas & Frekuensi Kunjungan
+              <span id="visitor-result-count" style="font-size: 0.74rem; background: rgba(56, 189, 248, 0.15); color: #38bdf8; padding: 2px 8px; border-radius: 9999px;">0 Orang</span>
+            </h3>
+            <span style="font-size: 0.76rem; color: #64748b;">Diurutkan berdasarkan yang paling sering berkunjung</span>
+          </div>
+
+          <div class="visitor-cards-grid" id="analytics-visitors-grid">
+            <!-- Injected via JavaScript -->
+          </div>
+        </div>
+
+        <!-- Section: Linimasa Bukti Kejadian Terkini -->
+        <div style="background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: 0.85rem; padding: 1.25rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <h3 style="font-size: 1rem; font-weight: 700; color: #fff; margin: 0;">
+              <i class="fas fa-history text-info mr-1"></i> Linimasa Rekam Jejak CCTV Terkini (Evidence Log)
+            </h3>
+            <span style="font-size: 0.76rem; color: #64748b;">Tersimpan permanen dengan tanggal & jam detik</span>
+          </div>
+          <div id="analytics-timeline-feed" style="max-height: 380px; overflow-y: auto;">
+            <!-- Injected via JavaScript -->
+          </div>
+        </div>
+
+      </div>
+    </div> <!-- /#view-analytics-pane -->
+
   </main>
   <?php endif; ?>
+
+  <!-- ==================== MODAL REKAM JEJAK & INVESTIGASI DOSSIER ==================== -->
+  <div class="modal-backdrop" id="modalVisitorDossier">
+    <div class="modal-dialog" style="max-width: 720px;">
+      <div class="modal-header">
+        <div class="modal-title">
+          <i class="fas fa-fingerprint text-info"></i> Rekam Jejak Investigasi Pelintas
+        </div>
+        <button type="button" class="modal-close" onclick="closeModal('modalVisitorDossier')">&times;</button>
+      </div>
+
+      <div class="modal-body" style="max-height: 80vh; overflow-y: auto;">
+        <!-- Profil Header -->
+        <div style="display: flex; gap: 1.25rem; align-items: center; background: rgba(15, 23, 42, 0.6); padding: 1.25rem; border-radius: 0.75rem; border: 1px solid rgba(255, 255, 255, 0.08); margin-bottom: 1.25rem;">
+          <img id="dossier-photo" src="" alt="Foto Snapshot" style="width: 80px; height: 80px; border-radius: 0.75rem; object-fit: cover; border: 2px solid rgba(56, 189, 248, 0.5); background: #0f172a;">
+          <div style="flex: 1;">
+            <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+              <h3 id="dossier-name" style="font-size: 1.2rem; font-weight: 800; color: #fff; margin: 0;">-</h3>
+              <span id="dossier-badge" class="visitor-badge badge-stranger">STRANGER</span>
+            </div>
+            <div id="dossier-id" style="font-size: 0.76rem; color: #38bdf8; font-family: monospace; margin: 3px 0;">ID: -</div>
+            <div id="dossier-notes" style="font-size: 0.8rem; color: #94a3b8; font-style: italic;">-</div>
+          </div>
+        </div>
+
+        <!-- Ringkasan Statistik Kunjungan -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.75rem; margin-bottom: 1.25rem;">
+          <div style="background: var(--bg-surface); padding: 0.85rem; border-radius: 0.65rem; border: 1px solid var(--border-color); text-align: center;">
+            <div style="font-size: 0.74rem; color: #94a3b8;">Total Kunjungan</div>
+            <div id="dossier-total-visits" style="font-size: 1.3rem; font-weight: 800; color: #38bdf8;">0x</div>
+          </div>
+          <div style="background: var(--bg-surface); padding: 0.85rem; border-radius: 0.65rem; border: 1px solid var(--border-color); text-align: center;">
+            <div style="font-size: 0.74rem; color: #94a3b8;">Pertama Terlihat</div>
+            <div id="dossier-first-seen" style="font-size: 0.8rem; font-weight: 700; color: #fff;">-</div>
+          </div>
+          <div style="background: var(--bg-surface); padding: 0.85rem; border-radius: 0.65rem; border: 1px solid var(--border-color); text-align: center;">
+            <div style="font-size: 0.74rem; color: #94a3b8;">Terakhir Terlihat</div>
+            <div id="dossier-last-seen" style="font-size: 0.8rem; font-weight: 700; color: #10b981;">-</div>
+          </div>
+        </div>
+
+        <!-- Rincian Kalender Kunjungan Harian -->
+        <div style="margin-bottom: 1.25rem;">
+          <h4 style="font-size: 0.9rem; font-weight: 700; color: #fff; margin: 0 0 0.65rem 0;">
+            <i class="fas fa-calendar-alt text-info mr-1"></i> Rincian Kunjungan Per Tanggal (Daily Breakdown)
+          </h4>
+          <div id="dossier-daily-breakdown" style="border: 1px solid var(--border-color); border-radius: 0.65rem; overflow: hidden;">
+            <!-- Injected via JavaScript -->
+          </div>
+        </div>
+
+        <!-- Linimasa Bukti Snapshot & Detik Kejadian -->
+        <div>
+          <h4 style="font-size: 0.9rem; font-weight: 700; color: #fff; margin: 0 0 0.65rem 0;">
+            <i class="fas fa-camera text-info mr-1"></i> Linimasa Bukti Snapshot & Kamera (Investigation Evidence)
+          </h4>
+          <div id="dossier-timeline-list" style="border: 1px solid var(--border-color); border-radius: 0.65rem; padding: 0.5rem 1rem; max-height: 280px; overflow-y: auto;">
+            <!-- Injected via JavaScript -->
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer" style="display: flex; justify-content: space-between;">
+        <button type="button" class="btn btn-outline btn-sm" id="btn-dossier-rename" onclick="openRenameFromDossier()">
+          <i class="fas fa-edit mr-1"></i> Beri Nama / Ubah Status
+        </button>
+        <button type="button" class="btn btn-secondary btn-sm" onclick="closeModal('modalVisitorDossier')">Tutup</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL BERI NAMA / UBAH STATUS STRANGER ==================== -->
+  <div class="modal-backdrop" id="modalRenameVisitor">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <div class="modal-title">
+          <i class="fas fa-user-tag text-info"></i> Beri Nama / Tandai Status Orang
+        </div>
+        <button type="button" class="modal-close" onclick="closeModal('modalRenameVisitor')">&times;</button>
+      </div>
+
+      <form id="form-rename-visitor" onsubmit="handleSaveVisitorProfile(event)">
+        <div class="modal-body">
+          <input type="hidden" id="rename-visitor-id" value="">
+
+          <div class="form-group">
+            <label><i class="fas fa-id-card text-info"></i> ID Pelintas:</label>
+            <input type="text" id="rename-visitor-code" class="form-control" readonly style="opacity: 0.7; font-family: monospace;">
+          </div>
+
+          <div class="form-group">
+            <label><i class="fas fa-user text-info"></i> Nama Orang / Keterangan:</label>
+            <input type="text" id="rename-visitor-name" class="form-control" placeholder="Contoh: Budi - Kurir J&T / Tamu Lantai 1" required>
+          </div>
+
+          <div class="form-group">
+            <label><i class="fas fa-tag text-info"></i> Kategori / Status Keamanan:</label>
+            <select id="rename-visitor-category" class="form-control">
+              <option value="guest">Tamu Resmi (Guest)</option>
+              <option value="employee">Karyawan / Staff (Employee)</option>
+              <option value="vip">VIP / Tamu Khusus (VIP)</option>
+              <option value="stranger">Stranger (Orang Tak Dikenal)</option>
+              <option value="blacklist">Blacklist / Waspada (Keamanan)</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label><i class="fas fa-sticky-note text-info"></i> Catatan Investigasi:</label>
+            <textarea id="rename-visitor-notes" class="form-control" rows="3" placeholder="Contoh: Sering datang di area parkir jam 14:00. Diberi izin oleh Security."></textarea>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary btn-sm" onclick="closeModal('modalRenameVisitor')">Batal</button>
+          <button type="submit" class="btn btn-primary btn-sm">
+            <i class="fas fa-save mr-1"></i> Simpan Perubahan
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
 
   <!-- ==================== MODAL TAMBAH / EDIT KAMERA CCTV ==================== -->
   <div class="modal-backdrop" id="modalCameraForm">
@@ -2836,34 +3409,55 @@ $assetsBase = $isSubdomain ? 'https://loewixcctv.com/assets' : '../assets';
     }
 
     // =========================================================================
-    // MAIN APP NAVIGATION TABS (MANAJEMEN CCTV & AI FACE RECOGNITION)
+    // MAIN APP NAVIGATION TABS (MANAJEMEN CCTV, AI FACE & ANALYTICS)
     // =========================================================================
     function switchMainTab(tab) {
       const cctvPane = document.getElementById('view-cctv-pane');
       const aiPane = document.getElementById('view-ai-pane');
+      const analyticsPane = document.getElementById('view-analytics-pane');
       const cctvBtn = document.getElementById('tab-btn-cctv');
       const aiBtn = document.getElementById('tab-btn-ai');
+      const analyticsBtn = document.getElementById('tab-btn-analytics');
+      const aiPlayer = document.getElementById('ai-video-player');
 
       if (tab === 'ai') {
         if (cctvPane) cctvPane.style.display = 'none';
+        if (analyticsPane) analyticsPane.style.display = 'none';
         if (aiPane) aiPane.style.display = 'block';
         if (cctvBtn) cctvBtn.classList.remove('active');
+        if (analyticsBtn) analyticsBtn.classList.remove('active');
         if (aiBtn) aiBtn.classList.add('active');
         initAIFaceSuite();
         if (typeof updateAICameraLists === 'function') {
           updateAICameraLists();
         }
+      } else if (tab === 'analytics') {
+        if (cctvPane) cctvPane.style.display = 'none';
+        if (aiPane) aiPane.style.display = 'none';
+        if (analyticsPane) analyticsPane.style.display = 'block';
+        if (cctvBtn) cctvBtn.classList.remove('active');
+        if (aiBtn) aiBtn.classList.remove('active');
+        if (analyticsBtn) analyticsBtn.classList.add('active');
+        if (aiPlayer && !aiPlayer.paused) {
+          aiPlayer.pause();
+        }
+        if (typeof loadVisitorAnalytics === 'function') {
+          loadVisitorAnalytics();
+        }
       } else {
         if (aiPane) aiPane.style.display = 'none';
+        if (analyticsPane) analyticsPane.style.display = 'none';
         if (cctvPane) cctvPane.style.display = 'block';
         if (aiBtn) aiBtn.classList.remove('active');
+        if (analyticsBtn) analyticsBtn.classList.remove('active');
         if (cctvBtn) cctvBtn.classList.add('active');
         // Pause AI stream if user switches back to CCTV
-        if (aiLiveVideo && !aiLiveVideo.paused) {
-          aiLiveVideo.pause();
+        if (aiPlayer && !aiPlayer.paused) {
+          aiPlayer.pause();
         }
       }
     }
+
 
     // Direct AI scanner trigger from CCTV Management card
     function startAICameraScan(camId) {
@@ -4612,7 +5206,17 @@ $assetsBase = $isSubdomain ? 'https://loewixcctv.com/assets' : '../assets';
 
               const dirLabel = crossedDirection === 'in' ? '🟢 MASUK' : '🔴 KELUAR';
               const personName = ent.name || ent.label || 'Orang';
-              appendRealtimeAILog(`[GARIS HITUNG] ${personName} melintas (${dirLabel}) • Total: ${countingLineConfig.countTotal}`, crossedDirection === 'in' ? 'employee' : 'guest', 98.0);
+              const entCat = ent.category || (crossedDirection === 'in' ? 'employee' : 'guest');
+              appendRealtimeAILog(`[GARIS HITUNG] ${personName} melintas (${dirLabel}) • Total: ${countingLineConfig.countTotal}`, entCat, 98.0);
+              sendVisitorLog({
+                label: personName,
+                category: entCat,
+                camera_id: currentAICamera ? currentAICamera.id : 5001,
+                camera_title: currentAICamera ? currentAICamera.title : 'Kamera CCTV',
+                direction: crossedDirection === 'in' ? 'masuk' : 'keluar',
+                confidence: 98.0,
+                person_id: ent.personId || ''
+              });
             }
           }
         }
@@ -5614,7 +6218,35 @@ $assetsBase = $isSubdomain ? 'https://loewixcctv.com/assets' : '../assets';
                   if (now - lastLog > 12000) {
                     lastLoggedPersonTime[match.label] = now;
                     appendRealtimeAILog(ent.label, cat, parseFloat(ent.confidence));
+                    sendVisitorLog({
+                      label: matchedFace.name,
+                      category: cat,
+                      camera_id: currentAICamera ? currentAICamera.id : 5001,
+                      camera_title: currentAICamera ? currentAICamera.title : 'Kamera CCTV',
+                      direction: 'melintas',
+                      confidence: parseFloat(ent.confidence),
+                      person_id: matchedFace.id || '',
+                      snapshot: _cctvFaceCanvas.toDataURL('image/jpeg', 0.8),
+                      descriptor: detection.descriptor ? Array.from(detection.descriptor) : null
+                    });
                   }
+                }
+              } else if (detection.descriptor) {
+                // Stranger tracking via 128D Face Embedding
+                const strangerBucket = 'str_cctv_' + Math.round(detection.descriptor[0] * 50);
+                const lastStrangerLog = lastLoggedPersonTime[strangerBucket] || 0;
+                if (now - lastStrangerLog > 20000) {
+                  lastLoggedPersonTime[strangerBucket] = now;
+                  sendVisitorLog({
+                    label: 'Stranger',
+                    category: 'stranger',
+                    camera_id: currentAICamera ? currentAICamera.id : 5001,
+                    camera_title: currentAICamera ? currentAICamera.title : 'Kamera CCTV',
+                    direction: 'melintas',
+                    confidence: 85.0,
+                    snapshot: _cctvFaceCanvas.toDataURL('image/jpeg', 0.8),
+                    descriptor: Array.from(detection.descriptor)
+                  });
                 }
               }
             }
@@ -6273,6 +6905,34 @@ $assetsBase = $isSubdomain ? 'https://loewixcctv.com/assets' : '../assets';
                         if (now - lastLog > 8000) {
                           lastLoggedPersonTime[match.label] = now;
                           appendRealtimeAILog(matchedFace ? matchedFace.name : match.label, category, confidence);
+                          sendVisitorLog({
+                            label: matchedFace ? matchedFace.name : match.label,
+                            category: category,
+                            camera_id: currentAICamera ? currentAICamera.id : 'webcam',
+                            camera_title: currentAICamera ? currentAICamera.title : 'Live Webcam Laptop',
+                            direction: 'melintas',
+                            confidence: confidence,
+                            person_id: matchedFace ? (matchedFace.id || '') : '',
+                            snapshot: getWebcamFaceCrop(det.detection.box),
+                            descriptor: det.descriptor ? Array.from(det.descriptor) : null
+                          });
+                        }
+                      } else if (det.descriptor) {
+                        const now = Date.now();
+                        const strangerKey = 'webcam_str_' + (Math.round(det.descriptor[0] * 50) + 50);
+                        const lastStrangerLog = lastLoggedPersonTime[strangerKey] || 0;
+                        if (now - lastStrangerLog > 18000) {
+                          lastLoggedPersonTime[strangerKey] = now;
+                          sendVisitorLog({
+                            label: 'Stranger',
+                            category: 'stranger',
+                            camera_id: currentAICamera ? currentAICamera.id : 'webcam',
+                            camera_title: currentAICamera ? currentAICamera.title : 'Live Webcam Laptop',
+                            direction: 'melintas',
+                            confidence: 80.0,
+                            snapshot: getWebcamFaceCrop(det.detection.box),
+                            descriptor: Array.from(det.descriptor)
+                          });
                         }
                       }
                     }
@@ -6531,12 +7191,617 @@ $assetsBase = $isSubdomain ? 'https://loewixcctv.com/assets' : '../assets';
       }
     }
 
+    // =========================================================================
+    // LOEWIX DAILY VISITOR INTELLIGENCE & INCIDENT INVESTIGATION ANALYTICS SUITE
+    // =========================================================================
+    let cachedAnalyticsData = null;
+    let currentDossierProfile = null;
+    const lastServerVisitorLogTime = {};
+    let _analyticsRefreshTimer = null;
+
+    function getWebcamFaceCrop(box) {
+      try {
+        const video = document.getElementById('ai-video-player');
+        if (!video || !video.videoWidth || !video.videoHeight || !box) return '';
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = 160;
+        tempCanvas.height = 160;
+        const ctx = tempCanvas.getContext('2d');
+        const overlay = document.getElementById('ai-video-overlay');
+        const scaleX = video.videoWidth / (overlay && overlay.width ? overlay.width : video.videoWidth);
+        const scaleY = video.videoHeight / (overlay && overlay.height ? overlay.height : video.videoHeight);
+        const sx = Math.max(0, box.x * scaleX);
+        const sy = Math.max(0, box.y * scaleY);
+        const sw = Math.min(video.videoWidth - sx, box.width * scaleX);
+        const sh = Math.min(video.videoHeight - sy, box.height * scaleY);
+        ctx.drawImage(video, sx, sy, sw, sh, 0, 0, 160, 160);
+        return tempCanvas.toDataURL('image/jpeg', 0.8);
+      } catch (e) {
+        return '';
+      }
+    }
+
+    async function sendVisitorLog(data) {
+      try {
+        const key = (data.person_id || data.label || 'stranger') + '_' + (data.camera_id || 'cam');
+        const now = Date.now();
+        if (lastServerVisitorLogTime[key] && (now - lastServerVisitorLogTime[key] < 15000)) {
+          return; // debounce 15s per person/camera
+        }
+        lastServerVisitorLogTime[key] = now;
+
+        const fd = new FormData();
+        fd.append('label', data.label || 'Stranger');
+        fd.append('category', data.category || 'stranger');
+        fd.append('camera_id', data.camera_id || 5001);
+        fd.append('camera_title', data.camera_title || 'Kamera CCTV');
+        fd.append('direction', data.direction || 'melintas');
+        fd.append('confidence', data.confidence || 95.0);
+        if (data.person_id) fd.append('person_id', data.person_id);
+        if (data.snapshot) fd.append('snapshot', data.snapshot);
+        if (data.descriptor && Array.isArray(data.descriptor)) {
+          fd.append('descriptor', JSON.stringify(data.descriptor));
+        }
+
+        const res = await fetch('api.php?action=log_visitor_event', {
+          method: 'POST',
+          body: fd
+        });
+        const result = await res.json();
+        if (result && result.success) {
+          scheduleAnalyticsRefresh();
+        }
+      } catch (err) {
+        console.warn('sendVisitorLog error:', err);
+      }
+    }
+
+    function scheduleAnalyticsRefresh() {
+      if (_analyticsRefreshTimer) return;
+      _analyticsRefreshTimer = setTimeout(() => {
+        _analyticsRefreshTimer = null;
+        const pane = document.getElementById('view-analytics-pane');
+        if (pane && pane.style.display !== 'none') {
+          loadVisitorAnalytics(true);
+        }
+      }, 5000);
+    }
+
+    async function loadVisitorAnalytics(isSilent = false) {
+      try {
+        const grid = document.getElementById('analytics-visitors-grid');
+        const feed = document.getElementById('analytics-timeline-feed');
+        if (!isSilent) {
+          if (grid) grid.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 2.5rem; color: #94a3b8;"><i class="fas fa-spinner fa-spin mr-2"></i> Memuat data analitik kunjungan terkini...</div>';
+          if (feed) feed.innerHTML = '<div style="text-align: center; padding: 1.5rem; color: #94a3b8;"><i class="fas fa-spinner fa-spin mr-2"></i> Memuat linimasa rekaman kejadian...</div>';
+        }
+
+        // Populate camera filter dropdown
+        const camSelect = document.getElementById('investigation-camera-select');
+        if (camSelect && camSelect.options.length <= 1 && Array.isArray(localCameras) && localCameras.length > 0) {
+          const cur = camSelect.value;
+          camSelect.innerHTML = '<option value="0">Semua Kamera CCTV</option>' +
+            localCameras.map((c, i) => `<option value="${c.id}">[CH ${i + 1}] ${escapeHtml(c.title || ('Kamera ' + c.id))}</option>`).join('');
+          camSelect.value = cur || '0';
+        }
+
+        const res = await fetch('api.php?action=get_visitor_analytics&_t=' + Date.now());
+        const data = await res.json();
+        if (!data || !data.success) {
+          if (!isSilent && grid) grid.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 2rem; color: #ef4444;">Gagal memuat analitik. Periksa koneksi API.</div>';
+          return;
+        }
+
+        cachedAnalyticsData = data;
+
+        // KPI Counts
+        const s = data.summary || {};
+        const elTot = document.getElementById('analytics-stat-total');
+        if (elTot) elTot.textContent = s.total_visits_today ?? 0;
+        const elUniq = document.getElementById('analytics-sub-unique');
+        if (elUniq) elUniq.textContent = `${s.unique_people_today ?? 0} orang terdeteksi`;
+        const elKaryawan = document.getElementById('analytics-stat-karyawan');
+        if (elKaryawan) elKaryawan.textContent = s.karyawan_today ?? 0;
+        const elStranger = document.getElementById('analytics-stat-stranger');
+        if (elStranger) elStranger.textContent = s.stranger_today ?? 0;
+        const elBlacklist = document.getElementById('analytics-stat-blacklist');
+        if (elBlacklist) elBlacklist.textContent = s.blacklist_today ?? 0;
+
+        // Peak Traffic Bars
+        renderHourlyTrafficBars(data.hourly_traffic || []);
+
+        // Visitor Cards
+        renderVisitorCards(data.top_visitors || [], data.today);
+
+        // Timeline Feed
+        renderAnalyticsTimeline(data.recent_logs || []);
+
+      } catch (e) {
+        console.error('loadVisitorAnalytics error:', e);
+      }
+    }
+
+    function renderHourlyTrafficBars(hourly) {
+      const container = document.getElementById('analytics-traffic-bars-container');
+      const peakBadge = document.getElementById('analytics-peak-hour-badge');
+      if (!container) return;
+
+      const maxVal = Math.max(...hourly, 1);
+      let peakHr = 0;
+      let peakVal = 0;
+      hourly.forEach((val, hr) => {
+        if (val > peakVal) {
+          peakVal = val;
+          peakHr = hr;
+        }
+      });
+
+      if (peakBadge) {
+        if (peakVal > 0) {
+          const nextH = (peakHr + 1) % 24;
+          const h1 = String(peakHr).padStart(2, '0') + ':00';
+          const h2 = String(nextH).padStart(2, '0') + ':00';
+          peakBadge.innerHTML = `<i class="fas fa-fire mr-1"></i> Jam Paling Ramai: <strong>${h1} - ${h2} WIB</strong> (${peakVal} Kunjungan)`;
+        } else {
+          peakBadge.innerHTML = `<i class="fas fa-clock mr-1"></i> Belum ada rekaman jam ramai hari ini`;
+        }
+      }
+
+      const curHr = new Date().getHours();
+      container.innerHTML = hourly.map((val, hr) => {
+        const pct = Math.max(val > 0 ? (val / maxVal) * 100 : 4, 4);
+        const isPeak = (val === peakVal && val > 0);
+        const isCurrent = (hr === curHr);
+        const barColor = isPeak ? '#f59e0b' : (isCurrent ? '#38bdf8' : 'rgba(56, 189, 248, 0.4)');
+        const hrLabel = String(hr).padStart(2, '0');
+        return `
+          <div class="traffic-bar-col" title="Pukul ${hrLabel}:00 - ${hrLabel}:59 WIB: ${val} Kunjungan">
+            <div class="traffic-bar-value">${val > 0 ? val : ''}</div>
+            <div class="traffic-bar-track">
+              <div class="traffic-bar-fill" style="height: ${pct}%; background: ${barColor};"></div>
+            </div>
+            <div class="traffic-bar-label ${isCurrent ? 'active' : ''}">${hrLabel}</div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderVisitorCards(visitors, todayStr) {
+      const grid = document.getElementById('analytics-visitors-grid');
+      const countEl = document.getElementById('visitor-result-count');
+      if (!grid) return;
+
+      if (!todayStr) {
+        const d = new Date();
+        todayStr = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+      }
+
+      if (countEl) countEl.textContent = `${visitors.length} Orang`;
+
+      if (!visitors || visitors.length === 0) {
+        grid.innerHTML = `
+          <div style="grid-column: 1 / -1; text-align: center; padding: 3rem 1.5rem; background: rgba(15, 23, 42, 0.4); border: 1px dashed var(--border-color); border-radius: 0.85rem; color: #64748b;">
+            <i class="fas fa-users-slash" style="font-size: 2.5rem; margin-bottom: 0.75rem; opacity: 0.5;"></i>
+            <div style="font-size: 0.95rem; font-weight: 700; color: #94a3b8;">Belum Ada Data Pelintas yang Sesuai</div>
+            <div style="font-size: 0.8rem; margin-top: 0.35rem;">Orang (karyawan / stranger) yang terpantau di kamera CCTV akan otomatis terakumulasi di sini.</div>
+          </div>
+        `;
+        return;
+      }
+
+      grid.innerHTML = visitors.map(v => {
+        const todayVisits = (v.daily_visits && v.daily_visits[todayStr]) ? v.daily_visits[todayStr] : 0;
+        const totalVisits = v.total_visits || 1;
+        const cat = (v.category || 'stranger').toLowerCase();
+
+        let badgeHtml = '';
+        if (cat === 'employee') {
+          badgeHtml = '<span class="badge-cat badge-employee"><i class="fas fa-id-badge mr-1"></i> Karyawan</span>';
+        } else if (cat === 'stranger') {
+          badgeHtml = '<span class="badge-cat badge-stranger"><i class="fas fa-user-secret mr-1"></i> Stranger</span>';
+        } else if (cat === 'vip') {
+          badgeHtml = '<span class="badge-cat badge-vip"><i class="fas fa-star mr-1"></i> VIP</span>';
+        } else if (cat === 'blacklist') {
+          badgeHtml = '<span class="badge-cat badge-blacklist"><i class="fas fa-shield-alt mr-1"></i> Waspada</span>';
+        } else {
+          badgeHtml = '<span class="badge-cat badge-guest"><i class="fas fa-user mr-1"></i> Tamu</span>';
+        }
+
+        let avatarHtml = '';
+        if (v.photo && v.photo.trim() !== '') {
+          const photoSrc = v.photo.startsWith('assets/') ? ('../' + v.photo) : (v.photo.startsWith('http') || v.photo.startsWith('data:') ? v.photo : ('../' + v.photo));
+          avatarHtml = `<img src="${escapeHtml(photoSrc)}" alt="${escapeHtml(v.name)}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.outerHTML='<div style=\\'width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:#1e293b;color:#94a3b8;\\'><i class=\\'fas fa-user\\'></i></div>'">`;
+        } else {
+          avatarHtml = `<div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: #1e293b; color: #94a3b8; font-size: 1.4rem;"><i class="fas fa-user"></i></div>`;
+        }
+
+        const notesHtml = v.notes ? `<div style="font-size: 0.74rem; color: #94a3b8; background: rgba(15, 23, 42, 0.5); padding: 5px 8px; border-radius: 6px; margin-bottom: 0.75rem; border-left: 3px solid #38bdf8;"><i class="fas fa-sticky-note text-info mr-1"></i> ${escapeHtml(v.notes)}</div>` : '';
+
+        return `
+          <div class="visitor-card">
+            <div class="visitor-card-header">
+              <div class="visitor-avatar-wrap">
+                ${avatarHtml}
+              </div>
+              <div style="flex: 1; min-width: 0;">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 0.4rem; margin-bottom: 0.25rem;">
+                  <div class="visitor-name" title="${escapeHtml(v.name)}">${escapeHtml(v.name)}</div>
+                  ${badgeHtml}
+                </div>
+                <div class="visitor-id-pill" title="ID: ${escapeHtml(v.id)}">${escapeHtml(v.id)}</div>
+              </div>
+            </div>
+
+            <div class="visitor-stats-row">
+              <div class="visitor-stat-box ${todayVisits > 0 ? 'highlight' : ''}">
+                <span class="visitor-stat-num">${todayVisits}x</span>
+                <span class="visitor-stat-text">Hari Ini</span>
+              </div>
+              <div class="visitor-stat-box">
+                <span class="visitor-stat-num">${totalVisits}x</span>
+                <span class="visitor-stat-text">Total Berkunjung</span>
+              </div>
+            </div>
+
+            <div class="visitor-meta-line">
+              <i class="fas fa-clock text-info"></i>
+              <span>Terakhir: <strong>${escapeHtml(v.last_seen || '-')}</strong></span>
+            </div>
+            <div class="visitor-meta-line">
+              <i class="fas fa-video text-info"></i>
+              <span class="text-truncate">Lokasi: <strong>${escapeHtml(v.last_camera_title || 'Kamera CCTV')}</strong></span>
+            </div>
+
+            ${notesHtml}
+
+            <div class="visitor-actions-row">
+              <button type="button" class="btn btn-outline btn-sm" onclick="openVisitorDossier('${escapeHtml(v.id)}')" style="flex: 1; font-size: 0.76rem; padding: 6px 10px;">
+                <i class="fas fa-folder-open mr-1"></i> Rekam Jejak
+              </button>
+              <button type="button" class="btn btn-secondary btn-sm" onclick="openRenameVisitor('${escapeHtml(v.id)}', '${escapeHtml(v.name).replace(/'/g, "\\'")}', '${v.category}', '${escapeHtml(v.notes || '').replace(/'/g, "\\'")}')" title="Beri Nama / Ubah Status" style="font-size: 0.76rem; padding: 6px 10px;">
+                <i class="fas fa-tag"></i>
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderAnalyticsTimeline(logs) {
+      const feed = document.getElementById('analytics-timeline-feed');
+      if (!feed) return;
+
+      if (!logs || logs.length === 0) {
+        feed.innerHTML = `
+          <div style="text-align: center; padding: 2rem; color: #64748b; font-size: 0.82rem;">
+            <i class="fas fa-history" style="font-size: 2rem; margin-bottom: 0.5rem; opacity: 0.4;"></i>
+            <div>Belum ada rekaman riwayat kejadian CCTV.</div>
+          </div>
+        `;
+        return;
+      }
+
+      feed.innerHTML = logs.map(l => {
+        const cat = (l.category || 'stranger').toLowerCase();
+        let badgeClass = 'badge-guest';
+        let catLabel = 'Tamu';
+        if (cat === 'employee') { badgeClass = 'badge-employee'; catLabel = 'Karyawan'; }
+        else if (cat === 'stranger') { badgeClass = 'badge-stranger'; catLabel = 'Stranger'; }
+        else if (cat === 'vip') { badgeClass = 'badge-vip'; catLabel = 'VIP'; }
+        else if (cat === 'blacklist') { badgeClass = 'badge-blacklist'; catLabel = 'Waspada'; }
+
+        let snapHtml = '';
+        if (l.snapshot && l.snapshot.trim() !== '') {
+          const snapSrc = l.snapshot.startsWith('assets/') ? ('../' + l.snapshot) : (l.snapshot.startsWith('http') || l.snapshot.startsWith('data:') ? l.snapshot : ('../' + l.snapshot));
+          snapHtml = `
+            <div style="width: 44px; height: 44px; border-radius: 6px; overflow: hidden; border: 1px solid var(--border-color); flex-shrink: 0; background: #0f172a; cursor: pointer;" onclick="window.open('${escapeHtml(snapSrc)}', '_blank')" title="Klik untuk lihat bukti foto resolusi penuh">
+              <img src="${escapeHtml(snapSrc)}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.outerHTML='<div style=\\'width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#64748b;font-size:0.75rem;\\'><i class=\\'fas fa-image\\'></i></div>'">
+            </div>
+          `;
+        } else {
+          snapHtml = `
+            <div style="width: 44px; height: 44px; border-radius: 6px; background: #1e293b; display: flex; align-items: center; justify-content: center; color: #64748b; flex-shrink: 0; font-size: 0.85rem;">
+              <i class="fas fa-video"></i>
+            </div>
+          `;
+        }
+
+        const timeFmt = l.timestamp || `${l.date || ''} ${l.time || ''}`;
+        const dir = l.direction || 'melintas';
+        let dirBadge = `<span style="font-size: 0.72rem; padding: 2px 7px; border-radius: 4px; background: rgba(56, 189, 248, 0.15); color: #38bdf8;"><i class="fas fa-walking mr-1"></i> Melintas</span>`;
+        if (dir === 'masuk') {
+          dirBadge = `<span style="font-size: 0.72rem; padding: 2px 7px; border-radius: 4px; background: rgba(16, 185, 129, 0.15); color: #10b981;"><i class="fas fa-sign-in-alt mr-1"></i> Masuk</span>`;
+        } else if (dir === 'keluar') {
+          dirBadge = `<span style="font-size: 0.72rem; padding: 2px 7px; border-radius: 4px; background: rgba(245, 158, 11, 0.15); color: #f59e0b;"><i class="fas fa-sign-out-alt mr-1"></i> Keluar</span>`;
+        }
+
+        return `
+          <div style="display: flex; align-items: center; gap: 0.85rem; padding: 0.65rem 0.75rem; border-bottom: 1px solid rgba(255, 255, 255, 0.05); transition: background 0.2s;" onmouseenter="this.style.background='rgba(255,255,255,0.03)'" onmouseleave="this.style.background='transparent'">
+            ${snapHtml}
+            <div style="flex: 1; min-width: 0;">
+              <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.2rem; flex-wrap: wrap;">
+                <strong style="color: #fff; font-size: 0.85rem;">${escapeHtml(l.label || 'Orang Terdeteksi')}</strong>
+                <span class="badge-cat ${badgeClass}" style="font-size: 0.68rem; padding: 2px 6px;">${catLabel}</span>
+                ${dirBadge}
+              </div>
+              <div style="font-size: 0.76rem; color: #94a3b8; display: flex; align-items: center; gap: 0.85rem; flex-wrap: wrap;">
+                <span><i class="fas fa-clock text-info mr-1"></i> ${escapeHtml(timeFmt)}</span>
+                <span><i class="fas fa-video text-info mr-1"></i> ${escapeHtml(l.camera_title || 'Kamera CCTV')}</span>
+                ${l.confidence ? `<span><i class="fas fa-fingerprint text-info mr-1"></i> Akurasi: ${l.confidence}%</span>` : ''}
+              </div>
+            </div>
+            ${l.visitor_id ? `
+              <button type="button" class="btn btn-outline btn-sm" onclick="openVisitorDossier('${escapeHtml(l.visitor_id)}')" style="font-size: 0.72rem; padding: 4px 8px; white-space: nowrap;">
+                <i class="fas fa-search mr-1"></i> Profil
+              </button>
+            ` : ''}
+          </div>
+        `;
+      }).join('');
+    }
+
+    async function executeVisitorSearch() {
+      try {
+        const keyword = (document.getElementById('investigation-keyword-input')?.value || '').trim();
+        const category = document.getElementById('investigation-category-select')?.value || 'all';
+        const dateFilter = document.getElementById('investigation-date-select')?.value || 'all';
+        const cameraId = document.getElementById('investigation-camera-select')?.value || '0';
+
+        const grid = document.getElementById('analytics-visitors-grid');
+        const feed = document.getElementById('analytics-timeline-feed');
+        if (grid) grid.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 2rem; color: #94a3b8;"><i class="fas fa-spinner fa-spin mr-2"></i> Mencari rekam jejak pelintas...</div>';
+
+        const fd = new FormData();
+        fd.append('keyword', keyword);
+        fd.append('category', category);
+        fd.append('date_filter', dateFilter);
+        fd.append('camera_id', cameraId);
+
+        const res = await fetch('api.php?action=search_visitors', {
+          method: 'POST',
+          body: fd
+        });
+        const data = await res.json();
+        if (!data || !data.success) {
+          if (grid) grid.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 2rem; color: #ef4444;">Gagal memproses pencarian.</div>';
+          return;
+        }
+
+        const todayStr = (cachedAnalyticsData && cachedAnalyticsData.today) ? cachedAnalyticsData.today : null;
+        renderVisitorCards(data.visitors || [], todayStr);
+        renderAnalyticsTimeline(data.logs || []);
+
+      } catch (err) {
+        console.error('executeVisitorSearch error:', err);
+      }
+    }
+
+    function resetVisitorFilters() {
+      const kw = document.getElementById('investigation-keyword-input');
+      if (kw) kw.value = '';
+      const cat = document.getElementById('investigation-category-select');
+      if (cat) cat.value = 'all';
+      const dt = document.getElementById('investigation-date-select');
+      if (dt) dt.value = 'today';
+      const cam = document.getElementById('investigation-camera-select');
+      if (cam) cam.value = '0';
+      loadVisitorAnalytics();
+    }
+
+    async function openVisitorDossier(visitorId) {
+      try {
+        openModal('modalVisitorDossier');
+
+        const nameEl = document.getElementById('dossier-name');
+        const photoEl = document.getElementById('dossier-photo');
+        const badgeEl = document.getElementById('dossier-badge');
+        const idEl = document.getElementById('dossier-id');
+        const firstSeenEl = document.getElementById('dossier-first-seen');
+        const lastSeenEl = document.getElementById('dossier-last-seen');
+        const totalVisitsEl = document.getElementById('dossier-total-visits');
+        const notesEl = document.getElementById('dossier-notes');
+        const dailyEl = document.getElementById('dossier-daily-breakdown');
+        const timelineEl = document.getElementById('dossier-timeline-list');
+
+        if (nameEl) nameEl.textContent = 'Memuat Dossier Investigasi...';
+        if (dailyEl) dailyEl.innerHTML = '<div style="padding: 1rem; text-align: center; color: #94a3b8;"><i class="fas fa-spinner fa-spin mr-2"></i> Mengambil data kunjungan per tanggal...</div>';
+        if (timelineEl) timelineEl.innerHTML = '<div style="padding: 1rem; text-align: center; color: #94a3b8;"><i class="fas fa-spinner fa-spin mr-2"></i> Mengambil bukti snapshot kejadian...</div>';
+
+        const res = await fetch(`api.php?action=get_visitor_detail&visitor_id=${encodeURIComponent(visitorId)}`);
+        const data = await res.json();
+        if (!data || !data.success || !data.profile) {
+          alert(data.message || 'Gagal memuat profil pelintas.');
+          closeModal('modalVisitorDossier');
+          return;
+        }
+
+        const p = data.profile;
+        currentDossierProfile = p;
+
+        if (nameEl) nameEl.textContent = p.name;
+        if (idEl) idEl.textContent = p.id;
+        if (firstSeenEl) firstSeenEl.textContent = p.first_seen || '-';
+        if (lastSeenEl) lastSeenEl.textContent = p.last_seen || '-';
+        if (totalVisitsEl) totalVisitsEl.textContent = `${p.total_visits || 1}x Melintas / Berkunjung`;
+        if (notesEl) notesEl.textContent = p.notes || 'Tidak ada catatan investigasi khusus.';
+
+        const cat = (p.category || 'stranger').toLowerCase();
+        if (badgeEl) {
+          if (cat === 'employee') badgeEl.className = 'badge-cat badge-employee';
+          else if (cat === 'stranger') badgeEl.className = 'badge-cat badge-stranger';
+          else if (cat === 'vip') badgeEl.className = 'badge-cat badge-vip';
+          else if (cat === 'blacklist') badgeEl.className = 'badge-cat badge-blacklist';
+          else badgeEl.className = 'badge-cat badge-guest';
+          badgeEl.textContent = cat.toUpperCase();
+        }
+
+        if (photoEl) {
+          if (p.photo && p.photo.trim() !== '') {
+            const photoSrc = p.photo.startsWith('assets/') ? ('../' + p.photo) : (p.photo.startsWith('http') || p.photo.startsWith('data:') ? p.photo : ('../' + p.photo));
+            photoEl.innerHTML = `<img src="${escapeHtml(photoSrc)}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.outerHTML='<div style=\\'width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:#1e293b;color:#94a3b8;\\'><i class=\\'fas fa-user\\'></i></div>'">`;
+          } else {
+            photoEl.innerHTML = `<div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: #1e293b; color: #94a3b8; font-size: 2rem;"><i class="fas fa-user"></i></div>`;
+          }
+        }
+
+        // Render Daily Breakdown Table
+        const breakdown = data.daily_breakdown || [];
+        if (breakdown.length === 0) {
+          if (dailyEl) dailyEl.innerHTML = '<div style="padding: 1rem; text-align: center; color: #64748b;">Belum ada catatan kunjungan harian terperinci.</div>';
+        } else {
+          let tableHtml = `
+            <div style="overflow-x: auto;">
+              <table style="width: 100%; border-collapse: collapse; font-size: 0.78rem; text-align: left;">
+                <thead>
+                  <tr style="background: rgba(30, 41, 59, 0.9); border-bottom: 1px solid var(--border-color); color: #94a3b8;">
+                    <th style="padding: 8px 12px;"><i class="fas fa-calendar-day mr-1"></i> Tanggal</th>
+                    <th style="padding: 8px 12px; text-align: center;"><i class="fas fa-redo mr-1"></i> Frekuensi</th>
+                    <th style="padding: 8px 12px;"><i class="fas fa-hourglass-start mr-1"></i> Kunjungan Pertama</th>
+                    <th style="padding: 8px 12px;"><i class="fas fa-hourglass-end mr-1"></i> Kunjungan Terakhir</th>
+                    <th style="padding: 8px 12px;"><i class="fas fa-video mr-1"></i> Kamera Terpantau</th>
+                  </tr>
+                </thead>
+                <tbody>
+          `;
+          breakdown.forEach(b => {
+            const cams = Array.isArray(b.cameras) && b.cameras.length > 0 ? b.cameras.join(', ') : 'Kamera CCTV';
+            tableHtml += `
+              <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.05);">
+                <td style="padding: 8px 12px; font-weight: 700; color: #fff;">${escapeHtml(b.date)}</td>
+                <td style="padding: 8px 12px; text-align: center;"><span style="background: rgba(56, 189, 248, 0.15); color: #38bdf8; padding: 2px 8px; border-radius: 9999px; font-weight: 700;">${b.count}x</span></td>
+                <td style="padding: 8px 12px; color: #cbd5e1;">${escapeHtml(b.first_time || '-')}</td>
+                <td style="padding: 8px 12px; color: #cbd5e1;">${escapeHtml(b.last_time || '-')}</td>
+                <td style="padding: 8px 12px; color: #94a3b8;">${escapeHtml(cams)}</td>
+              </tr>
+            `;
+          });
+          tableHtml += '</tbody></table></div>';
+          if (dailyEl) dailyEl.innerHTML = tableHtml;
+        }
+
+        // Render Evidence Timeline with Snapshots
+        const timeline = data.timeline || [];
+        if (timeline.length === 0) {
+          if (timelineEl) timelineEl.innerHTML = '<div style="padding: 1rem; text-align: center; color: #64748b;">Belum ada bukti rekaman foto kejadian.</div>';
+        } else {
+          timelineEl.innerHTML = timeline.map(l => {
+            let snapThumb = '';
+            if (l.snapshot && l.snapshot.trim() !== '') {
+              const snapSrc = l.snapshot.startsWith('assets/') ? ('../' + l.snapshot) : (l.snapshot.startsWith('http') || l.snapshot.startsWith('data:') ? l.snapshot : ('../' + l.snapshot));
+              snapThumb = `
+                <div style="width: 50px; height: 50px; border-radius: 6px; overflow: hidden; border: 1px solid var(--border-color); flex-shrink: 0; background: #0f172a; cursor: pointer;" onclick="window.open('${escapeHtml(snapSrc)}', '_blank')" title="Klik untuk memperbesar bukti foto">
+                  <img src="${escapeHtml(snapSrc)}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.outerHTML='<div style=\\'width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#64748b;font-size:0.8rem;\\'><i class=\\'fas fa-image\\'></i></div>'">
+                </div>
+              `;
+            } else {
+              snapThumb = `
+                <div style="width: 50px; height: 50px; border-radius: 6px; background: #1e293b; display: flex; align-items: center; justify-content: center; color: #64748b; flex-shrink: 0;">
+                  <i class="fas fa-camera"></i>
+                </div>
+              `;
+            }
+            const tStr = l.timestamp || `${l.date || ''} ${l.time || ''}`;
+            return `
+              <div style="display: flex; align-items: center; gap: 0.75rem; padding: 0.5rem 0; border-bottom: 1px solid rgba(255, 255, 255, 0.05);">
+                ${snapThumb}
+                <div style="flex: 1; min-width: 0;">
+                  <div style="font-weight: 700; font-size: 0.82rem; color: #fff;">
+                    ${escapeHtml(l.details || l.label || 'Terdeteksi Melintas')}
+                  </div>
+                  <div style="font-size: 0.74rem; color: #94a3b8; margin-top: 2px;">
+                    <i class="fas fa-clock text-info mr-1"></i> ${escapeHtml(tStr)} • <i class="fas fa-video text-info mr-1"></i> ${escapeHtml(l.camera_title || 'Kamera')}
+                  </div>
+                </div>
+              </div>
+            `;
+          }).join('');
+        }
+
+      } catch (e) {
+        console.error('openVisitorDossier error:', e);
+        alert('Terjadi kesalahan saat membuka dossier pelintas.');
+      }
+    }
+
+    function openRenameFromDossier() {
+      if (!currentDossierProfile) return;
+      openRenameVisitor(
+        currentDossierProfile.id,
+        currentDossierProfile.name,
+        currentDossierProfile.category,
+        currentDossierProfile.notes
+      );
+    }
+
+    function openRenameVisitor(id, name, category, notes) {
+      const idEl = document.getElementById('rename-visitor-id');
+      const codeEl = document.getElementById('rename-visitor-code');
+      const nameEl = document.getElementById('rename-visitor-name');
+      const catEl = document.getElementById('rename-visitor-category');
+      const notesEl = document.getElementById('rename-visitor-notes');
+
+      if (idEl) idEl.value = id || '';
+      if (codeEl) codeEl.value = id || '';
+      if (nameEl) nameEl.value = name || '';
+      if (catEl) catEl.value = category || 'guest';
+      if (notesEl) notesEl.value = notes || '';
+
+      openModal('modalRenameVisitor');
+    }
+
+    async function handleSaveVisitorProfile(event) {
+      event.preventDefault();
+      try {
+        const visitorId = document.getElementById('rename-visitor-id')?.value || '';
+        const name = document.getElementById('rename-visitor-name')?.value || '';
+        const category = document.getElementById('rename-visitor-category')?.value || 'guest';
+        const notes = document.getElementById('rename-visitor-notes')?.value || '';
+
+        if (!visitorId || !name) {
+          alert('ID Pengunjung dan Nama wajib diisi.');
+          return;
+        }
+
+        const fd = new FormData();
+        fd.append('visitor_id', visitorId);
+        fd.append('name', name);
+        fd.append('category', category);
+        fd.append('notes', notes);
+
+        const res = await fetch('api.php?action=update_visitor_profile', {
+          method: 'POST',
+          body: fd
+        });
+        const data = await res.json();
+        if (data && data.success) {
+          alert('✅ Profil pelintas berhasil diperbarui!');
+          closeModal('modalRenameVisitor');
+          loadVisitorAnalytics(true);
+          if (currentDossierProfile && currentDossierProfile.id === visitorId) {
+            openVisitorDossier(visitorId);
+          }
+        } else {
+          alert(data.message || 'Gagal menyimpan profil.');
+        }
+      } catch (e) {
+        console.error('handleSaveVisitorProfile error:', e);
+        alert('Kesalahan koneksi saat menyimpan profil.');
+      }
+    }
+
     // Auto load on init if logged in
     <?php if ($isLoggedIn): ?>
       document.addEventListener('DOMContentLoaded', () => {
         loadCameras();
         if (typeof loadCountingLineConfig === 'function') {
           loadCountingLineConfig();
+        }
+        const urlParams = new URLSearchParams(window.location.search);
+        const tabParam = urlParams.get('tab') || window.location.hash.replace('#', '');
+        if (tabParam === 'analytics') {
+          switchMainTab('analytics');
+        } else if (tabParam === 'ai') {
+          switchMainTab('ai');
         }
       });
     <?php endif; ?>
