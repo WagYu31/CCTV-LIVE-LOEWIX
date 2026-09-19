@@ -1,0 +1,21 @@
+{
+  "name": "LOEWIX Face Detection",
+  "short_name": "LOEWIX Face Detection",
+  "description": "Loewix CCTV Local Surveillance & Face Detection Suite",
+  "start_url": "index.php",
+  "display": "standalone",
+  "background_color": "#080c14",
+  "theme_color": "#0284c7",
+  "icons": [
+    {
+      "src": "../assets/image/icon.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "../assets/image/icon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

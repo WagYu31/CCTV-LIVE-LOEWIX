@@ -1,7 +1,6 @@
 <?php
 /**
- * Loewix Face Detection - Quick Route
+ * Loewix Face Detection - Dedicated Route (/facedetection)
  * PT. LOEWIX INDONESIA
  */
-header('Location: /local/', true, 302);
-exit;
+require_once __DIR__ . '/../local/index.php';
