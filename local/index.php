@@ -28,7 +28,7 @@ $assetsBase = $isSubdomain ? 'https://loewixcctv.com/assets' : '../assets';
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Loewix Face Detection">
-  <link rel="icon" type="image/png" href="<?= $assetsBase ?>/image/icon.png">
+  <link rel="icon" type="image/png" href="<?= $assetsBase ?>/image/favicon-32x32.png">
 
   <!-- Google Fonts: Inter -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
