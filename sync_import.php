@@ -10,69 +10,94 @@ $secret = $_GET['secret'] ?? '';
 
 if (!$isCli && $secret !== 'loewix2026') {
     http_response_code(403);
-    echo "<h1>Akses Ditolak</h1><p>Gunakan parameter ?secret=loewix2026 atau jalankan lewat terminal CLI: <code>php sync_import.php</code></p>";
+    echo "<h1>Akses Ditolak</h1><p>Buka dengan parameter: <code>https://loewixcctv.com/sync_import.php?secret=loewix2026</code> atau jalankan di terminal: <code>php sync_import.php</code></p>";
     exit;
 }
 
 header('Content-Type: text/plain; charset=utf-8');
 
-$tarFile = __DIR__ . '/data_sync_package.tar.gz';
-if (!file_exists($tarFile)) {
-    echo "ERROR: File data_sync_package.tar.gz tidak ditemukan di root server.\n";
-    exit(1);
-}
-
 echo "===================================================\n";
 echo "  LOEWIX DATA SYNCHRONIZATION IMPORT TOOL\n";
 echo "===================================================\n";
-echo "[1/4] Memeriksa paket sinkronisasi... OK (" . round(filesize($tarFile) / 1024, 1) . " KB)\n";
 
-// Backup existing loewix_db.json if it exists
-if (file_exists(__DIR__ . '/data/loewix_db.json')) {
-    $bakFile = __DIR__ . '/data/loewix_db.json.bak_' . date('Ymd_His');
-    @copy(__DIR__ . '/data/loewix_db.json', $bakFile);
-    echo "[2/4] Backup database lama: " . basename($bakFile) . "\n";
-} else {
-    echo "[2/4] Database lama belum ada. Melewati backup.\n";
+$baseDir = __DIR__;
+$dataDir = $baseDir . '/data';
+
+if (!is_dir($dataDir)) {
+    @mkdir($dataDir, 0777, true);
 }
 
-// Extract tar.gz
-echo "[3/4] Mengekstrak paket data (kamera, AI faces, database)...\n";
-$output = [];
-$returnVar = 0;
-exec("tar -xzf " . escapeshellarg($tarFile) . " -C " . escapeshellarg(__DIR__), $output, $returnVar);
+// 1. Synchronize loewix_db.json from seed
+echo "[1/4] Mengimpor Database Utama (loewix_db.json)...\n";
+$seedFile = $dataDir . '/loewix_db_seed.json';
+$targetDb = $dataDir . '/loewix_db.json';
 
-if ($returnVar !== 0) {
-    echo "GAGAL mengekstrak arsip dengan tar. Mencoba dengan PharData...\n";
-    try {
-        $phar = new PharData($tarFile);
-        $phar->extractTo(__DIR__, null, true);
-    } catch (Exception $e) {
-        echo "ERROR: Gagal mengekstrak arsip: " . $e->getMessage() . "\n";
-        exit(1);
+if (file_exists($seedFile)) {
+    $seedJson = file_get_contents($seedFile);
+    // Backup old db if exists
+    if (file_exists($targetDb)) {
+        @copy($targetDb, $targetDb . '.bak_' . date('Ymd_His'));
+    }
+    $written = @file_put_contents($targetDb, $seedJson);
+    if ($written !== false) {
+        echo " -> Database loewix_db.json berhasil ditulis (" . round($written / 1024, 1) . " KB)\n";
+        @chmod($targetDb, 0666);
+    } else {
+        echo " -> Gagal menulis loewix_db.json (masalah permission). Mencoba copy...\n";
+        @copy($seedFile, $targetDb);
+    }
+} else {
+    echo " -> File seed {$seedFile} tidak ditemukan.\n";
+}
+
+// 2. Synchronize encoding and camera encode seeds
+echo "[2/4] Mengimpor Konfigurasi Encodings...\n";
+if (file_exists($dataDir . '/cameras_encode_seed.json')) {
+    @copy($dataDir . '/cameras_encode_seed.json', $dataDir . '/cameras_encode.json');
+    @chmod($dataDir . '/cameras_encode.json', 0666);
+    echo " -> cameras_encode.json berhasil diperbarui.\n";
+}
+if (file_exists($dataDir . '/encoding_seed.json')) {
+    @copy($dataDir . '/encoding_seed.json', $dataDir . '/encoding.json');
+    @chmod($dataDir . '/encoding.json', 0666);
+    echo " -> encoding.json berhasil diperbarui.\n";
+}
+
+// 3. Extract Face Biometrics and Archive with safe tar flags
+echo "[3/4] Mengekstrak Foto Wajah & Biometrik...\n";
+$tarFile = $baseDir . '/data_sync_package.tar.gz';
+if (file_exists($tarFile)) {
+    // Use --no-same-owner and --no-same-permissions to avoid Linux permission/utime errors
+    $cmd = "tar --no-same-owner --no-same-permissions -xzf " . escapeshellarg($tarFile) . " -C " . escapeshellarg($baseDir) . " 2>&1";
+    exec($cmd, $out, $ret);
+    if ($ret === 0) {
+        echo " -> Arsip wajah & database SQLite berhasil diekstrak tanpa error.\n";
+    } else {
+        echo " -> Catatan tar: " . implode(" ", array_slice($out, -2)) . "\n";
     }
 }
 
-// Set permissions
-@chmod(__DIR__ . '/data/loewix_db.json', 0666);
-if (file_exists(__DIR__ . '/data/loewix_ai.db')) @chmod(__DIR__ . '/data/loewix_ai.db', 0666);
-if (file_exists(__DIR__ . '/data/encoding.json')) @chmod(__DIR__ . '/data/encoding.json', 0666);
-if (file_exists(__DIR__ . '/data/cameras_encode.json')) @chmod(__DIR__ . '/data/cameras_encode.json', 0666);
+// 4. Verify & Summary
+echo "[4/4] Verifikasi Hasil Impor...\n";
+if (file_exists($targetDb)) {
+    $db = json_decode(file_get_contents($targetDb), true);
+    $cameras = $db['cameras'] ?? [];
+    $users = $db['users'] ?? [];
+    $faces = $db['ai_faces'] ?? [];
 
-// Verify imported data
-echo "[4/4] Verifikasi hasil import...\n";
-if (file_exists(__DIR__ . '/data/loewix_db.json')) {
-    $dbContent = json_decode(file_get_contents(__DIR__ . '/data/loewix_db.json'), true);
-    $camCount = count($dbContent['cameras'] ?? []);
-    $userCount = count($dbContent['users'] ?? []);
-    $faceCount = count($dbContent['ai_faces'] ?? []);
-    
-    echo "\n>>> BERHASIL DISINKRONKAN! <<<\n";
-    echo " - Total Kamera: {$camCount} kamera (Yamaha DDS, RTSP STG, L12, Parkiran, L8, dll.)\n";
-    echo " - Total User: {$userCount} pengguna\n";
-    echo " - Total Profil Wajah: {$faceCount} wajah terdaftar\n";
-    echo "\nSilakan refresh web: https://loewixcctv.com/local/\n";
+    echo "\n===================================================\n";
+    echo "  HASIL SINKRONISASI DATA:\n";
+    echo "===================================================\n";
+    echo " TOTAL KAMERA  : " . count($cameras) . " kamera aktif\n";
+    foreach ($cameras as $c) {
+        echo "   * [ID {$c['id']}] {$c['title']}\n";
+    }
+    echo " TOTAL PENGGUNA: " . count($users) . " akun\n";
+    echo " PROFIL WAJAH  : " . count($faces) . " wajah terdaftar\n";
+    echo "===================================================\n";
+    echo "SELESAI! Silakan buka web sekarang:\n";
+    echo "👉 https://loewixcctv.com/local/\n";
     echo "===================================================\n";
 } else {
-    echo "PERINGATAN: File data/loewix_db.json tidak ditemukan setelah ekstraksi.\n";
+    echo "ERROR: Database target tidak dapat dibaca.\n";
 }
