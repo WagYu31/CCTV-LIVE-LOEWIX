@@ -9542,6 +9542,28 @@
                 const activeReID = getActiveReIDHandoverSession();
 
                 for (const ped of detectedPersons) {
+                  const pcx = ped.bx + ped.bw * 0.5;
+                  const pcy = ped.by + ped.bh * 0.5;
+
+                  // Guard against false positive pedestrians on display motorcycles and apparel racks
+                  const isStageOrPaddock = (pcx > frameW * 0.54 && pcx < frameW * 0.90 && pcy >= frameH * 0.12 && pcy < frameH * 0.40) ||
+                                           (pcx > frameW * 0.30 && pcx < frameW * 0.54 && pcy > frameH * 0.36 && pcy < frameH * 0.68) ||
+                                           (pcx > frameW * 0.76 && pcy < frameH * 0.34);
+                  if (isStageOrPaddock && ped.score < 0.80) continue;
+
+                  // Check if ped overlaps heavily with a detected vehicle
+                  let isVehOverlap = false;
+                  for (const v of detectedVehicles) {
+                    const iw = Math.max(0, Math.min(ped.bx + ped.bw, v.bx + v.bw) - Math.max(ped.bx, v.bx));
+                    const ih = Math.max(0, Math.min(ped.by + ped.bh, v.by + v.bh) - Math.max(ped.by, v.by));
+                    const ia = iw * ih;
+                    if (ia > 0 && (ia / (ped.bw * ped.bh) > 0.30 || ia / (v.bw * v.bh) > 0.30)) {
+                      isVehOverlap = true;
+                      break;
+                    }
+                  }
+                  if (isVehOverlap) continue;
+
                   // Teknik B: Extract Upper-Body Clothing Attribute
                   const clothing = extractPedestrianClothingProfile(frameCanvas, ped.bx, ped.by, ped.bw, ped.bh);
 

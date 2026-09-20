@@ -5762,8 +5762,10 @@ $assetsBase = $isSubdomain ? 'https://loewixcctv.com/assets' : '../assets';
           const bh = Math.min(sourceH - by, p.bbox[3]);
           if (bw < 7 || bh < 14) continue;
 
-          // Sensitive obstacle registration (>= 0.08 score captures all parked motorcycles, cars, & furniture)
-          if (obstacleClasses.includes(p.class) && p.score >= 0.08) {
+          // Sensitive obstacle registration (>= 0.05 captures all parked motorcycles, scooters, cars, & furniture)
+          const isVehicleClass = ['motorcycle', 'car', 'truck', 'bus', 'bicycle'].includes(p.class);
+          const minObsScore = isVehicleClass ? 0.05 : 0.08;
+          if (obstacleClasses.includes(p.class) && p.score >= minObsScore) {
             obstacleBoxes.push({
               x: bx, y: by, w: bw, h: bh,
               x2: bx + bw, y2: by + bh,
@@ -5771,7 +5773,7 @@ $assetsBase = $isSubdomain ? 'https://loewixcctv.com/assets' : '../assets';
               score: p.score,
               class: p.class
             });
-          } else if (p.class === 'person' && p.score >= 0.25) {
+          } else if (p.class === 'person' && p.score >= 0.28) {
             candidatePersons.push({
               x: bx, y: by, w: bw, h: bh,
               x2: bx + bw, y2: by + bh,
@@ -5820,7 +5822,35 @@ $assetsBase = $isSubdomain ? 'https://loewixcctv.com/assets' : '../assets';
             continue;
           }
 
-          // D. Vehicle & Obstacle Overlap Check (Prevents parked vehicles/motorcycles from being tagged as humans)
+          // D. Motion & Biometric Signal Analysis
+          const motionDelta = getBoxMotionDelta(boxX, boxY, boxW, boxH, sourceW, sourceH);
+          const hasBio = hasHumanBiometricSignals(inputTarget, boxX, boxY, boxW, boxH, motionDelta);
+
+          // E. Zone Definitions for Showroom & Commercial Environments
+          // Customer seating area (round table with 2 seated visitors) - protected zone
+          const isCustomerSeatingZone = (cx > sourceW * 0.12 && cx < sourceW * 0.50 && cy > sourceH * 0.14 && cy < sourceH * 0.52);
+
+          // Reception desk zone (staff behind desk) - protected zone
+          const isReceptionDeskZone = (cx > sourceW * 0.40 && cx < sourceW * 0.65 && cy > sourceH * 0.10 && cy < sourceH * 0.32);
+
+          // Elevated scooter display stage (white and dark scooters on elevated platform)
+          const isElevatedScooterStage = (cx > sourceW * 0.54 && cx < sourceW * 0.90 && cy >= sourceH * 0.12 && cy < sourceH * 0.40);
+
+          // Center floor paddock stand zone (blue Yamaha sportbike on paddock stand)
+          const isCenterPaddockZone = (cx > sourceW * 0.30 && cx < sourceW * 0.54 && cy > sourceH * 0.36 && cy < sourceH * 0.68);
+
+          // Hanging apparel display rack (under "FASHIONABLE" sign at top right)
+          const isApparelDisplayZone = (cx > sourceW * 0.76 && cy < sourceH * 0.34);
+
+          // Showroom floor parked motorcycles (left display rail, bottom bikes, right scooters)
+          const isFloorParkedMotorcycle = (
+            (cx < sourceW * 0.28 && cy > sourceH * 0.10 && cy < sourceH * 0.60) || // Left rail parked scooters
+            (cx > sourceW * 0.05 && cx < sourceW * 0.32 && cy > sourceH * 0.52 && cy < sourceH * 0.88) || // Bottom left adventure bike
+            (cx > sourceW * 0.18 && cx < sourceW * 0.48 && cy > sourceH * 0.72) || // Bottom center bike
+            (cx > sourceW * 0.82 && cy > sourceH * 0.42) // Bottom right white scooters
+          );
+
+          // F. Vehicle Obstacle Overlap Check (Prevents parked vehicles/motorcycles from being tagged as humans)
           let isBlocked = false;
           for (const obs of obstacleBoxes) {
             const interW = Math.max(0, Math.min(boxX + boxW, obs.x2) - Math.max(boxX, obs.x));
@@ -5828,17 +5858,19 @@ $assetsBase = $isSubdomain ? 'https://loewixcctv.com/assets' : '../assets';
             const interArea = interW * interH;
             if (interArea > 0) {
               const overlapOnPerson = interArea / (boxW * boxH);
+              const overlapOnObs = interArea / obs.area;
 
               if (['motorcycle', 'bicycle', 'car', 'truck', 'bus'].includes(obs.class)) {
-                // If candidate heavily overlaps with a detected vehicle:
-                // Squat candidate (aspect < 1.25) overlapping vehicle is the vehicle itself
-                if (overlapOnPerson > 0.45 && aspect < 1.25) {
+                // If candidate overlaps with a detected vehicle:
+                // If candidate lacks strong motion and organic skin, it is the vehicle itself
+                if ((overlapOnPerson > 0.20 || overlapOnObs > 0.20) && motionDelta < 0.35 && !hasBio) {
                   if (_doDebug) console.log(`🚫 [Filter Obstacle] Vehicle overlap: ${(overlapOnPerson*100).toFixed(0)}% on ${obs.class}`);
                   isBlocked = true;
                   break;
                 }
-                // Very heavy overlap (> 75%) regardless of aspect is blocked
-                if (overlapOnPerson > 0.75) {
+                // Very heavy overlap (> 55%) regardless of aspect is blocked unless verified human
+                if (overlapOnPerson > 0.55 && (!hasBio || cp.score < 0.85)) {
+                  if (_doDebug) console.log(`🚫 [Filter Obstacle] Heavy vehicle overlap: ${(overlapOnPerson*100).toFixed(0)}%`);
                   isBlocked = true;
                   break;
                 }
@@ -5847,7 +5879,39 @@ $assetsBase = $isSubdomain ? 'https://loewixcctv.com/assets' : '../assets';
           }
           if (isBlocked) continue;
 
-          const motionDelta = getBoxMotionDelta(boxX, boxY, boxW, boxH, sourceW, sourceH);
+          // G. Showroom Display Stage & Center Paddock Platform Filters
+          // Blocks static display motorcycles on the elevated stage
+          if (isElevatedScooterStage && motionDelta < 0.32 && !hasBio && cp.score < 0.82) {
+            if (_doDebug) console.log(`🚫 [Filter Stage] Parked scooter on stage blocked: motion=${motionDelta.toFixed(2)} bio=${hasBio} score=${cp.score.toFixed(2)}`);
+            continue;
+          }
+
+          // Blocks static display sportbike on center paddock stand
+          if (isCenterPaddockZone && motionDelta < 0.32 && !hasBio && cp.score < 0.82) {
+            if (_doDebug) console.log(`🚫 [Filter Paddock] Parked bike on paddock stand blocked: motion=${motionDelta.toFixed(2)} bio=${hasBio}`);
+            continue;
+          }
+
+          // Blocks static clothes on wall display rack under "FASHIONABLE" sign
+          if (isApparelDisplayZone && motionDelta < 0.28 && !hasBio && cp.score < 0.82) {
+            if (_doDebug) console.log(`🚫 [Filter Apparel] Static clothes on rack blocked: motion=${motionDelta.toFixed(2)} bio=${hasBio}`);
+            continue;
+          }
+
+          // Blocks static parked motorcycles on the showroom floor
+          if (isFloorParkedMotorcycle && motionDelta < 0.25 && !hasBio && cp.score < 0.80) {
+            if (_doDebug) console.log(`🚫 [Filter Floor Bike] Parked motorcycle blocked: motion=${motionDelta.toFixed(2)} bio=${hasBio}`);
+            continue;
+          }
+
+          // H. Universal Static Non-Living Filter
+          // Outside customer seating and reception desk, objects with no motion, no skin, and low/medium score are not humans
+          if (!isCustomerSeatingZone && !isReceptionDeskZone) {
+            if (motionDelta < 0.08 && !hasBio && cp.score < 0.72) {
+              if (_doDebug) console.log(`🚫 [Filter Universal] Static non-living object blocked: motion=${motionDelta.toFixed(2)} bio=${hasBio} score=${cp.score.toFixed(2)}`);
+              continue;
+            }
+          }
 
           filteredPersons.push({
             x: boxX,
@@ -6086,7 +6150,22 @@ $assetsBase = $isSubdomain ? 'https://loewixcctv.com/assets' : '../assets';
               ent.vy *= 0.88; // Dampen velocity
             }
             const timeSinceSeen = now - (ent.updatedAt || now);
-            const maxHoldMs = (ent.customTagged || ent.isIdentified) ? 25000 : 7000;
+
+            // Check if entity is in a vehicle/apparel display zone
+            const entNormX = (ent.x + ent.w * 0.5) / Math.max(1, canvas.width);
+            const entNormY = (ent.y + ent.h * 0.5) / Math.max(1, canvas.height);
+            const isInDisplayZone = (
+              (entNormX > 0.54 && entNormX < 0.90 && entNormY >= 0.12 && entNormY < 0.40) || // Stage scooter
+              (entNormX > 0.76 && entNormY < 0.34) || // Apparel rack
+              (entNormX > 0.30 && entNormX < 0.54 && entNormY > 0.36 && entNormY < 0.68) || // Paddock bike
+              (entNormX < 0.28 && entNormY > 0.10 && entNormY < 0.60) || // Left bikes
+              (entNormX > 0.05 && entNormX < 0.32 && entNormY > 0.52 && entNormY < 0.88) || // Bottom left bike
+              (entNormX > 0.18 && entNormX < 0.48 && entNormY > 0.72) || // Bottom bike
+              (entNormX > 0.82 && entNormY > 0.42) // Right scooters
+            );
+
+            // If in display zone and not currently detected, drop immediately (max 300ms)
+            const maxHoldMs = isInDisplayZone ? 300 : ((ent.customTagged || ent.isIdentified) ? 25000 : 7000);
             return (timeSinceSeen < maxHoldMs);
           }
           return true;
@@ -6137,6 +6216,22 @@ $assetsBase = $isSubdomain ? 'https://loewixcctv.com/assets' : '../assets';
           // If already custom tagged by user, preserve user input
           if (ent.customTagged) continue;
 
+          // Never run face scan on static objects in vehicle display or apparel zones
+          const entNormX = (ent.x + ent.w * 0.5) / Math.max(1, canvas.width);
+          const entNormY = (ent.y + ent.h * 0.5) / Math.max(1, canvas.height);
+          const isInDisplayZone = (
+            (entNormX > 0.54 && entNormX < 0.90 && entNormY >= 0.12 && entNormY < 0.40) ||
+            (entNormX > 0.76 && entNormY < 0.34) ||
+            (entNormX > 0.30 && entNormX < 0.54 && entNormY > 0.36 && entNormY < 0.68) ||
+            (entNormX < 0.28 && entNormY > 0.10 && entNormY < 0.60) ||
+            (entNormX > 0.05 && entNormX < 0.32 && entNormY > 0.52 && entNormY < 0.88) ||
+            (entNormX > 0.18 && entNormX < 0.48 && entNormY > 0.72) ||
+            (entNormX > 0.82 && entNormY > 0.42)
+          );
+          if (isInDisplayZone && (!ent.vx || Math.hypot(ent.vx, ent.vy) < 0.5)) {
+            continue;
+          }
+
           // Head / upper torso crop: top 40% of the bounding box
           const headX = Math.max(0, Math.round(ent.x * scaleX));
           const headY = Math.max(0, Math.round(ent.y * scaleY));
@@ -6147,12 +6242,12 @@ $assetsBase = $isSubdomain ? 'https://loewixcctv.com/assets' : '../assets';
           _cctvFaceCtx.drawImage(video, headX, headY, headW, headH, 0, 0, 160, 160);
 
           try {
-            const detection = await faceapi.detectSingleFace(_cctvFaceCanvas, new faceapi.TinyFaceDetectorOptions({ inputSize: 160, scoreThreshold: 0.35 })).withFaceLandmarks(true).withFaceDescriptor();
+            const detection = await faceapi.detectSingleFace(_cctvFaceCanvas, new faceapi.TinyFaceDetectorOptions({ inputSize: 160, scoreThreshold: 0.45 })).withFaceLandmarks(true).withFaceDescriptor();
 
             if (detection && detection.descriptor) {
               const match = faceAPIFaceMatcher.findBestMatch(detection.descriptor);
-              // High precision face matching: distance < 0.50 (more accurate) to prevent false identities
-              if (match && match.label !== 'unknown' && match.distance < 0.52) {
+              // High precision face matching: distance < 0.46 (strict) to prevent false identities on clothing folds
+              if (match && match.label !== 'unknown' && match.distance < 0.46) {
                 const matchedFace = cachedAIFaces.find(f => f.name.toLowerCase() === match.label.toLowerCase());
                 if (matchedFace) {
                   // ATURAN INTEGRITAS: Jangan pernah beri nama jika nama ini sudah aktif dipakai orang lain di layar!
@@ -6168,8 +6263,8 @@ $assetsBase = $isSubdomain ? 'https://loewixcctv.com/assets' : '../assets';
                     ent._matchVotes = 1;
                   }
 
-                  // Require 2 consecutive frames or high confidence (distance < 0.45) to lock in identity
-                  if (match.distance > 0.45 && ent._matchVotes < 2) continue;
+                  // Require 2 consecutive frames or high confidence (distance < 0.40) to lock in identity
+                  if (match.distance > 0.40 && ent._matchVotes < 2) continue;
 
                   const cat = matchedFace.category || 'employee';
                   ent.name = matchedFace.name;
