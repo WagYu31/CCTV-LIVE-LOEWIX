@@ -3987,8 +3987,8 @@ $assetsBase = $isSubdomain ? 'https://loewixcctv.com/assets' : '../assets';
       const isGuest = cat === 'guest' || (!isVIP && !isEmployee && !isBlacklist);
       const isStranger = (name || '').toUpperCase().includes('STRANGER');
 
-      const bannerColor = isVIP ? '#f59e0b' : (isEmployee ? '#10b981' : (isBlacklist ? '#ef4444' : '#00f0ff'));
-      const bannerBgBadge = isVIP ? 'rgba(245, 158, 11, 0.2)' : (isEmployee ? 'rgba(16, 185, 129, 0.2)' : (isBlacklist ? 'rgba(239, 68, 68, 0.2)' : 'rgba(0, 240, 255, 0.2)'));
+      const bannerColor = isVIP ? '#f59e0b' : (isEmployee ? '#3b82f6' : (isBlacklist ? '#ef4444' : '#00f0ff'));
+      const bannerBgBadge = isVIP ? 'rgba(245, 158, 11, 0.2)' : (isEmployee ? 'rgba(59, 130, 246, 0.2)' : (isBlacklist ? 'rgba(239, 68, 68, 0.2)' : 'rgba(0, 240, 255, 0.2)'));
 
       banner.style.borderColor = bannerColor;
       const iconEl = document.getElementById('ai-hud-icon');
@@ -4583,13 +4583,13 @@ $assetsBase = $isSubdomain ? 'https://loewixcctv.com/assets' : '../assets';
       const isEmployee = ent.isEmployee || (ent.category === 'employee');
       const isBlacklist = (ent.category === 'blacklist');
 
-      // Vibrant, distinctive color palette:
-      // KARYAWAN: Glowing Emerald Green (#10b981)
+      // Vibrant, distinctive color palette (TikTok reference standard):
+      // KARYAWAN: Royal Blue (#3b82f6) + vibrant blue glow
       // VIP: Radiant Amber Gold (#f59e0b)
       // BLACKLIST: Alert Crimson Red (#ef4444)
       // PENGUNJUNG: Electric Cyan (#00f0ff)
-      const reticleColor = isVIP ? '#f59e0b' : (isEmployee ? '#10b981' : (isBlacklist ? '#ef4444' : '#00f0ff'));
-      const reticleGlow = isVIP ? 'rgba(245, 158, 11, 0.85)' : (isEmployee ? 'rgba(16, 185, 129, 0.85)' : (isBlacklist ? 'rgba(239, 68, 68, 0.85)' : 'rgba(0, 240, 255, 0.85)'));
+      const reticleColor = isVIP ? '#f59e0b' : (isEmployee ? '#3b82f6' : (isBlacklist ? '#ef4444' : '#00f0ff'));
+      const reticleGlow = isVIP ? 'rgba(245, 158, 11, 0.85)' : (isEmployee ? 'rgba(59, 130, 246, 0.90)' : (isBlacklist ? 'rgba(239, 68, 68, 0.85)' : 'rgba(0, 240, 255, 0.85)'));
       const icon = isVIP ? '🌟' : (isEmployee ? '👔' : (isBlacklist ? '🚫' : '🚶'));
 
       // Corner bracket arms tailored to human body proportions
@@ -4635,7 +4635,7 @@ $assetsBase = $isSubdomain ? 'https://loewixcctv.com/assets' : '../assets';
       // Subtle Center Targeting Crosshair (Upper Torso / Head)
       const cx = bx + bw / 2;
       const cy = by + bh * 0.32;
-      ctx.strokeStyle = isVIP ? 'rgba(245, 158, 11, 0.5)' : (isEmployee ? 'rgba(16, 185, 129, 0.5)' : 'rgba(0, 240, 255, 0.4)');
+      ctx.strokeStyle = isVIP ? 'rgba(245, 158, 11, 0.5)' : (isEmployee ? 'rgba(59, 130, 246, 0.5)' : 'rgba(0, 240, 255, 0.4)');
       ctx.lineWidth = 1.2;
       ctx.setLineDash([3, 3]);
       ctx.beginPath();
@@ -4654,7 +4654,7 @@ $assetsBase = $isSubdomain ? 'https://loewixcctv.com/assets' : '../assets';
       // Floor perspective shadow disk
       ctx.beginPath();
       ctx.ellipse(footX, footY, ringRx, ringRy, 0, 0, Math.PI * 2);
-      ctx.fillStyle = ent.isTouchingLine ? 'rgba(245, 158, 11, 0.25)' : 'rgba(0, 240, 255, 0.12)';
+      ctx.fillStyle = ent.isTouchingLine ? 'rgba(245, 158, 11, 0.25)' : (isEmployee ? 'rgba(59, 130, 246, 0.15)' : 'rgba(0, 240, 255, 0.12)');
       ctx.fill();
 
       // Outer ellipse ring on the floor
@@ -4667,7 +4667,7 @@ $assetsBase = $isSubdomain ? 'https://loewixcctv.com/assets' : '../assets';
         ctx.lineWidth = 3;
         ctx.shadowBlur = 14;
       } else {
-        ctx.strokeStyle = isVIP ? 'rgba(245, 158, 11, 0.8)' : (isEmployee ? 'rgba(16, 185, 129, 0.8)' : 'rgba(0, 240, 255, 0.7)');
+        ctx.strokeStyle = isVIP ? 'rgba(245, 158, 11, 0.8)' : (isEmployee ? 'rgba(59, 130, 246, 0.85)' : 'rgba(0, 240, 255, 0.7)');
         ctx.shadowColor = ctx.strokeStyle;
         ctx.lineWidth = 1.8;
         ctx.shadowBlur = 8;
@@ -5800,70 +5800,27 @@ $assetsBase = $isSubdomain ? 'https://loewixcctv.com/assets' : '../assets';
           const cy = boxY + boxH * 0.5;
           const aspect = boxH / Math.max(1, boxW);
 
-          // A. Ceiling Clutter & Top Overhead Lights
-          if (boxY < sourceH * 0.01 || cy < sourceH * 0.05) {
-            if (_doDebug) console.log(`🚫 [Filter A] Ceiling: boxY=${Math.round(boxY)} cy=${Math.round(cy)} sourceH=${sourceH}`);
+          // A. Ceiling Clutter & Extreme Top Filter
+          if (boxY < sourceH * 0.005 || cy < sourceH * 0.03) {
             continue;
           }
 
-          // Define legitimate human activity zones
-          // 1. Reception / Service Counter where staff sit and assist customers
-          const isReceptionDeskZone = (cx > sourceW * 0.35 && cx < sourceW * 0.72 && cy >= sourceH * 0.06 && cy < sourceH * 0.35);
-          // 2. Customer seating with round tables & stools on the left
-          const isCustomerSeatingZone = (cx > sourceW * 0.10 && cx < sourceW * 0.45 && cy > sourceH * 0.18 && cy < sourceH * 0.65);
-          // 3. Upper platform lounge / display seating on right
-          const isUpperSeatingZone = (cx > sourceW * 0.68 && cx < sourceW * 0.90 && cy >= sourceH * 0.10 && cy < sourceH * 0.35);
-          const isStationaryHumanZone = isReceptionDeskZone || isCustomerSeatingZone || isUpperSeatingZone;
-
-          // B. Showroom Apparel Display Rack (Only the hanging garment rack under FASHIONABLE sign)
-          // Strictly limited to top-right hanging clothes rack (cx > 0.82 and cy < 0.28)
-          const isApparelDisplayZone = (cx > sourceW * 0.82 && cy < sourceH * 0.28);
-          if (isApparelDisplayZone && cp.score < 0.65) {
-            const rackMotion = getBoxMotionDelta(boxX, boxY, boxW, boxH, sourceW, sourceH);
-            if (rackMotion < 0.08) {
-              if (_doDebug) console.log(`🚫 [Filter B] Apparel rack: cx=${Math.round(cx)} cy=${Math.round(cy)} motion=${rackMotion.toFixed(2)}`);
-              continue;
-            }
-          }
-
-          // C. Showroom Display Platform & Center Paddock Zones
-          // Blocks static display motorcycles on the stage.
-          // In CAM02, the elevated scooter stage is located at cx 0.58-0.88 and cy 0.15-0.38
-          const isElevatedScooterStage = (cx > sourceW * 0.58 && cx < sourceW * 0.88 && cy >= sourceH * 0.15 && cy < sourceH * 0.38);
-          const isCenterPaddockZone = (cx > sourceW * 0.32 && cx < sourceW * 0.54 && cy > sourceH * 0.48 && cy < sourceH * 0.75);
-
-          if (isElevatedScooterStage || isCenterPaddockZone) {
-            const stageMotion = getBoxMotionDelta(boxX, boxY, boxW, boxH, sourceW, sourceH);
-            if (stageMotion < 0.28) {
-              if (_doDebug) console.log(`🚫 [Filter C] Static vehicle on display stage: motion=${stageMotion.toFixed(2)}`);
-              continue;
-            }
-          }
-
-          // D. Extreme Right / Edge Distortion Clipping Filter
-          if ((boxX + boxW >= sourceW * 0.99) && (boxY < sourceH * 0.40)) {
-            if (_doDebug) console.log(`🚫 [Filter Edge] Right edge limit`);
+          // B. Universal Aspect Ratio: Allow seated humans (~0.38-0.70) and standing/walking humans (~1.0-4.8)
+          // Works seamlessly in offices, cinemas, factories, warehouses, and showrooms
+          if (aspect < 0.38 || aspect > 5.0) {
+            if (_doDebug) console.log(`🚫 [Filter Aspect] Box aspect: ${aspect.toFixed(2)} outside 0.38-5.0`);
             continue;
           }
 
-          // E. Aspect ratio constraint: allow standing, walking, seated humans behind desks
-          const minAspect = isStationaryHumanZone ? 0.45 : 0.65;
-          if (aspect < minAspect || aspect > 5.0) {
-            if (_doDebug) console.log(`🚫 [Filter E] Aspect: ${aspect.toFixed(2)} (need ${minAspect}-5.0)`);
+          // C. Dimension Constraints: Filter out tiny sub-pixel artifacts or full-frame errors
+          if (boxH < 14 || boxW < 7) {
+            continue;
+          }
+          if (boxW > sourceW * 0.75 || boxH > sourceH * 0.95) {
             continue;
           }
 
-          // F. Dimension constraints: filter out tiny noise or impossibly huge boxes
-          if (boxH < 16 || boxW < 8) {
-            if (_doDebug) console.log(`🚫 [Filter F] Too small: ${boxW}x${boxH}`);
-            continue;
-          }
-          if (boxW > sourceW * 0.50 || boxH > sourceH * 0.90) {
-            if (_doDebug) console.log(`🚫 [Filter F] Too large: ${boxW}x${boxH}`);
-            continue;
-          }
-
-          // G. Vehicle & Furniture Obstacle Overlap Check
+          // D. Vehicle & Obstacle Overlap Check (Prevents parked vehicles/motorcycles from being tagged as humans)
           let isBlocked = false;
           for (const obs of obstacleBoxes) {
             const interW = Math.max(0, Math.min(boxX + boxW, obs.x2) - Math.max(boxX, obs.x));
@@ -5873,31 +5830,17 @@ $assetsBase = $isSubdomain ? 'https://loewixcctv.com/assets' : '../assets';
               const overlapOnPerson = interArea / (boxW * boxH);
 
               if (['motorcycle', 'bicycle', 'car', 'truck', 'bus'].includes(obs.class)) {
-                // If candidate overlaps with a detected vehicle:
-                // Squat candidate (aspect < 1.30) overlapping vehicle is the vehicle
-                if (overlapOnPerson > 0.40 && aspect < 1.30) {
-                  if (_doDebug) console.log(`🚫 [Filter G] Vehicle overlap: ${(overlapOnPerson*100).toFixed(0)}% on ${obs.class}`);
+                // If candidate heavily overlaps with a detected vehicle:
+                // Squat candidate (aspect < 1.25) overlapping vehicle is the vehicle itself
+                if (overlapOnPerson > 0.45 && aspect < 1.25) {
+                  if (_doDebug) console.log(`🚫 [Filter Obstacle] Vehicle overlap: ${(overlapOnPerson*100).toFixed(0)}% on ${obs.class}`);
                   isBlocked = true;
                   break;
                 }
-                // Very heavy overlap (> 70%) regardless of aspect is blocked
-                if (overlapOnPerson > 0.70) {
-                  if (_doDebug) console.log(`🚫 [Filter G] Heavy vehicle overlap: ${(overlapOnPerson*100).toFixed(0)}% on ${obs.class}`);
+                // Very heavy overlap (> 75%) regardless of aspect is blocked
+                if (overlapOnPerson > 0.75) {
                   isBlocked = true;
                   break;
-                }
-                if (boxY < obs.y && (boxY + boxH) > (obs.y + obs.h * 0.18)) {
-                  boxH = Math.min(boxH, Math.max(Math.round(boxW * 1.3), Math.round((obs.y + obs.h * 0.15) - boxY)));
-                }
-              } else if (['chair', 'couch', 'dining table', 'bench'].includes(obs.class)) {
-                // Jangan blokir orang yang duduk di area meja kerja / meja tamu
-                if (!isStationaryHumanZone && overlapOnPerson > 0.85 && obs.score >= cp.score) {
-                  const mDelta = getBoxMotionDelta(boxX, boxY, boxW, boxH, sourceW, sourceH);
-                  if (mDelta < 0.08) {
-                    if (_doDebug) console.log(`🚫 [Filter G] Furniture overlap: ${(overlapOnPerson*100).toFixed(0)}% on ${obs.class}`);
-                    isBlocked = true;
-                    break;
-                  }
                 }
               }
             }
@@ -5905,14 +5848,6 @@ $assetsBase = $isSubdomain ? 'https://loewixcctv.com/assets' : '../assets';
           if (isBlocked) continue;
 
           const motionDelta = getBoxMotionDelta(boxX, boxY, boxW, boxH, sourceW, sourceH);
-          const hasBio = hasHumanBiometricSignals(inputTarget, boxX, boxY, boxW, boxH, motionDelta);
-
-          // H. Human Biometric & Living Motion Verification
-          // Hanya poster/banner mati yang tidak bergerak sama sekali (motion < 0.05), tanpa biometrik kulit, dan skor COCO-SSD rendah yang diblokir
-          if (!isStationaryHumanZone && motionDelta < 0.05 && !hasBio && cp.score < 0.55) {
-            if (_doDebug) console.log(`🚫 [Filter H] Static non-living object: motion=${motionDelta.toFixed(2)} bio=${hasBio} score=${cp.score.toFixed(2)}`);
-            continue;
-          }
 
           filteredPersons.push({
             x: boxX,
@@ -5978,13 +5913,13 @@ $assetsBase = $isSubdomain ? 'https://loewixcctv.com/assets' : '../assets';
           });
         }
 
-        // 5. Robust Multi-Track Inertial Smoother with 7.0-Second Continuous Retention
+        // 5. Robust Multi-Track Inertial Smoother with Velocity Prediction & Anti-Flicker Retention
         const matchedIndices = new Set();
 
         for (const target of scaledDetections) {
           let bestEntity = null;
           let bestIdx = -1;
-          let bestDist = Math.max(160, canvas.width * 0.25);
+          let bestDist = Math.max(180, canvas.width * 0.30);
 
           for (let i = 0; i < activeHumanEntities.length; i++) {
             if (matchedIndices.has(i)) continue;
@@ -5999,8 +5934,15 @@ $assetsBase = $isSubdomain ? 'https://loewixcctv.com/assets' : '../assets';
 
           if (bestEntity) {
             matchedIndices.add(bestIdx);
+
+            // Compute dynamic velocity (vx, vy) for smooth inter-frame inertial extrapolation
+            const newVx = (target.targetX - bestEntity.x) * 0.35;
+            const newVy = (target.targetY - bestEntity.y) * 0.35;
+            bestEntity.vx = (bestEntity.vx !== undefined) ? (bestEntity.vx * 0.65 + newVx * 0.35) : newVx;
+            bestEntity.vy = (bestEntity.vy !== undefined) ? (bestEntity.vy * 0.65 + newVy * 0.35) : newVy;
+
             // Smooth lerp (responsive yet jitter-free)
-            const factor = 0.55;
+            const factor = 0.50;
             bestEntity.x = Math.round(bestEntity.x + (target.targetX - bestEntity.x) * factor);
             bestEntity.y = Math.round(bestEntity.y + (target.targetY - bestEntity.y) * factor);
             bestEntity.w = Math.round(bestEntity.w + (target.targetW - bestEntity.w) * factor);
@@ -6081,6 +6023,8 @@ $assetsBase = $isSubdomain ? 'https://loewixcctv.com/assets' : '../assets';
               customTagged: false,
               isIdentified: false,
               clothing: target.clothing,
+              vx: 0,
+              vy: 0,
               updatedAt: now,
               createdAt: now,
               missedFrames: 0
@@ -6125,11 +6069,22 @@ $assetsBase = $isSubdomain ? 'https://loewixcctv.com/assets' : '../assets';
           }
         }
 
-        // CONTINUOUS TRACK RETENTION: Hold the track firmly so scanner reticles don't flicker or disappear
-        // Keep active tracks for 7.0 seconds for regular persons, and 25 seconds for tagged personnel (Karyawan / VIP)
+        // CONTINUOUS TRACK RETENTION & VELOCITY-BASED PREDICTION:
+        // Hold the track firmly so scanner reticles don't flicker or disappear when someone is walking or momentarily missed
         activeHumanEntities = activeHumanEntities.filter((ent, idx) => {
           if (!matchedIndices.has(idx)) {
             ent.missedFrames = (ent.missedFrames || 0) + 1;
+            // Apply velocity prediction during missed frames for smooth movement without stuttering
+            if (ent.vx && Math.abs(ent.vx) > 0.4) {
+              ent.x += Math.round(ent.vx);
+              ent.targetX = ent.x;
+              ent.vx *= 0.88; // Dampen velocity
+            }
+            if (ent.vy && Math.abs(ent.vy) > 0.4) {
+              ent.y += Math.round(ent.vy);
+              ent.targetY = ent.y;
+              ent.vy *= 0.88; // Dampen velocity
+            }
             const timeSinceSeen = now - (ent.updatedAt || now);
             const maxHoldMs = (ent.customTagged || ent.isIdentified) ? 25000 : 7000;
             return (timeSinceSeen < maxHoldMs);
@@ -6196,9 +6151,26 @@ $assetsBase = $isSubdomain ? 'https://loewixcctv.com/assets' : '../assets';
 
             if (detection && detection.descriptor) {
               const match = faceAPIFaceMatcher.findBestMatch(detection.descriptor);
-              if (match && match.label !== 'unknown' && match.distance < 0.58) {
+              // High precision face matching: distance < 0.50 (more accurate) to prevent false identities
+              if (match && match.label !== 'unknown' && match.distance < 0.52) {
                 const matchedFace = cachedAIFaces.find(f => f.name.toLowerCase() === match.label.toLowerCase());
                 if (matchedFace) {
+                  // ATURAN INTEGRITAS: Jangan pernah beri nama jika nama ini sudah aktif dipakai orang lain di layar!
+                  const isAlreadyClaimed = activeHumanEntities.some(e => e !== ent && (e.name || '').toLowerCase() === matchedFace.name.toLowerCase());
+                  if (isAlreadyClaimed) continue;
+
+                  // Double-confirmation voting to avoid single-frame spurious identification
+                  ent._matchCandidate = ent._matchCandidate || '';
+                  if (ent._matchCandidate === matchedFace.name) {
+                    ent._matchVotes = (ent._matchVotes || 0) + 1;
+                  } else {
+                    ent._matchCandidate = matchedFace.name;
+                    ent._matchVotes = 1;
+                  }
+
+                  // Require 2 consecutive frames or high confidence (distance < 0.45) to lock in identity
+                  if (match.distance > 0.45 && ent._matchVotes < 2) continue;
+
                   const cat = matchedFace.category || 'employee';
                   ent.name = matchedFace.name;
                   ent.category = cat;
@@ -6751,8 +6723,8 @@ $assetsBase = $isSubdomain ? 'https://loewixcctv.com/assets' : '../assets';
         const isVIP = ent.isVIP || (ent.category === 'vip');
         const isEmp = ent.isEmployee || (ent.category === 'employee');
         const isBlacklist = (ent.category === 'blacklist');
-        const color = isVIP ? '#f59e0b' : (isEmp ? '#10b981' : (isBlacklist ? '#ef4444' : '#00f0ff'));
-        const bg = isVIP ? 'rgba(245, 158, 11, 0.15)' : (isEmp ? 'rgba(16, 185, 129, 0.15)' : (isBlacklist ? 'rgba(239, 68, 68, 0.15)' : 'rgba(0, 240, 255, 0.12)'));
+        const color = isVIP ? '#f59e0b' : (isEmp ? '#3b82f6' : (isBlacklist ? '#ef4444' : '#00f0ff'));
+        const bg = isVIP ? 'rgba(245, 158, 11, 0.15)' : (isEmp ? 'rgba(59, 130, 246, 0.18)' : (isBlacklist ? 'rgba(239, 68, 68, 0.15)' : 'rgba(0, 240, 255, 0.12)'));
         const icon = isVIP ? '🌟' : (isEmp ? '👔' : (isBlacklist ? '🚫' : '🚶'));
         const nameLabel = ent.name ? ent.name : `${ent.clothing?.colorName || 'Tamu'}`;
         const roleLabel = isEmp ? 'KARYAWAN' : (isVIP ? 'VIP' : 'PENGUNJUNG');

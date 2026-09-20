@@ -29,7 +29,7 @@ def get_db_connection():
 
 
 def init_db():
-    """Initialize database tables and indexes."""
+    """Initialize database tables, columns, and indexes."""
     conn = get_db_connection()
     cur = conn.cursor()
 
@@ -43,11 +43,21 @@ def init_db():
         department TEXT DEFAULT '',
         phone TEXT DEFAULT '',
         notes TEXT DEFAULT '',
+        location_id TEXT DEFAULT 'default',
         is_active INTEGER DEFAULT 1,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );
     """)
+
+    # Check & migrate location_id column if table already existed without it
+    cur.execute("PRAGMA table_info(registered_identities);")
+    cols = [r["name"] for r in cur.fetchall()]
+    if "location_id" not in cols:
+        try:
+            cur.execute("ALTER TABLE registered_identities ADD COLUMN location_id TEXT DEFAULT 'default';")
+        except Exception as e:
+            logger.warning(f"Could not add location_id to registered_identities: {e}")
 
     # 2. Face Embeddings Metadata
     cur.execute("""
@@ -69,6 +79,7 @@ def init_db():
     CREATE TABLE IF NOT EXISTS cctv_detection_logs (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         camera_id TEXT NOT NULL,
+        location_id TEXT DEFAULT 'default',
         identity_id INTEGER,
         matched_name TEXT NOT NULL DEFAULT 'STRANGER',
         category TEXT NOT NULL DEFAULT 'visitor',
@@ -86,11 +97,22 @@ def init_db():
     );
     """)
 
+    # Check & migrate location_id to cctv_detection_logs
+    cur.execute("PRAGMA table_info(cctv_detection_logs);")
+    log_cols = [r["name"] for r in cur.fetchall()]
+    if "location_id" not in log_cols:
+        try:
+            cur.execute("ALTER TABLE cctv_detection_logs ADD COLUMN location_id TEXT DEFAULT 'default';")
+        except Exception as e:
+            logger.warning(f"Could not add location_id to cctv_detection_logs: {e}")
+
     # Indexes for fast querying
     cur.execute("CREATE INDEX IF NOT EXISTS idx_detection_time ON cctv_detection_logs(detected_at);")
     cur.execute("CREATE INDEX IF NOT EXISTS idx_detection_camera ON cctv_detection_logs(camera_id);")
+    cur.execute("CREATE INDEX IF NOT EXISTS idx_detection_location ON cctv_detection_logs(location_id);")
     cur.execute("CREATE INDEX IF NOT EXISTS idx_detection_identity ON cctv_detection_logs(identity_id);")
     cur.execute("CREATE INDEX IF NOT EXISTS idx_identity_name ON registered_identities(full_name);")
+    cur.execute("CREATE INDEX IF NOT EXISTS idx_identity_location ON registered_identities(location_id);")
 
     conn.commit()
     conn.close()
@@ -104,33 +126,38 @@ def register_identity(
     phone: str = "",
     notes: str = "",
     photo_path: str = "",
-    vector_index_id: int = -1
+    vector_index_id: int = -1,
+    location_id: str = "default"
 ) -> Dict[str, Any]:
-    """Register or update a person in the database."""
+    """Register or update a person in the database (supports per-location scoping)."""
     conn = get_db_connection()
     cur = conn.cursor()
 
     # Generate identity code if new
     timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
     clean_name = "".join(c for c in full_name if c.isalnum()).upper()[:8]
-    identity_code = f"ID_{clean_name}_{timestamp}"
+    clean_loc = "".join(c for c in location_id if c.isalnum()).upper()[:6]
+    identity_code = f"ID_{clean_loc}_{clean_name}_{timestamp}"
 
-    # Check if name already exists
-    cur.execute("SELECT id FROM registered_identities WHERE LOWER(full_name) = LOWER(?)", (full_name.strip(),))
+    # Check if name already exists in this location (or globally if default)
+    cur.execute(
+        "SELECT id FROM registered_identities WHERE LOWER(full_name) = LOWER(?) AND (location_id = ? OR location_id IS NULL OR ? = '')",
+        (full_name.strip(), location_id.strip(), location_id.strip())
+    )
     row = cur.fetchone()
 
     if row:
         identity_id = row["id"]
         cur.execute("""
             UPDATE registered_identities 
-            SET category = ?, department = ?, phone = ?, notes = ?, updated_at = CURRENT_TIMESTAMP
+            SET category = ?, department = ?, phone = ?, notes = ?, location_id = ?, updated_at = CURRENT_TIMESTAMP
             WHERE id = ?
-        """, (category, department, phone, notes, identity_id))
+        """, (category, department, phone, notes, location_id.strip() or "default", identity_id))
     else:
         cur.execute("""
-            INSERT INTO registered_identities (identity_code, full_name, category, department, phone, notes)
-            VALUES (?, ?, ?, ?, ?, ?)
-        """, (identity_code, full_name.strip(), category, department, phone, notes))
+            INSERT INTO registered_identities (identity_code, full_name, category, department, phone, notes, location_id)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        """, (identity_code, full_name.strip(), category, department, phone, notes, location_id.strip() or "default"))
         identity_id = cur.lastrowid
 
     if photo_path and vector_index_id >= 0:
@@ -147,22 +174,33 @@ def register_identity(
         "full_name": full_name,
         "category": category,
         "department": department,
+        "location_id": location_id,
         "vector_index_id": vector_index_id
     }
 
 
-def get_all_identities() -> List[Dict[str, Any]]:
-    """Return all active registered identities with their photo count and vector info."""
+def get_all_identities(location_id: Optional[str] = None) -> List[Dict[str, Any]]:
+    """Return all active registered identities, optionally filtered by location_id."""
     conn = get_db_connection()
     cur = conn.cursor()
-    cur.execute("""
-        SELECT r.*, COUNT(m.id) as photo_count, GROUP_CONCAT(m.vector_index_id) as vector_ids
-        FROM registered_identities r
-        LEFT JOIN face_embeddings_meta m ON r.id = m.identity_id
-        WHERE r.is_active = 1
-        GROUP BY r.id
-        ORDER BY r.full_name ASC
-    """)
+    if location_id:
+        cur.execute("""
+            SELECT r.*, COUNT(m.id) as photo_count, GROUP_CONCAT(m.vector_index_id) as vector_ids
+            FROM registered_identities r
+            LEFT JOIN face_embeddings_meta m ON r.id = m.identity_id
+            WHERE r.is_active = 1 AND (r.location_id = ? OR r.location_id = 'default' OR r.location_id IS NULL)
+            GROUP BY r.id
+            ORDER BY r.full_name ASC
+        """, (location_id,))
+    else:
+        cur.execute("""
+            SELECT r.*, COUNT(m.id) as photo_count, GROUP_CONCAT(m.vector_index_id) as vector_ids
+            FROM registered_identities r
+            LEFT JOIN face_embeddings_meta m ON r.id = m.identity_id
+            WHERE r.is_active = 1
+            GROUP BY r.id
+            ORDER BY r.full_name ASC
+        """)
     rows = [dict(r) for r in cur.fetchall()]
     conn.close()
     return rows
@@ -215,19 +253,20 @@ def log_cctv_detection(
     emotion: Optional[str] = None,
     snapshot_path: Optional[str] = None,
     full_frame_path: Optional[str] = None,
-    is_alert: bool = False
+    is_alert: bool = False,
+    location_id: str = "default"
 ) -> int:
-    """Record a detection event in the audit log."""
+    """Record a detection event in the audit log with location awareness."""
     conn = get_db_connection()
     cur = conn.cursor()
     cur.execute("""
         INSERT INTO cctv_detection_logs (
-            camera_id, identity_id, matched_name, category, similarity_score, distance,
+            camera_id, location_id, identity_id, matched_name, category, similarity_score, distance,
             bounding_box_json, estimated_age, detected_gender, detected_emotion,
             snapshot_path, full_frame_path, is_alert_triggered
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """, (
-        camera_id, identity_id, matched_name, category,
+        camera_id, location_id or "default", identity_id, matched_name, category,
         round(similarity_score, 4), round(distance, 4),
         json.dumps(bounding_box), age, gender, emotion,
         snapshot_path, full_frame_path, 1 if is_alert else 0
@@ -238,21 +277,28 @@ def log_cctv_detection(
     return log_id
 
 
-def get_recent_logs(camera_id: Optional[str] = None, limit: int = 50) -> List[Dict[str, Any]]:
-    """Retrieve recent detection logs for frontend live feed."""
+def get_recent_logs(
+    camera_id: Optional[str] = None,
+    location_id: Optional[str] = None,
+    limit: int = 50
+) -> List[Dict[str, Any]]:
+    """Retrieve recent detection logs, optionally filtered by camera_id or location_id."""
     conn = get_db_connection()
     cur = conn.cursor()
+    query = "SELECT * FROM cctv_detection_logs WHERE 1=1"
+    params = []
+
     if camera_id:
-        cur.execute("""
-            SELECT * FROM cctv_detection_logs 
-            WHERE camera_id = ? 
-            ORDER BY id DESC LIMIT ?
-        """, (camera_id, limit))
-    else:
-        cur.execute("""
-            SELECT * FROM cctv_detection_logs 
-            ORDER BY id DESC LIMIT ?
-        """, (limit,))
+        query += " AND camera_id = ?"
+        params.append(camera_id)
+    if location_id:
+        query += " AND (location_id = ? OR location_id = 'default')"
+        params.append(location_id)
+
+    query += " ORDER BY id DESC LIMIT ?"
+    params.append(limit)
+
+    cur.execute(query, tuple(params))
     rows = [dict(r) for r in cur.fetchall()]
     conn.close()
     return rows
@@ -260,3 +306,4 @@ def get_recent_logs(camera_id: Optional[str] = None, limit: int = 50) -> List[Di
 
 # Run initialization on import
 init_db()
+

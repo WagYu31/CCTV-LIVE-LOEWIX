@@ -3,6 +3,7 @@
 Loewix CCTV AI Vision — Hierarchical Small-Face Detection & Recognition Pipeline
 ================================================================================
 Specialized for long-distance, high-angle CCTV cameras (such as CAM02 Showroom).
+Designed for multi-environment deployment: showroom, offices, cinemas, factories.
 
 Stages:
   1. Full-Body Person Localization (YOLOv8 / Background ROI)
@@ -10,6 +11,7 @@ Stages:
   3. Precision Face Detection & 5-Point Landmark Alignment (RetinaFace / YuNet)
   4. ArcFace 512-D Embedding Extraction (DeepFace)
   5. Sub-Millisecond Vector Search (FAISS)
+  6. Temporal Smoothing & Anti-Flicker (carry-forward detections)
 """
 
 import os
@@ -24,6 +26,7 @@ import logging
 import numpy as np
 from pathlib import Path
 from typing import List, Dict, Any, Optional, Tuple
+from collections import defaultdict
 
 try:
     import torch
@@ -33,7 +36,7 @@ except ImportError:
 
 cv2.setNumThreads(1)
 
-from ai_engine.vector_db_faiss import vector_db
+from ai_engine.vector_db_faiss import vector_db, get_vector_db
 from ai_engine.database import get_identity_by_id, get_identity_by_vector_id, log_cctv_detection
 
 logger = logging.getLogger("loewix_pipeline")
@@ -42,15 +45,41 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 # ArcFace Cosine Similarity Threshold (DeepFace distance <= 0.52 <=> Cosine Similarity >= 0.48)
 DEFAULT_MATCH_THRESHOLD = float(os.environ.get("LOEWIX_MATCH_THRESHOLD", 0.42))
 
+# Temporal smoothing: how many seconds to carry forward a detection if momentarily missed
+TEMPORAL_PERSIST_SECONDS = 4.0
+# Max age (seconds) for carry-forward before we stop holding
+TEMPORAL_MAX_AGE = 6.0
+
+
+def _compute_iou(box_a, box_b):
+    """Compute Intersection-over-Union between two boxes (x, y, w, h)."""
+    ax, ay, aw, ah = box_a
+    bx, by, bw, bh = box_b
+    x1 = max(ax, bx)
+    y1 = max(ay, by)
+    x2 = min(ax + aw, bx + bw)
+    y2 = min(ay + ah, by + bh)
+    inter = max(0, x2 - x1) * max(0, y2 - y1)
+    area_a = aw * ah
+    area_b = bw * bh
+    union = area_a + area_b - inter
+    if union <= 0:
+        return 0.0
+    return inter / union
+
 
 class SmallFaceRecognitionPipeline:
-    """End-to-End Hierarchical Small Face Recognition Engine."""
+    """End-to-End Hierarchical Small Face Recognition Engine with Temporal Smoothing."""
 
     def __init__(self):
         self.yolo_model = None
         self.yunet_detector = None
         self.deepface_module = None
         self.models_loaded = False
+
+        # Temporal smoothing cache: camera_id -> list of recent detections with timestamps
+        self._temporal_cache: Dict[str, List[Dict[str, Any]]] = defaultdict(list)
+
         self._init_models()
 
     def _init_models(self):
@@ -75,7 +104,7 @@ class SmallFaceRecognitionPipeline:
                     model=model_path,
                     config="",
                     input_size=(320, 320),
-                    score_threshold=0.30,
+                    score_threshold=0.25,       # Lowered from 0.30 for better recall
                     nms_threshold=0.3,
                     top_k=5000
                 )
@@ -83,7 +112,7 @@ class SmallFaceRecognitionPipeline:
         except Exception as e:
             logger.warning(f"ℹ️ YuNet init notice: {e}")
 
-        # 2. YOLOv8 Person Detector (Lazy loaded on demand to prevent PyTorch/TensorFlow OpenMP collision on Linux)
+        # 2. YOLOv8 Person Detector (Lazy loaded on demand)
         self.yolo_model = None
 
     def get_deepface(self):
@@ -103,7 +132,7 @@ class SmallFaceRecognitionPipeline:
         return self.deepface_module
 
     # -----------------------------------------------------------------------
-    # Tahap 1: Person Localization
+    # Tahap 1: Person Localization (YOLO — always runs in parallel with YuNet)
     # -----------------------------------------------------------------------
     def detect_persons(self, frame: np.ndarray) -> List[Tuple[int, int, int, int]]:
         """
@@ -125,9 +154,9 @@ class SmallFaceRecognitionPipeline:
                 try:
                     import torch
                     with torch.no_grad():
-                        results = self.yolo_model(frame, classes=[0], verbose=False, conf=0.35)
+                        results = self.yolo_model(frame, classes=[0], verbose=False, conf=0.25)  # Lowered from 0.35
                 except ImportError:
-                    results = self.yolo_model(frame, classes=[0], verbose=False, conf=0.35)
+                    results = self.yolo_model(frame, classes=[0], verbose=False, conf=0.25)
 
                 for r in results:
                     boxes = r.boxes.xyxy.cpu().numpy()
@@ -140,7 +169,7 @@ class SmallFaceRecognitionPipeline:
             except Exception as e:
                 logger.warning(f"YOLO person detection error: {e}")
 
-        # Fallback: Treat full frame or upper sections as potential search regions
+        # Fallback: Treat full frame as search region
         return [(0, 0, w, h)]
 
     # -----------------------------------------------------------------------
@@ -179,8 +208,6 @@ class SmallFaceRecognitionPipeline:
             return crop, (hx1, hy1, crop_w, crop_h)
 
         # Digital Zoom & Enhancement:
-        # If crop is small (< 160px), upscale with Bicubic interpolation
-        # and enhance contrast using CLAHE (Contrast Limited Adaptive Histogram Equalization)
         if crop_w < 160 or crop_h < 160:
             scale = max(2.0, 160.0 / max(crop_w, crop_h))
             new_w = int(crop_w * scale)
@@ -332,25 +359,105 @@ class SmallFaceRecognitionPipeline:
         return {"age": 28, "gender": "Unknown", "emotion": "neutral"}
 
     # -----------------------------------------------------------------------
+    # Tahap 6: Temporal Smoothing (Anti-Flicker)
+    # -----------------------------------------------------------------------
+    def _merge_with_temporal_cache(
+        self, camera_id: str, current_detections: List[Dict[str, Any]]
+    ) -> List[Dict[str, Any]]:
+        """
+        Merge current frame detections with the temporal cache to prevent
+        flickering/disappearing detections. If a previously-detected person
+        is not found in the current frame, their detection is "carried forward"
+        for up to TEMPORAL_PERSIST_SECONDS with a decaying confidence indicator.
+        """
+        now = time.time()
+        cached = self._temporal_cache.get(camera_id, [])
+
+        # Tag current detections with timestamp
+        for d in current_detections:
+            d["_last_seen"] = now
+            d["_first_seen"] = now
+
+        # Try to match cached detections to current detections via IoU
+        matched_cache_indices = set()
+        for det in current_detections:
+            bbox = det.get("bounding_box", {})
+            det_box = (bbox.get("x", 0), bbox.get("y", 0), bbox.get("w", 30), bbox.get("h", 30))
+            best_iou = 0.0
+            best_idx = -1
+            for ci, cached_det in enumerate(cached):
+                cb = cached_det.get("bounding_box", {})
+                c_box = (cb.get("x", 0), cb.get("y", 0), cb.get("w", 30), cb.get("h", 30))
+                iou = _compute_iou(det_box, c_box)
+                if iou > best_iou:
+                    best_iou = iou
+                    best_idx = ci
+            if best_iou > 0.15 and best_idx >= 0:
+                matched_cache_indices.add(best_idx)
+                # Carry forward first_seen from cache for tracking continuity
+                det["_first_seen"] = cached[best_idx].get("_first_seen", now)
+
+        # Carry forward unmatched cached detections (anti-flicker)
+        merged = list(current_detections)
+        for ci, cached_det in enumerate(cached):
+            if ci in matched_cache_indices:
+                continue
+            age = now - cached_det.get("_last_seen", now)
+            if age < TEMPORAL_PERSIST_SECONDS:
+                # Still within persistence window — carry forward with age marker
+                carryover = dict(cached_det)
+                carryover["_carried_forward"] = True
+                carryover["_age"] = age
+                # Check it doesn't overlap with a current detection (spatial dedup)
+                cb = carryover.get("bounding_box", {})
+                c_box = (cb.get("x", 0), cb.get("y", 0), cb.get("w", 30), cb.get("h", 30))
+                is_dup = False
+                for det in current_detections:
+                    db = det.get("bounding_box", {})
+                    d_box = (db.get("x", 0), db.get("y", 0), db.get("w", 30), db.get("h", 30))
+                    if _compute_iou(c_box, d_box) > 0.20:
+                        is_dup = True
+                        break
+                if not is_dup:
+                    merged.append(carryover)
+
+        # Update cache (keep entries alive up to TEMPORAL_MAX_AGE)
+        self._temporal_cache[camera_id] = [
+            d for d in merged
+            if (now - d.get("_last_seen", now)) < TEMPORAL_MAX_AGE
+        ]
+
+        # Clean output: remove internal temporal metadata from response
+        output = []
+        for d in merged:
+            clean = {k: v for k, v in d.items() if not k.startswith("_")}
+            output.append(clean)
+
+        return output
+
+    # -----------------------------------------------------------------------
     # Full Frame Pipeline Execution
     # -----------------------------------------------------------------------
     def process_frame(
         self,
         frame: np.ndarray,
         camera_id: str = "CAM02",
-        threshold: float = DEFAULT_MATCH_THRESHOLD
+        threshold: float = DEFAULT_MATCH_THRESHOLD,
+        customer_id: str = "default"
     ) -> List[Dict[str, Any]]:
         """
         Execute full multi-scale pipeline on uncompressed CCTV frame:
-        1. Full-frame YuNet detection (captures tiny faces down to 8px in background)
-        2. YOLOv8 Person-level ROI and head-crop zoom (captures people from afar)
-        3. ArcFace 512-D Embedding & FAISS Vector Matching
+        1. Parallel YuNet + YOLO detection (both always run, merged via IoU dedup)
+        2. ArcFace 512-D Embedding & FAISS Vector Matching
+        3. Temporal Smoothing (anti-flicker carry-forward)
         """
         start_time = time.time()
         frame_h, frame_w = frame.shape[:2]
-        candidate_faces = []  # [{ "box": (x, y, w, h), "person_box": (px, py, pw, ph), "conf": float, "face_crop": np.ndarray }]
+        candidate_faces = []
 
-        # 1. Method A: High-Sensitivity Small Face Detection via YuNet
+        # ===================================================================
+        # METHOD A: YuNet Full-Frame Small Face Detection (fast, direct face)
+        # ===================================================================
         if self.yunet_detector is not None:
             try:
                 self.yunet_detector.setInputSize((frame_w, frame_h))
@@ -360,8 +467,8 @@ class SmallFaceRecognitionPipeline:
                         fx, fy, fw, fh = map(int, f[:4])
                         conf = float(f[14])
                         aspect = fh / max(1, fw)
-                        if conf >= 0.45 and fw >= 16 and fh >= 16 and (0.65 <= aspect <= 1.8):
-                            # Expand crop slightly (25% margin)
+                        # Lowered filter: conf >= 0.35 (was 0.45), min 12px (was 16px)
+                        if conf >= 0.35 and fw >= 12 and fh >= 12 and (0.55 <= aspect <= 2.0):
                             pad_x = max(4, int(fw * 0.35))
                             pad_y = max(4, int(fh * 0.35))
                             cx1 = max(0, fx - pad_x)
@@ -370,7 +477,7 @@ class SmallFaceRecognitionPipeline:
                             cy2 = min(frame_h, fy + fh + pad_y)
                             
                             face_crop = frame[cy1:cy2, cx1:cx2].copy()
-                            if face_crop.shape[0] >= 14 and face_crop.shape[1] >= 14:
+                            if face_crop.shape[0] >= 12 and face_crop.shape[1] >= 12:
                                 candidate_faces.append({
                                     "box": (fx, fy, fw, fh),
                                     "person_box": (cx1, cy1, cx2 - cx1, int((cy2 - cy1) * 2.8)),
@@ -381,11 +488,11 @@ class SmallFaceRecognitionPipeline:
             except Exception as e:
                 logger.warning(f"YuNet full-frame detection notice: {e}")
 
-        # 2. Method B: YOLOv8 Person Detection -> Auto Crop & Digital Zoom (fallback if YuNet found 0 faces)
-        if len(candidate_faces) == 0:
-            persons = self.detect_persons(frame)
-        else:
-            persons = []
+        # ===================================================================
+        # METHOD B: YOLO Person Detection → Head Crop → Face Detection
+        # NOW RUNS IN PARALLEL (not fallback) — always runs to catch missed faces
+        # ===================================================================
+        persons = self.detect_persons(frame)
         for person_box in persons:
             px, py, pw, ph = person_box
             if pw >= frame_w and ph >= frame_h and len(candidate_faces) > 0:
@@ -408,11 +515,12 @@ class SmallFaceRecognitionPipeline:
                     gw = max(8, int(fw * scale_x))
                     gh = max(8, int(fh * scale_y))
 
-                    # Check if already covered by Method A
+                    # IoU-based deduplication against existing candidates
                     is_dup = False
+                    new_box = (gx, gy, gw, gh)
                     for existing in candidate_faces:
-                        ex, ey, ew, eh = existing["box"]
-                        if abs(ex - gx) < 20 and abs(ey - gy) < 20:
+                        ex_box = existing["box"]
+                        if _compute_iou(new_box, ex_box) > 0.25:
                             is_dup = True
                             break
 
@@ -425,15 +533,17 @@ class SmallFaceRecognitionPipeline:
                             "source": "person_zoom"
                         })
 
-        # 3. Recognition & Attribute Analysis for each detected face
+        # ===================================================================
+        # Recognition & Attribute Analysis for each detected face
+        # ===================================================================
+        vdb = get_vector_db(customer_id)
         detections = []
         for idx, item in enumerate(candidate_faces):
             gx, gy, gw, gh = item["box"]
             face_img = item["face_crop"]
             person_box = item["person_box"]
 
-            # Digital Zoom & Enhancement for Recognition:
-            # Upscale face image if small (< 112px) for ArcFace input
+            # Digital Zoom & Enhancement for Recognition
             ch, cw = face_img.shape[:2]
             if cw < 112 or ch < 112:
                 scale = max(2.0, 112.0 / max(cw, ch, 1))
@@ -451,9 +561,9 @@ class SmallFaceRecognitionPipeline:
             distance = 1.0
             identity_id = None
 
-            # FAISS Vector Search
-            if embedding is not None and vector_db.size() > 0:
-                matches = vector_db.search(embedding, top_k=1)
+            # FAISS Vector Search (Per-Customer Index)
+            if embedding is not None and vdb.size() > 0:
+                matches = vdb.search(embedding, top_k=1)
                 if matches:
                     best = matches[0]
                     sim = best["similarity"]
@@ -471,7 +581,7 @@ class SmallFaceRecognitionPipeline:
                             ratio = min(1.0, (sim - threshold) / max(0.01, 1.0 - threshold))
                             confidence = round(75.0 + (ratio * 24.5), 1)
 
-            # Analyze attributes with caching to ensure fast sub-second frame analysis
+            # Analyze attributes with caching
             if matched_name != "STRANGER" and hasattr(self, "_attr_cache") and matched_name in self._attr_cache:
                 attributes = self._attr_cache[matched_name]
             else:
@@ -506,7 +616,8 @@ class SmallFaceRecognitionPipeline:
                 gender=attributes.get("gender"),
                 emotion=attributes.get("emotion"),
                 snapshot_path=snapshot_rel_path,
-                is_alert=(category in ["blacklist", "vip"])
+                is_alert=(category in ["blacklist", "vip"]),
+                location_id=customer_id
             )
 
             detections.append({
@@ -522,9 +633,14 @@ class SmallFaceRecognitionPipeline:
                 "detection_source": item["source"]
             })
 
+        # ===================================================================
+        # Temporal Smoothing: merge with cache to prevent flickering
+        # ===================================================================
+        smoothed_detections = self._merge_with_temporal_cache(camera_id, detections)
+
         duration_ms = round((time.time() - start_time) * 1000, 1)
-        logger.info(f"Processed frame for {camera_id}: {len(detections)} detections in {duration_ms}ms")
-        return detections
+        logger.info(f"Processed frame for {camera_id}: {len(detections)} raw + {len(smoothed_detections) - len(detections)} carried = {len(smoothed_detections)} total in {duration_ms}ms")
+        return smoothed_detections
 
 
 # Global singleton instance

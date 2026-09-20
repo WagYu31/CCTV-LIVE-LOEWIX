@@ -186,5 +186,30 @@ class VectorDatabase:
         return len(self.id_map)
 
 
-# Global singleton instance
-vector_db = VectorDatabase()
+# Multi-Tenant Vector Database Registry
+_tenant_vector_dbs: Dict[str, VectorDatabase] = {}
+
+
+def get_vector_db(tenant_id: str = "default") -> VectorDatabase:
+    """
+    Retrieve or initialize an isolated VectorDatabase for a specific tenant or location.
+    e.g. 'showroom', 'kantor', 'bioskop', 'pabrik', 'default'
+    """
+    clean_tenant = "".join(c for c in (tenant_id or "default") if c.isalnum() or c in ("_", "-")).lower()
+    if not clean_tenant:
+        clean_tenant = "default"
+
+    if clean_tenant not in _tenant_vector_dbs:
+        if clean_tenant == "default":
+            idx_path = DEFAULT_INDEX_PATH
+        else:
+            base_dir = Path(DEFAULT_INDEX_PATH).parent
+            idx_path = str(base_dir / f"faiss_arcface_{clean_tenant}.index")
+        _tenant_vector_dbs[clean_tenant] = VectorDatabase(index_path=idx_path)
+
+    return _tenant_vector_dbs[clean_tenant]
+
+
+# Global singleton default instance for backwards compatibility
+vector_db = get_vector_db("default")
+

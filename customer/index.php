@@ -11125,27 +11125,7 @@
         }
 
         // Ultra-Sleek Holographic AI Scan Laser Wave
-        scanLineY += 2.0 * scanDirection;
-        if (scanLineY >= canvas.height - 15) scanDirection = -1;
-        if (scanLineY <= 15) scanDirection = 1;
-
-        ctx.save();
-        const laserGrad = ctx.createLinearGradient(0, scanLineY - 18, 0, scanLineY + 18);
-        laserGrad.addColorStop(0, 'rgba(0, 240, 255, 0)');
-        laserGrad.addColorStop(0.5, 'rgba(0, 240, 255, 0.18)');
-        laserGrad.addColorStop(1, 'rgba(0, 240, 255, 0)');
-        ctx.fillStyle = laserGrad;
-        ctx.fillRect(0, scanLineY - 18, canvas.width, 36);
-
-        ctx.strokeStyle = '#00f0ff';
-        ctx.lineWidth = 1.5;
-        ctx.shadowColor = '#00f0ff';
-        ctx.shadowBlur = 8;
-        ctx.beginPath();
-        ctx.moveTo(0, scanLineY);
-        ctx.lineTo(canvas.width, scanLineY);
-        ctx.stroke();
-        ctx.restore();
+        // Holographic scan laser wave disabled for clean CCTV view
 
         // Continuous Real-Time Auto-Tracking & Neural Face Matcher Engine
         if (isAutoTrackingActive) {
@@ -12036,11 +12016,12 @@
       const isWahyu = String(ent.label || '').toLowerCase().includes('wahyu') || 
                       String(ent.label || '').toLowerCase().includes('wagyu') || 
                       String(ent.label || '').toLowerCase() === 'yu';
-      const isVIP = ent.category === 'vip' || isWahyu || Boolean(ent.linkedVehicle && ent.linkedVehicle.category === 'vip');
+      const isEmployee = ent.isEmployee || ent.category === 'employee' || String(ent.label || '').toUpperCase().includes('KARYAWAN') || String(ent.label || '').toUpperCase().includes('STAFF');
+      const isVIP = (ent.category === 'vip' || isWahyu || Boolean(ent.linkedVehicle && ent.linkedVehicle.category === 'vip')) && !isEmployee;
       const isBlacklist = ent.category === 'blacklist';
-      const isKnown = Boolean(ent.face || ent.linkedVehicle || ent.reId || (ent.label && !['STRANGER', 'PENGUNJUNG', 'UNKNOWN', 'ORANG'].includes(String(ent.label).toUpperCase())));
-      const reticleColor = isVIP ? '#10b981' : (isBlacklist ? '#ef4444' : '#00f0ff');
-      const reticleGlow = isVIP ? 'rgba(16, 185, 129, 0.75)' : (isBlacklist ? 'rgba(239, 68, 68, 0.75)' : 'rgba(0, 240, 255, 0.75)');
+      const isKnown = Boolean(ent.face || ent.linkedVehicle || ent.reId || isEmployee || (ent.label && !['STRANGER', 'PENGUNJUNG', 'UNKNOWN', 'ORANG'].includes(String(ent.label).toUpperCase())));
+      const reticleColor = isVIP ? '#f59e0b' : (isEmployee ? '#3b82f6' : (isBlacklist ? '#ef4444' : '#00f0ff'));
+      const reticleGlow = isVIP ? 'rgba(245, 158, 11, 0.85)' : (isEmployee ? 'rgba(59, 130, 246, 0.90)' : (isBlacklist ? 'rgba(239, 68, 68, 0.85)' : 'rgba(0, 240, 255, 0.85)'));
 
       // Teknik C: Draw Cyber Laser Link between Person and Associated Vehicle
       if (ent.linkedVehicle && Array.isArray(activeAIEntities)) {
@@ -12093,7 +12074,7 @@
       // Subtle Center Targeting Crosshair (Upper Torso / Head)
       const cx = bx + bw / 2;
       const cy = by + bh * 0.32;
-      ctx.strokeStyle = isVIP ? 'rgba(16, 185, 129, 0.5)' : 'rgba(0, 240, 255, 0.4)';
+      ctx.strokeStyle = isVIP ? 'rgba(245, 158, 11, 0.5)' : (isEmployee ? 'rgba(59, 130, 246, 0.5)' : 'rgba(0, 240, 255, 0.4)');
       ctx.lineWidth = 1.2;
       ctx.setLineDash([3, 3]);
       ctx.beginPath();
@@ -12104,8 +12085,9 @@
 
       // CCTV Pedestrian Surveillance Tag
       const isStranger = !isKnown;
-      let displayLabel = isStranger ? 'ORANG' : String(ent.label).replace(/\s*\[VIP\]/i, '').replace(/\s*\(Pengunjung\)/i, '').toUpperCase();
-      let roleTag = isVIP ? ' [VIP]' : (isBlacklist ? ' [DPO]' : ' (Pengunjung)');
+      let displayLabel = isStranger ? 'ORANG' : String(ent.label).replace(/\s*\[VIP\]/i, '').replace(/\s*\[KARYAWAN\]/i, '').replace(/\s*\(Pengunjung\)/i, '').toUpperCase();
+      let roleTag = isVIP ? ' [VIP]' : (isEmployee ? ' [KARYAWAN]' : (isBlacklist ? ' [DPO]' : ' (Pengunjung)'));
+      const icon = isVIP ? '🌟' : (isEmployee ? '👔' : (isBlacklist ? '🚫' : '🚶'));
 
       if (ent.linkedVehicle) {
         roleTag = ` [VIP • Plat ${ent.linkedVehicle.plate}]`;
@@ -12113,9 +12095,9 @@
         roleTag = ` [VIP • Estafet Re-ID]`;
       }
 
-      const fullTagText = `🚶 ${displayLabel}${roleTag}`;
+      const fullTagText = `${icon} ${displayLabel}${roleTag}`;
       const confStr = ent.confidence ? (String(ent.confidence).includes('%') ? ent.confidence : `${ent.confidence}%`) : '94.5%';
-      const pillColor = isVIP ? '#10b981' : (isStranger ? '#00f0ff' : '#ef4444');
+      const pillColor = reticleColor;
 
       ctx.font = '800 12px "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, sans-serif';
       const textW = ctx.measureText(fullTagText).width;
@@ -13294,18 +13276,7 @@
         const ctx = canvas.getContext('2d');
         ctx.clearRect(0, 0, cw, ch);
 
-        // 1. Moving Cyan Biometric Laser Beam
-        const laserY = ((Math.sin(Date.now() * 0.0035) + 1) * 0.5) * ch;
-        ctx.save();
-        ctx.strokeStyle = 'rgba(0, 240, 255, 0.7)';
-        ctx.lineWidth = 1.8;
-        ctx.shadowColor = '#00f0ff';
-        ctx.shadowBlur = 12;
-        ctx.beginPath();
-        ctx.moveTo(0, laserY);
-        ctx.lineTo(cw, laserY);
-        ctx.stroke();
-        ctx.restore();
+        // Moving cyan biometric laser beam disabled for clean preview
 
         // 2. Render 3D Biometric Mesh if face detected
         if (_lastEnrollmentDetection && _lastEnrollmentDetection.box) {

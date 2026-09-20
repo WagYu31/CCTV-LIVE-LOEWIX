@@ -48,7 +48,7 @@ from ai_engine.database import (
     init_db, register_identity, get_all_identities, get_identity_by_id,
     get_identity_by_vector_id, get_recent_logs, log_cctv_detection
 )
-from ai_engine.vector_db_faiss import vector_db, EMBEDDING_DIM
+from ai_engine.vector_db_faiss import vector_db, get_vector_db, EMBEDDING_DIM
 from ai_engine.pipeline_small_face import pipeline, DEFAULT_MATCH_THRESHOLD
 
 # Configure Logging
@@ -154,10 +154,10 @@ async def health_check():
 
 
 @app.get("/api/v1/faces/identities")
-async def list_identities():
-    """List all registered identities and categories."""
-    identities = get_all_identities()
-    return {"success": True, "count": len(identities), "identities": identities}
+async def list_identities(location_id: Optional[str] = None):
+    """List all registered identities and categories, optionally scoped to a location."""
+    identities = get_all_identities(location_id=location_id)
+    return {"success": True, "count": len(identities), "location_id": location_id or "all", "identities": identities}
 
 
 @app.post("/api/v1/faces/register")
@@ -168,6 +168,7 @@ async def register_face(
     department: Optional[str] = Form(None),
     phone: Optional[str] = Form(None),
     notes: Optional[str] = Form(None),
+    location_id: Optional[str] = Form(None),
     img: Optional[UploadFile] = File(None),
     img_b64: Optional[str] = Form(None)
 ):
@@ -176,7 +177,7 @@ async def register_face(
     Supports both multipart/form-data and application/json:
     1. Saves photo to disk in assets/uploads/faces/<name>/
     2. Extracts 512-D ArcFace embedding
-    3. Adds vector to FAISS index
+    3. Adds vector to FAISS index (per-location)
     4. Records metadata in SQLite database
     """
     content_type = request.headers.get("content-type", "").lower()
@@ -188,6 +189,7 @@ async def register_face(
             department = body.get("department", "")
             phone = body.get("phone", "")
             notes = body.get("notes", "")
+            location_id = body.get("location_id") or location_id
             img_b64 = body.get("img_b64") or body.get("image") or body.get("img")
         except Exception as e:
             raise HTTPException(status_code=400, detail=f"Invalid JSON body: {e}")
@@ -196,6 +198,7 @@ async def register_face(
     department = department or ""
     phone = phone or ""
     notes = notes or ""
+    clean_loc = "".join(c for c in (location_id or "default") if c.isalnum() or c in ("_", "-")).lower() or "default"
 
     if not name:
         raise HTTPException(status_code=400, detail="Nama identitas ('name' atau 'full_name') wajib diisi.")
@@ -236,13 +239,20 @@ async def register_face(
         phone=phone,
         notes=notes,
         photo_path=str(photo_save_path),
-        vector_index_id=-1
+        vector_index_id=-1,
+        location_id=clean_loc
     )
     identity_id = temp_res["id"]
 
-    # Add to FAISS Vector DB
-    vector_pos = vector_db.add_face(identity_id=identity_id, embedding=embedding)
-    vector_db.save()
+    # Add to Location-Scoped FAISS Vector DB
+    tenant_vdb = get_vector_db(clean_loc)
+    vector_pos = tenant_vdb.add_face(identity_id=identity_id, embedding=embedding)
+    tenant_vdb.save()
+
+    # Also add to default index if clean_loc != "default" so global fallback works
+    if clean_loc != "default":
+        vector_db.add_face(identity_id=identity_id, embedding=embedding)
+        vector_db.save()
 
     # Update vector index mapping in DB
     register_identity(
@@ -252,23 +262,26 @@ async def register_face(
         phone=phone,
         notes=notes,
         photo_path=str(photo_save_path),
-        vector_index_id=vector_pos
+        vector_index_id=vector_pos,
+        location_id=clean_loc
     )
 
-    logger.info(f"✅ Successfully registered face for '{clean_name}' (ID: {identity_id}, Vector: {vector_pos})")
+    logger.info(f"✅ Successfully registered face for '{clean_name}' [Location: {clean_loc}] (ID: {identity_id}, Vector: {vector_pos})")
 
     return {
         "success": True,
-        "message": f"Wajah untuk {clean_name} berhasil didaftarkan.",
+        "message": f"Wajah untuk {clean_name} berhasil didaftarkan di lokasi {clean_loc}.",
         "identity_id": identity_id,
         "vector_index_id": vector_pos,
         "category": category,
+        "location_id": clean_loc,
         "photo_path": str(photo_save_path)
     }
 
 
 class FrameAnalysisRequest(BaseModel):
     camera_id: str = "CAM02"
+    location_id: Optional[str] = "default"
     frame_b64: str
     threshold: Optional[float] = DEFAULT_MATCH_THRESHOLD
 
@@ -284,12 +297,15 @@ def analyze_frame(req: FrameAnalysisRequest, background_tasks: BackgroundTasks):
     if eff_threshold > 0.55:
         eff_threshold = 0.48
 
+    loc_id = req.location_id or "default"
+
     # Process frame through pipeline (running in worker thread pool)
     try:
         detections = pipeline.process_frame(
             frame=frame,
             camera_id=req.camera_id,
-            threshold=eff_threshold
+            threshold=eff_threshold,
+            customer_id=loc_id
         )
     except Exception as e:
         import traceback
@@ -298,6 +314,7 @@ def analyze_frame(req: FrameAnalysisRequest, background_tasks: BackgroundTasks):
 
     payload = {
         "camera_id": req.camera_id,
+        "location_id": loc_id,
         "timestamp": datetime.now().isoformat(),
         "detections_count": len(detections),
         "detections": detections
@@ -314,6 +331,7 @@ class CropRecognizeRequest(BaseModel):
     img: Optional[str] = None
     img_b64: Optional[str] = None
     camera_id: str = "CAM02"
+    location_id: Optional[str] = "default"
     threshold: Optional[float] = DEFAULT_MATCH_THRESHOLD
     analyze: Optional[bool] = True
 
@@ -324,6 +342,7 @@ def recognize_crop(req: CropRecognizeRequest):
     """
     Recognize a face from a client-provided crop (e.g. from browser face detector).
     Fully compatible with both /api/v1/faces/recognize-crop and /api/deepface/find.
+    Supports location_id for per-tenant / per-location employee databases.
     """
     b64_str = req.img or req.img_b64
     if not b64_str:
@@ -347,8 +366,14 @@ def recognize_crop(req: CropRecognizeRequest):
     if threshold > 0.48:
         threshold = 0.42
 
-    if embedding is not None and vector_db.size() > 0:
-        matches = vector_db.search(embedding, top_k=1)
+    loc_id = req.location_id or "default"
+    target_vdb = get_vector_db(loc_id)
+    # If location index is empty and loc_id != default, fallback to global default
+    if target_vdb.size() == 0 and loc_id != "default":
+        target_vdb = vector_db
+
+    if embedding is not None and target_vdb.size() > 0:
+        matches = target_vdb.search(embedding, top_k=1)
         if matches:
             best = matches[0]
             sim = best["similarity"]
@@ -375,6 +400,7 @@ def recognize_crop(req: CropRecognizeRequest):
         "model": "ArcFace",
         "metric": "cosine",
         "threshold": threshold,
+        "location_id": loc_id,
         "age": attributes.get("age"),
         "gender": attributes.get("gender"),
         "dominant_emotion": attributes.get("emotion"),
@@ -383,10 +409,15 @@ def recognize_crop(req: CropRecognizeRequest):
 
 
 @app.get("/api/v1/logs/detections")
-async def get_detection_logs(camera_id: Optional[str] = None, limit: int = 50):
+async def get_detection_logs(
+    camera_id: Optional[str] = None,
+    location_id: Optional[str] = None,
+    limit: int = 50
+):
     """Fetch recent detection logs for audit feed."""
-    logs = get_recent_logs(camera_id=camera_id, limit=limit)
+    logs = get_recent_logs(camera_id=camera_id, location_id=location_id, limit=limit)
     return {"success": True, "count": len(logs), "logs": logs}
+
 
 
 def sync_registered_faces_from_web_db():
