@@ -5827,18 +5827,16 @@ $assetsBase = $isSubdomain ? 'https://loewixcctv.com/assets' : '../assets';
           }
 
           // C. Showroom Display Platform & Center Paddock Zones
-          // Blocks static display motorcycles / stage fixtures. Real standing humans are vertical (aspect >= 1.30).
-          // Display motorcycles are horizontal/squat (aspect < 1.30) and motionless.
-          const isElevatedScooterStage = (cx > sourceW * 0.55 && cx < sourceW * 0.88 && cy >= sourceH * 0.35 && cy < sourceH * 0.48);
+          // Blocks static display motorcycles on the stage.
+          // In CAM02, the elevated scooter stage is located at cx 0.58-0.88 and cy 0.15-0.38
+          const isElevatedScooterStage = (cx > sourceW * 0.58 && cx < sourceW * 0.88 && cy >= sourceH * 0.15 && cy < sourceH * 0.38);
           const isCenterPaddockZone = (cx > sourceW * 0.32 && cx < sourceW * 0.54 && cy > sourceH * 0.48 && cy < sourceH * 0.75);
 
           if (isElevatedScooterStage || isCenterPaddockZone) {
-            if (aspect < 1.25) {
-              const stageMotion = getBoxMotionDelta(boxX, boxY, boxW, boxH, sourceW, sourceH);
-              if (stageMotion < 0.30) {
-                if (_doDebug) console.log(`🚫 [Filter C] Static vehicle/stage fixture: aspect=${aspect.toFixed(2)} motion=${stageMotion.toFixed(2)}`);
-                continue;
-              }
+            const stageMotion = getBoxMotionDelta(boxX, boxY, boxW, boxH, sourceW, sourceH);
+            if (stageMotion < 0.28) {
+              if (_doDebug) console.log(`🚫 [Filter C] Static vehicle on display stage: motion=${stageMotion.toFixed(2)}`);
+              continue;
             }
           }
 
@@ -5927,6 +5925,7 @@ $assetsBase = $isSubdomain ? 'https://loewixcctv.com/assets' : '../assets';
         }
 
         // 3. Strict IoU & Proximity Non-Maximum Suppression (NMS) - Eliminates duplicate or stacked boxes
+        // Standard IoU 0.45 allows two real people sitting next to each other to both be tracked without suppressing each other
         const nmsPersons = [];
         filteredPersons.sort((a, b) => b.score - a.score);
         for (const b of filteredPersons) {
@@ -5937,23 +5936,15 @@ $assetsBase = $isSubdomain ? 'https://loewixcctv.com/assets' : '../assets';
             const interArea = interW * interH;
             if (interArea > 0) {
               const iou = interArea / (b.w * b.h + r.w * r.h - interArea);
-              if (iou > 0.20) {
+              if (iou > 0.45) {
                 keep = false;
                 break;
               }
               const minArea = Math.min(b.w * b.h, r.w * r.h);
-              if (interArea / minArea > 0.40) {
+              if (interArea / minArea > 0.75) {
                 keep = false;
                 break;
               }
-            }
-            // Horizontal Proximity Filter: Two people cannot occupy the same narrow shoulder space
-            const centerDistX = Math.abs((b.x + b.w / 2) - (r.x + r.w / 2));
-            const avgW = (b.w + r.w) / 2;
-            const vertOverlap = interH / Math.min(b.h, r.h);
-            if (centerDistX < avgW * 0.70 && vertOverlap > 0.40) {
-              keep = false;
-              break;
             }
           }
           if (keep) nmsPersons.push(b);
@@ -5987,7 +5978,7 @@ $assetsBase = $isSubdomain ? 'https://loewixcctv.com/assets' : '../assets';
           });
         }
 
-        // 5. Robust Multi-Track Inertial Smoother with 3.2-Second Retention
+        // 5. Robust Multi-Track Inertial Smoother with 7.0-Second Continuous Retention
         const matchedIndices = new Set();
 
         for (const target of scaledDetections) {
@@ -6134,13 +6125,13 @@ $assetsBase = $isSubdomain ? 'https://loewixcctv.com/assets' : '../assets';
           }
         }
 
-        // CONTINUOUS TRACK RETENTION: Hold the track firmly so scanner reticles don't flicker
-        // Keep active tracks for 2.2 seconds for regular persons, and 15 seconds for tagged personnel (Karyawan / VIP)
+        // CONTINUOUS TRACK RETENTION: Hold the track firmly so scanner reticles don't flicker or disappear
+        // Keep active tracks for 7.0 seconds for regular persons, and 25 seconds for tagged personnel (Karyawan / VIP)
         activeHumanEntities = activeHumanEntities.filter((ent, idx) => {
           if (!matchedIndices.has(idx)) {
             ent.missedFrames = (ent.missedFrames || 0) + 1;
             const timeSinceSeen = now - (ent.updatedAt || now);
-            const maxHoldMs = (ent.customTagged || ent.isIdentified) ? 15000 : 2200;
+            const maxHoldMs = (ent.customTagged || ent.isIdentified) ? 25000 : 7000;
             return (timeSinceSeen < maxHoldMs);
           }
           return true;
