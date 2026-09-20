@@ -5672,31 +5672,11 @@ $assetsBase = $isSubdomain ? 'https://loewixcctv.com/assets' : '../assets';
     // HOLOGRAPHIC AI SCAN LASER WAVE (GAMBAR 2 REPLICA)
     // =========================================================================
     function drawCyberneticScanLaser(ctx, width, height) {
-      aiScanLineY += 2.0 * aiScanDirection;
-      if (aiScanLineY >= height - 15) aiScanDirection = -1;
-      if (aiScanLineY <= 15) aiScanDirection = 1;
-
+      // Garis laser biru naik-turun dinonaktifkan agar layar CCTV bersih dan tidak terdistraksi
       ctx.save();
-      const laserGrad = ctx.createLinearGradient(0, aiScanLineY - 18, 0, aiScanLineY + 18);
-      laserGrad.addColorStop(0, 'rgba(0, 240, 255, 0)');
-      laserGrad.addColorStop(0.5, 'rgba(0, 240, 255, 0.22)');
-      laserGrad.addColorStop(1, 'rgba(0, 240, 255, 0)');
-      ctx.fillStyle = laserGrad;
-      ctx.fillRect(0, aiScanLineY - 18, width, 36);
-
-      ctx.strokeStyle = '#00f0ff';
-      ctx.lineWidth = 1.6;
-      ctx.shadowColor = '#00f0ff';
-      ctx.shadowBlur = 10;
-      ctx.beginPath();
-      ctx.moveTo(0, aiScanLineY);
-      ctx.lineTo(width, aiScanLineY);
-      ctx.stroke();
-
-      // Top Cyber HUD Scanner Indicator (Gambar 2 Top Left Replica)
       ctx.shadowBlur = 0;
       ctx.font = '800 10.5px monospace';
-      const hudTxt = `● TENSORFLOW.ORG AI SCANNER: ${(currentAICamera && currentAICamera.title ? currentAICamera.title : 'CCTV LIVE').toUpperCase()}`;
+      const hudTxt = `● AI SURVEILLANCE ACTIVE: ${(currentAICamera && currentAICamera.title ? currentAICamera.title : 'CCTV LIVE').toUpperCase()}`;
       ctx.fillStyle = 'rgba(2, 6, 23, 0.85)';
       const tw = ctx.measureText(hudTxt).width + 18;
       ctx.beginPath();
@@ -5708,7 +5688,6 @@ $assetsBase = $isSubdomain ? 'https://loewixcctv.com/assets' : '../assets';
 
       ctx.fillStyle = '#00f0ff';
       ctx.fillText(hudTxt, 20, 25);
-
       ctx.restore();
     }
 
