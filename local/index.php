@@ -2641,11 +2641,16 @@ $assetsBase = $isSubdomain ? 'https://loewixcctv.com/assets' : '../assets';
           </div>
         </div>
 
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary btn-sm" onclick="closeModal('modalQuickTagPerson')">Batal</button>
-          <button type="button" class="btn btn-primary btn-sm" id="btn-save-quicktag" onclick="submitQuickTagPerson()" style="background: linear-gradient(135deg, #059669, #10b981); border-color: #10b981; font-weight: 700;">
-            <i class="fas fa-check-circle mr-1"></i> Simpan & Terapkan Identitas
+        <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center;">
+          <button type="button" class="btn btn-danger-outline btn-sm" id="btn-delete-quicktag" onclick="removeQuickTagPerson()" style="display: none;">
+            <i class="fas fa-user-minus mr-1"></i> Lepas Label (Jadikan Pengunjung)
           </button>
+          <div style="display: flex; gap: 0.5rem; margin-left: auto;">
+            <button type="button" class="btn btn-secondary btn-sm" onclick="closeModal('modalQuickTagPerson')">Batal</button>
+            <button type="button" class="btn btn-primary btn-sm" id="btn-save-quicktag" onclick="submitQuickTagPerson()" style="background: linear-gradient(135deg, #059669, #10b981); border-color: #10b981; font-weight: 700;">
+              <i class="fas fa-check-circle mr-1"></i> Simpan & Terapkan Identitas
+            </button>
+          </div>
         </div>
       </form>
     </div>
@@ -6036,10 +6041,15 @@ $assetsBase = $isSubdomain ? 'https://loewixcctv.com/assets' : '../assets';
             // Auto-reconnect with persistent personnel tag if not already tagged
             if (!bestEntity.customTagged && !bestEntity.isIdentified) {
               for (const p of persistentTaggedPersonnel) {
-                if (now - p.lastSeen < 180000) {
-                  const isColor = p.clothingColor && target.clothing && (p.clothingColor === target.clothing.colorName);
-                  const isNear = Math.hypot(bestEntity.x - p.lastX, bestEntity.y - p.lastY) < Math.max(220, canvas.width * 0.35);
-                  if (isColor || isNear) {
+                // Aturan 1: Jangan pernah beri nama jika nama ini sudah aktif dipakai orang lain di layar!
+                const isAlreadyActive = activeHumanEntities.some(e => e !== bestEntity && (e.name || '').toLowerCase() === p.name.toLowerCase());
+                if (isAlreadyActive) continue;
+
+                // Aturan 2: Reconnect hanya jika orang hilang sejenak (< 5 detik) DAN jarak dekat (< 90px)
+                if (now - p.lastSeen < 5000) {
+                  const dist = Math.hypot(bestEntity.x - p.lastX, bestEntity.y - p.lastY);
+                  const isColorMatch = !p.clothingColor || (target.clothing && p.clothingColor === target.clothing.colorName);
+                  if (dist < 90 && isColorMatch) {
                     bestEntity.name = p.name;
                     bestEntity.category = p.category;
                     bestEntity.role_title = p.role_title;
@@ -6102,12 +6112,17 @@ $assetsBase = $isSubdomain ? 'https://loewixcctv.com/assets' : '../assets';
               missedFrames: 0
             };
 
-            // Check if matches known tagged person in this camera session
+            // Check if matches known tagged person in this camera session (continuity recovery)
             for (const p of persistentTaggedPersonnel) {
-              if (now - p.lastSeen < 180000) {
-                const isColor = p.clothingColor && target.clothing && (p.clothingColor === target.clothing.colorName);
-                const isNear = Math.hypot(target.targetX - p.lastX, target.targetY - p.lastY) < Math.max(220, canvas.width * 0.35);
-                if (isColor || isNear) {
+              // Aturan 1: Jangan pernah beri nama jika nama ini sudah aktif dipakai orang lain di layar!
+              const isAlreadyActive = activeHumanEntities.some(e => (e.name || '').toLowerCase() === p.name.toLowerCase());
+              if (isAlreadyActive) continue;
+
+              // Aturan 2: Hanya reconnect jika orang baru saja hilang < 5 detik dan di posisi yang sama (< 90px)
+              if (now - p.lastSeen < 5000) {
+                const dist = Math.hypot(target.targetX - p.lastX, target.targetY - p.lastY);
+                const isColorMatch = !p.clothingColor || (target.clothing && p.clothingColor === target.clothing.colorName);
+                if (dist < 90 && isColorMatch) {
                   newEnt.name = p.name;
                   newEnt.category = p.category;
                   newEnt.role_title = p.role_title;
@@ -6592,6 +6607,11 @@ $assetsBase = $isSubdomain ? 'https://loewixcctv.com/assets' : '../assets';
         roleTitleInput.value = ent.role_title || (role === 'employee' ? 'Staff' : 'Pengunjung');
       }
 
+      const delBtn = document.getElementById('btn-delete-quicktag');
+      if (delBtn) {
+        delBtn.style.display = (ent.customTagged || ent.name) ? 'inline-flex' : 'none';
+      }
+
       openModal('modalQuickTagPerson');
       if (nameInput) {
         setTimeout(() => nameInput.focus(), 150);
@@ -6603,6 +6623,29 @@ $assetsBase = $isSubdomain ? 'https://loewixcctv.com/assets' : '../assets';
       if (found) {
         openQuickTagModalForEntity(found);
       }
+    }
+
+    function removeQuickTagPerson() {
+      if (!selectedEntityForTagging) return;
+      const ent = selectedEntityForTagging;
+      const nameToRemove = (ent.name || '').toLowerCase();
+
+      ent.name = '';
+      ent.category = 'guest';
+      ent.role_title = 'Pengunjung';
+      ent.isVIP = false;
+      ent.isEmployee = false;
+      ent.customTagged = false;
+      ent.isIdentified = false;
+      ent.label = 'ORANG (Pengunjung)';
+
+      if (nameToRemove) {
+        persistentTaggedPersonnel = persistentTaggedPersonnel.filter(p => p.name.toLowerCase() !== nameToRemove);
+      }
+
+      closeModal('modalQuickTagPerson');
+      updateActivePersonsBar();
+      showAIHUDBanner('Label dilepas (Status Pengunjung)', 'guest', 0);
     }
 
     async function submitQuickTagPerson() {
@@ -6623,6 +6666,20 @@ $assetsBase = $isSubdomain ? 'https://loewixcctv.com/assets' : '../assets';
       const roleTitle = (roleTitleInput ? roleTitleInput.value : '').trim() || (category === 'employee' ? 'Staff' : 'Pengunjung');
 
       const saveDb = document.getElementById('quicktag-save-db')?.checked || false;
+
+      // Aturan Unik: Pastikan nama ini tidak duplikat di orang lain di layar saat ini
+      activeHumanEntities.forEach(e => {
+        if (e !== ent && (e.name || '').toLowerCase() === name.toLowerCase()) {
+          e.name = '';
+          e.category = 'guest';
+          e.role_title = 'Pengunjung';
+          e.isVIP = false;
+          e.isEmployee = false;
+          e.customTagged = false;
+          e.isIdentified = false;
+          e.label = 'ORANG (Pengunjung)';
+        }
+      });
 
       // Update entity live tracking attributes
       ent.name = name;
