@@ -5771,7 +5771,7 @@ $assetsBase = $isSubdomain ? 'https://loewixcctv.com/assets' : '../assets';
               score: p.score,
               class: p.class
             });
-          } else if (p.class === 'person' && p.score >= 0.38) {
+          } else if (p.class === 'person' && p.score >= 0.25) {
             candidatePersons.push({
               x: bx, y: by, w: bw, h: bh,
               x2: bx + bw, y2: by + bh,
@@ -5800,22 +5800,28 @@ $assetsBase = $isSubdomain ? 'https://loewixcctv.com/assets' : '../assets';
           const cy = boxY + boxH * 0.5;
           const aspect = boxH / Math.max(1, boxW);
 
-          // A. Ceiling Clutter & Top Overhead Lights & Hanging Banners
-          if (boxY < sourceH * 0.02 || cy < sourceH * 0.10) {
+          // A. Ceiling Clutter & Top Overhead Lights
+          if (boxY < sourceH * 0.01 || cy < sourceH * 0.05) {
             if (_doDebug) console.log(`🚫 [Filter A] Ceiling: boxY=${Math.round(boxY)} cy=${Math.round(cy)} sourceH=${sourceH}`);
             continue;
           }
 
-          // B. Showroom Apparel Display Rack, Hanging Clothes & Wall Posters (Top-Right Zone)
-          // Covers cx > sourceW * 0.55 and (boxY < sourceH * 0.48 || cy < sourceH * 0.55)
-          // Eliminates hanging jackets/shirts on hangers, display mannequins, and poster backdrops
-          const isApparelDisplayZone = (cx > sourceW * 0.55 && (boxY < sourceH * 0.48 || cy < sourceH * 0.55));
-          if (isApparelDisplayZone) {
+          // Define legitimate human activity zones
+          // 1. Reception / Service Counter where staff sit and assist customers
+          const isReceptionDeskZone = (cx > sourceW * 0.35 && cx < sourceW * 0.72 && cy >= sourceH * 0.06 && cy < sourceH * 0.35);
+          // 2. Customer seating with round tables & stools on the left
+          const isCustomerSeatingZone = (cx > sourceW * 0.10 && cx < sourceW * 0.45 && cy > sourceH * 0.18 && cy < sourceH * 0.65);
+          // 3. Upper platform lounge / display seating on right
+          const isUpperSeatingZone = (cx > sourceW * 0.68 && cx < sourceW * 0.90 && cy >= sourceH * 0.10 && cy < sourceH * 0.35);
+          const isStationaryHumanZone = isReceptionDeskZone || isCustomerSeatingZone || isUpperSeatingZone;
+
+          // B. Showroom Apparel Display Rack (Only the hanging garment rack under FASHIONABLE sign)
+          // Strictly limited to top-right hanging clothes rack (cx > 0.82 and cy < 0.28)
+          const isApparelDisplayZone = (cx > sourceW * 0.82 && cy < sourceH * 0.28);
+          if (isApparelDisplayZone && cp.score < 0.65) {
             const rackMotion = getBoxMotionDelta(boxX, boxY, boxW, boxH, sourceW, sourceH);
-            const hasBio = hasHumanBiometricSignals(inputTarget, boxX, boxY, boxW, boxH, rackMotion);
-            // Require verified human movement (>= 0.85) AND verified skin biometrics
-            if (rackMotion < 0.85 || !hasBio) {
-              if (_doDebug) console.log(`🚫 [Filter B] Apparel rack / hanging clothes: cx=${Math.round(cx)} cy=${Math.round(cy)} motion=${rackMotion.toFixed(2)}`);
+            if (rackMotion < 0.08) {
+              if (_doDebug) console.log(`🚫 [Filter B] Apparel rack: cx=${Math.round(cx)} cy=${Math.round(cy)} motion=${rackMotion.toFixed(2)}`);
               continue;
             }
           }
@@ -5827,9 +5833,9 @@ $assetsBase = $isSubdomain ? 'https://loewixcctv.com/assets' : '../assets';
           const isCenterPaddockZone = (cx > sourceW * 0.32 && cx < sourceW * 0.54 && cy > sourceH * 0.48 && cy < sourceH * 0.75);
 
           if (isElevatedScooterStage || isCenterPaddockZone) {
-            if (aspect < 1.30) {
+            if (aspect < 1.25) {
               const stageMotion = getBoxMotionDelta(boxX, boxY, boxW, boxH, sourceW, sourceH);
-              if (stageMotion < 0.40) {
+              if (stageMotion < 0.30) {
                 if (_doDebug) console.log(`🚫 [Filter C] Static vehicle/stage fixture: aspect=${aspect.toFixed(2)} motion=${stageMotion.toFixed(2)}`);
                 continue;
               }
@@ -5837,26 +5843,24 @@ $assetsBase = $isSubdomain ? 'https://loewixcctv.com/assets' : '../assets';
           }
 
           // D. Extreme Right / Edge Distortion Clipping Filter
-          if ((boxX + boxW >= sourceW * 0.98) && (boxY < sourceH * 0.45)) {
+          if ((boxX + boxW >= sourceW * 0.99) && (boxY < sourceH * 0.40)) {
             if (_doDebug) console.log(`🚫 [Filter Edge] Right edge limit`);
             continue;
           }
 
-          // D. Customer Seating Zone (Round Table with Stools on Left)
-          const isCustomerSeatingZone = (cx > sourceW * 0.15 && cx < sourceW * 0.45 && cy > sourceH * 0.20 && cy < sourceH * 0.60);
-
-          // E. Aspect ratio constraint: allow standing, walking, seated humans
-          if (aspect < 0.70 || aspect > 4.8) {
-            if (_doDebug) console.log(`🚫 [Filter E] Aspect: ${aspect.toFixed(2)} (need 0.70-4.8)`);
+          // E. Aspect ratio constraint: allow standing, walking, seated humans behind desks
+          const minAspect = isStationaryHumanZone ? 0.45 : 0.65;
+          if (aspect < minAspect || aspect > 5.0) {
+            if (_doDebug) console.log(`🚫 [Filter E] Aspect: ${aspect.toFixed(2)} (need ${minAspect}-5.0)`);
             continue;
           }
 
           // F. Dimension constraints: filter out tiny noise or impossibly huge boxes
-          if (boxH < 20 || boxW < 10) {
+          if (boxH < 16 || boxW < 8) {
             if (_doDebug) console.log(`🚫 [Filter F] Too small: ${boxW}x${boxH}`);
             continue;
           }
-          if (boxW > sourceW * 0.45 || boxH > sourceH * 0.85) {
+          if (boxW > sourceW * 0.50 || boxH > sourceH * 0.90) {
             if (_doDebug) console.log(`🚫 [Filter F] Too large: ${boxW}x${boxH}`);
             continue;
           }
@@ -5872,14 +5876,14 @@ $assetsBase = $isSubdomain ? 'https://loewixcctv.com/assets' : '../assets';
 
               if (['motorcycle', 'bicycle', 'car', 'truck', 'bus'].includes(obs.class)) {
                 // If candidate overlaps with a detected vehicle:
-                // Squat candidate (aspect < 1.35) overlapping vehicle is 100% the vehicle!
-                if (overlapOnPerson > 0.35 && aspect < 1.35) {
+                // Squat candidate (aspect < 1.30) overlapping vehicle is the vehicle
+                if (overlapOnPerson > 0.40 && aspect < 1.30) {
                   if (_doDebug) console.log(`🚫 [Filter G] Vehicle overlap: ${(overlapOnPerson*100).toFixed(0)}% on ${obs.class}`);
                   isBlocked = true;
                   break;
                 }
-                // Very heavy overlap (> 65%) regardless of aspect is blocked
-                if (overlapOnPerson > 0.65) {
+                // Very heavy overlap (> 70%) regardless of aspect is blocked
+                if (overlapOnPerson > 0.70) {
                   if (_doDebug) console.log(`🚫 [Filter G] Heavy vehicle overlap: ${(overlapOnPerson*100).toFixed(0)}% on ${obs.class}`);
                   isBlocked = true;
                   break;
@@ -5888,9 +5892,10 @@ $assetsBase = $isSubdomain ? 'https://loewixcctv.com/assets' : '../assets';
                   boxH = Math.min(boxH, Math.max(Math.round(boxW * 1.3), Math.round((obs.y + obs.h * 0.15) - boxY)));
                 }
               } else if (['chair', 'couch', 'dining table', 'bench'].includes(obs.class)) {
-                if (!isCustomerSeatingZone && overlapOnPerson > 0.75 && obs.score >= cp.score) {
+                // Jangan blokir orang yang duduk di area meja kerja / meja tamu
+                if (!isStationaryHumanZone && overlapOnPerson > 0.85 && obs.score >= cp.score) {
                   const mDelta = getBoxMotionDelta(boxX, boxY, boxW, boxH, sourceW, sourceH);
-                  if (mDelta < 0.40) {
+                  if (mDelta < 0.08) {
                     if (_doDebug) console.log(`🚫 [Filter G] Furniture overlap: ${(overlapOnPerson*100).toFixed(0)}% on ${obs.class}`);
                     isBlocked = true;
                     break;
@@ -5905,9 +5910,8 @@ $assetsBase = $isSubdomain ? 'https://loewixcctv.com/assets' : '../assets';
           const hasBio = hasHumanBiometricSignals(inputTarget, boxX, boxY, boxW, boxH, motionDelta);
 
           // H. Human Biometric & Living Motion Verification
-          // In an open showroom (outside customer seating area), live humans are living beings who move their limbs or have skin/faces.
-          // Completely static objects (hanging clothes, mannequins, posters, parked bikes) have motionDelta < 0.35 and NO human skin!
-          if (!isCustomerSeatingZone && motionDelta < 0.35 && !hasBio) {
+          // Hanya poster/banner mati yang tidak bergerak sama sekali (motion < 0.05), tanpa biometrik kulit, dan skor COCO-SSD rendah yang diblokir
+          if (!isStationaryHumanZone && motionDelta < 0.05 && !hasBio && cp.score < 0.55) {
             if (_doDebug) console.log(`🚫 [Filter H] Static non-living object: motion=${motionDelta.toFixed(2)} bio=${hasBio} score=${cp.score.toFixed(2)}`);
             continue;
           }
