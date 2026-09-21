@@ -2590,11 +2590,11 @@ $assetsBase = $isSubdomain ? 'https://loewixcctv.com/assets' : '../assets';
               <i class="fas fa-id-badge text-info mr-1"></i> Status / Peran (Warna Kotak):
             </label>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
-              <label style="display: flex; align-items: center; gap: 0.5rem; background: rgba(16, 185, 129, 0.12); border: 1.5px solid #10b981; border-radius: 8px; padding: 0.55rem 0.7rem; cursor: pointer;">
-                <input type="radio" name="quicktag_role" value="employee" checked style="accent-color: #10b981;">
+              <label style="display: flex; align-items: center; gap: 0.5rem; background: rgba(59, 130, 246, 0.15); border: 1.5px solid #3b82f6; border-radius: 8px; padding: 0.55rem 0.7rem; cursor: pointer;">
+                <input type="radio" name="quicktag_role" value="employee" checked style="accent-color: #3b82f6;">
                 <div>
-                  <strong style="color: #34d399; font-size: 0.84rem; display: block;">👔 Karyawan</strong>
-                  <small style="color: #94a3b8; font-size: 0.68rem;">Staff Toko (Hijau)</small>
+                  <strong style="color: #60a5fa; font-size: 0.84rem; display: block;">👔 Karyawan</strong>
+                  <small style="color: #94a3b8; font-size: 0.68rem;">Staff / Karyawan (Royal Blue)</small>
                 </div>
               </label>
               <label style="display: flex; align-items: center; gap: 0.5rem; background: rgba(0, 240, 255, 0.1); border: 1.5px solid #00f0ff; border-radius: 8px; padding: 0.55rem 0.7rem; cursor: pointer;">
@@ -2924,6 +2924,10 @@ $assetsBase = $isSubdomain ? 'https://loewixcctv.com/assets' : '../assets';
     function closeModal(id) {
       const el = document.getElementById(id);
       if (el) el.classList.remove('active');
+      if (id === 'modalQuickTagPerson') {
+        selectedEntityForTagging = null;
+        selectedEntityForTaggingCoords = null;
+      }
     }
 
     // Toggle Password Visibility
@@ -3567,11 +3571,31 @@ $assetsBase = $isSubdomain ? 'https://loewixcctv.com/assets' : '../assets';
     let isCOCOSSDLoading = false;
     let activeHumanEntities = [];
     let persistentTaggedPersonnel = [];
+    let selectedEntityForTaggingCoords = null;
     let _humanEntityIdCounter = 0;
     let isHumanDetecting = false;
     let lastHumanDetectTime = 0;
     let aiScanLineY = 0;
     let aiScanDirection = 1;
+
+    function loadPersistentTaggedForCamera(camId) {
+      try {
+        const raw = localStorage.getItem('loewix_tagged_' + (camId || 'default'));
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed)) {
+            persistentTaggedPersonnel = parsed;
+          }
+        }
+      } catch (e) {}
+    }
+
+    function savePersistentTaggedForCamera(camId) {
+      try {
+        const id = camId || (currentAICamera ? currentAICamera.id : 'default');
+        localStorage.setItem('loewix_tagged_' + id, JSON.stringify(persistentTaggedPersonnel));
+      } catch (e) {}
+    }
 
     async function initCOCOSSD() {
       if (cocoSSDModel || isCOCOSSDLoading) return;
@@ -4166,6 +4190,7 @@ $assetsBase = $isSubdomain ? 'https://loewixcctv.com/assets' : '../assets';
       const cam = (localCameras || [])[camIdx] || (localCameras || []).find(c => String(c.id) === String(camId));
       currentAICamera = cam || { id: camId, title: 'Kamera CCTV ' + camId };
       loadCountingLineConfig();
+      loadPersistentTaggedForCamera(currentAICamera.id);
 
       if (select) select.value = String(camId);
 
@@ -6025,24 +6050,24 @@ $assetsBase = $isSubdomain ? 'https://loewixcctv.com/assets' : '../assets';
                 const isAlreadyActive = activeHumanEntities.some(e => e !== bestEntity && (e.name || '').toLowerCase() === p.name.toLowerCase());
                 if (isAlreadyActive) continue;
 
-                // Aturan 2: Reconnect hanya jika orang hilang sejenak (< 5 detik) DAN jarak dekat (< 90px)
-                if (now - p.lastSeen < 5000) {
-                  const dist = Math.hypot(bestEntity.x - p.lastX, bestEntity.y - p.lastY);
-                  const isColorMatch = !p.clothingColor || (target.clothing && p.clothingColor === target.clothing.colorName);
-                  if (dist < 90 && isColorMatch) {
-                    bestEntity.name = p.name;
-                    bestEntity.category = p.category;
-                    bestEntity.role_title = p.role_title;
-                    bestEntity.isVIP = p.isVIP;
-                    bestEntity.isEmployee = p.isEmployee;
-                    bestEntity.customTagged = true;
-                    bestEntity.isIdentified = true;
-                    bestEntity.label = `[${p.isVIP ? 'VIP' : (p.isEmployee ? 'KARYAWAN' : 'PENGUNJUNG')}] ${p.name}`;
-                    p.lastX = bestEntity.x;
-                    p.lastY = bestEntity.y;
-                    p.lastSeen = now;
-                    break;
-                  }
+                // Aturan 2: Reconnect jika orang di posisi yang bersesuaian (misal di meja kerja atau posisi terakhir)
+                const dist = Math.hypot(bestEntity.x - p.lastX, bestEntity.y - p.lastY);
+                const maxDist = Math.max(240, canvas.width * 0.28);
+                if (now - p.lastSeen < 14400000 && dist < maxDist) {
+                  bestEntity.name = p.name;
+                  bestEntity.category = p.category;
+                  bestEntity.role_title = p.role_title;
+                  bestEntity.isVIP = p.isVIP;
+                  bestEntity.isEmployee = p.isEmployee;
+                  bestEntity.isBlacklist = p.isBlacklist;
+                  bestEntity.customTagged = true;
+                  bestEntity.isIdentified = true;
+                  const rolePrefix = p.isVIP ? 'VIP' : (p.isEmployee ? 'KARYAWAN' : (p.isBlacklist ? 'BLACKLIST' : 'PENGUNJUNG'));
+                  bestEntity.label = `[${rolePrefix}] ${p.name}`;
+                  p.lastX = bestEntity.x;
+                  p.lastY = bestEntity.y;
+                  p.lastSeen = now;
+                  break;
                 }
               }
               if (!bestEntity.customTagged) {
@@ -6100,24 +6125,24 @@ $assetsBase = $isSubdomain ? 'https://loewixcctv.com/assets' : '../assets';
               const isAlreadyActive = activeHumanEntities.some(e => (e.name || '').toLowerCase() === p.name.toLowerCase());
               if (isAlreadyActive) continue;
 
-              // Aturan 2: Hanya reconnect jika orang baru saja hilang < 5 detik dan di posisi yang sama (< 90px)
-              if (now - p.lastSeen < 5000) {
-                const dist = Math.hypot(target.targetX - p.lastX, target.targetY - p.lastY);
-                const isColorMatch = !p.clothingColor || (target.clothing && p.clothingColor === target.clothing.colorName);
-                if (dist < 90 && isColorMatch) {
-                  newEnt.name = p.name;
-                  newEnt.category = p.category;
-                  newEnt.role_title = p.role_title;
-                  newEnt.isVIP = p.isVIP;
-                  newEnt.isEmployee = p.isEmployee;
-                  newEnt.customTagged = true;
-                  newEnt.isIdentified = true;
-                  newEnt.label = `[${p.isVIP ? 'VIP' : (p.isEmployee ? 'KARYAWAN' : 'PENGUNJUNG')}] ${p.name}`;
-                  p.lastX = target.targetX;
-                  p.lastY = target.targetY;
-                  p.lastSeen = now;
-                  break;
-                }
+              // Aturan 2: Reconnect jika orang di posisi yang bersesuaian (misal di meja kerja atau posisi terakhir)
+              const dist = Math.hypot(target.targetX - p.lastX, target.targetY - p.lastY);
+              const maxDist = Math.max(240, canvas.width * 0.28);
+              if (now - p.lastSeen < 14400000 && dist < maxDist) {
+                newEnt.name = p.name;
+                newEnt.category = p.category;
+                newEnt.role_title = p.role_title;
+                newEnt.isVIP = p.isVIP;
+                newEnt.isEmployee = p.isEmployee;
+                newEnt.isBlacklist = p.isBlacklist;
+                newEnt.customTagged = true;
+                newEnt.isIdentified = true;
+                const rolePrefix = p.isVIP ? 'VIP' : (p.isEmployee ? 'KARYAWAN' : (p.isBlacklist ? 'BLACKLIST' : 'PENGUNJUNG'));
+                newEnt.label = `[${rolePrefix}] ${p.name}`;
+                p.lastX = target.targetX;
+                p.lastY = target.targetY;
+                p.lastSeen = now;
+                break;
               }
             }
 
@@ -6137,6 +6162,13 @@ $assetsBase = $isSubdomain ? 'https://loewixcctv.com/assets' : '../assets';
         // Hold the track firmly so scanner reticles don't flicker or disappear when someone is walking or momentarily missed
         activeHumanEntities = activeHumanEntities.filter((ent, idx) => {
           if (!matchedIndices.has(idx)) {
+            // Protect entity currently being tagged in modal from being pruned!
+            if (selectedEntityForTagging && (selectedEntityForTagging === ent || selectedEntityForTagging.id === ent.id)) {
+              ent.updatedAt = now;
+              ent.missedFrames = 0;
+              return true;
+            }
+
             ent.missedFrames = (ent.missedFrames || 0) + 1;
             // Apply velocity prediction during missed frames for smooth movement without stuttering
             if (ent.vx && Math.abs(ent.vx) > 0.4) {
@@ -6151,10 +6183,16 @@ $assetsBase = $isSubdomain ? 'https://loewixcctv.com/assets' : '../assets';
             }
             const timeSinceSeen = now - (ent.updatedAt || now);
 
-            // Check if entity is in a vehicle/apparel display zone
+            // Check if entity is in a vehicle/apparel display zone (ONLY ON YAMAHA DDS SHOWROOM!)
+            const isYamahaDDS = Boolean(currentAICamera && (
+              String(currentAICamera.title || '').toLowerCase().includes('yamaha') || 
+              String(currentAICamera.city || '').toLowerCase() === 'siantar' ||
+              String(currentAICamera.id) === '5001'
+            ));
+
             const entNormX = (ent.x + ent.w * 0.5) / Math.max(1, canvas.width);
             const entNormY = (ent.y + ent.h * 0.5) / Math.max(1, canvas.height);
-            const isInDisplayZone = (
+            const isInDisplayZone = isYamahaDDS && (
               (entNormX > 0.54 && entNormX < 0.90 && entNormY >= 0.12 && entNormY < 0.40) || // Stage scooter
               (entNormX > 0.76 && entNormY < 0.34) || // Apparel rack
               (entNormX > 0.30 && entNormX < 0.54 && entNormY > 0.36 && entNormY < 0.68) || // Paddock bike
@@ -6165,7 +6203,7 @@ $assetsBase = $isSubdomain ? 'https://loewixcctv.com/assets' : '../assets';
             );
 
             // If in display zone and not currently detected, drop immediately (max 300ms)
-            const maxHoldMs = isInDisplayZone ? 300 : ((ent.customTagged || ent.isIdentified) ? 25000 : 7000);
+            const maxHoldMs = isInDisplayZone ? 300 : ((ent.customTagged || ent.isIdentified) ? 3600000 : 8000);
             return (timeSinceSeen < maxHoldMs);
           }
           return true;
@@ -6216,10 +6254,15 @@ $assetsBase = $isSubdomain ? 'https://loewixcctv.com/assets' : '../assets';
           // If already custom tagged by user, preserve user input
           if (ent.customTagged) continue;
 
-          // Never run face scan on static objects in vehicle display or apparel zones
+          // Never run face scan on static objects in vehicle display or apparel zones (ONLY ON YAMAHA DDS SHOWROOM)
+          const isYamahaDDS = Boolean(currentAICamera && (
+            String(currentAICamera.title || '').toLowerCase().includes('yamaha') || 
+            String(currentAICamera.city || '').toLowerCase() === 'siantar' ||
+            String(currentAICamera.id) === '5001'
+          ));
           const entNormX = (ent.x + ent.w * 0.5) / Math.max(1, canvas.width);
           const entNormY = (ent.y + ent.h * 0.5) / Math.max(1, canvas.height);
-          const isInDisplayZone = (
+          const isInDisplayZone = isYamahaDDS && (
             (entNormX > 0.54 && entNormX < 0.90 && entNormY >= 0.12 && entNormY < 0.40) ||
             (entNormX > 0.76 && entNormY < 0.34) ||
             (entNormX > 0.30 && entNormX < 0.54 && entNormY > 0.36 && entNormY < 0.68) ||
@@ -6592,6 +6635,7 @@ $assetsBase = $isSubdomain ? 'https://loewixcctv.com/assets' : '../assets';
     function openQuickTagModalForEntity(ent) {
       if (!ent) return;
       selectedEntityForTagging = ent;
+      selectedEntityForTaggingCoords = { id: ent.id, x: ent.x, y: ent.y, w: ent.w, h: ent.h, time: Date.now() };
 
       const video = document.getElementById('ai-video-player');
       const canvas = document.getElementById('ai-canvas-overlay');
@@ -6681,7 +6725,20 @@ $assetsBase = $isSubdomain ? 'https://loewixcctv.com/assets' : '../assets';
       ent.label = 'ORANG (Pengunjung)';
 
       if (nameToRemove) {
+        activeHumanEntities.forEach(e => {
+          if ((e.name || '').toLowerCase() === nameToRemove) {
+            e.name = '';
+            e.category = 'guest';
+            e.role_title = 'Pengunjung';
+            e.isVIP = false;
+            e.isEmployee = false;
+            e.customTagged = false;
+            e.isIdentified = false;
+            e.label = 'ORANG (Pengunjung)';
+          }
+        });
         persistentTaggedPersonnel = persistentTaggedPersonnel.filter(p => p.name.toLowerCase() !== nameToRemove);
+        savePersistentTaggedForCamera(currentAICamera ? currentAICamera.id : null);
       }
 
       closeModal('modalQuickTagPerson');
@@ -6692,6 +6749,7 @@ $assetsBase = $isSubdomain ? 'https://loewixcctv.com/assets' : '../assets';
     async function submitQuickTagPerson() {
       if (!selectedEntityForTagging) return;
       const ent = selectedEntityForTagging;
+      const savedCoords = selectedEntityForTaggingCoords;
 
       const nameInput = document.getElementById('quicktag-name-input');
       const name = (nameInput ? nameInput.value : '').trim();
@@ -6708,9 +6766,34 @@ $assetsBase = $isSubdomain ? 'https://loewixcctv.com/assets' : '../assets';
 
       const saveDb = document.getElementById('quicktag-save-db')?.checked || false;
 
+      // Find active entity in activeHumanEntities matching ent or saved coordinates
+      let targetEnt = activeHumanEntities.find(e => e === ent || e.id === ent.id);
+      if (!targetEnt && savedCoords) {
+        let bestD = 999999;
+        for (const e of activeHumanEntities) {
+          const d = Math.hypot(e.x - savedCoords.x, e.y - savedCoords.y);
+          if (d < bestD) {
+            bestD = d;
+            targetEnt = e;
+          }
+        }
+        if (bestD > 280) {
+          targetEnt = ent;
+          if (!activeHumanEntities.includes(targetEnt)) {
+            activeHumanEntities.push(targetEnt);
+          }
+        }
+      }
+      if (!targetEnt) {
+        targetEnt = ent;
+        if (!activeHumanEntities.includes(targetEnt)) {
+          activeHumanEntities.push(targetEnt);
+        }
+      }
+
       // Aturan Unik: Pastikan nama ini tidak duplikat di orang lain di layar saat ini
       activeHumanEntities.forEach(e => {
-        if (e !== ent && (e.name || '').toLowerCase() === name.toLowerCase()) {
+        if (e !== ent && e !== targetEnt && (e.name || '').toLowerCase() === name.toLowerCase()) {
           e.name = '';
           e.category = 'guest';
           e.role_title = 'Pengunjung';
@@ -6722,15 +6805,30 @@ $assetsBase = $isSubdomain ? 'https://loewixcctv.com/assets' : '../assets';
         }
       });
 
-      // Update entity live tracking attributes
-      ent.name = name;
-      ent.category = category;
-      ent.role_title = roleTitle;
-      ent.isVIP = (category === 'vip');
-      ent.isEmployee = (category === 'employee');
-      ent.customTagged = true;
-      ent.isIdentified = true;
-      ent.label = `[${ent.isVIP ? 'VIP' : (ent.isEmployee ? 'KARYAWAN' : 'PENGUNJUNG')}] ${name}`;
+      const rolePrefix = (category === 'vip') ? 'VIP' : ((category === 'employee') ? 'KARYAWAN' : ((category === 'blacklist') ? 'BLACKLIST' : 'PENGUNJUNG'));
+      const isVIP = (category === 'vip');
+      const isEmployee = (category === 'employee');
+      const isBlacklist = (category === 'blacklist');
+
+      const applyProps = (obj) => {
+        if (!obj) return;
+        obj.name = name;
+        obj.category = category;
+        obj.role_title = roleTitle;
+        obj.isVIP = isVIP;
+        obj.isEmployee = isEmployee;
+        obj.isBlacklist = isBlacklist;
+        obj.customTagged = true;
+        obj.isIdentified = true;
+        obj.label = `[${rolePrefix}] ${name}`;
+        obj.updatedAt = Date.now();
+        obj.missedFrames = 0;
+      };
+
+      applyProps(ent);
+      if (targetEnt && targetEnt !== ent) {
+        applyProps(targetEnt);
+      }
 
       // Save to persistent session tagged personnel registry
       const pIdx = persistentTaggedPersonnel.findIndex(p => p.name.toLowerCase() === name.toLowerCase());
@@ -6738,12 +6836,12 @@ $assetsBase = $isSubdomain ? 'https://loewixcctv.com/assets' : '../assets';
         name: name,
         category: category,
         role_title: roleTitle,
-        isVIP: (category === 'vip'),
-        isEmployee: (category === 'employee'),
-        isBlacklist: (category === 'blacklist'),
-        clothingColor: ent.clothing ? ent.clothing.colorName : '',
-        lastX: ent.x,
-        lastY: ent.y,
+        isVIP: isVIP,
+        isEmployee: isEmployee,
+        isBlacklist: isBlacklist,
+        clothingColor: targetEnt.clothing ? targetEnt.clothing.colorName : (ent.clothing ? ent.clothing.colorName : ''),
+        lastX: targetEnt.x !== undefined ? targetEnt.x : ent.x,
+        lastY: targetEnt.y !== undefined ? targetEnt.y : ent.y,
         lastSeen: Date.now()
       };
       if (pIdx >= 0) {
@@ -6751,6 +6849,7 @@ $assetsBase = $isSubdomain ? 'https://loewixcctv.com/assets' : '../assets';
       } else {
         persistentTaggedPersonnel.push(pRec);
       }
+      savePersistentTaggedForCamera(currentAICamera ? currentAICamera.id : null);
 
       closeModal('modalQuickTagPerson');
 
@@ -6758,46 +6857,72 @@ $assetsBase = $isSubdomain ? 'https://loewixcctv.com/assets' : '../assets';
       updateActivePersonsBar();
 
       // Show instant feedback banner
-      showAIHUDBanner(`${ent.label}`, category, 98.5);
-      appendRealtimeAILog(ent.label, category, 98.5);
+      const activeLabel = targetEnt.label || ent.label;
+      showAIHUDBanner(`${activeLabel}`, category, 98.5);
+      appendRealtimeAILog(activeLabel, category, 98.5);
 
       // Save to database if requested
       if (saveDb) {
+        // Optimistic UI updates so user sees immediate feedback without waiting for server response
+        const existingCachedIdx = cachedAIFaces.findIndex(f => f.name.toLowerCase() === name.toLowerCase());
+        const optimisticFace = {
+          id: existingCachedIdx >= 0 ? cachedAIFaces[existingCachedIdx].id : ('face_' + Date.now()),
+          name: name,
+          category: category,
+          role_title: roleTitle,
+          role: roleTitle,
+          created_at: new Date().toISOString()
+        };
+        if (existingCachedIdx >= 0) {
+          cachedAIFaces[existingCachedIdx] = { ...cachedAIFaces[existingCachedIdx], ...optimisticFace };
+        } else {
+          cachedAIFaces.push(optimisticFace);
+        }
+
+        const statFacesEl = document.getElementById('ai-stat-faces');
+        if (statFacesEl) statFacesEl.textContent = cachedAIFaces.length;
+        const facesBadge = document.getElementById('ai-faces-count-badge');
+        if (facesBadge) facesBadge.textContent = `${cachedAIFaces.length} Wajah`;
+
+        if (typeof renderAIFacesGrid === 'function') {
+          renderAIFacesGrid(cachedAIFaces);
+        }
+
         const prevImg = document.getElementById('quicktag-preview-img');
-        const photoB64 = prevImg ? prevImg.src : '';
+        const photoB64 = prevImg ? (prevImg.src || '') : '';
 
-        if (photoB64 && photoB64.startsWith('data:image')) {
-          try {
-            const formData = new FormData();
-            formData.append('action', 'register_face');
-            formData.append('name', name);
-            formData.append('category', category);
-            formData.append('role_title', roleTitle);
+        try {
+          const formData = new FormData();
+          formData.append('action', 'register_face');
+          formData.append('name', name);
+          formData.append('category', category);
+          formData.append('role_title', roleTitle);
+          if (photoB64) {
             formData.append('photo', photoB64);
-
-            // Compute 128D descriptor if faceapi ready
-            if (faceAPIReady && faceapi.nets.faceRecognitionNet && faceapi.nets.faceRecognitionNet.isLoaded) {
-              try {
-                const img = new Image();
-                img.src = photoB64;
-                await new Promise(r => { img.onload = r; img.onerror = r; });
-                const det = await faceapi.detectSingleFace(img, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.25 })).withFaceLandmarks(true).withFaceDescriptor();
-                if (det && det.descriptor) {
-                  formData.append('descriptor', JSON.stringify(Array.from(det.descriptor)));
-                }
-              } catch (eDesc) {}
-            }
-
-            const res = await fetch('api.php', { method: 'POST', body: formData });
-            const result = await res.json();
-            if (result && result.success) {
-              await loadAIFaceData(false);
-              await buildFaceDescriptors(true);
-              console.log(`[AI Tag] ✅ Wajah ${name} tersimpan ke database & biometrik matcher!`);
-            }
-          } catch (errSave) {
-            console.warn('[AI Tag] Gagal simpan ke database:', errSave);
           }
+
+          // Compute 128D descriptor if faceapi ready and photo is valid
+          if (photoB64 && photoB64.startsWith('data:image') && faceAPIReady && faceapi.nets.faceRecognitionNet && faceapi.nets.faceRecognitionNet.isLoaded) {
+            try {
+              const img = new Image();
+              img.src = photoB64;
+              await new Promise(r => { img.onload = r; img.onerror = r; });
+              const det = await faceapi.detectSingleFace(img, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.25 })).withFaceLandmarks(true).withFaceDescriptor();
+              if (det && det.descriptor) {
+                formData.append('descriptor', JSON.stringify(Array.from(det.descriptor)));
+              }
+            } catch (eDesc) {}
+          }
+
+          const res = await fetch('api.php', { method: 'POST', body: formData });
+          const result = await res.json();
+          if (result && result.success) {
+            await loadAIFaceData(false);
+            await buildFaceDescriptors(true);
+            console.log(`[AI Tag] ✅ Wajah ${name} tersimpan ke database & biometrik matcher!`);
+          }
+        } catch (errSave) {
+          console.warn('[AI Tag] Gagal simpan ke database:', errSave);
         }
       }
     }

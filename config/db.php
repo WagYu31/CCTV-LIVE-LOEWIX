@@ -658,7 +658,31 @@ function get_db_data() {
 }
 
 function save_db_data($data) {
-    file_put_contents(DB_FILE, json_encode($data, JSON_PRETTY_PRINT));
+    $dir = dirname(DB_FILE);
+    if (!is_dir($dir)) {
+        @mkdir($dir, 0777, true);
+    }
+    @chmod($dir, 0777);
+    if (file_exists(DB_FILE)) {
+        @chmod(DB_FILE, 0666);
+    }
+    $encoded = json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+    if ($encoded === false) return false;
+
+    // Atomic file write using temporary file to avoid partial writes & lock contentions
+    $tmpFile = DB_FILE . '.tmp.' . uniqid();
+    $written = @file_put_contents($tmpFile, $encoded, LOCK_EX);
+    if ($written !== false) {
+        @chmod($tmpFile, 0666);
+        if (@rename($tmpFile, DB_FILE)) {
+            return true;
+        }
+        @unlink($tmpFile);
+    }
+
+    // Direct write fallback
+    $direct = @file_put_contents(DB_FILE, $encoded, LOCK_EX);
+    return ($direct !== false);
 }
 
 // Authentication Helpers

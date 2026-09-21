@@ -464,7 +464,6 @@ function is_authentic_face_descriptor($descriptor) {
 }
 
 function syncEncodingJSON($name, $descriptor, $category = 'employee', $role = 'Staff', $photo = '', $oldName = '') {
-    if (!is_authentic_face_descriptor($descriptor)) return;
     $encFile = __DIR__ . '/../data/encoding.json';
     $data = file_exists($encFile) ? json_decode(file_get_contents($encFile), true) : null;
     if (!is_array($data)) {
@@ -474,11 +473,12 @@ function syncEncodingJSON($name, $descriptor, $category = 'employee', $role = 'S
         $data['faces'] = [];
     }
     $updated = false;
+    $validDesc = is_authentic_face_descriptor($descriptor) ? array_map('floatval', $descriptor) : null;
     foreach ($data['faces'] as &$ef) {
         $curName = strtolower($ef['name'] ?? '');
         if ($curName === strtolower($name) || (!empty($oldName) && $curName === strtolower($oldName))) {
             $ef['name'] = $name;
-            $ef['encoding'] = array_map('floatval', $descriptor);
+            if ($validDesc !== null) $ef['encoding'] = $validDesc;
             $ef['category'] = $category;
             $ef['role'] = $role;
             if ($photo) $ef['photo'] = $photo;
@@ -493,7 +493,7 @@ function syncEncodingJSON($name, $descriptor, $category = 'employee', $role = 'S
             'category' => $category,
             'role' => $role,
             'photo' => $photo,
-            'encoding' => array_map('floatval', $descriptor),
+            'encoding' => $validDesc,
             'created_at' => date('Y-m-d H:i:s')
         ];
     }
@@ -694,9 +694,7 @@ if ($action === 'register_face' || $action === 'update_face') {
                     $f['descriptor'] = $descriptor;
                 }
                 $effectiveDesc = $descriptor ?: ($f['descriptor'] ?? null);
-                if ($effectiveDesc) {
-                    syncEncodingJSON($name, $effectiveDesc, $category, $f['role_title'] ?? 'Staff', $f['photo'] ?? '', $oldName);
-                }
+                syncEncodingJSON($name, $effectiveDesc, $category, $f['role_title'] ?? 'Staff', $f['photo'] ?? '', $oldName);
                 $f['notes'] = $notes;
                 $f['updated_at'] = date('Y-m-d H:i:s');
                 $found = true;
@@ -719,9 +717,8 @@ if ($action === 'register_face' || $action === 'update_face') {
         syncFaceToDeepFaceDB($name, $photo, $category, $notes);
     }
 
-    if ($descriptor !== null) {
-        syncEncodingJSON($name, $descriptor, $category, $roleTitle, $photo);
-    }
+    // Always sync registered face to encoding.json so face is never lost across server sync cycles
+    syncEncodingJSON($name, $descriptor, $category, $roleTitle, $photo);
 
     $newFace = [
         'id' => $newId,
@@ -736,9 +733,14 @@ if ($action === 'register_face' || $action === 'update_face') {
     ];
 
     $db['ai_faces'][] = $newFace;
-    save_db_data($db);
+    $saveSuccess = save_db_data($db);
 
-    echo json_encode(['success' => true, 'message' => 'Data wajah berhasil didaftarkan & disinkronkan ke AI ArcFace!', 'face' => $newFace]);
+    echo json_encode([
+        'success' => true, 
+        'db_saved' => $saveSuccess,
+        'message' => 'Data wajah berhasil didaftarkan & disinkronkan ke AI ArcFace!', 
+        'face' => $newFace
+    ]);
     exit;
 }
 
