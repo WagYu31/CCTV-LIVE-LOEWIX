@@ -1907,6 +1907,9 @@ $assetsBase = $isSubdomain ? 'https://loewixcctv.com/assets' : '../assets';
               <button class="ai-btn-pill" onclick="quickTagCurrentPerson()" title="Beri Nama / Tandai Orang (Karyawan vs Pengunjung)" style="background: linear-gradient(135deg, rgba(5, 150, 105, 0.25), rgba(16, 185, 129, 0.35)); border-color: #10b981; color: #34d399; font-weight: 700;">
                 <i class="fas fa-user-tag mr-1"></i> Beri Nama
               </button>
+              <button class="ai-btn-pill" onclick="resetAllCameraTags()" title="Reset / Hapus Semua Tag Nama Kamera Ini" style="background: rgba(239, 68, 68, 0.15); border-color: rgba(239, 68, 68, 0.45); color: #f87171; font-weight: 700;">
+                <i class="fas fa-eraser mr-1"></i> Reset Tag
+              </button>
               <button id="btn-toggle-autoscan" class="ai-btn-pill active" onclick="toggleAIAutoScan()" title="Auto Scan Wajah Otomatis">
                 <i class="fas fa-bolt mr-1"></i> Auto-Scan: AKTIF
               </button>
@@ -5917,7 +5920,25 @@ $assetsBase = $isSubdomain ? 'https://loewixcctv.com/assets' : '../assets';
             (cx > sourceW * 0.82 && cy > sourceH * 0.42)
           );
 
-          // F. Vehicle Obstacle Overlap Check (Prevents parked vehicles/motorcycles from being tagged as humans)
+          // F. Specific filters for Camera L8 (Jakarta Office): eliminate beige wall divider on the left & static doorway
+          const isCameraL8 = Boolean(currentAICamera && (
+            String(currentAICamera.id) === '5032' ||
+            String(currentAICamera.title || '').toUpperCase().includes('L8')
+          ));
+          if (isCameraL8) {
+            // Left beige partition wall / divider: eliminate static false positive on wall/chair
+            if (cx < sourceW * 0.20 && cy < sourceH * 0.72 && motionDelta < 0.40 && !hasBio) {
+              if (_doDebug) console.log(`🚫 [Filter L8] Left wall partition blocked: motion=${motionDelta.toFixed(2)} bio=${hasBio}`);
+              continue;
+            }
+            // Doorway background zone (dark door opening in top center)
+            if (cx > sourceW * 0.45 && cx < sourceW * 0.65 && cy < sourceH * 0.42 && motionDelta < 0.40 && !hasBio) {
+              if (_doDebug) console.log(`🚫 [Filter L8] Doorway background blocked: motion=${motionDelta.toFixed(2)} bio=${hasBio}`);
+              continue;
+            }
+          }
+
+          // G. Vehicle Obstacle Overlap Check (Prevents parked vehicles/motorcycles from being tagged as humans)
           let isBlocked = false;
           for (const obs of obstacleBoxes) {
             const interW = Math.max(0, Math.min(boxX + boxW, obs.x2) - Math.max(boxX, obs.x));
