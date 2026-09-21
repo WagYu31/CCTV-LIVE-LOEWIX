@@ -6026,24 +6026,29 @@ $assetsBase = $isSubdomain ? 'https://loewixcctv.com/assets' : '../assets';
             // Vertical column alignment test: merge / suppress head + torso double detection on the same person
             const bMidX = b.x + b.w * 0.5;
             const rMidX = r.x + r.w * 0.5;
+            const maxW = Math.max(b.w, r.w);
             const minW = Math.min(b.w, r.w);
-            if (Math.abs(bMidX - rMidX) < minW * 0.48) {
-              const vertOverlap = Math.max(0, Math.min(b.y + b.h, r.y + r.h) - Math.max(b.y, r.y));
-              const minH = Math.min(b.h, r.h);
-              const vertGap = Math.max(0, Math.max(b.y, r.y) - Math.min(b.y + b.h, r.y + r.h));
-              // Either overlapping vertically or vertically adjacent within 45px (head above torso)
-              if (vertOverlap / minH > 0.20 || vertGap < 45) {
-                // Merge into single unified bounding box encompassing the entire person
-                r.y = Math.min(r.y, b.y);
-                r.h = Math.max(r.y + r.h, b.y + b.h) - r.y;
-                r.x = Math.min(r.x, b.x);
-                r.w = Math.max(r.x + r.w, b.x + b.w) - r.x;
-                r.score = Math.max(r.score, b.score);
-                r.hasBio = r.hasBio || b.hasBio;
-                r.motionDelta = Math.max(r.motionDelta || 0, b.motionDelta || 0);
-                keep = false;
-                break;
-              }
+            const horizOverlap = Math.max(0, Math.min(b.x + b.w, r.x + r.w) - Math.max(b.x, r.x));
+            const vertOverlap = Math.max(0, Math.min(b.y + b.h, r.y + r.h) - Math.max(b.y, r.y));
+            const vertGap = Math.max(0, Math.max(b.y, r.y) - Math.min(b.y + b.h, r.y + r.h));
+            const maxH = Math.max(b.h, r.h);
+
+            // If two boxes share horizontal alignment (> 30% overlap or midX distance < 65% of width)
+            // and vertically close / touching / overlapping (within 85% of box height):
+            const isHorizAligned = (horizOverlap / minW > 0.30) || (Math.abs(bMidX - rMidX) < maxW * 0.65);
+            const isVertAdjacent = (vertOverlap > 0) || (vertGap < maxH * 0.85);
+
+            if (isHorizAligned && isVertAdjacent) {
+              // Merge into single unified bounding box encompassing the entire person
+              r.y = Math.min(r.y, b.y);
+              r.h = Math.max(r.y + r.h, b.y + b.h) - r.y;
+              r.x = Math.min(r.x, b.x);
+              r.w = Math.max(r.x + r.w, b.x + b.w) - r.x;
+              r.score = Math.max(r.score, b.score);
+              r.hasBio = r.hasBio || b.hasBio;
+              r.motionDelta = Math.max(r.motionDelta || 0, b.motionDelta || 0);
+              keep = false;
+              break;
             }
           }
           if (keep) nmsPersons.push(b);
