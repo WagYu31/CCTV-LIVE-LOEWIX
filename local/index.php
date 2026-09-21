@@ -2651,9 +2651,14 @@ $assetsBase = $isSubdomain ? 'https://loewixcctv.com/assets' : '../assets';
         </div>
 
         <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center;">
-          <button type="button" class="btn btn-danger-outline btn-sm" id="btn-delete-quicktag" onclick="removeQuickTagPerson()" style="display: none;">
-            <i class="fas fa-user-minus mr-1"></i> Lepas Label (Jadikan Pengunjung)
-          </button>
+          <div style="display: flex; gap: 0.4rem; align-items: center;">
+            <button type="button" class="btn btn-danger-outline btn-sm" id="btn-delete-quicktag" onclick="removeQuickTagPerson()" style="display: none;">
+              <i class="fas fa-user-minus mr-1"></i> Lepas Label
+            </button>
+            <button type="button" class="btn btn-outline btn-sm" onclick="resetAllCameraTags()" style="color: #f87171; border-color: rgba(248,113,113,0.35); font-size: 0.75rem;" title="Hapus semua tag nama tersimpan di kamera ini">
+              <i class="fas fa-trash-alt mr-1"></i> Reset Semua Tag
+            </button>
+          </div>
           <div style="display: flex; gap: 0.5rem; margin-left: auto;">
             <button type="button" class="btn btn-secondary btn-sm" onclick="closeModal('modalQuickTagPerson')">Batal</button>
             <button type="button" class="btn btn-primary btn-sm" id="btn-save-quicktag" onclick="submitQuickTagPerson()" style="background: linear-gradient(135deg, #059669, #10b981); border-color: #10b981; font-weight: 700;">
@@ -5842,7 +5847,7 @@ $assetsBase = $isSubdomain ? 'https://loewixcctv.com/assets' : '../assets';
               score: p.score,
               class: p.class
             });
-          } else if (p.class === 'person' && p.score >= 0.28) {
+          } else if (p.class === 'person' && p.score >= 0.40) {
             candidatePersons.push({
               x: bx, y: by, w: bw, h: bh,
               x2: bx + bw, y2: by + bh,
@@ -5877,7 +5882,6 @@ $assetsBase = $isSubdomain ? 'https://loewixcctv.com/assets' : '../assets';
           }
 
           // B. Universal Aspect Ratio: Allow seated humans (~0.38-0.70) and standing/walking humans (~1.0-4.8)
-          // Works seamlessly in offices, cinemas, factories, warehouses, and showrooms
           if (aspect < 0.38 || aspect > 5.0) {
             if (_doDebug) console.log(`🚫 [Filter Aspect] Box aspect: ${aspect.toFixed(2)} outside 0.38-5.0`);
             continue;
@@ -5895,28 +5899,22 @@ $assetsBase = $isSubdomain ? 'https://loewixcctv.com/assets' : '../assets';
           const motionDelta = getBoxMotionDelta(boxX, boxY, boxW, boxH, sourceW, sourceH);
           const hasBio = hasHumanBiometricSignals(inputTarget, boxX, boxY, boxW, boxH, motionDelta);
 
-          // E. Zone Definitions for Showroom & Commercial Environments
-          // Customer seating area (round table with 2 seated visitors) - protected zone
-          const isCustomerSeatingZone = (cx > sourceW * 0.12 && cx < sourceW * 0.50 && cy > sourceH * 0.14 && cy < sourceH * 0.52);
-
-          // Reception desk zone (staff behind desk) - protected zone
-          const isReceptionDeskZone = (cx > sourceW * 0.40 && cx < sourceW * 0.65 && cy > sourceH * 0.10 && cy < sourceH * 0.32);
-
-          // Elevated scooter display stage (white and dark scooters on elevated platform)
-          const isElevatedScooterStage = (cx > sourceW * 0.54 && cx < sourceW * 0.90 && cy >= sourceH * 0.12 && cy < sourceH * 0.40);
-
-          // Center floor paddock stand zone (blue Yamaha sportbike on paddock stand)
-          const isCenterPaddockZone = (cx > sourceW * 0.30 && cx < sourceW * 0.54 && cy > sourceH * 0.36 && cy < sourceH * 0.68);
-
-          // Hanging apparel display rack (under "FASHIONABLE" sign at top right)
-          const isApparelDisplayZone = (cx > sourceW * 0.76 && cy < sourceH * 0.34);
-
-          // Showroom floor parked motorcycles (left display rail, bottom bikes, right scooters)
-          const isFloorParkedMotorcycle = (
-            (cx < sourceW * 0.28 && cy > sourceH * 0.10 && cy < sourceH * 0.60) || // Left rail parked scooters
-            (cx > sourceW * 0.05 && cx < sourceW * 0.32 && cy > sourceH * 0.52 && cy < sourceH * 0.88) || // Bottom left adventure bike
-            (cx > sourceW * 0.18 && cx < sourceW * 0.48 && cy > sourceH * 0.72) || // Bottom center bike
-            (cx > sourceW * 0.82 && cy > sourceH * 0.42) // Bottom right white scooters
+          // E. Zone Definitions for Showroom & Commercial Environments (Yamaha DDS Only)
+          const isYamahaDDS = Boolean(currentAICamera && (
+            String(currentAICamera.title || '').toLowerCase().includes('yamaha') || 
+            String(currentAICamera.city || '').toLowerCase() === 'siantar' ||
+            String(currentAICamera.id) === '5001'
+          ));
+          const isCustomerSeatingZone = isYamahaDDS && (cx > sourceW * 0.12 && cx < sourceW * 0.50 && cy > sourceH * 0.14 && cy < sourceH * 0.52);
+          const isReceptionDeskZone = isYamahaDDS && (cx > sourceW * 0.40 && cx < sourceW * 0.65 && cy > sourceH * 0.10 && cy < sourceH * 0.32);
+          const isElevatedScooterStage = isYamahaDDS && (cx > sourceW * 0.54 && cx < sourceW * 0.90 && cy >= sourceH * 0.12 && cy < sourceH * 0.40);
+          const isCenterPaddockZone = isYamahaDDS && (cx > sourceW * 0.30 && cx < sourceW * 0.54 && cy > sourceH * 0.36 && cy < sourceH * 0.68);
+          const isApparelDisplayZone = isYamahaDDS && (cx > sourceW * 0.76 && cy < sourceH * 0.34);
+          const isFloorParkedMotorcycle = isYamahaDDS && (
+            (cx < sourceW * 0.28 && cy > sourceH * 0.10 && cy < sourceH * 0.60) ||
+            (cx > sourceW * 0.05 && cx < sourceW * 0.32 && cy > sourceH * 0.52 && cy < sourceH * 0.88) ||
+            (cx > sourceW * 0.18 && cx < sourceW * 0.48 && cy > sourceH * 0.72) ||
+            (cx > sourceW * 0.82 && cy > sourceH * 0.42)
           );
 
           // F. Vehicle Obstacle Overlap Check (Prevents parked vehicles/motorcycles from being tagged as humans)
@@ -5930,14 +5928,11 @@ $assetsBase = $isSubdomain ? 'https://loewixcctv.com/assets' : '../assets';
               const overlapOnObs = interArea / obs.area;
 
               if (['motorcycle', 'bicycle', 'car', 'truck', 'bus'].includes(obs.class)) {
-                // If candidate overlaps with a detected vehicle:
-                // If candidate lacks strong motion and organic skin, it is the vehicle itself
                 if ((overlapOnPerson > 0.20 || overlapOnObs > 0.20) && motionDelta < 0.35 && !hasBio) {
                   if (_doDebug) console.log(`🚫 [Filter Obstacle] Vehicle overlap: ${(overlapOnPerson*100).toFixed(0)}% on ${obs.class}`);
                   isBlocked = true;
                   break;
                 }
-                // Very heavy overlap (> 55%) regardless of aspect is blocked unless verified human
                 if (overlapOnPerson > 0.55 && (!hasBio || cp.score < 0.85)) {
                   if (_doDebug) console.log(`🚫 [Filter Obstacle] Heavy vehicle overlap: ${(overlapOnPerson*100).toFixed(0)}%`);
                   isBlocked = true;
@@ -5949,35 +5944,28 @@ $assetsBase = $isSubdomain ? 'https://loewixcctv.com/assets' : '../assets';
           if (isBlocked) continue;
 
           // G. Showroom Display Stage & Center Paddock Platform Filters
-          // Blocks static display motorcycles on the elevated stage
           if (isElevatedScooterStage && motionDelta < 0.32 && !hasBio && cp.score < 0.82) {
-            if (_doDebug) console.log(`🚫 [Filter Stage] Parked scooter on stage blocked: motion=${motionDelta.toFixed(2)} bio=${hasBio} score=${cp.score.toFixed(2)}`);
+            if (_doDebug) console.log(`🚫 [Filter Stage] Parked scooter on stage blocked: motion=${motionDelta.toFixed(2)} bio=${hasBio}`);
             continue;
           }
-
-          // Blocks static display sportbike on center paddock stand
           if (isCenterPaddockZone && motionDelta < 0.32 && !hasBio && cp.score < 0.82) {
             if (_doDebug) console.log(`🚫 [Filter Paddock] Parked bike on paddock stand blocked: motion=${motionDelta.toFixed(2)} bio=${hasBio}`);
             continue;
           }
-
-          // Blocks static clothes on wall display rack under "FASHIONABLE" sign
           if (isApparelDisplayZone && motionDelta < 0.28 && !hasBio && cp.score < 0.82) {
             if (_doDebug) console.log(`🚫 [Filter Apparel] Static clothes on rack blocked: motion=${motionDelta.toFixed(2)} bio=${hasBio}`);
             continue;
           }
-
-          // Blocks static parked motorcycles on the showroom floor
           if (isFloorParkedMotorcycle && motionDelta < 0.25 && !hasBio && cp.score < 0.80) {
             if (_doDebug) console.log(`🚫 [Filter Floor Bike] Parked motorcycle blocked: motion=${motionDelta.toFixed(2)} bio=${hasBio}`);
             continue;
           }
 
-          // H. Universal Static Non-Living Filter
-          // Outside customer seating and reception desk, objects with no motion, no skin, and low/medium score are not humans
+          // H. Universal Static Non-Living Filter (Eliminates coats on chairs, doorposts, wall shadows, empty furniture)
+          // Any static object without genuine human motion and without skin biometrics must have a very high score (>= 0.78)
           if (!isCustomerSeatingZone && !isReceptionDeskZone) {
-            if (motionDelta < 0.08 && !hasBio && cp.score < 0.72) {
-              if (_doDebug) console.log(`🚫 [Filter Universal] Static non-living object blocked: motion=${motionDelta.toFixed(2)} bio=${hasBio} score=${cp.score.toFixed(2)}`);
+            if (motionDelta < 0.30 && !hasBio && cp.score < 0.78) {
+              if (_doDebug) console.log(`🚫 [Filter Universal] Static non-living object blocked (coat/wall/door): motion=${motionDelta.toFixed(2)} bio=${hasBio} score=${cp.score.toFixed(2)}`);
               continue;
             }
           }
@@ -5988,7 +5976,8 @@ $assetsBase = $isSubdomain ? 'https://loewixcctv.com/assets' : '../assets';
             w: boxW,
             h: boxH,
             score: cp.score,
-            motionDelta: motionDelta
+            motionDelta: motionDelta,
+            hasBio: hasBio
           });
         }
 
@@ -6013,14 +6002,24 @@ $assetsBase = $isSubdomain ? 'https://loewixcctv.com/assets' : '../assets';
                 break;
               }
             }
-            // Vertical column alignment test: suppress torso + full-body double detection on the same person
+            // Vertical column alignment test: merge / suppress head + torso double detection on the same person
             const bMidX = b.x + b.w * 0.5;
             const rMidX = r.x + r.w * 0.5;
             const minW = Math.min(b.w, r.w);
-            if (Math.abs(bMidX - rMidX) < minW * 0.42) {
+            if (Math.abs(bMidX - rMidX) < minW * 0.48) {
               const vertOverlap = Math.max(0, Math.min(b.y + b.h, r.y + r.h) - Math.max(b.y, r.y));
               const minH = Math.min(b.h, r.h);
-              if (vertOverlap / minH > 0.35) {
+              const vertGap = Math.max(0, Math.max(b.y, r.y) - Math.min(b.y + b.h, r.y + r.h));
+              // Either overlapping vertically or vertically adjacent within 45px (head above torso)
+              if (vertOverlap / minH > 0.20 || vertGap < 45) {
+                // Merge into single unified bounding box encompassing the entire person
+                r.y = Math.min(r.y, b.y);
+                r.h = Math.max(r.y + r.h, b.y + b.h) - r.y;
+                r.x = Math.min(r.x, b.x);
+                r.w = Math.max(r.x + r.w, b.x + b.w) - r.x;
+                r.score = Math.max(r.score, b.score);
+                r.hasBio = r.hasBio || b.hasBio;
+                r.motionDelta = Math.max(r.motionDelta || 0, b.motionDelta || 0);
                 keep = false;
                 break;
               }
@@ -6041,8 +6040,8 @@ $assetsBase = $isSubdomain ? 'https://loewixcctv.com/assets' : '../assets';
           // Extract clothing profile from human chest/torso
           const clothing = extractPedestrianClothingProfile(video, vp.x * (frameData ? frameData.scaleX : 1), vp.y * (frameData ? frameData.scaleY : 1), vp.w * (frameData ? frameData.scaleX : 1), vp.h * (frameData ? frameData.scaleY : 1));
 
-          // Calibrated enterprise confidence
-          const calibConf = (Math.min(97.8, Math.max(68.0, (vp.score * 100 * 1.05 + 5.0)))).toFixed(1);
+          // Calibrated enterprise confidence: accurately reflect real detection scores
+          const calibConf = (Math.min(98.5, Math.max(50.0, (vp.score * 100)))).toFixed(1);
 
           scaledDetections.push({
             targetX: bx,
@@ -6052,6 +6051,7 @@ $assetsBase = $isSubdomain ? 'https://loewixcctv.com/assets' : '../assets';
             confidence: calibConf + '%',
             rawScore: vp.score,
             motionDelta: vp.motionDelta,
+            hasBio: vp.hasBio,
             label: 'ORANG (Pengunjung)',
             clothing: clothing
           });
@@ -6102,13 +6102,18 @@ $assetsBase = $isSubdomain ? 'https://loewixcctv.com/assets' : '../assets';
             if (!bestEntity.customTagged && !bestEntity.isIdentified) {
               for (const p of persistentTaggedPersonnel) {
                 // Aturan 1: Jangan pernah beri nama jika nama ini sudah aktif dipakai orang lain di layar!
-                const isAlreadyActive = activeHumanEntities.some(e => e !== bestEntity && (e.name || '').toLowerCase() === p.name.toLowerCase());
+                const isAlreadyActive = activeHumanEntities.some(e => e !== bestEntity && (e.name || '').trim().toLowerCase() === (p.name || '').trim().toLowerCase());
                 if (isAlreadyActive) continue;
 
-                // Aturan 2: Reconnect jika orang di posisi yang bersesuaian (misal di meja kerja atau posisi terakhir)
+                // Aturan 2: Reconnect HANYA jika target memiliki tanda kehidupan (bergerak/ada kulit wajah/skor tinggi)
+                // DILARANG KERAS menempelkan nama karyawan ke jaket di kursi / tembok kosong!
+                const hasLivingSign = ((target.motionDelta && target.motionDelta >= 0.18) || target.hasBio || (target.rawScore >= 0.78));
+                if (!hasLivingSign) continue;
+
                 const dist = Math.hypot(bestEntity.x - p.lastX, bestEntity.y - p.lastY);
-                const maxDist = Math.max(240, canvas.width * 0.28);
-                if (now - p.lastSeen < 14400000 && dist < maxDist) {
+                const maxDist = Math.max(120, canvas.width * 0.14);
+                // Maksimal 60 detik sejak orang terakhir terlihat (bukan 4 jam)
+                if (now - p.lastSeen < 60000 && dist < maxDist) {
                   bestEntity.name = p.name;
                   bestEntity.category = p.category;
                   bestEntity.role_title = p.role_title;
@@ -6177,13 +6182,16 @@ $assetsBase = $isSubdomain ? 'https://loewixcctv.com/assets' : '../assets';
             // Check if matches known tagged person in this camera session (continuity recovery)
             for (const p of persistentTaggedPersonnel) {
               // Aturan 1: Jangan pernah beri nama jika nama ini sudah aktif dipakai orang lain di layar!
-              const isAlreadyActive = activeHumanEntities.some(e => (e.name || '').toLowerCase() === p.name.toLowerCase());
+              const isAlreadyActive = activeHumanEntities.some(e => (e.name || '').trim().toLowerCase() === (p.name || '').trim().toLowerCase());
               if (isAlreadyActive) continue;
 
-              // Aturan 2: Reconnect jika orang di posisi yang bersesuaian (misal di meja kerja atau posisi terakhir)
+              // Aturan 2: Reconnect HANYA jika target memiliki tanda kehidupan (bergerak/ada kulit wajah/skor tinggi)
+              const hasLivingSign = ((target.motionDelta && target.motionDelta >= 0.18) || target.hasBio || (target.rawScore >= 0.78));
+              if (!hasLivingSign) continue;
+
               const dist = Math.hypot(target.targetX - p.lastX, target.targetY - p.lastY);
-              const maxDist = Math.max(240, canvas.width * 0.28);
-              if (now - p.lastSeen < 14400000 && dist < maxDist) {
+              const maxDist = Math.max(120, canvas.width * 0.14);
+              if (now - p.lastSeen < 60000 && dist < maxDist) {
                 newEnt.name = p.name;
                 newEnt.category = p.category;
                 newEnt.role_title = p.role_title;
@@ -6847,6 +6855,25 @@ $assetsBase = $isSubdomain ? 'https://loewixcctv.com/assets' : '../assets';
       closeModal('modalQuickTagPerson');
       updateActivePersonsBar();
       showAIHUDBanner('Label dilepas (Status Pengunjung)', 'guest', 0);
+    }
+
+    function resetAllCameraTags() {
+      if (!confirm('Hapus semua tag nama posisi yang tersimpan pada kamera ini?')) return;
+      persistentTaggedPersonnel = [];
+      savePersistentTaggedForCamera(currentAICamera ? currentAICamera.id : null);
+      activeHumanEntities.forEach(e => {
+        e.name = '';
+        e.category = 'guest';
+        e.role_title = 'Pengunjung';
+        e.isVIP = false;
+        e.isEmployee = false;
+        e.customTagged = false;
+        e.isIdentified = false;
+        e.label = 'ORANG (Pengunjung)';
+      });
+      closeModal('modalQuickTagPerson');
+      updateActivePersonsBar();
+      showAIHUDBanner('Semua tag posisi kamera telah dibersihkan', 'guest', 0);
     }
 
     async function submitQuickTagPerson() {
