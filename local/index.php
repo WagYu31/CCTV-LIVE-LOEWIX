@@ -2576,6 +2576,15 @@ $assetsBase = $isSubdomain ? 'https://loewixcctv.com/assets' : '../assets';
             </div>
           </div>
 
+          <!-- Pilihan Cepat dari Database Wajah Terdaftar -->
+          <div id="quicktag-known-faces-wrap" style="display: none; margin-bottom: 0.85rem; background: rgba(30, 41, 59, 0.5); border: 1px dashed rgba(56, 189, 248, 0.35); border-radius: 8px; padding: 0.5rem 0.65rem;">
+            <div style="font-weight: 700; font-size: 0.76rem; color: #38bdf8; display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.35rem;">
+              <span><i class="fas fa-address-book text-info mr-1"></i> Pilih Cepat dari Wajah Terdaftar:</span>
+              <small style="color: #94a3b8; font-weight: normal;">(1-klik auto-fill)</small>
+            </div>
+            <div id="quicktag-known-chips" style="display: flex; gap: 0.4rem; flex-wrap: wrap;"></div>
+          </div>
+
           <!-- Input Nama -->
           <div class="form-group" style="margin-bottom: 0.85rem;">
             <label style="font-weight: 700; font-size: 0.85rem; color: #e2e8f0; display: block; margin-bottom: 0.35rem;">
@@ -4227,15 +4236,26 @@ $assetsBase = $isSubdomain ? 'https://loewixcctv.com/assets' : '../assets';
         aiHlsInstance = null;
       }
 
+      if (window._aiLiveSyncInterval) {
+        clearInterval(window._aiLiveSyncInterval);
+        window._aiLiveSyncInterval = null;
+      }
+
       if (typeof Hls !== 'undefined' && Hls.isSupported() && streamUrl.includes('.m3u8')) {
         aiHlsInstance = new Hls({
           enableWorker: true,
           lowLatencyMode: true,
-          manifestLoadingTimeOut: 15000,
+          liveSyncDurationCount: 1, // Keep playback firmly at the newest live segment
+          liveMaxLatencyDurationCount: 2, // Auto-jump to live if lag exceeds 2 segments (~4s)
+          maxLiveSyncPlaybackRate: 1.35, // Smoothly speed up playback to eliminate lag
+          maxBufferLength: 2, // Only buffer 2 seconds to prevent stale video build-up
+          maxMaxBufferLength: 4,
+          backBufferLength: 0, // Immediately purge played frames to prevent video repeating/looping
+          manifestLoadingTimeOut: 10000,
           manifestLoadingMaxRetry: 6,
-          levelLoadingTimeOut: 15000,
+          levelLoadingTimeOut: 10000,
           levelLoadingMaxRetry: 6,
-          fragLoadingTimeOut: 20000,
+          fragLoadingTimeOut: 10000,
           fragLoadingMaxRetry: 6
         });
         aiHlsInstance.loadSource(streamUrl);
@@ -4264,6 +4284,30 @@ $assetsBase = $isSubdomain ? 'https://loewixcctv.com/assets' : '../assets';
             }
           }
         });
+
+        // Continuous Live-Edge Synchronization Watchdog (Eliminates CCTV Delay & Stale Video Looping)
+        window._aiLiveSyncInterval = setInterval(() => {
+          if (!video || video.paused || video.ended || !video.buffered || video.buffered.length === 0) return;
+          try {
+            const bufEnd = video.buffered.end(video.buffered.length - 1);
+            const lag = bufEnd - video.currentTime;
+
+            // Update Latency Badge in HUD
+            const resTag = document.getElementById('ai-feed-resolution');
+            if (resTag) {
+              if (lag > 2.5) {
+                resTag.innerHTML = `<span style="color: #f59e0b; font-weight: 700; cursor: pointer;" onclick="jumpToLiveEdge()" title="Klik untuk sinkronkan ke detik sekarang"><i class="fas fa-sync fa-spin mr-1"></i> Sinkronisasi (${lag.toFixed(1)}s)...</span>`;
+              } else {
+                resTag.innerHTML = `<span style="color: #10b981; font-weight: 700; cursor: pointer;" onclick="jumpToLiveEdge()"><i class="fas fa-circle mr-1" style="font-size: 0.6rem; vertical-align: middle;"></i> LIVE REALTIME (${lag.toFixed(1)}s)</span>`;
+              }
+            }
+
+            // If video lags behind real-time edge by more than 2.0s, jump directly to the live edge!
+            if (lag > 2.0) {
+              video.currentTime = Math.max(0, bufEnd - 0.3);
+            }
+          } catch (e) {}
+        }, 1000);
       } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
         video.src = streamUrl;
         video.addEventListener('loadedmetadata', () => {
@@ -5949,7 +5993,6 @@ $assetsBase = $isSubdomain ? 'https://loewixcctv.com/assets' : '../assets';
         }
 
         // 3. Strict IoU & Proximity Non-Maximum Suppression (NMS) - Eliminates duplicate or stacked boxes
-        // Standard IoU 0.45 allows two real people sitting next to each other to both be tracked without suppressing each other
         const nmsPersons = [];
         filteredPersons.sort((a, b) => b.score - a.score);
         for (const b of filteredPersons) {
@@ -5960,12 +6003,24 @@ $assetsBase = $isSubdomain ? 'https://loewixcctv.com/assets' : '../assets';
             const interArea = interW * interH;
             if (interArea > 0) {
               const iou = interArea / (b.w * b.h + r.w * r.h - interArea);
-              if (iou > 0.45) {
+              if (iou > 0.40) {
                 keep = false;
                 break;
               }
               const minArea = Math.min(b.w * b.h, r.w * r.h);
-              if (interArea / minArea > 0.75) {
+              if (interArea / minArea > 0.60) {
+                keep = false;
+                break;
+              }
+            }
+            // Vertical column alignment test: suppress torso + full-body double detection on the same person
+            const bMidX = b.x + b.w * 0.5;
+            const rMidX = r.x + r.w * 0.5;
+            const minW = Math.min(b.w, r.w);
+            if (Math.abs(bMidX - rMidX) < minW * 0.42) {
+              const vertOverlap = Math.max(0, Math.min(b.y + b.h, r.y + r.h) - Math.max(b.y, r.y));
+              const minH = Math.min(b.h, r.h);
+              if (vertOverlap / minH > 0.35) {
                 keep = false;
                 break;
               }
@@ -6692,6 +6747,31 @@ $assetsBase = $isSubdomain ? 'https://loewixcctv.com/assets' : '../assets';
         roleTitleInput.value = ent.role_title || (role === 'employee' ? 'Staff' : 'Pengunjung');
       }
 
+      // Populate quick select chips from registered faces
+      const knownWrap = document.getElementById('quicktag-known-faces-wrap');
+      const knownChips = document.getElementById('quicktag-known-chips');
+      if (knownWrap && knownChips) {
+        if (cachedAIFaces && cachedAIFaces.length > 0) {
+          knownWrap.style.display = 'block';
+          knownChips.innerHTML = cachedAIFaces.map(f => {
+            const isEmp = (f.category === 'employee');
+            const isVIP = (f.category === 'vip');
+            const color = isVIP ? '#f59e0b' : (isEmp ? '#3b82f6' : '#00f0ff');
+            const icon = isVIP ? '🌟' : (isEmp ? '👔' : '🚶');
+            const safeName = (f.name || '').replace(/'/g, "\\'");
+            const safeRole = (f.role_title || f.role || 'Staff').replace(/'/g, "\\'");
+            return `
+              <button type="button" class="btn btn-sm" onclick="selectQuickTagKnownFace('${safeName}', '${f.category || 'employee'}', '${safeRole}')" style="font-size: 0.74rem; padding: 0.22rem 0.55rem; background: rgba(15,23,42,0.85); border: 1px solid ${color}; color: #fff; border-radius: 6px; cursor: pointer; display: inline-flex; align-items: center; gap: 0.35rem;">
+                <span>${icon}</span>
+                <span style="font-weight: 700; color: ${color};">${escapeHtml(f.name)}</span>
+              </button>
+            `;
+          }).join('');
+        } else {
+          knownWrap.style.display = 'none';
+        }
+      }
+
       const delBtn = document.getElementById('btn-delete-quicktag');
       if (delBtn) {
         delBtn.style.display = (ent.customTagged || ent.name) ? 'inline-flex' : 'none';
@@ -6700,6 +6780,29 @@ $assetsBase = $isSubdomain ? 'https://loewixcctv.com/assets' : '../assets';
       openModal('modalQuickTagPerson');
       if (nameInput) {
         setTimeout(() => nameInput.focus(), 150);
+      }
+    }
+
+    function selectQuickTagKnownFace(name, category, roleTitle) {
+      const nameInput = document.getElementById('quicktag-name-input');
+      if (nameInput) nameInput.value = name;
+
+      const radio = document.querySelector(`input[name="quicktag_role"][value="${category}"]`);
+      if (radio) radio.checked = true;
+
+      const roleInput = document.getElementById('quicktag-role-title-input');
+      if (roleInput) roleInput.value = roleTitle || (category === 'employee' ? 'Staff' : 'Pengunjung');
+
+      const saveBtn = document.getElementById('btn-save-quicktag');
+      if (saveBtn) saveBtn.focus();
+    }
+
+    function jumpToLiveEdge() {
+      const video = document.getElementById('ai-video-player');
+      if (video && video.buffered && video.buffered.length > 0) {
+        const bufEnd = video.buffered.end(video.buffered.length - 1);
+        video.currentTime = Math.max(0, bufEnd - 0.2);
+        showAIHUDBanner('Disinkronkan ke Siaran Langsung (Live)', 'vip', 100);
       }
     }
 
